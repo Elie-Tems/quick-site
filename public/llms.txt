@@ -1,0 +1,43 @@
+# QuickSite (קוויקסייט) - AI-Readable Summary
+
+## What is QuickSite?
+QuickSite is an Israeli SaaS platform that enables small and medium business owners to create a professional sales website in under 5 minutes, without any coding or design skills.
+
+## Target Audience
+- Small business owners in Israel
+- Freelancers and service providers
+- Local shops and restaurants
+- Anyone needing a quick online sales presence
+
+## Key Features
+- Create a complete sales website in 5 minutes
+- No coding or design skills required
+- Mobile-responsive design
+- Product catalog management
+- Order management dashboard
+- WhatsApp integration for orders
+- Hebrew-first interface (RTL support)
+
+## Pricing (in Israeli Shekels)
+- Basic Plan: ₪99/month - Full website, unlimited products, AI support
+- Recommended Plan: ₪199/month - Email & WhatsApp support, 24h response time
+- Premium Plan: ₪299/month - Phone support, priority assistance
+
+## How It Works
+1. Enter business details (name, logo, contact info)
+2. Upload products (images, descriptions, prices)
+3. Publish - website is live and ready to receive customers
+
+## Contact & Links
+- Website: https://quick-site.app
+- Register: https://quick-site.app/register
+- Language: Hebrew (עברית)
+- Location: Israel
+
+## Technical Details
+- Built with React, TypeScript, and Tailwind CSS
+- Supabase backend for data and authentication
+- Compliant with Israeli Accessibility Standard 5568 (WCAG 2.1 AA)
+
+## Keywords
+בניית אתר מכירות, אתר לעסק קטן, חנות אונליין, מכירות באינטרנט, אתר מכירתי, עסקים קטנים בישראל

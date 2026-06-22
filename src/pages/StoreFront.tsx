@@ -1,0 +1,659 @@
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { Loader2, Store } from "lucide-react";
+import StoreHeader from "@/components/storefront/StoreHeader";
+import StoreHero from "@/components/storefront/StoreHero";
+import StoreBanners from "@/components/storefront/StoreBanners";
+import StoreProducts from "@/components/storefront/StoreProducts";
+import StoreAbout from "@/components/storefront/StoreAbout";
+import FloatingCart, { type CartItem } from "@/components/storefront/FloatingCart";
+import FloatingWhatsApp from "@/components/storefront/FloatingWhatsApp";
+import StoreCheckout from "@/components/storefront/StoreCheckout";
+import StoreThankYou from "@/components/storefront/StoreThankYou";
+import StoreCartPage from "@/components/storefront/StoreCartPage";
+import StoreFavorites from "@/components/storefront/StoreFavorites";
+import StoreFooter from "@/components/storefront/StoreFooter";
+import StoreSEO from "@/components/storefront/StoreSEO";
+import AgeVerificationModal from "@/components/storefront/AgeVerificationModal";
+import { useStorefront } from "@/hooks/useStorefront";
+import { useIsShabbatNow } from "@/hooks/useIsShabbatNow";
+import { useActiveCampaign, useCampaignBanners, useCampaignProducts } from "@/hooks/useCampaigns";
+import { Button } from "@/components/ui/button";
+import { BusinessCategory } from "@/lib/categoryConfig";
+import { trackPageView } from "@/hooks/useAnalytics";
+import { useCreateOrder } from "@/hooks/useOrders";
+import { getTemplate, type StoreTemplateId } from "@/lib/storeTemplates";
+
+type ViewState = 'shopping' | 'checkout' | 'thankyou' | 'cart' | 'favorites';
+
+const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
+  const params = useParams<{ slug: string }>();
+  // On a tenant subdomain (aurora.quick-site.app) the slug comes from the host,
+  // not the path; fall back to the route param for /store/:slug.
+  const slug = slugOverride ?? params.slug;
+  const { business, products, banners, categories, isLoading, isError, error } = useStorefront(slug);
+  const { data: isShabbatNow } = useIsShabbatNow((business as any)?.shabbat_mode === true);
+  
+  // Fetch active campaign data
+  const { data: activeCampaign } = useActiveCampaign(business?.id);
+  const { data: campaignBanners } = useCampaignBanners(activeCampaign?.id);
+  const { data: campaignProducts } = useCampaignProducts(activeCampaign?.id);
+  
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [viewState, setViewState] = useState<ViewState>('shopping');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [ageVerified, setAgeVerified] = useState(false);
+
+  const addFavorite = (productId: string) => {
+    setFavoriteIds((prev) => new Set(prev).add(productId));
+  };
+  const removeFavorite = (productId: string) => {
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      next.delete(productId);
+      return next;
+    });
+  };
+  const toggleFavorite = (productId: string) => {
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(productId)) next.delete(productId);
+      else next.add(productId);
+      return next;
+    });
+  };
+
+  // Check if this is an alcohol/wine business that needs age verification
+  const businessCategory = (business as any)?.business_category as BusinessCategory | undefined;
+  const needsAgeVerification = businessCategory === "wine_alcohol";
+
+  // Load template based on business template_id
+  const template = useMemo(() => {
+    return getTemplate(business?.template_id as StoreTemplateId);
+  }, [business?.template_id]);
+
+  // Apply dynamic theme colors from template
+  useEffect(() => {
+    if (!business || !template) return;
+    
+    const root = document.documentElement;
+    
+    // Convert hex to HSL for CSS variables
+    const hexToHsl = (hex: string) => {
+      const r = parseInt(hex.slice(1, 3), 16) / 255;
+      const g = parseInt(hex.slice(3, 5), 16) / 255;
+      const b = parseInt(hex.slice(5, 7), 16) / 255;
+      
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+          case g: h = ((b - r) / d + 2) / 6; break;
+          case b: h = ((r - g) / d + 4) / 6; break;
+        }
+      }
+      
+      return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+    };
+    
+    try {
+      // Apply all template theme colors
+      const primaryHsl = hexToHsl(template.theme.primaryColor);
+      const backgroundHsl = hexToHsl(template.theme.backgroundColor);
+      const foregroundHsl = hexToHsl(template.theme.foregroundColor);
+      const cardHsl = hexToHsl(template.theme.cardColor);
+      const mutedHsl = hexToHsl(template.theme.mutedColor);
+      const accentHsl = hexToHsl(template.theme.accentColor);
+      
+      root.style.setProperty('--primary', primaryHsl);
+      root.style.setProperty('--background', backgroundHsl);
+      root.style.setProperty('--foreground', foregroundHsl);
+      root.style.setProperty('--card', cardHsl);
+      root.style.setProperty('--muted', mutedHsl);
+      root.style.setProperty('--accent', accentHsl);
+      root.style.setProperty('--ring', primaryHsl);
+      
+      // Apply border radius
+      root.style.setProperty('--radius', template.theme.borderRadius);
+      
+      // Apply font style via body class
+      document.body.classList.remove('font-sans', 'font-serif', 'font-mixed');
+      if (template.theme.fontStyle === 'serif') {
+        document.body.classList.add('font-serif');
+      } else if (template.theme.fontStyle === 'mixed') {
+        document.body.classList.add('font-mixed');
+      } else {
+        document.body.classList.add('font-sans');
+      }
+    } catch (e) {
+      console.error('Invalid color format:', e);
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      root.style.removeProperty('--primary');
+      root.style.removeProperty('--ring');
+      root.style.removeProperty('--accent');
+      root.style.removeProperty('--gradient-start');
+      root.style.removeProperty('--gradient-end');
+    };
+  }, [business, template]);
+
+  // Track page view when business loads
+  const hasTrackedView = useRef(false);
+  useEffect(() => {
+    if (business?.id && !hasTrackedView.current) {
+      hasTrackedView.current = true;
+      trackPageView(business.id, `/store/${slug}`);
+    }
+  }, [business?.id, slug]);
+
+  // Scroll to top when view changes
+  useEffect(() => {
+    if (viewState !== 'shopping') {
+      window.scrollTo(0, 0);
+    }
+  }, [viewState]);
+
+  // Transform products based on campaign display mode - must run before any early return (Rules of Hooks)
+  const storeProducts = useMemo(() => {
+    const baseProducts = products.map(p => ({
+      id: p.id,
+      name: p.name,
+      description: p.description || undefined,
+      price: p.is_on_sale && p.sale_price ? p.sale_price : p.price,
+      originalPrice: p.is_on_sale && p.sale_price ? p.price : undefined,
+      imageUrl: p.image_url || undefined,
+      active: p.active ?? true,
+      sku: p.sku || undefined,
+      isSale: p.is_on_sale || false,
+      isHot: p.is_hot || false,
+      categoryId: p.category_id || undefined,
+      custom_fields: p.custom_fields || [],
+    }));
+
+    // If no active campaign, return regular products
+    if (!activeCampaign || !campaignProducts || campaignProducts.length === 0) {
+      return baseProducts;
+    }
+
+    // Transform campaign products
+    const campaignProductsList = campaignProducts
+      .filter(cp => cp.active)
+      .map(cp => {
+        if (cp.is_campaign_only) {
+          // Campaign-only product
+          return {
+            id: cp.id,
+            name: cp.name || '',
+            description: cp.description || undefined,
+            price: cp.sale_price ?? cp.price,
+            originalPrice: cp.sale_price ? cp.price : undefined,
+            imageUrl: cp.image_url || undefined,
+            active: true,
+            isSale: !!cp.sale_price,
+            isHot: false,
+            custom_fields: [],
+          };
+        } else {
+          // Linked regular product
+          const linkedProduct = baseProducts.find(p => p.id === cp.product_id);
+          return linkedProduct || null;
+        }
+      })
+      .filter(Boolean) as typeof baseProducts;
+
+    // Apply display mode
+    switch (activeCampaign.display_mode) {
+      case 'replace':
+        // Only campaign products
+        return campaignProductsList;
+      case 'add':
+        // Merge campaign products with regular products (campaign at end)
+        const campaignOnlyIds = new Set(campaignProducts.filter(cp => cp.is_campaign_only).map(cp => cp.id));
+        const linkedProductIds = new Set(campaignProducts.filter(cp => !cp.is_campaign_only && cp.product_id).map(cp => cp.product_id));
+        // Add campaign-only products to regular products, excluding already linked ones
+        const regularWithoutLinked = baseProducts.filter(p => !linkedProductIds.has(p.id));
+        const campaignOnlyProducts = campaignProductsList.filter(p => campaignOnlyIds.has(p.id));
+        return [...regularWithoutLinked, ...campaignOnlyProducts];
+      case 'prioritize':
+        // Campaign products first, then regular products (excluding duplicates)
+        const campaignIds = new Set(campaignProducts.filter(cp => !cp.is_campaign_only && cp.product_id).map(cp => cp.product_id));
+        const campaignOnlyPrioIds = new Set(campaignProducts.filter(cp => cp.is_campaign_only).map(cp => cp.id));
+        const remainingProducts = baseProducts.filter(p => !campaignIds.has(p.id));
+        return [...campaignProductsList, ...remainingProducts.filter(p => !campaignOnlyPrioIds.has(p.id))];
+      default:
+        return baseProducts;
+    }
+  }, [products, activeCampaign, campaignProducts]);
+
+  // Filter products by selected category (when using store categories)
+  const storeProductsFiltered = useMemo(() => {
+    if (!selectedCategoryId) return storeProducts;
+    return storeProducts.filter((p: { categoryId?: string }) => p.categoryId === selectedCategoryId);
+  }, [storeProducts, selectedCategoryId]);
+
+  // Transform banners based on campaign display mode
+  const storeBanners = useMemo(() => {
+    const baseBanners = banners.map(b => ({
+      id: b.id,
+      title: b.title || undefined,
+      text: b.text || undefined,
+      imageUrl: b.image_url || undefined,
+      ctaText: b.cta_text || undefined,
+      ctaUrl: b.cta_url || undefined,
+    }));
+
+    // If no active campaign or no campaign banners, return regular banners
+    if (!activeCampaign || !campaignBanners || campaignBanners.length === 0) {
+      return baseBanners;
+    }
+
+    // Transform campaign banners
+    const campaignBannersList = campaignBanners
+      .filter(cb => cb.active)
+      .map(cb => ({
+        id: cb.id,
+        title: cb.title || undefined,
+        text: cb.text || undefined,
+        imageUrl: cb.image_url || undefined,
+        ctaText: cb.cta_text || undefined,
+        ctaUrl: cb.cta_url || undefined,
+      }));
+
+    // Apply display mode
+    switch (activeCampaign.display_mode) {
+      case 'replace':
+        return campaignBannersList;
+      case 'add':
+        return [...baseBanners, ...campaignBannersList];
+      case 'prioritize':
+        return [...campaignBannersList, ...baseBanners];
+      default:
+        return baseBanners;
+    }
+  }, [banners, activeCampaign, campaignBanners]);
+
+  const createOrder = useCreateOrder();
+
+  // Loading state - after all hooks so hook order is stable
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">טוען את החנות...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error or not found state
+  if (isError || !business) {
+    const isUnpublished = error instanceof Error && error.message === 'SITE_NOT_PUBLISHED';
+    
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center max-w-md px-4">
+          <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
+            <Store className="h-10 w-10 text-muted-foreground" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            {isUnpublished ? 'האתר עדיין לא פורסם' : 'החנות לא נמצאה'}
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            {isUnpublished 
+              ? 'אתר זה עדיין לא פורסם לציבור. אנא השלם את תהליך הפרסום כדי להפעיל את האתר.'
+              : 'לא הצלחנו למצוא חנות בכתובת הזו. ייתכן שהיא הוסרה או שהכתובת שגויה.'
+            }
+          </p>
+          <Button onClick={() => window.location.href = '/'}>
+            חזרה לדף הבית
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Shabbat mode: the merchant chose to close the store on Shabbat/Yom Tov.
+  if ((business as any).shabbat_mode && isShabbatNow) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4" dir="rtl">
+        <div className="max-w-md text-center">
+          {business.logo_url && (
+            <img src={business.logo_url} alt={business.name} className="h-16 w-auto mx-auto mb-6" />
+          )}
+          <div className="text-5xl mb-4">🕯️</div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">{business.name}</h1>
+          <p className="text-xl text-muted-foreground mb-1">החנות סגורה בשבת</p>
+          <p className="text-muted-foreground">נשמח לראותכם שוב בצאת השבת 🙏</p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleAddToCart = (product: typeof storeProducts[0]) => {
+    setCartItems(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(item =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+  };
+
+  const handleUpdateQuantity = (productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      handleRemoveFromCart(productId);
+      return;
+    }
+    setCartItems(prev =>
+      prev.map(item =>
+        item.id === productId ? { ...item, quantity } : item
+      )
+    );
+  };
+
+  const handleRemoveFromCart = (productId: string) => {
+    setCartItems(prev => prev.filter(item => item.id !== productId));
+  };
+
+  const handleCheckout = () => {
+    setViewState('checkout');
+  };
+
+  const handleSubmitOrder = async (
+    data: { fullName: string; phone: string; email: string; notes: string; deliveryAddress?: string; deliveryMethod?: 'pickup' | 'delivery' },
+    couponId?: string,
+    total?: number
+  ) => {
+    const orderTotal = total ?? cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    try {
+      await createOrder.mutateAsync({
+        order: {
+          business_id: business.id,
+          customer_name: data.fullName,
+          customer_phone: data.phone,
+          customer_email: data.email,
+          notes: data.notes || null,
+          total_price: orderTotal,
+          delivery_method: data.deliveryMethod ?? null,
+          delivery_fee:
+            data.deliveryMethod === 'delivery'
+              ? ((business as any).delivery_fee ?? null)
+              : null,
+          delivery_address:
+            data.deliveryMethod === 'delivery' ? (data.deliveryAddress || null) : null,
+          status: 'pending',
+        },
+        items: cartItems.map((item) => ({
+          product_id: item.id,
+          product_name: item.name,
+          price_at_order: item.price,
+          quantity: item.quantity,
+        })),
+        businessName: business.name,
+        businessEmail: business.email ?? null,
+        businessPhone: business.phone ?? null,
+      });
+      setCartItems([]);
+      setViewState('thankyou');
+    } catch {
+      // Toast already shown by useCreateOrder onError
+    }
+  };
+
+  const handleContinueShopping = () => {
+    setViewState('shopping');
+  };
+
+  const goToShopping = () => setViewState('shopping');
+  const scrollToProductsSection = () => {
+    setViewState('shopping');
+    setTimeout(() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' }), 100);
+  };
+
+  const totalCartItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Checkout view
+  if (viewState === 'checkout') {
+    return (
+      <>
+        <Helmet>
+          <meta name="robots" content="noindex" />
+        </Helmet>
+        <StoreCheckout
+          items={cartItems}
+          hasPayment={business.payment_enabled ?? false}
+          businessId={business.id}
+          businessName={business.name}
+          deliveryMode={(business as any).delivery_mode as 'pickup_only' | 'pickup_and_delivery' | undefined}
+          deliveryFee={(business as any).delivery_fee ?? null}
+          onSubmit={handleSubmitOrder}
+          onBack={() => setViewState('shopping')}
+        />
+      </>
+    );
+  }
+
+  // Thank you view
+  if (viewState === 'thankyou') {
+    return (
+      <StoreThankYou
+        hasPayment={business.payment_enabled ?? false}
+        paymentSuccess={true}
+        businessPhone={business.phone || undefined}
+        onContinueShopping={handleContinueShopping}
+      />
+    );
+  }
+
+  // Cart page
+  if (viewState === 'cart') {
+    return (
+      <>
+        <StoreHeader
+          businessName={business.name}
+          logoUrl={business.logo_url || undefined}
+          phone={business.phone || undefined}
+          showMarqueeBar={(business as any).marquee_bar_enabled ?? true}
+          cartItemsCount={cartItems.reduce((s, i) => s + i.quantity, 0)}
+          favoritesCount={favoriteIds.size}
+          promoText={business.promo_text || undefined}
+          primaryColor={business.primary_color || undefined}
+          businessCategory={(business as any).business_category as BusinessCategory}
+          storeCategories={categories}
+          selectedCategoryId={selectedCategoryId}
+          onSelectCategory={setSelectedCategoryId}
+          aboutPath={`/store/${business.slug || slug}/about`}
+          onNavigateHome={goToShopping}
+          onScrollToProducts={scrollToProductsSection}
+          onNavigateToFavorites={() => setViewState('favorites')}
+          onNavigateToCart={() => setViewState('cart')}
+        />
+        <StoreCartPage
+          items={cartItems}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemove={handleRemoveFromCart}
+          onCheckout={handleCheckout}
+          onBack={() => setViewState('shopping')}
+          hasPayment={business.payment_enabled ?? false}
+        />
+        {business.phone && (business.whatsapp_enabled ?? true) && (
+          <FloatingWhatsApp
+            phone={business.phone}
+            message={(business as any).whatsapp_message || undefined}
+            businessName={business.name}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Favorites page
+  if (viewState === 'favorites') {
+    const favoriteProducts = storeProducts.filter((p) => favoriteIds.has(p.id));
+    return (
+      <>
+        <StoreHeader
+          businessName={business.name}
+          logoUrl={business.logo_url || undefined}
+          phone={business.phone || undefined}
+          showMarqueeBar={(business as any).marquee_bar_enabled ?? true}
+          cartItemsCount={cartItems.reduce((s, i) => s + i.quantity, 0)}
+          favoritesCount={favoriteIds.size}
+          promoText={business.promo_text || undefined}
+          primaryColor={business.primary_color || undefined}
+          businessCategory={(business as any).business_category as BusinessCategory}
+          storeCategories={categories}
+          selectedCategoryId={selectedCategoryId}
+          onSelectCategory={setSelectedCategoryId}
+          aboutPath={`/store/${business.slug || slug}/about`}
+          onNavigateHome={goToShopping}
+          onScrollToProducts={scrollToProductsSection}
+          onNavigateToFavorites={() => setViewState('favorites')}
+          onNavigateToCart={() => setViewState('cart')}
+        />
+        <StoreFavorites
+          products={favoriteProducts}
+          onAddToCart={handleAddToCart}
+          onRemoveFavorite={removeFavorite}
+          onBack={() => setViewState('shopping')}
+        />
+        {business.phone && (business.whatsapp_enabled ?? true) && (
+          <FloatingWhatsApp
+            phone={business.phone}
+            message={(business as any).whatsapp_message || undefined}
+            businessName={business.name}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Generate store URL
+  const storeUrl = `https://${import.meta.env.VITE_WEBSITE_URL}/store/${slug}`;
+
+  // Transform products for SEO component
+  const seoProducts = storeProducts.map(p => ({
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    price: p.price,
+    originalPrice: p.originalPrice,
+    imageUrl: p.imageUrl,
+    sku: p.sku,
+  }));
+
+  // Main shopping view
+  return (
+    <>
+      {/* Age Verification Modal for alcohol stores */}
+      {needsAgeVerification && !ageVerified && (
+        <AgeVerificationModal
+          businessName={business.name}
+          onVerified={() => setAgeVerified(true)}
+        />
+      )}
+
+      <StoreSEO
+        business={business} 
+        products={seoProducts} 
+        storeUrl={storeUrl} 
+      />
+
+      <StoreHeader
+        businessName={business.name}
+        logoUrl={business.logo_url || undefined}
+        phone={business.phone || undefined}
+        showMarqueeBar={(business as any).marquee_bar_enabled ?? true}
+        whatsappEnabled={business.whatsapp_enabled ?? false}
+        cartItemsCount={totalCartItems}
+        favoritesCount={favoriteIds.size}
+        promoText={business.promo_text || undefined}
+        primaryColor={business.primary_color || undefined}
+        businessCategory={(business as any).business_category as BusinessCategory}
+        storeCategories={categories}
+        selectedCategoryId={selectedCategoryId}
+        onSelectCategory={setSelectedCategoryId}
+        aboutPath={`/store/${business.slug || slug}/about`}
+        onNavigateHome={goToShopping}
+        onScrollToProducts={scrollToProductsSection}
+        onNavigateToFavorites={() => setViewState('favorites')}
+        onNavigateToCart={() => setViewState('cart')}
+      />
+
+      <main>
+        <StoreHero
+          businessName={business.name}
+          // חשוב: לא לנרמל ל-undefined כדי לאפשר "" כמצב "הסתר"
+          tagline={business.tagline as string | null | undefined}
+          ctaText={business.cta_text as string | null | undefined}
+          heroTitle={business.hero_title as string | null | undefined}
+          heroBadge={business.hero_badge || undefined}
+          logoUrl={business.logo_url || undefined}
+          heroImageUrl={business.hero_image_url || undefined}
+          heroBenefits={business.hero_benefits ?? undefined}
+          primaryColor={business.primary_color || undefined}
+          businessCategory={(business as any).business_category as BusinessCategory}
+          heroStyle={template?.heroStyle}
+        />
+
+        {storeBanners.length > 0 && (
+          <StoreBanners banners={storeBanners} />
+        )}
+
+        <StoreProducts
+          products={categories.length > 0 ? storeProductsFiltered : storeProducts}
+          onAddToCart={handleAddToCart}
+          favoriteIds={favoriteIds}
+          onToggleFavorite={toggleFavorite}
+          productCardStyle={template?.productCardStyle}
+        />
+
+        {business.about_text && (
+          <StoreAbout
+            aboutText={business.about_text}
+            businessName={business.name}
+          />
+        )}
+      </main>
+
+      <StoreFooter
+        businessName={business.name}
+        phone={business.phone || undefined}
+        email={business.email || undefined}
+        storeSlug={business.slug || slug}
+      />
+
+      <FloatingCart
+        items={cartItems}
+        onUpdateQuantity={handleUpdateQuantity}
+        onRemove={handleRemoveFromCart}
+        onCheckout={handleCheckout}
+        hasPayment={business.payment_enabled ?? false}
+      />
+
+      {/* WhatsApp Floating Button */}
+      {business.phone && (business.whatsapp_enabled ?? true) && (
+        <FloatingWhatsApp
+          phone={business.phone}
+          message={(business as any).whatsapp_message || undefined}
+          businessName={business.name}
+        />
+      )}
+    </>
+  );
+};
+
+export default StoreFront;

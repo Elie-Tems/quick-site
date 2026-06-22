@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בדיקת צבעי Labels</title>
+    <style>
+        .dashboard-light {
+            --background: 0 0% 100%;
+            --foreground: 0 0% 10%;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .label-test {
+            color: hsl(var(--foreground));
+            font-size: 14px;
+            font-weight: 500;
+            margin: 10px 0;
+        }
+        
+        .label-important {
+            color: hsl(var(--foreground)) !important;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body class="dashboard-light">
+    <h1>בדיקת צבעי Labels במצב בהיר</h1>
+    <div style="border: 1px solid #ccc; padding: 20px; margin: 20px 0;">
+        <p class="label-test">מחיר (₪) * - ללא !important</p>
+        <p class="label-important">מחיר (₪) * - עם !important</p>
+        <p style="color: hsl(0 0% 10%);">מחיר (₪) * - צבע ישיר</p>
+        <p style="color: #1a1a1a;">מחיר (₪) * - hex color</p>
+    </div>
+    
+    <div style="background: white; padding: 20px; border: 1px solid #ddd;">
+        <label style="color: hsl(0 0% 10%); font-size: 14px; font-weight: 500;">מחיר (₪) *</label>
+        <br><br>
+        <label style="color: hsl(0 0% 10%) !important; font-size: 14px; font-weight: 500;">קטגוריה</label>
+    </div>
+</body>
+</html>

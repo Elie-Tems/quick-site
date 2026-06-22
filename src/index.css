@@ -1,0 +1,534 @@
+@import url('https://fonts.googleapis.com/css2?family=Secular+One&family=Heebo:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Dark Mode - Default for general site (refined emerald, premium near-black) */
+    --background: 0 0% 9%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Refined Emerald Primary (no neon glow) */
+    --primary: 152 44% 41%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 66%;
+
+    --accent: 152 44% 41%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 152 44% 41%;
+
+    --radius: 0.75rem;
+
+    /* Spatial Web Effects */
+    --glow-color: 152 44% 41%;
+    --glass-bg: 0 0% 12% / 0.6;
+    --glass-border: 0 0% 100% / 0.08;
+  }
+
+  /* Light mode - only for dashboard when toggled */
+  .dashboard-light {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    --primary: 152 44% 41%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 35%;
+
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 152 44% 41%;
+
+    /* Spatial Web Effects */
+    --glow-color: 152 44% 41%;
+    --glass-bg: 0 0% 100% / 0.6;
+    --glass-border: 0 0% 0% / 0.08;
+  }
+
+  /* Dark mode for dashboard */
+  .dashboard-dark {
+    --background: 0 0% 10%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 14%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 14%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 152 44% 41%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 0 0% 18%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 22%;
+    --input: 0 0% 18%;
+    --ring: 152 44% 41%;
+
+    /* Spatial Web Effects */
+    --glow-color: 152 44% 41%;
+    --glass-bg: 0 0% 14% / 0.6;
+    --glass-border: 0 0% 100% / 0.08;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: 'Heebo', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Heebo', sans-serif;
+  }
+  
+  /* Dashboard headings - normal weight (400) */
+  .dashboard-light h1,
+  .dashboard-dark h1,
+  .dashboard-light h2,
+  .dashboard-dark h2,
+  .dashboard-light h3,
+  .dashboard-dark h3,
+  .dashboard-light .font-bold,
+  .dashboard-dark .font-bold,
+  .dashboard-light .font-semibold,
+  .dashboard-dark .font-semibold {
+    font-weight: 400 !important;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    direction: rtl;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Neon Gradient Text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(120 100% 50%), hsl(120 100% 70%));
+  }
+
+  /* Electric Neon Text Glow */
+  .neon-text {
+    color: hsl(var(--primary));
+    text-shadow: 
+      0 0 10px hsl(var(--primary) / 0.8),
+      0 0 40px hsl(var(--primary) / 0.4),
+      0 0 80px hsl(var(--primary) / 0.2);
+  }
+
+  /* Hero gradient overlay */
+  .hero-gradient {
+    background: linear-gradient(
+      180deg,
+      hsl(0 0% 22% / 0.3) 0%,
+      hsl(0 0% 22% / 0.6) 50%,
+      hsl(0 0% 22% / 0.95) 100%
+    );
+  }
+
+  /* Glassmorphism card */
+  .glass-card {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--glass-border));
+  }
+
+  /* Neon button with intense glow */
+  .neon-button {
+    position: relative;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+      0 0 20px hsl(var(--primary) / 0.4),
+      0 0 40px hsl(var(--primary) / 0.2);
+  }
+  
+  .neon-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 0 30px hsl(var(--primary) / 0.6),
+      0 0 60px hsl(var(--primary) / 0.4),
+      0 0 100px hsl(var(--primary) / 0.2);
+  }
+
+  /* Premium button (legacy support) */
+  .btn-premium {
+    position: relative;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-weight: 700;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .btn-premium::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: inherit;
+    filter: blur(20px);
+    opacity: 0.5;
+    z-index: -1;
+    transition: opacity 0.4s ease;
+  }
+  
+  .btn-premium:hover {
+    transform: translateY(-2px);
+  }
+  
+  .btn-premium:hover::before {
+    opacity: 0.8;
+  }
+
+  /* Bento grid card */
+  .bento-card {
+    background: hsl(0 0% 26%);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .bento-card:hover {
+    border-color: hsl(var(--primary) / 0.4);
+  }
+
+  /* Premium card with subtle border */
+  .card-premium {
+    background: hsl(0 0% 26%);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .card-premium:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px -15px hsl(0 0% 0% / 0.4);
+  }
+
+  /* Text reveal animation */
+  .text-reveal {
+    background: linear-gradient(90deg, 
+      hsl(var(--foreground)) 0%,
+      hsl(var(--foreground)) 50%,
+      hsl(var(--muted-foreground)) 50%,
+      hsl(var(--muted-foreground)) 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Floating animation */
+  @keyframes float-premium {
+    0%, 100% {
+      transform: translateY(0) rotate(-2deg);
+    }
+    50% {
+      transform: translateY(-20px) rotate(0deg);
+    }
+  }
+  
+  .animate-float-premium {
+    animation: float-premium 6s ease-in-out infinite;
+  }
+
+  /* Slow spin animation */
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  .animate-spin-slow {
+    animation: spin-slow 30s linear infinite;
+  }
+
+  /* Slow pulse animation */
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse-slow 4s ease-in-out infinite;
+  }
+
+  /* Glow pulse */
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 40px hsl(var(--primary) / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 80px hsl(var(--primary) / 0.5);
+    }
+  }
+  
+  .animate-glow {
+    animation: glow-pulse 4s ease-in-out infinite;
+  }
+
+  /* Section divider */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent 0%,
+      hsl(var(--primary) / 0.3) 50%,
+      transparent 100%
+    );
+  }
+
+  /* Marquee animation */
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-100%); }
+  }
+  
+  @keyframes marquee2 {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(0%); }
+  }
+  
+  .animate-marquee {
+    animation: marquee 25s linear infinite;
+  }
+  
+  .animate-marquee2 {
+    animation: marquee2 25s linear infinite;
+  }
+
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Number counter style */
+  .number-display {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY STYLES - Israeli Standard 5568
+   ============================================ */
+
+.a11y-font-normal {
+  font-size: 100%;
+}
+
+.a11y-font-large {
+  font-size: 115%;
+}
+
+.a11y-font-xlarge {
+  font-size: 130%;
+}
+
+.a11y-high-contrast {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 5%;
+  --card-foreground: 0 0% 100%;
+  --primary: 160 100% 50%;
+  --primary-foreground: 0 0% 0%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 80%;
+  --border: 0 0% 100%;
+}
+
+.a11y-highlight-links a,
+.a11y-highlight-links button {
+  outline: 2px solid hsl(var(--primary)) !important;
+  outline-offset: 2px !important;
+}
+
+.a11y-stop-animations,
+.a11y-stop-animations * {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Force label colors in dashboard light mode */
+.dashboard-light label,
+.dashboard-light [role="label"] {
+  color: hsl(0 0% 10%) !important;
+}
+
+.dashboard-dark label,
+.dashboard-dark [role="label"] {
+  color: hsl(0 0% 98%) !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only:focus,
+.sr-only.focus:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* ============================================
+   REFINED LANDING THEME (scoped to .theme-refined)
+   Sophisticated emerald, premium near-black, no neon glow.
+   ============================================ */
+.theme-refined {
+  --background: 0 0% 9%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 12%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 12%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 152 44% 41%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 16%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 16%;
+  --muted-foreground: 0 0% 66%;
+  --accent: 152 44% 41%;
+  --accent-foreground: 0 0% 100%;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+  --ring: 152 44% 41%;
+  --glow-color: 152 44% 41%;
+  --glass-bg: 0 0% 12% / 0.6;
+  --glass-border: 0 0% 100% / 0.08;
+}
+
+/* Neutralize the neon glow utilities inside the refined theme */
+.theme-refined .neon-text {
+  text-shadow: none;
+  color: hsl(var(--primary));
+}
+.theme-refined .neon-button {
+  box-shadow: none;
+  border: 1px solid hsl(var(--primary) / 0.45);
+}
+.theme-refined .neon-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px hsl(var(--primary) / 0.22);
+}
+.theme-refined .gradient-text {
+  background-image: linear-gradient(135deg, hsl(152 44% 46%), hsl(152 38% 62%));
+}
+
+/* ============================================
+   REFINED CUSTOMER FLOW (dashboard + onboarding)
+   Neutralize neon glow utilities so the dashboard matches the
+   approved refined emerald look (no glow), same as .theme-refined.
+   ============================================ */
+.dashboard-light .neon-text,
+.dashboard-dark .neon-text {
+  text-shadow: none;
+  color: hsl(var(--primary));
+}
+.dashboard-light .neon-button,
+.dashboard-dark .neon-button {
+  box-shadow: none;
+  border: 1px solid hsl(var(--primary) / 0.45);
+}
+.dashboard-light .neon-button:hover,
+.dashboard-dark .neon-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px hsl(var(--primary) / 0.22);
+}
+.dashboard-light .gradient-text,
+.dashboard-dark .gradient-text {
+  background-image: linear-gradient(135deg, hsl(152 44% 46%), hsl(152 38% 62%));
+}

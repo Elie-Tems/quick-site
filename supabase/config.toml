@@ -1,0 +1,29 @@
+project_id = "ytqgeoviokgxxwalieev"
+
+[functions.analyze-website]
+verify_jwt = true
+
+[functions.generate-hero-image]
+verify_jwt = true
+
+[functions.generate-product-image]
+verify_jwt = true
+
+[functions.generate-about-text]
+verify_jwt = true
+
+[functions.generate-styled-product-image]
+verify_jwt = true
+
+# icount-webhook is called by iCount (no Supabase JWT); it authenticates via
+# ICOUNT_WEBHOOK_SECRET instead, so JWT verification must stay disabled.
+[functions.icount-webhook]
+verify_jwt = false
+
+[functions.finalize-publish]
+verify_jwt = true
+
+# expire-subscriptions is invoked by a scheduled cron (no user JWT); it
+# authenticates via the CRON_SECRET header instead.
+[functions.expire-subscriptions]
+verify_jwt = false

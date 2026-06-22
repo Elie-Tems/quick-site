@@ -1,0 +1,189 @@
+import { useState, useEffect } from "react";
+import { ArrowLeft } from "lucide-react";
+import { BusinessCategory, getCategoryConfig } from "@/lib/categoryConfig";
+import type { StoreTemplate } from "@/lib/storeTemplates";
+
+interface StoreHeroProps {
+  businessName: string;
+  tagline?: string;
+  ctaText?: string;
+  heroTitle?: string;
+  heroBadge?: string;
+  logoUrl?: string;
+  heroImageUrl?: string;
+  heroBenefits?: string[] | null;
+  primaryColor?: string;
+  businessCategory?: BusinessCategory;
+  heroStyle?: StoreTemplate['heroStyle'];
+  onCtaClick?: () => void;
+}
+
+const DEFAULT_STRIP_BENEFITS: string[] = [];
+
+const StoreHero = ({
+  businessName,
+  tagline,
+  ctaText,
+  heroTitle,
+  heroBadge,
+  heroImageUrl,
+  heroBenefits,
+  primaryColor,
+  businessCategory,
+  heroStyle,
+  onCtaClick,
+}: StoreHeroProps) => {
+  const categoryConfig = getCategoryConfig(businessCategory);
+
+  const displayTagline =
+    tagline === "" ? undefined : tagline || categoryConfig.tagline;
+  const displayCtaText =
+    ctaText === "" ? undefined : ctaText || categoryConfig.ctaText;
+  const displayHeroBadge =
+    (heroBadge?.trim()?.length ?? 0) > 0 ? heroBadge!.trim() : undefined;
+  const displayTitle =
+    heroTitle === "" ? undefined : heroTitle || businessName;
+
+  const stripBenefits =
+    heroBenefits && heroBenefits.filter(Boolean).length > 0
+      ? heroBenefits.filter(Boolean)
+      : DEFAULT_STRIP_BENEFITS;
+
+  const [imageLoadError, setImageLoadError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  useEffect(() => {
+    setImageLoadError(false);
+    setImageLoaded(false);
+  }, [heroImageUrl]);
+
+  const hasCustomImage =
+    typeof heroImageUrl === "string" && heroImageUrl.trim().length > 0;
+  const heroImage = hasCustomImage
+    ? heroImageUrl!.trim()
+    : categoryConfig.heroImage;
+  const hasValidImage =
+    heroImage && heroImage.startsWith("http") && !imageLoadError;
+  const showGradientUntilLoaded = hasValidImage && !imageLoaded;
+
+  const scrollToProducts = () => {
+    document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
+    onCtaClick?.();
+  };
+
+  return (
+    <section className="relative w-full" dir="rtl">
+      {/* ── Full-bleed Hero ── */}
+      <div className="relative h-[55vh] min-h-[280px] sm:h-[65vh] md:h-[75vh] lg:h-[88vh] overflow-hidden bg-background">
+        {/* Fallback gradient: תמיד מתחת או כשהתמונה לא זמינה — במובייל מונע מסך ריק */}
+        {(!hasValidImage || showGradientUntilLoaded) && (
+          <div
+            className="absolute inset-0"
+            style={{
+              background: primaryColor
+                ? `linear-gradient(160deg, ${primaryColor}, ${primaryColor}bb)`
+                : "linear-gradient(160deg, hsl(var(--primary)), hsl(var(--primary) / 0.85))",
+            }}
+          />
+        )}
+
+        {/* Background image */}
+        {hasValidImage && (
+          <img
+            src={heroImage!}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover object-center"
+            decoding="async"
+            fetchPriority="high"
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageLoadError(true)}
+          />
+        )}
+
+        {/* Gradient overlays — editorial: strong bottom fade + subtle left vignette */}
+        {hasValidImage && imageLoaded && (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
+          </>
+        )}
+
+        {/* ── Content: bottom-left aligned (magazine style) ── */}
+        <div className="absolute inset-0 flex items-end">
+          <div className="container px-4 md:px-6 pb-10 md:pb-14 lg:pb-16">
+            <div className="max-w-xl">
+
+              {/* Badge — thin pill, editorial */}
+              {displayHeroBadge && (
+                <span className="inline-block mb-4 text-[10px] font-bold tracking-[0.25em] uppercase text-white/90 border border-white/30 px-3 py-1">
+                  {displayHeroBadge}
+                </span>
+              )}
+
+              {/* Title — large editorial serif feel via tight tracking */}
+              {displayTitle && (
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.05] tracking-[-0.02em] mb-4">
+                  {displayTitle}
+                </h1>
+              )}
+
+              {/* Tagline */}
+              {displayTagline && (
+                <p className="text-sm md:text-base text-white/75 mb-7 max-w-sm leading-relaxed">
+                  {displayTagline}
+                </p>
+              )}
+
+              {/* CTA — flat, editorial, no rounded */}
+              {displayCtaText && (
+                <button
+                  onClick={scrollToProducts}
+                  className="group inline-flex items-center gap-3 bg-white text-foreground px-7 py-3.5 text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-white/90 transition-colors"
+                  style={{ color: primaryColor || undefined }}
+                >
+                  {displayCtaText}
+                  <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Issue number / decorative element — top left corner, editorial touch */}
+        <div className="absolute top-5 left-5 hidden md:flex flex-col items-center gap-1 opacity-40">
+          <div className="w-px h-8 bg-white" />
+          <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-white rotate-90 origin-center translate-y-4">
+            {businessName}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Benefits Strip ── */}
+      {stripBenefits.length > 0 && (
+        <div
+          className="border-t border-foreground/10 py-3"
+          style={{
+            backgroundColor: primaryColor || "hsl(var(--primary))",
+          }}
+        >
+          <div className="container px-4 md:px-6">
+            <div className="flex items-center justify-center gap-6 md:gap-10 overflow-x-auto scrollbar-hide flex-wrap">
+              {stripBenefits.map((text, i) => (
+                <span
+                  key={i}
+                  className="flex items-center gap-2 text-[10px] font-bold tracking-[0.15em] uppercase text-white/90 whitespace-nowrap"
+                >
+                  {i > 0 && (
+                    <span className="hidden sm:block w-px h-3 bg-white/30" />
+                  )}
+                  {text}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+};
+
+export default StoreHero;
