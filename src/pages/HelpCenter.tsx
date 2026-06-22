@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -341,6 +342,12 @@ const HelpCenter = () => {
 
   return (
     <div className="min-h-screen bg-background" dir="rtl" style={{ fontFamily: 'Heebo, sans-serif' }}>
+      <SEOHead
+        title="מרכז עזרה | קוויקסייט"
+        description="מצא תשובות לשאלות נפוצות על בניית אתר מכירות, ניהול מוצרים, הזמנות ותשלומים."
+        canonical="https://quick-site.app/help"
+        noindex={false}
+      />
       {/* Header */}
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container flex items-center justify-between h-16">

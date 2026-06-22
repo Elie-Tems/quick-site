@@ -286,3 +286,397 @@ export function useCancellations() {
     },
   });
 }
+
+// ─── MRR / ARR ────────────────────────────────────────────────────────────────
+export interface MRRPoint {
+  month: string;
+  mrr: number;
+  new_mrr: number;
+  churned_mrr: number;
+}
+
+export function useMRR() {
+  return useQuery({
+    queryKey: ["admin-mrr"],
+    queryFn: async (): Promise<MRRPoint[]> => {
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("plan_name, created_at, status, cancel_at")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+
+      const planPrice: Record<string, number> = {
+        basic: 99,
+        recommended: 199,
+        premium: 299,
+      };
+
+      const byMonth: Record<string, { new_mrr: number; churned_mrr: number }> = {};
+
+      (data || []).forEach((sub) => {
+        const price = planPrice[sub.plan_name?.toLowerCase()] ?? 99;
+        const createdMonth = sub.created_at?.slice(0, 7);
+        if (createdMonth) {
+          if (!byMonth[createdMonth]) byMonth[createdMonth] = { new_mrr: 0, churned_mrr: 0 };
+          byMonth[createdMonth].new_mrr += price;
+        }
+        if (sub.cancel_at) {
+          const cancelMonth = sub.cancel_at.slice(0, 7);
+          if (!byMonth[cancelMonth]) byMonth[cancelMonth] = { new_mrr: 0, churned_mrr: 0 };
+          byMonth[cancelMonth].churned_mrr += price;
+        }
+      });
+
+      let cumulative = 0;
+      return Object.entries(byMonth)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, { new_mrr, churned_mrr }]) => {
+          cumulative += new_mrr - churned_mrr;
+          return { month, mrr: Math.max(0, cumulative), new_mrr, churned_mrr };
+        });
+    },
+  });
+}
+
+// ─── Conversion Funnel ────────────────────────────────────────────────────────
+export interface FunnelStep {
+  label: string;
+  count: number;
+  pct: number;
+}
+
+export function useConversionFunnel() {
+  return useQuery({
+    queryKey: ["admin-funnel"],
+    queryFn: async (): Promise<FunnelStep[]> => {
+      const [{ count: registered }, { count: withBusiness }, { count: published }, { count: withOrder }] =
+        await Promise.all([
+          supabase.from("profiles").select("*", { count: "exact", head: true }),
+          supabase.from("businesses").select("*", { count: "exact", head: true }),
+          supabase.from("businesses").select("*", { count: "exact", head: true }).eq("is_published", true),
+          supabase.from("orders").select("business_id", { count: "exact", head: true }),
+        ]);
+
+      const steps = [
+        { label: "נרשמו", count: registered ?? 0 },
+        { label: "יצרו עסק", count: withBusiness ?? 0 },
+        { label: "פרסמו אתר", count: published ?? 0 },
+        { label: "הזמנה ראשונה", count: withOrder ?? 0 },
+      ];
+      const top = steps[0].count || 1;
+      return steps.map((s) => ({ ...s, pct: Math.round((s.count / top) * 100) }));
+    },
+  });
+}
+
+// ─── Churn Rate ───────────────────────────────────────────────────────────────
+export interface ChurnPoint {
+  month: string;
+  active: number;
+  churned: number;
+  churn_rate: number;
+}
+
+export function useChurnRate() {
+  return useQuery({
+    queryKey: ["admin-churn"],
+    queryFn: async (): Promise<ChurnPoint[]> => {
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("status, created_at, cancel_at")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+
+      const byMonth: Record<string, { active: number; churned: number }> = {};
+      (data || []).forEach((sub) => {
+        const m = sub.created_at?.slice(0, 7);
+        if (!m) return;
+        if (!byMonth[m]) byMonth[m] = { active: 0, churned: 0 };
+        byMonth[m].active++;
+        if (sub.cancel_at) {
+          const cm = sub.cancel_at.slice(0, 7);
+          if (!byMonth[cm]) byMonth[cm] = { active: 0, churned: 0 };
+          byMonth[cm].churned++;
+        }
+      });
+
+      return Object.entries(byMonth)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, { active, churned }]) => ({
+          month,
+          active,
+          churned,
+          churn_rate: active > 0 ? Math.round((churned / active) * 100) : 0,
+        }));
+    },
+  });
+}
+
+// ─── Top Performers ───────────────────────────────────────────────────────────
+export interface TopBusiness {
+  id: string;
+  name: string;
+  slug: string | null;
+  orders_count: number;
+  revenue: number;
+  page_views: number;
+}
+
+export function useTopPerformers(limit = 10) {
+  return useQuery({
+    queryKey: ["admin-top-performers", limit],
+    queryFn: async (): Promise<TopBusiness[]> => {
+      const { data: businesses, error } = await supabase
+        .from("businesses")
+        .select("id, name, slug");
+      if (error) throw error;
+
+      const results = await Promise.all(
+        (businesses || []).map(async (biz) => {
+          const [{ data: orders }, { count: views }] = await Promise.all([
+            supabase.from("orders").select("total_price").eq("business_id", biz.id),
+            supabase.from("page_views").select("*", { count: "exact", head: true }).eq("business_id", biz.id),
+          ]);
+          const revenue = (orders || []).reduce((s, o) => s + (o.total_price || 0), 0);
+          return {
+            id: biz.id,
+            name: biz.name,
+            slug: biz.slug,
+            orders_count: orders?.length ?? 0,
+            revenue,
+            page_views: views ?? 0,
+          };
+        })
+      );
+
+      return results.sort((a, b) => b.revenue - a.revenue).slice(0, limit);
+    },
+  });
+}
+
+// ─── Dormant Businesses ───────────────────────────────────────────────────────
+export interface DormantBusiness {
+  id: string;
+  name: string;
+  slug: string | null;
+  owner_email: string | null;
+  created_at: string;
+  is_published: boolean;
+  last_order_at: string | null;
+  days_inactive: number;
+}
+
+export function useDormantBusinesses() {
+  return useQuery({
+    queryKey: ["admin-dormant"],
+    queryFn: async (): Promise<DormantBusiness[]> => {
+      const { data: businesses, error } = await supabase
+        .from("businesses")
+        .select("id, name, slug, email, created_at, is_published");
+      if (error) throw error;
+
+      const threshold = new Date();
+      threshold.setDate(threshold.getDate() - 30);
+
+      const results = await Promise.all(
+        (businesses || []).map(async (biz) => {
+          const { data: lastOrder } = await supabase
+            .from("orders")
+            .select("created_at")
+            .eq("business_id", biz.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          const lastAt = lastOrder?.created_at ?? null;
+          const refDate = lastAt ? new Date(lastAt) : new Date(biz.created_at);
+          const daysInactive = Math.floor((Date.now() - refDate.getTime()) / 86400000);
+
+          return {
+            id: biz.id,
+            name: biz.name,
+            slug: biz.slug,
+            owner_email: biz.email ?? null,
+            created_at: biz.created_at,
+            is_published: biz.is_published ?? false,
+            last_order_at: lastAt,
+            days_inactive: daysInactive,
+          };
+        })
+      );
+
+      return results
+        .filter((b) => b.days_inactive >= 30)
+        .sort((a, b) => b.days_inactive - a.days_inactive);
+    },
+  });
+}
+
+// ─── Category Distribution ────────────────────────────────────────────────────
+export interface CategorySlice {
+  category: string;
+  count: number;
+  pct: number;
+}
+
+export function useCategoryDistribution() {
+  return useQuery({
+    queryKey: ["admin-categories"],
+    queryFn: async (): Promise<CategorySlice[]> => {
+      const { data, error } = await supabase
+        .from("businesses")
+        .select("business_category");
+      if (error) throw error;
+
+      const counts: Record<string, number> = {};
+      (data || []).forEach((b) => {
+        const cat = b.business_category || "לא מוגדר";
+        counts[cat] = (counts[cat] || 0) + 1;
+      });
+
+      const total = Object.values(counts).reduce((s, c) => s + c, 0) || 1;
+      return Object.entries(counts)
+        .sort(([, a], [, b]) => b - a)
+        .map(([category, count]) => ({ category, count, pct: Math.round((count / total) * 100) }));
+    },
+  });
+}
+
+// ─── Activity Feed ────────────────────────────────────────────────────────────
+export interface ActivityEvent {
+  id: string;
+  type: "order" | "signup" | "publish" | "cancel";
+  label: string;
+  time: string;
+}
+
+export function useActivityFeed() {
+  return useQuery({
+    queryKey: ["admin-activity"],
+    queryFn: async (): Promise<ActivityEvent[]> => {
+      const [{ data: orders }, { data: profiles }, { data: published }, { data: cancels }] =
+        await Promise.all([
+          supabase.from("orders").select("id, customer_name, created_at").order("created_at", { ascending: false }).limit(20),
+          supabase.from("profiles").select("id, full_name, created_at").order("created_at", { ascending: false }).limit(20),
+          supabase.from("businesses").select("id, name, updated_at").eq("is_published", true).order("updated_at", { ascending: false }).limit(20),
+          supabase.from("subscriptions").select("id, plan_name, cancel_at").not("cancel_at", "is", null).order("cancel_at", { ascending: false }).limit(20),
+        ]);
+
+      const events: ActivityEvent[] = [
+        ...(orders || []).map((o) => ({
+          id: `order-${o.id}`,
+          type: "order" as const,
+          label: `הזמנה חדשה מ-${o.customer_name || "לקוח"}`,
+          time: o.created_at,
+        })),
+        ...(profiles || []).map((p) => ({
+          id: `signup-${p.id}`,
+          type: "signup" as const,
+          label: `נרשם: ${p.full_name || "משתמש חדש"}`,
+          time: p.created_at,
+        })),
+        ...(published || []).map((b) => ({
+          id: `publish-${b.id}`,
+          type: "publish" as const,
+          label: `פרסם אתר: ${b.name}`,
+          time: b.updated_at,
+        })),
+        ...(cancels || []).map((s) => ({
+          id: `cancel-${s.id}`,
+          type: "cancel" as const,
+          label: `ביטול מנוי: ${s.plan_name}`,
+          time: s.cancel_at!,
+        })),
+      ];
+
+      return events.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 50);
+    },
+    refetchInterval: 30000,
+  });
+}
+
+// ─── Payment Errors ───────────────────────────────────────────────────────────
+export interface PaymentError {
+  provider: string;
+  count: number;
+  common_reason: string;
+}
+
+export function usePaymentErrors() {
+  return useQuery({
+    queryKey: ["admin-payment-errors"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payments")
+        .select("payment_provider, error_message, status, created_at")
+        .eq("status", "failed")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+
+      const byProvider: Record<string, { count: number; reasons: string[] }> = {};
+      (data || []).forEach((p) => {
+        const provider = p.payment_provider || "לא ידוע";
+        if (!byProvider[provider]) byProvider[provider] = { count: 0, reasons: [] };
+        byProvider[provider].count++;
+        if (p.error_message) byProvider[provider].reasons.push(p.error_message);
+      });
+
+      return Object.entries(byProvider).map(([provider, { count, reasons }]) => {
+        const reasonCounts: Record<string, number> = {};
+        reasons.forEach((r) => { reasonCounts[r] = (reasonCounts[r] || 0) + 1; });
+        const common_reason = Object.entries(reasonCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ?? "לא ידוע";
+        return { provider, count, common_reason };
+      });
+    },
+  });
+}
+
+// ─── Cohort Retention ─────────────────────────────────────────────────────────
+export interface CohortRow {
+  cohort: string;
+  total: number;
+  d30: number;
+  d60: number;
+  d90: number;
+}
+
+export function useCohortRetention() {
+  return useQuery({
+    queryKey: ["admin-cohort"],
+    queryFn: async (): Promise<CohortRow[]> => {
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("created_at, cancel_at, status");
+      if (error) throw error;
+
+      const byCohort: Record<string, { subs: Array<{ created_at: string; cancel_at: string | null }> }> = {};
+      (data || []).forEach((sub) => {
+        const cohort = sub.created_at?.slice(0, 7);
+        if (!cohort) return;
+        if (!byCohort[cohort]) byCohort[cohort] = { subs: [] };
+        byCohort[cohort].subs.push({ created_at: sub.created_at, cancel_at: sub.cancel_at ?? null });
+      });
+
+      return Object.entries(byCohort)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([cohort, { subs }]) => {
+          const total = subs.length;
+          const active = (days: number) =>
+            subs.filter((s) => {
+              if (!s.cancel_at) return true;
+              const diff = (new Date(s.cancel_at).getTime() - new Date(s.created_at).getTime()) / 86400000;
+              return diff > days;
+            }).length;
+
+          return {
+            cohort,
+            total,
+            d30: total > 0 ? Math.round((active(30) / total) * 100) : 0,
+            d60: total > 0 ? Math.round((active(60) / total) * 100) : 0,
+            d90: total > 0 ? Math.round((active(90) / total) * 100) : 0,
+          };
+        });
+    },
+  });
+}

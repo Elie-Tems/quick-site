@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import SEOHead from "@/components/SEOHead";
 import { useNavigate, useSearchParams, useLocation, Link } from "react-router-dom";
 import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -287,6 +288,8 @@ const PublishPayment = () => {
   }
 
   return (
+    <>
+      <SEOHead title="PublishPaymentOld | קוויקסייט" noindex={true} />
     <div className="min-h-screen bg-surface-1 flex flex-col">
       <div className="w-full px-4 py-8 flex flex-col gap-6 flex-1">
         <div className="w-full max-w-7xl mx-auto">
@@ -353,6 +356,7 @@ const PublishPayment = () => {
 
       </div>
     </div>
+    </>
   );
 };
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SEOHead from "@/components/SEOHead";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowRight, Eye } from "lucide-react";
 import logoDarkBg from "@/assets/logo-dark-bg.png";
@@ -271,6 +272,8 @@ const Onboarding = () => {
   };
 
   return (
+    <>
+      <SEOHead title="Onboarding | קוויקסייט" noindex={true} />
     <div className="theme-refined min-h-screen bg-surface-1">
       {/* Header */}
       <header className="fixed top-0 right-0 left-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
@@ -299,6 +302,7 @@ const Onboarding = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
 

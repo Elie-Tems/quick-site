@@ -38,7 +38,7 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://quick-site.app/sitemap.xml
+Sitemap: https://vwqrjaktpdqciiteuhtb.supabase.co/functions/v1/sitemap
 
 # LLMs.txt for AI crawlers
 # See: https://quick-site.app/llms.txt

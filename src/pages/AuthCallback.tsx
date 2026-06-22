@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import SEOHead from "@/components/SEOHead";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -152,12 +153,15 @@ const AuthCallback = () => {
   }, [authLoading, user, checkDone, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center space-y-4">
-        <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto" />
-        <p className="text-muted-foreground">מפנה אותך...</p>
+    <>
+      <SEOHead title="AuthCallback | קוויקסייט" noindex={true} />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground">מפנה אותך...</p>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

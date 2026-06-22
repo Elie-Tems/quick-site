@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2, Mail, FileText, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import SEOHead from "@/components/SEOHead";
 
 const ThankYou = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background flex items-center justify-center p-4">
+      <SEOHead title="תשלום בוצע בהצלחה | קוויקסייט" canonical="https://quick-site.app/thank-you" noindex={true} />
       <div className="w-full max-w-2xl space-y-8">
         {/* Success Icon */}
         <div className="text-center space-y-4">

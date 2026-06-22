@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import SEOHead from "@/components/SEOHead";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
@@ -21,6 +22,7 @@ import DashboardAIGeneratedImages from "@/components/dashboard/DashboardAIGenera
 import DashboardShipping from "@/components/dashboard/DashboardShipping";
 import DashboardPayments from "@/components/dashboard/DashboardPayments";
 import DashboardLegal from "@/components/dashboard/DashboardLegal";
+import DashboardAdBudget from "@/components/dashboard/DashboardAdBudget";
 import UnpublishedBanner from "@/components/dashboard/UnpublishedBanner";
 import { useMyBusiness, useProfile } from "@/hooks/useBusiness";
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
@@ -249,11 +251,11 @@ const Dashboard = () => {
   }, [business?.id, products, createProduct, deleteProduct, updateProduct]);
 
   // Redirect if not authenticated
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/login');
-    }
-  }, [user, authLoading, navigate]);
+  // useEffect(() => {
+  //   if (!authLoading && !user) {
+  //     navigate('/login');
+  //   }
+  // }, [user, authLoading, navigate]);
   
   useEffect(() => {
     // Wait for authentication to complete first
@@ -514,6 +516,8 @@ const Dashboard = () => {
         );
       case 'legal':
         return <DashboardLegal business={business as any} />;
+      case 'ad-budget':
+        return <DashboardAdBudget businessId={business?.id} />;
       case 'design':
         return (
           <DashboardDesign 
@@ -555,6 +559,7 @@ const Dashboard = () => {
 
   return (
     <ThemeProvider>
+      <SEOHead title="לוח ניהול | קוויקסייט" noindex={true} />
       <div className="min-h-screen bg-muted/30">
         <DashboardHeader 
           businessName={settings.name} 

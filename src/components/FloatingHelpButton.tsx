@@ -19,10 +19,10 @@ const FloatingHelpButton = () => {
       <Link
         to="/help"
         className="flex items-center gap-2 h-14 px-5 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform duration-200"
-        title="מרכז ידע"
+        title="בוט שירות ותמיכה"
       >
         <HelpCircle className="w-6 h-6 flex-shrink-0" />
-        <span className="font-medium whitespace-nowrap">מרכז ידע</span>
+        <span className="font-medium whitespace-nowrap">בוט שירות ותמיכה</span>
       </Link>
     </motion.div>
   );

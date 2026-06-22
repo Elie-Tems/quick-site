@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import SEOHead from "@/components/SEOHead";
 import { useNavigate, useSearchParams, useLocation, Link } from "react-router-dom";
 import { Loader2, CreditCard, CheckCircle2, ArrowRight, Shield, Lock, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -360,6 +361,7 @@ const PublishPaymentV2 = () => {
   }
 
   return (
+      <SEOHead title="PublishPaymentV2 | קוויקסייט" noindex={true} />
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl">

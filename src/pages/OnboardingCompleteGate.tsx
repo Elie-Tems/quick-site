@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import SEOHead from "@/components/SEOHead";
 import { useNavigate, useLocation } from "react-router-dom";
 import OnboardingComplete from "@/components/onboarding/OnboardingComplete";
 import type { OnboardingData } from "@/pages/Onboarding";
@@ -21,7 +22,12 @@ const OnboardingCompleteGate = () => {
     return null;
   }
 
-  return <OnboardingComplete data={data} />;
+  return (
+    <>
+      <SEOHead title="הגדרת האתר הושלמה | קוויקסייט" noindex={true} />
+      <OnboardingComplete data={data} />
+    </>
+  );
 };
 
 export default OnboardingCompleteGate;
