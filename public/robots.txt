@@ -1,5 +1,5 @@
-# Robots.txt for QuickSite (קוויקסייט)
-# https://quick-site.app
+# Robots.txt for Siango (סיאנגו)
+# https://siango.app
 
 User-agent: Googlebot
 Allow: /
@@ -41,4 +41,4 @@ Allow: /
 Sitemap: https://vwqrjaktpdqciiteuhtb.supabase.co/functions/v1/sitemap
 
 # LLMs.txt for AI crawlers
-# See: https://quick-site.app/llms.txt
+# See: https://siango.app/llms.txt

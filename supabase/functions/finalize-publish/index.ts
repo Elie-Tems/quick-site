@@ -221,7 +221,7 @@ Deno.serve(async (req) => {
   // Send webhook after successful publish
   const webhookUrl = Deno.env.get("VITE_BUSINESS_WEBHOOK_URL");
   if (webhookUrl && business) {
-    const siteUrl = `${Deno.env.get("VITE_APP_URL") || "https://quick-site.app"}/store/${business.slug}`;
+    const siteUrl = `${Deno.env.get("VITE_APP_URL") || "https://siango.app"}/store/${business.slug}`;
     
     const payload = {
       type: "business_published",

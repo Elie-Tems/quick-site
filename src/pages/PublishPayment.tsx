@@ -16,7 +16,7 @@ import {
   getPublishFeeIls,
 } from "@/lib/publishPaymentConfig";
 
-const STORAGE_KEY = "quicksite_publish_onboarding";
+const STORAGE_KEY = "siango_publish_onboarding";
 
 const PublishPayment = () => {
   const [searchParams] = useSearchParams();

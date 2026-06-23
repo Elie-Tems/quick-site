@@ -288,7 +288,7 @@ const Onboarding = () => {
           </div>
           
           <div className="absolute left-1/2 transform -translate-x-1/2">
-            <img src={logoDarkBg} alt="QuiceSite" className="h-12 w-auto" />
+            <img src={logoDarkBg} alt="Siango" className="h-12 w-auto" />
           </div>
           
           <OnboardingProgress currentStep={getDisplayStep()} totalSteps={totalSteps} />

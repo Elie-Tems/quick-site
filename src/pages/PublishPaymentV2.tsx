@@ -16,7 +16,7 @@ import {
 } from "@/lib/publishPaymentConfig";
 import logoDarkBg from "@/assets/logo-dark-bg.png";
 
-const STORAGE_KEY = "quicksite_publish_onboarding";
+const STORAGE_KEY = "siango_publish_onboarding";
 
 const PublishPaymentV2 = () => {
   const [searchParams] = useSearchParams();

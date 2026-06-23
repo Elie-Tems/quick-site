@@ -29,7 +29,7 @@ type ViewState = 'shopping' | 'checkout' | 'thankyou' | 'cart' | 'favorites';
 
 const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   const params = useParams<{ slug: string }>();
-  // On a tenant subdomain (aurora.quick-site.app) the slug comes from the host,
+  // On a tenant subdomain (aurora.siango.app) the slug comes from the host,
   // not the path; fall back to the route param for /store/:slug.
   const slug = slugOverride ?? params.slug;
   const { business, products, banners, categories, isLoading, isError, error } = useStorefront(slug);

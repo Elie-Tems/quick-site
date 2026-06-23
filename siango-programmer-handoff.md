@@ -1,4 +1,4 @@
-# QUICKSITE — משימות פתוחות למתכנת (לזום)
+# SIANGO — משימות פתוחות למתכנת (לזום)
 
 עודכן: יוני 2026. כל מה שאני (Claude) לא יכול לבצע — דורש גישה לשרת, חשבונות חיצוניים, או החלטות. **הקוד מוכן; רובו הרצה/הגדרה/חיבור.**
 
@@ -28,7 +28,7 @@
 שגיאת "Unsupported provider: missing OAuth secret" = ספק גוגל לא מוגדר.
 1. Google Cloud Console → OAuth Client (Web) → Redirect URI: `https://ytqgeoviokgxxwalieev.supabase.co/auth/v1/callback`
 2. Supabase → Authentication → Providers → Google → Enable + Client ID + Secret.
-3. Supabase → URL Configuration → Redirect URLs: `http://localhost:8080/auth/callback` ו-`https://quick-site.app/auth/callback`.
+3. Supabase → URL Configuration → Redirect URLs: `http://localhost:8080/auth/callback` ו-`https://siango.app/auth/callback`.
 
 ---
 
@@ -43,7 +43,7 @@ Pages → הפרויקט → Settings → Environment variables:
 הקוד כבר שולח כל הזמנה ל-webhook (`useOrders.ts`). צריך: להגדיר את הכתובת + לבנות תרחיש ב-Make.com + **להחליף את הכתובת החשופה** (אבטחה).
 
 ## 🟠 6. Wildcard DNS לתת-דומיינים
-ב-Cloudflare: רשומת `*.quick-site.app` → פרויקט ה-Pages. פעולה אחת מכסה את כל הלקוחות.
+ב-Cloudflare: רשומת `*.siango.app` → פרויקט ה-Pages. פעולה אחת מכסה את כל הלקוחות.
 
 ## 🟠 7. העלאה ל-GitHub
 ה-commit מוכן ונקי (בלי סודות). gh מותקן וממתין ל-`gh auth login` (אישור בדפדפן של בעל החשבון), ואז יצירת repo פרטי ודחיפה.

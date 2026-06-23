@@ -226,7 +226,7 @@ serve(async (req) => {
     try {
       const siteResponse = await fetch(url, {
         headers: {
-          "User-Agent": "Mozilla/5.0 (compatible; QuicksiteBot/1.0)",
+          "User-Agent": "Mozilla/5.0 (compatible; SiangoBot/1.0)",
         },
       });
       const html = await siteResponse.text();
@@ -254,7 +254,7 @@ serve(async (req) => {
         }
         const sheets = await Promise.allSettled(
           cssUrls.map((u) =>
-            fetch(u, { headers: { "User-Agent": "Mozilla/5.0 (compatible; QuicksiteBot/1.0)" } })
+            fetch(u, { headers: { "User-Agent": "Mozilla/5.0 (compatible; SiangoBot/1.0)" } })
               .then((r) => (r.ok ? r.text() : "")),
           ),
         );

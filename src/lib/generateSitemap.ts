@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const BASE_URL = "https://quick-site.app";
+const BASE_URL = "https://siango.app";
 
 const staticRoutes = [
   { path: "/", priority: "1.0", changefreq: "weekly" },

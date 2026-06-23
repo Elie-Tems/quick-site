@@ -20,7 +20,7 @@
  * Required environment variables (set in the Cloudflare Pages project):
  *   SUPABASE_URL       e.g. https://ytqgeoviokgxxwalieev.supabase.co
  *   SUPABASE_ANON_KEY  the public anon key (RLS exposes only published stores)
- *   SITE_URL           optional, defaults to https://quick-site.app
+ *   SITE_URL           optional, defaults to https://siango.app
  */
 
 interface Env {
@@ -151,7 +151,7 @@ function buildHead(
   const description =
     business.tagline ||
     (business.about_text ? business.about_text.slice(0, 160) : `הזמנות אונליין מ${business.name}`);
-  const ogImage = business.hero_image_url || business.logo_url || "https://quick-site.app/og-image.png";
+  const ogImage = business.hero_image_url || business.logo_url || "https://siango.app/og-image.png";
   const schemaType = CATEGORY_SCHEMA[business.business_category || "other"] || "Store";
 
   const localBusiness: Record<string, unknown> = {
@@ -249,12 +249,12 @@ export const onRequest = async (context: {
     if (request.method !== "GET") return response;
 
     const url = new URL(request.url);
-    const siteUrl = (env.SITE_URL || "https://quick-site.app").replace(/\/$/, "");
+    const siteUrl = (env.SITE_URL || "https://siango.app").replace(/\/$/, "");
     const baseDomain = env.BASE_DOMAIN || siteUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
 
     // Two URL shapes resolve to a store:
-    //   1. Tenant subdomain:  aurora.quick-site.app  (path "/" or "/about")
-    //   2. Path form:         quick-site.app/store/aurora[/about]
+    //   1. Tenant subdomain:  aurora.siango.app  (path "/" or "/about")
+    //   2. Path form:         siango.app/store/aurora[/about]
     const hostSlug = tenantSlugFromHost(url.hostname, baseDomain);
     let route: { slug: string; isAbout: boolean } | null;
     let canonical: string;

@@ -41,7 +41,7 @@ import StoreUnsubscribe from "./pages/StoreUnsubscribe";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // When served from a tenant subdomain (e.g. aurora.quick-site.app) the whole
+  // When served from a tenant subdomain (e.g. aurora.siango.app) the whole
   // app IS that one store: paths map to the store's home/about, and platform
   // marketing/auth routes are not exposed. On the apex it's the full platform.
   const tenantSlug = getTenantSlug();

@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function — dynamic sitemap served at /sitemap.xml.
  *
- * Must live on the same host (quick-site.app) as the URLs it lists, which is
+ * Must live on the same host (siango.app) as the URLs it lists, which is
  * why it's a Pages Function and not a Supabase edge function. Lists the static
  * marketing pages plus every published store (and its about page) so search
  * engines discover new stores automatically.
@@ -55,7 +55,7 @@ function urlEntry(loc: string, lastmod: string | null, changefreq: string, prior
 
 export const onRequest = async (context: { env: Env }): Promise<Response> => {
   const { env } = context;
-  const siteUrl = (env.SITE_URL || "https://quick-site.app").replace(/\/$/, "");
+  const siteUrl = (env.SITE_URL || "https://siango.app").replace(/\/$/, "");
   const today = new Date().toISOString().slice(0, 10);
   const entries: string[] = [];
 

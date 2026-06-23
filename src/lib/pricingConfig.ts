@@ -104,7 +104,7 @@ export const ADD_ONS: AddOnConfig[] = [
     price: 19.9,
     label: "₪19.9",
     description:
-      "חיבור דומיין אישי משלכם (לדוגמה shop.yourbrand.co.il) במקום כתובת תחת quick-site.app — תוספת חודשית.",
+      "חיבור דומיין אישי משלכם (לדוגמה shop.yourbrand.co.il) במקום כתובת תחת siango.app — תוספת חודשית.",
     available: false, // pending the custom-domain feature build
   },
 ];

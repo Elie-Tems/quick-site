@@ -2,16 +2,16 @@
  * Tenant subdomain detection.
  *
  * Each published store can be served from a short subdomain of the platform
- * domain, e.g. `aurora.quick-site.app` instead of `quick-site.app/store/aurora`.
+ * domain, e.g. `aurora.siango.app` instead of `siango.app/store/aurora`.
  *
  * Security model (why this is safe):
- *  - We never create a DNS record per store. A single wildcard `*.quick-site.app`
+ *  - We never create a DNS record per store. A single wildcard `*.siango.app`
  *    points at the app, and this helper maps the Host header → store slug at
  *    runtime. There is no dangling record to take over (no subdomain takeover).
  *  - System names (app, admin, api, mail…) are reserved and can never resolve to
  *    a tenant store, so a tenant can't impersonate platform infrastructure.
  *  - Auth/session cookies must be scoped to the dedicated app host (see
- *    `app.quick-site.app`), NOT to the apex, so a tenant subdomain can never read
+ *    `app.siango.app`), NOT to the apex, so a tenant subdomain can never read
  *    a logged-in platform session.
  */
 
@@ -28,17 +28,17 @@ export const RESERVED_SUBDOMAINS = new Set<string>([
 
 // The platform apex domain. Tenant stores live exactly one label below it.
 // Overridable per environment (e.g. a staging apex) via VITE_BASE_DOMAIN.
-const BASE_DOMAIN = (import.meta.env.VITE_BASE_DOMAIN as string | undefined) || "quick-site.app";
+const BASE_DOMAIN = (import.meta.env.VITE_BASE_DOMAIN as string | undefined) || "siango.app";
 
 /**
  * Returns the tenant store slug for a hostname, or null when the host is the
  * apex, a reserved/system subdomain, localhost, a raw IP, or anything that
  * isn't a single-label subdomain of the base domain.
  *
- *   aurora.quick-site.app   -> "aurora"
- *   quick-site.app          -> null   (apex)
- *   app.quick-site.app      -> null   (reserved)
- *   a.b.quick-site.app      -> null   (multi-level)
+ *   aurora.siango.app   -> "aurora"
+ *   siango.app          -> null   (apex)
+ *   app.siango.app      -> null   (reserved)
+ *   a.b.siango.app      -> null   (multi-level)
  *   localhost               -> null   (dev)
  */
 export function getTenantSlug(hostname: string = window.location.hostname): string | null {

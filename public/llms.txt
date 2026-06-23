@@ -1,7 +1,7 @@
-# QuickSite (קוויקסייט) - AI-Readable Summary
+# Siango (סיאנגו) - AI-Readable Summary
 
-## What is QuickSite?
-QuickSite is an Israeli SaaS platform that enables small and medium business owners to create a professional sales website in under 5 minutes, without any coding or design skills.
+## What is Siango?
+Siango is an Israeli SaaS platform that enables small and medium business owners to create a professional sales website in under 5 minutes, without any coding or design skills.
 
 ## Target Audience
 - Small business owners in Israel
@@ -29,8 +29,8 @@ QuickSite is an Israeli SaaS platform that enables small and medium business own
 3. Publish - website is live and ready to receive customers
 
 ## Contact & Links
-- Website: https://quick-site.app
-- Register: https://quick-site.app/register
+- Website: https://siango.app
+- Register: https://siango.app/register
 - Language: Hebrew (עברית)
 - Location: Israel
 

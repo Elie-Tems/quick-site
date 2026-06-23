@@ -180,7 +180,7 @@ const ru: Record<string, string> = {
   
   // Register Page
   'register.title': 'Создать аккаунт',
-  'register.pageTitle': 'Регистрация | Quicesite - Создайте свой сайт продаж',
+  'register.pageTitle': 'Регистрация | Siango - Создайте свой сайт продаж',
   'register.pageDescription': 'Зарегистрируйтесь в Siango и создайте сайт продаж за 5 минут. Бесплатно!',
   'register.subtitle': 'Присоединяйтесь к тысячам бизнесов, продающих больше с Siango',
   'register.fullName': 'Полное имя',

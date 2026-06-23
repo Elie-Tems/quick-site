@@ -72,7 +72,7 @@ const Contact = () => {
     {
       icon: Mail,
       title: "אימייל",
-      content: "support@quick-site.app",
+      content: "office@siango.app",
       subtitle: "תגובה תוך 24 שעות",
       color: "from-green-500 to-emerald-600"
     },

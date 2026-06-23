@@ -12,7 +12,7 @@ interface FooterProps {
 const Footer = ({
   isStorefront = false,
   businessName = 'סיאנגו',
-  businessEmail = 'contact@quick-site.app',
+  businessEmail = 'office@siango.app',
 }: FooterProps) => {
   const currentYear = new Date().getFullYear();
   const { t } = useLanguage();

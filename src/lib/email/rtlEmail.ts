@@ -16,7 +16,7 @@
  */
 
 export interface EmailSender {
-  /** Display name of the legal sender (the merchant, or "QUICKSITE"). */
+  /** Display name of the legal sender (the merchant, or "SIANGO"). */
   businessName: string;
   /** Physical address — required by Chok HaSpam in the footer. */
   address?: string;

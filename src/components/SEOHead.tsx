@@ -12,8 +12,8 @@ interface SEOHeadProps {
 const SEOHead = ({
   title = "סיאנגו - אתר מכירתי לעסק שלך תוך 5 דקות",
   description = "צור אתר מכירתי מקצועי לעסק שלך תוך 5 דקות בלבד. ללא מתכנת, ללא עיצוב, תשלום חודשי נמוך. מושלם לעסקים קטנים ובינוניים בישראל.",
-  canonical = "https://quick-site.app/",
-  ogImage = "https://quick-site.app/og-image.png",
+  canonical = "https://siango.app/",
+  ogImage = "https://siango.app/og-image.png",
   ogType = "website",
   noindex = false,
 }: SEOHeadProps) => {
@@ -24,8 +24,8 @@ const SEOHead = ({
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": siteName,
-    "url": "https://quick-site.app",
-    "logo": "https://quick-site.app/favicon.png",
+    "url": "https://siango.app",
+    "logo": "https://siango.app/favicon.png",
     "description": description,
     "address": {
       "@type": "PostalAddress",
@@ -39,11 +39,11 @@ const SEOHead = ({
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": siteName,
-    "url": "https://quick-site.app",
+    "url": "https://siango.app",
     "inLanguage": "he-IL",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://quick-site.app/store/{search_term_string}",
+      "target": "https://siango.app/store/{search_term_string}",
       "query-input": "required name=search_term_string"
     }
   };

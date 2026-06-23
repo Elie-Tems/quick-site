@@ -31,7 +31,7 @@ interface StoreSEOProps {
 const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
   const siteName = business.name;
   const description = business.tagline || business.about_text?.slice(0, 160) || `הזמנות אונליין מ${business.name}`;
-  const ogImage = business.hero_image_url || business.logo_url || "https://quick-site.app/og-image.png";
+  const ogImage = business.hero_image_url || business.logo_url || "https://siango.app/og-image.png";
   
   // Category mapping for Schema.org
   const categoryMap: Record<string, string> = {
@@ -167,7 +167,7 @@ const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
         "@type": "ListItem",
         "position": 1,
         "name": "סיאנגו",
-        "item": "https://quick-site.app"
+        "item": "https://siango.app"
       },
       {
         "@type": "ListItem",

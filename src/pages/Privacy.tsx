@@ -133,11 +133,11 @@ const PrivacyPage = () => {
                 לכל שאלה בנוגע למדיניות הפרטיות או לבקשות הקשורות למידע שלכם, ניתן לפנות אלינו:
               </p>
               <a 
-                href="mailto:contact@quick-site.app" 
+                href="mailto:office@siango.app" 
                 className="text-primary hover:underline font-medium"
                 dir="ltr"
               >
-                contact@quick-site.app
+                office@siango.app
               </a>
               <p className="text-muted-foreground mt-4">
                 אנו מתחייבים לטפל בפנייתכם תוך 30 יום.

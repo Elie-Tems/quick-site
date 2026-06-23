@@ -345,7 +345,7 @@ const HelpCenter = () => {
       <SEOHead
         title="מרכז עזרה | סיאנגו"
         description="מצא תשובות לשאלות נפוצות על בניית אתר מכירות, ניהול מוצרים, הזמנות ותשלומים."
-        canonical="https://quick-site.app/help"
+        canonical="https://siango.app/help"
         noindex={false}
       />
       {/* Header */}
@@ -364,7 +364,7 @@ const HelpCenter = () => {
           </Link>
           
           <div className="absolute left-1/2 transform -translate-x-1/2">
-            <img src={logoDarkBg} alt="QuiceSite" className="h-16" />
+            <img src={logoDarkBg} alt="Siango" className="h-16" />
           </div>
           
           <div></div>
@@ -538,7 +538,7 @@ const HelpCenter = () => {
         <div className="text-center text-sm text-muted-foreground">
           <p>
             לא מצאת תשובה? {" "}
-            <a href="mailto:support@quice-site.app" className="text-primary hover:underline">
+            <a href="mailto:office@siango.app" className="text-primary hover:underline">
               צור קשר עם התמיכה
             </a>
           </p>

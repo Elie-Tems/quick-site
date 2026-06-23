@@ -14,7 +14,7 @@ const steps = [
     number: "02",
     icon: Palette,
     title: "בוחרים עיצוב",
-    description: "בוחרים תבנית וצבעים או נותנים ל-Quicksite לבחור בשבילכם.",
+    description: "בוחרים תבנית וצבעים או נותנים ל-Siango לבחור בשבילכם.",
     image: "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=800&q=80",
     mockupType: "design" as const,
   },

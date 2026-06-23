@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const BASE_URL = "https://quick-site.app";
+const BASE_URL = "https://siango.app";
 
 const staticRoutes = [
   { path: "/",           priority: "1.0", changefreq: "weekly" },

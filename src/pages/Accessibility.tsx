@@ -97,11 +97,11 @@ const AccessibilityPage = () => {
               <div className="space-y-3">
                 
                 <a 
-                  href="mailto:info@quick-site.app" 
+                  href="mailto:office@siango.app" 
                   className="flex items-center gap-3 text-foreground hover:text-primary transition-colors"
                 >
                   <Mail className="w-5 h-5" />
-                  <span dir="ltr">info@quick-site.app</span>
+                  <span dir="ltr">office@siango.app</span>
                 </a>
               </div>
             </section>
