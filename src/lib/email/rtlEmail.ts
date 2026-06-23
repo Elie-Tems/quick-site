@@ -58,6 +58,12 @@ export const h1 = (text: string): string =>
 export const p = (html: string): string =>
   `<p dir="rtl" style="margin:0 0 14px;font-family:Arial,Tahoma,sans-serif;font-size:16px;line-height:1.7;color:#333333;text-align:right;">${html}</p>`;
 
+/** Colored callout box for emphasis (adds life/color to the email body). */
+export const emailHighlight = (html: string, color = "#3B976C"): string =>
+  `<table role="presentation" dir="rtl" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 18px;">` +
+  `<tr><td dir="rtl" style="background:#eafaf3;border-right:4px solid ${color};border-radius:8px;padding:14px 16px;` +
+  `font-family:Arial,Tahoma,sans-serif;font-size:15px;line-height:1.8;color:#1f5c46;text-align:right;">${html}</td></tr></table>`;
+
 /** Itemized order table (product, qty, line total) + a bold total row. */
 export function emailItemsTable(
   items: { name: string; quantity: number; price: number }[],
