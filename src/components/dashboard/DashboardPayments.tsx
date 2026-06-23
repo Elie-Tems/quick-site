@@ -16,6 +16,7 @@ const COMING_SOON = [
   { id: "cardcom", name: "קארדקום" },
   { id: "icount", name: "iCount" },
   { id: "tranzila", name: "Tranzila" },
+  { id: "paypal", name: "PayPal" },
 ];
 const SUPPORT_EMAIL = "office@siango.app";
 
