@@ -62,20 +62,24 @@ Deno.serve(async (req) => {
     .eq("provider", "payplus")
     .maybeSingle();
 
-  const sentHash =
-    req.headers.get("hash") ||
-    req.headers.get("user-agent-hash") ||
-    req.headers.get("x-payplus-hash");
-  if (creds?.secret_key && sentHash) {
-    const expected = await hmacBase64(creds.secret_key, raw);
-    if (expected !== sentHash) {
-      console.error("PayPlus callback signature mismatch", { pageRequestUid });
-      return json({ error: "Invalid signature" }, 401);
-    }
-  } else {
-    // No signature present — log loudly. Harden by requiring the header once the
-    // exact PayPlus header name is confirmed against your account settings.
-    console.warn("PayPlus callback without verifiable signature", { pageRequestUid });
+  // Validate per PayPlus docs (Validate Requests Received from PayPlus):
+  //   1. header `user-agent` must equal "PayPlus"
+  //   2. HMAC-SHA256(secret_key, JSON body) digest base64 must equal header `hash`
+  // We match against the raw body (which equals PayPlus's own JSON.stringify
+  // output, so this is exact) and also against a re-stringify as a fallback to
+  // survive any cross-runtime stringification differences.
+  if (!creds?.secret_key) {
+    console.error("No PayPlus secret on file for business", { pageRequestUid });
+    return json({ error: "Cannot verify callback" }, 401);
+  }
+  const userAgent = req.headers.get("user-agent") || "";
+  const sentHash = req.headers.get("hash") || "";
+  const expectedRaw = await hmacBase64(creds.secret_key, raw);
+  const expectedStringify = await hmacBase64(creds.secret_key, JSON.stringify(payload));
+  const hashOk = sentHash === expectedRaw || sentHash === expectedStringify;
+  if (userAgent !== "PayPlus" || !hashOk) {
+    console.error("PayPlus callback failed validation", { pageRequestUid, userAgent, hashPresent: !!sentHash });
+    return json({ error: "Invalid signature" }, 401);
   }
 
   // Idempotency — ignore repeats once already paid.
