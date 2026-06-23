@@ -12,6 +12,7 @@ create table if not exists public.payment_credentials (
   api_key       text,
   secret_key    text,
   page_uid      text,
+  config        jsonb not null default '{}'::jsonb,  -- extra per-provider fields (cid/user/token...)
   mode          text not null default 'test',   -- 'test' | 'live'
   verified_at   timestamptz,
   created_at    timestamptz not null default now(),

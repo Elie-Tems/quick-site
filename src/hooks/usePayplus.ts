@@ -38,8 +38,8 @@ export async function verifyPayplusCredentials(input: {
   secret_key: string;
   page_uid: string;
 }): Promise<{ ok: boolean; error?: string }> {
-  const { data, error } = await supabase.functions.invoke("payplus-verify-credentials", {
-    body: input,
+  const { data, error } = await supabase.functions.invoke("payments-verify", {
+    body: { ...input, provider: "payplus" },
   });
   if (error) return { ok: false, error: error.message };
   return data as { ok: boolean; error?: string };
@@ -98,7 +98,7 @@ export async function startPayplusPayment(input: {
   deliveryAddress?: string;
   couponCode?: string;
 }): Promise<void> {
-  const { data, error } = await supabase.functions.invoke("payplus-create-payment", {
+  const { data, error } = await supabase.functions.invoke("payments-create", {
     body: input,
   });
   if (error) throw new Error(error.message);
