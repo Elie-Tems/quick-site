@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { BusinessCategory } from "@/lib/categoryConfig";
 import { trackPageView } from "@/hooks/useAnalytics";
 import { useCreateOrder } from "@/hooks/useOrders";
+import { startPayplusPayment } from "@/hooks/usePayplus";
+import { toast } from "sonner";
 import { getTemplate, type StoreTemplateId } from "@/lib/storeTemplates";
 
 type ViewState = 'shopping' | 'checkout' | 'thankyou' | 'cart' | 'favorites';
@@ -282,6 +284,22 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
 
   const createOrder = useCreateOrder();
 
+  // Handle the redirect back from the PayPlus hosted payment page.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get("payment");
+    if (!p) return;
+    if (p === "success") {
+      setCartItems([]);
+      setViewState("thankyou");
+    } else if (p === "failed" || p === "cancelled") {
+      toast.error("התשלום לא הושלם. אפשר לנסות שוב.");
+      setViewState("checkout");
+    }
+    const url = new URL(window.location.href);
+    ["payment", "order"].forEach((k) => url.searchParams.delete(k));
+    window.history.replaceState({}, "", url.toString());
+  }, []);
+
   // Loading state - after all hooks so hook order is stable
   if (isLoading) {
     return (
@@ -378,6 +396,27 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     total?: number
   ) => {
     const orderTotal = total ?? cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    // Online payment enabled → create the order server-side and hand off to the
+    // PayPlus hosted payment page. The customer returns via ?payment=success.
+    if (business.payment_enabled) {
+      try {
+        await startPayplusPayment({
+          businessId: business.id,
+          slug: business.slug ?? undefined,
+          items: cartItems.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+          customer: { fullName: data.fullName, phone: data.phone, email: data.email },
+          notes: data.notes || undefined,
+          deliveryMethod: data.deliveryMethod,
+          deliveryAddress: data.deliveryAddress,
+          couponId,
+        });
+      } catch (e: any) {
+        toast.error("שגיאה במעבר לתשלום: " + (e?.message || "נסו שוב"));
+      }
+      return; // navigation happens inside startPayplusPayment
+    }
+
     try {
       await createOrder.mutateAsync({
         order: {

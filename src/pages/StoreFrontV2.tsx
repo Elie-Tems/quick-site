@@ -21,6 +21,8 @@ import { Button } from "@/components/ui/button";
 import { BusinessCategory } from "@/lib/categoryConfig";
 import { trackPageView } from "@/hooks/useAnalytics";
 import { useCreateOrder } from "@/hooks/useOrders";
+import { startPayplusPayment } from "@/hooks/usePayplus";
+import { toast } from "sonner";
 
 type ViewState = 'shopping' | 'checkout' | 'thankyou' | 'cart' | 'favorites';
 
@@ -108,6 +110,22 @@ const StoreFrontV2 = () => {
   const createOrder = useCreateOrder();
   const [orderData, setOrderData] = useState<any>(null);
 
+  // Handle the redirect back from the PayPlus hosted payment page.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get("payment");
+    if (!p) return;
+    if (p === "success") {
+      setCartItems([]);
+      setViewState("thankyou");
+    } else if (p === "failed" || p === "cancelled") {
+      toast.error("התשלום לא הושלם. אפשר לנסות שוב.");
+      setViewState("checkout");
+    }
+    const url = new URL(window.location.href);
+    ["payment", "order"].forEach((k) => url.searchParams.delete(k));
+    window.history.replaceState({}, "", url.toString());
+  }, []);
+
   const handleCheckout = async (customerInfo: any) => {
     if (!business) return;
 
@@ -118,6 +136,24 @@ const StoreFrontV2 = () => {
     }));
 
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    // Online payment enabled → hand off to the PayPlus hosted payment page.
+    if (business.payment_enabled) {
+      try {
+        await startPayplusPayment({
+          businessId: business.id,
+          slug: business.slug ?? undefined,
+          items: cartItems.map((item) => ({ product_id: item.productId, quantity: item.quantity })),
+          customer: { fullName: customerInfo.name, phone: customerInfo.phone, email: customerInfo.email },
+          notes: customerInfo.notes || undefined,
+          deliveryMethod: customerInfo.deliveryMethod || "pickup",
+          deliveryAddress: customerInfo.address || undefined,
+        });
+      } catch (e: any) {
+        toast.error("שגיאה במעבר לתשלום: " + (e?.message || "נסו שוב"));
+      }
+      return;
+    }
 
     try {
       const result = await createOrder.mutateAsync({

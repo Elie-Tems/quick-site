@@ -27,3 +27,17 @@ verify_jwt = true
 # authenticates via the CRON_SECRET header instead.
 [functions.expire-subscriptions]
 verify_jwt = false
+
+# payplus-create-payment is called from the PUBLIC storefront by anonymous
+# end-customers, so no Supabase JWT is available.
+[functions.payplus-create-payment]
+verify_jwt = false
+
+# payplus-callback is the PayPlus server-to-server IPN; it authenticates via the
+# merchant's secret-key HMAC signature, not a Supabase JWT.
+[functions.payplus-callback]
+verify_jwt = false
+
+# payplus-verify-credentials is called by the logged-in merchant.
+[functions.payplus-verify-credentials]
+verify_jwt = true
