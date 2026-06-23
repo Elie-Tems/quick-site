@@ -31,6 +31,7 @@ import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import PublishPayment from "./pages/PublishPaymentOld";
 import AICreditPayment from "./pages/AICreditPayment";
+import PreviewPayments from "./pages/PreviewPayments";
 import OnboardingCompleteGate from "./pages/OnboardingCompleteGate";
 import ThankYou from "./pages/ThankYou";
 import { getTenantSlug } from "@/lib/subdomain";
@@ -78,6 +79,7 @@ const App = () => {
                   <Route path="/publish-payment" element={<PublishPayment />} />
                   <Route path="/thank-you" element={<ThankYou />} />
                   <Route path="/ai-credits-payment" element={<AICreditPayment />} />
+                  <Route path="/preview/payments" element={<PreviewPayments />} />
                   <Route path="/store" element={<StoreFront />} />
                   <Route path="/store/:slug" element={<StoreFront />} />
                   <Route path="/store/:slug/v2" element={<StoreFrontV2 />} />

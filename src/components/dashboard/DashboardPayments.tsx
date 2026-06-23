@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CreditCard, Check, Clock, Mail } from "lucide-react";
 import PayplusConnectForm from "@/components/payments/PayplusConnectForm";
+import PaymentsQuickStart from "@/components/payments/PaymentsQuickStart";
 import type { BusinessSettings } from "@/components/dashboard/DashboardSettings";
 
 interface DashboardPaymentsProps {
@@ -20,11 +21,11 @@ interface Provider {
 // one we collect interest + do a validated integration before enabling it.
 // (No fake/unverified adapters — see office@siango.app contact flow.)
 const PROVIDERS: Provider[] = [
-  { id: "payplus", name: "PayPlus", description: "סליקה + חשבוניות, חיבור מהיר", status: "active" },
-  { id: "meshulam", name: "משולם / Grow", description: "סליקה ישראלית פופולרית", status: "coming_soon" },
-  { id: "cardcom", name: "קארדקום", description: "סליקה ותיקה ומובילה", status: "coming_soon" },
-  { id: "tranzila", name: "Tranzila", description: "סליקה + ארנקים דיגיטליים", status: "coming_soon" },
-  { id: "icount", name: "iCount", description: "סליקה + הנהלת חשבונות", status: "coming_soon" },
+  { id: "payplus", name: "PayPlus", description: "סליקה · דף תשלום · חשבוניות", status: "active" },
+  { id: "meshulam", name: "משולם / Grow", description: "סליקה · דף תשלום · חשבוניות", status: "coming_soon" },
+  { id: "cardcom", name: "קארדקום", description: "סליקה · דף תשלום", status: "coming_soon" },
+  { id: "tranzila", name: "Tranzila", description: "סליקה · דף תשלום (iframe)", status: "coming_soon" },
+  { id: "icount", name: "iCount", description: "חשבוניות · דף תשלום", status: "coming_soon" },
 ];
 
 const SUPPORT_EMAIL = "office@siango.app";
@@ -44,6 +45,8 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           </p>
         </div>
       </div>
+
+      <PaymentsQuickStart />
 
       {/* Provider picker */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
