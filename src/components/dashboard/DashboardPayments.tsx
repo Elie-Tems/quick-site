@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CreditCard, Check, Clock, Mail } from "lucide-react";
+import { CreditCard, Check, Clock, Mail, Star } from "lucide-react";
 import PayplusConnectForm from "@/components/payments/PayplusConnectForm";
 import PaymentsQuickStart from "@/components/payments/PaymentsQuickStart";
 import type { BusinessSettings } from "@/components/dashboard/DashboardSettings";
@@ -9,30 +9,19 @@ interface DashboardPaymentsProps {
   onSettingsChange: (settings: BusinessSettings) => void;
 }
 
-type ProviderStatus = "active" | "coming_soon";
-interface Provider {
-  id: string;
-  name: string;
-  description: string;
-  status: ProviderStatus;
-}
-
-// PayPlus is live. The rest are shown to signal breadth; when a merchant picks
-// one we collect interest + do a validated integration before enabling it.
-// (No fake/unverified adapters — see office@siango.app contact flow.)
-const PROVIDERS: Provider[] = [
-  { id: "payplus", name: "PayPlus", description: "סליקה · דף תשלום · חשבוניות", status: "active" },
-  { id: "meshulam", name: "משולם / Grow", description: "סליקה · דף תשלום · חשבוניות", status: "coming_soon" },
-  { id: "cardcom", name: "קארדקום", description: "סליקה · דף תשלום", status: "coming_soon" },
-  { id: "tranzila", name: "Tranzila", description: "סליקה · דף תשלום (iframe)", status: "coming_soon" },
-  { id: "icount", name: "iCount", description: "חשבוניות · דף תשלום", status: "coming_soon" },
+// PayPlus is the primary/recommended provider. The rest are shown small and
+// secondary ("coming soon") so the focus stays on PayPlus.
+const COMING_SOON = [
+  { id: "meshulam", name: "משולם / Grow" },
+  { id: "cardcom", name: "קארדקום" },
+  { id: "icount", name: "iCount" },
+  { id: "tranzila", name: "Tranzila" },
 ];
-
 const SUPPORT_EMAIL = "office@siango.app";
 
 const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
   const [selected, setSelected] = useState<string>("payplus");
-  const selectedProvider = PROVIDERS.find((p) => p.id === selected)!;
+  const comingSoon = COMING_SOON.find((p) => p.id === selected);
 
   return (
     <div className="p-4 md:p-6 max-w-2xl" dir="rtl">
@@ -40,47 +29,36 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
         <CreditCard className="h-8 w-8 text-primary" />
         <div>
           <h1 className="text-2xl font-bold text-foreground">סליקת אשראי</h1>
-          <p className="text-sm text-muted-foreground">
-            בחרו ספק סליקה כדי לקבל תשלומים בכרטיס אשראי ישירות לחשבון שלכם
-          </p>
+          <p className="text-sm text-muted-foreground">חברו סליקה כדי לקבל תשלומים בכרטיס אשראי ישירות לחשבון שלכם</p>
         </div>
       </div>
 
       <PaymentsQuickStart />
 
-      {/* Provider picker */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-        {PROVIDERS.map((p) => {
-          const isSelected = selected === p.id;
-          return (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => setSelected(p.id)}
-              className={`relative flex flex-col items-start gap-1 p-4 rounded-lg border text-right transition-colors ${
-                isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"
-              }`}
-            >
-              <span className="absolute top-2 left-2">
-                {p.status === "active" ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-green-600 bg-green-500/10 rounded-full px-2 py-0.5">
-                    <Check className="h-3 w-3" /> פעיל
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted rounded-full px-2 py-0.5">
-                    <Clock className="h-3 w-3" /> בקרוב
-                  </span>
-                )}
-              </span>
-              <span className="font-semibold text-foreground mt-4">{p.name}</span>
-              <span className="text-xs text-muted-foreground">{p.description}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Primary / recommended provider */}
+      <button
+        type="button"
+        onClick={() => setSelected("payplus")}
+        className={`w-full text-right rounded-xl border-2 p-5 mb-4 transition-colors ${
+          selected === "payplus" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+        }`}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary bg-primary/12 rounded-full px-2 py-0.5">
+            <Star className="h-3 w-3" /> מומלץ
+          </span>
+          {selected === "payplus" && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600">
+              <Check className="h-3.5 w-3.5" /> נבחר
+            </span>
+          )}
+        </div>
+        <p className="text-lg font-bold text-foreground">PayPlus</p>
+        <p className="text-sm text-muted-foreground">מעטפת מלאה — סליקה · דף תשלום · חשבוניות. חיבור מהיר.</p>
+      </button>
 
-      {/* Selected provider body */}
-      {selectedProvider.status === "active" ? (
+      {/* Selected body */}
+      {selected === "payplus" ? (
         settings.id ? (
           <PayplusConnectForm businessId={settings.id} />
         ) : (
@@ -91,23 +69,37 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
             <Clock className="h-6 w-6 text-primary" />
           </div>
-          <h3 className="font-semibold text-foreground">
-            חיבור ל{selectedProvider.name} — בקרוב!
-          </h3>
+          <h3 className="font-semibold text-foreground">חיבור ל{comingSoon?.name} — בקרוב!</h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            אנחנו כבר עובדים על זה. רוצים להיות הראשונים שמתחברים ל{selectedProvider.name}?
-            כתבו לנו ונחבר אתכם אישית.
+            רוצים להיות הראשונים שמתחברים ל{comingSoon?.name}? כתבו לנו ונחבר אתכם אישית.
           </p>
           <a
-            href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
-              `בקשה לחיבור סליקת ${selectedProvider.name}`,
-            )}`}
+            href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`בקשה לחיבור סליקת ${comingSoon?.name}`)}`}
             className="inline-flex items-center gap-2 text-primary hover:underline font-medium text-sm"
           >
             <Mail className="h-4 w-4" /> {SUPPORT_EMAIL}
           </a>
         </div>
       )}
+
+      {/* Secondary, de-emphasized providers */}
+      <div className="mt-8">
+        <p className="text-xs text-muted-foreground mb-2">ספקים נוספים — בקרוב</p>
+        <div className="flex flex-wrap gap-2">
+          {COMING_SOON.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setSelected(p.id)}
+              className={`text-xs rounded-full border px-3 py-1.5 transition-colors ${
+                selected === p.id ? "border-primary text-primary" : "border-border text-muted-foreground hover:border-primary/40"
+              }`}
+            >
+              {p.name}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

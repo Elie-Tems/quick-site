@@ -32,7 +32,7 @@ const MATRIX: { name: string; clearing: string; page: string; invoice: string }[
 ];
 
 const PaymentsQuickStart = () => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   return (
     <div className="mb-6 rounded-xl border border-border bg-card/50 overflow-hidden" dir="rtl">
