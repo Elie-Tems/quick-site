@@ -8,7 +8,7 @@ const ru: Record<string, string> = {
   // Hero Section
   'hero.title1': 'Сайт продаж',
   'hero.title2': 'За 5 минут',
-  'hero.subtitle': 'Quick-Site создаст вам красиво оформленный интернет-магазин за несколько минут',
+  'hero.subtitle': 'Siango создаст вам красиво оформленный интернет-магазин за несколько минут',
   'hero.price': '₪69/месяц',
   'hero.noCommitment': 'Без обязательств!',
   'hero.cta': 'Начать сейчас',
@@ -32,7 +32,7 @@ const ru: Record<string, string> = {
   'howItWorks.step1.title': 'Загрузите имя и логотип',
   'howItWorks.step1.description': 'Введите название бизнеса и загрузите логотип. Система анализирует и создает индивидуальный дизайн.',
   'howItWorks.step2.title': 'Выберите дизайн',
-  'howItWorks.step2.description': 'Выберите шаблон и цвета или позвольте Quick-Site выбрать за вас.',
+  'howItWorks.step2.description': 'Выберите шаблон и цвета или позвольте Siango выбрать за вас.',
   'howItWorks.step3.title': 'Добавьте товары',
   'howItWorks.step3.description': 'Легко добавляйте товары с фото, ценами и описаниями - и ваш сайт готов к продажам.',
   
@@ -98,7 +98,7 @@ const ru: Record<string, string> = {
   'finalCta.badge': 'Начните бесплатно сегодня',
   'finalCta.title1': 'Готовы начать',
   'finalCta.title2': 'продавать онлайн?',
-  'finalCta.subtitle': 'Присоединяйтесь к тысячам владельцев бизнеса, уже продающих с Quick-Site',
+  'finalCta.subtitle': 'Присоединяйтесь к тысячам владельцев бизнеса, уже продающих с Siango',
   'finalCta.cta': 'Начать сейчас',
   'finalCta.readyIn5': 'Готово за 5 минут',
   'finalCta.cancelAnytime': 'Отмена в любое время',
@@ -149,8 +149,8 @@ const ru: Record<string, string> = {
   
   // Login Page
   'login.title': 'Вход',
-  'login.pageTitle': 'Вход | Quick-Site',
-  'login.pageDescription': 'Войдите в свой аккаунт Quick-Site и управляйте своим сайтом продаж',
+  'login.pageTitle': 'Вход | Siango',
+  'login.pageDescription': 'Войдите в свой аккаунт Siango и управляйте своим сайтом продаж',
   'login.welcome': 'С возвращением! Войдите для управления сайтом',
   'login.email': 'Email',
   'login.password': 'Пароль',
@@ -181,8 +181,8 @@ const ru: Record<string, string> = {
   // Register Page
   'register.title': 'Создать аккаунт',
   'register.pageTitle': 'Регистрация | Quicesite - Создайте свой сайт продаж',
-  'register.pageDescription': 'Зарегистрируйтесь в Quick-Site и создайте сайт продаж за 5 минут. Бесплатно!',
-  'register.subtitle': 'Присоединяйтесь к тысячам бизнесов, продающих больше с Quick-Site',
+  'register.pageDescription': 'Зарегистрируйтесь в Siango и создайте сайт продаж за 5 минут. Бесплатно!',
+  'register.subtitle': 'Присоединяйтесь к тысячам бизнесов, продающих больше с Siango',
   'register.fullName': 'Полное имя',
   'register.businessName': 'Название бизнеса',
   'register.email': 'Email',

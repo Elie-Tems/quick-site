@@ -361,13 +361,13 @@ const PublishPaymentV2 = () => {
   }
 
   return (
-      <SEOHead title="PublishPaymentV2 | קוויקסייט" noindex={true} />
+      <SEOHead title="PublishPaymentV2 | סיאנגו" noindex={true} />
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logoDarkBg} alt="QuickSite" className="h-10 w-auto" />
+            <img src={logoDarkBg} alt="Siango" className="h-10 w-auto" />
           </Link>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Shield className="w-4 h-4 text-green-500" />

@@ -343,7 +343,7 @@ const HelpCenter = () => {
   return (
     <div className="min-h-screen bg-background" dir="rtl" style={{ fontFamily: 'Heebo, sans-serif' }}>
       <SEOHead
-        title="מרכז עזרה | קוויקסייט"
+        title="מרכז עזרה | סיאנגו"
         description="מצא תשובות לשאלות נפוצות על בניית אתר מכירות, ניהול מוצרים, הזמנות ותשלומים."
         canonical="https://quick-site.app/help"
         noindex={false}

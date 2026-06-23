@@ -24,7 +24,7 @@ const OnboardingCompleteGate = () => {
 
   return (
     <>
-      <SEOHead title="הגדרת האתר הושלמה | קוויקסייט" noindex={true} />
+      <SEOHead title="הגדרת האתר הושלמה | סיאנגו" noindex={true} />
       <OnboardingComplete data={data} />
     </>
   );

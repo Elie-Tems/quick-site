@@ -8,7 +8,7 @@ const he: Record<string, string> = {
   // Hero Section
   'hero.title1': 'אתר מכירות',
   'hero.title2': 'תוך 5 דקות',
-  'hero.subtitle': 'QuickSite יוצרת לך חנות אונליין מעוצבת בכמה דקות',
+  'hero.subtitle': 'Siango יוצרת לך חנות אונליין מעוצבת בכמה דקות',
   'hero.price': '69 ש"ח לחודש',
   'hero.noCommitment': 'ללא התחייבות!',
   'hero.cta': 'התחילו עכשיו',
@@ -32,7 +32,7 @@ const he: Record<string, string> = {
   'howItWorks.step1.title': 'מעלים שם ולוגו',
   'howItWorks.step1.description': 'מזינים את שם העסק ומעלים לוגו. המערכת מנתחת ויוצרת עיצוב מותאם.',
   'howItWorks.step2.title': 'בוחרים עיצוב',
-  'howItWorks.step2.description': 'בוחרים תבנית וצבעים או נותנים ל-QuickSite לבחור בשבילכם.',
+  'howItWorks.step2.description': 'בוחרים תבנית וצבעים או נותנים ל-Siango לבחור בשבילכם.',
   'howItWorks.step3.title': 'מוסיפים מוצרים',
   'howItWorks.step3.description': 'מעלים מוצרים בקלות עם תמונות, מחירים ותיאורים - והאתר מוכן למכירה.',
   
@@ -98,7 +98,7 @@ const he: Record<string, string> = {
   'finalCta.badge': 'התחל היום בחינם',
   'finalCta.title1': 'מוכנים להתחיל',
   'finalCta.title2': 'למכור אונליין?',
-  'finalCta.subtitle': 'הצטרפו לאלפי בעלי עסקים שכבר מוכרים עם QuickSite',
+  'finalCta.subtitle': 'הצטרפו לאלפי בעלי עסקים שכבר מוכרים עם Siango',
   'finalCta.cta': 'התחילו עכשיו',
   'finalCta.readyIn5': 'מוכן תוך 5 דקות',
   'finalCta.cancelAnytime': 'ביטול בכל עת',
@@ -149,8 +149,8 @@ const he: Record<string, string> = {
   
   // Login Page
   'login.title': 'התחברות',
-  'login.pageTitle': 'התחברות | קוויקסייט',
-  'login.pageDescription': 'התחברו לחשבון קוויקסייט שלכם ונהלו את האתר המכירתי שלכם',
+  'login.pageTitle': 'התחברות | סיאנגו',
+  'login.pageDescription': 'התחברו לחשבון סיאנגו שלכם ונהלו את האתר המכירתי שלכם',
   'login.welcome': 'ברוכים השבים! התחברו לניהול האתר שלכם',
   'login.email': 'אימייל',
   'login.password': 'סיסמה',
@@ -182,9 +182,9 @@ const he: Record<string, string> = {
   
   // Register Page
   'register.title': 'יצירת חשבון חדש',
-  'register.pageTitle': 'הרשמה | קוויקסייט - צור את האתר המכירתי שלך',
-  'register.pageDescription': 'הירשמו לקוויקסייט וצרו את האתר המכירתי שלכם תוך 5 דקות. חינם להתחלה!',
-  'register.subtitle': 'הצטרפו לאלפי עסקים שמוכרים יותר עם קוויקסייט',
+  'register.pageTitle': 'הרשמה | סיאנגו - צור את האתר המכירתי שלך',
+  'register.pageDescription': 'הירשמו לסיאנגו וצרו את האתר המכירתי שלכם תוך 5 דקות. חינם להתחלה!',
+  'register.subtitle': 'הצטרפו לאלפי עסקים שמוכרים יותר עם סיאנגו',
   'register.fullName': 'שם מלא',
   'register.businessName': 'שם העסק',
   'register.email': 'אימייל',

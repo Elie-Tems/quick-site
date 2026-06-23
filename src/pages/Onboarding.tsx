@@ -273,7 +273,7 @@ const Onboarding = () => {
 
   return (
     <>
-      <SEOHead title="Onboarding | קוויקסייט" noindex={true} />
+      <SEOHead title="Onboarding | סיאנגו" noindex={true} />
     <div className="theme-refined min-h-screen bg-surface-1">
       {/* Header */}
       <header className="fixed top-0 right-0 left-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">

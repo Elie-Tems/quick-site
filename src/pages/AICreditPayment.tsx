@@ -186,7 +186,7 @@ const AICreditPayment = () => {
 
   return (
     <>
-      <SEOHead title="AICreditPayment | קוויקסייט" noindex={true} />
+      <SEOHead title="AICreditPayment | סיאנגו" noindex={true} />
     <div className="min-h-screen bg-surface-1 flex flex-col">
       <div className="w-full px-4 py-8 flex flex-col gap-6 flex-1">
         <div className="w-full max-w-7xl mx-auto">

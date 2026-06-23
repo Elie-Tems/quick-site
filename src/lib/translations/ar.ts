@@ -8,7 +8,7 @@ const ar: Record<string, string> = {
   // Hero Section
   'hero.title1': 'موقع مبيعات',
   'hero.title2': 'في 5 دقائق',
-  'hero.subtitle': 'QuickSite تنشئ لك متجراً إلكترونياً مصمماً بشكل جميل في دقائق',
+  'hero.subtitle': 'Siango تنشئ لك متجراً إلكترونياً مصمماً بشكل جميل في دقائق',
   'hero.price': '₪69/شهرياً',
   'hero.noCommitment': 'بدون التزام!',
   'hero.cta': 'ابدأ الآن',
@@ -32,7 +32,7 @@ const ar: Record<string, string> = {
   'howItWorks.step1.title': 'أضف الاسم والشعار',
   'howItWorks.step1.description': 'أدخل اسم نشاطك التجاري وارفع شعارك. النظام يحلل وينشئ تصميماً مخصصاً.',
   'howItWorks.step2.title': 'اختر التصميم',
-  'howItWorks.step2.description': 'اختر قالباً وألواناً أو دع Quick-Site تختار لك.',
+  'howItWorks.step2.description': 'اختر قالباً وألواناً أو دع Siango تختار لك.',
   'howItWorks.step3.title': 'أضف المنتجات',
   'howItWorks.step3.description': 'أضف منتجاتك بسهولة مع الصور والأسعار والأوصاف - وموقعك جاهز للبيع.',
   
@@ -98,7 +98,7 @@ const ar: Record<string, string> = {
   'finalCta.badge': 'ابدأ مجاناً اليوم',
   'finalCta.title1': 'مستعد للبدء',
   'finalCta.title2': 'بالبيع عبر الإنترنت؟',
-  'finalCta.subtitle': 'انضم إلى آلاف أصحاب الأعمال الذين يبيعون بالفعل مع Quick-Site',
+  'finalCta.subtitle': 'انضم إلى آلاف أصحاب الأعمال الذين يبيعون بالفعل مع Siango',
   'finalCta.cta': 'ابدأ الآن',
   'finalCta.readyIn5': 'جاهز في 5 دقائق',
   'finalCta.cancelAnytime': 'إلغاء في أي وقت',
@@ -149,8 +149,8 @@ const ar: Record<string, string> = {
   
   // Login Page
   'login.title': 'تسجيل الدخول',
-  'login.pageTitle': 'تسجيل الدخول | Quick-Site',
-  'login.pageDescription': 'سجل الدخول إلى حسابك في Quick-Site وأدر موقع المبيعات الخاص بك',
+  'login.pageTitle': 'تسجيل الدخول | Siango',
+  'login.pageDescription': 'سجل الدخول إلى حسابك في Siango وأدر موقع المبيعات الخاص بك',
   'login.welcome': 'مرحباً بعودتك! سجل الدخول لإدارة موقعك',
   'login.email': 'البريد الإلكتروني',
   'login.password': 'كلمة المرور',
@@ -180,9 +180,9 @@ const ar: Record<string, string> = {
   
   // Register Page
   'register.title': 'إنشاء حساب جديد',
-  'register.pageTitle': 'التسجيل | Quick-Site - أنشئ موقع المبيعات الخاص بك',
-  'register.pageDescription': 'سجل في Quick-Site وأنشئ موقع المبيعات الخاص بك في 5 دقائق. مجاني للبدء!',
-  'register.subtitle': 'انضم لآلاف الشركات التي تبيع أكثر مع Quick-Site',
+  'register.pageTitle': 'التسجيل | Siango - أنشئ موقع المبيعات الخاص بك',
+  'register.pageDescription': 'سجل في Siango وأنشئ موقع المبيعات الخاص بك في 5 دقائق. مجاني للبدء!',
+  'register.subtitle': 'انضم لآلاف الشركات التي تبيع أكثر مع Siango',
   'register.fullName': 'الاسم الكامل',
   'register.businessName': 'اسم النشاط التجاري',
   'register.email': 'البريد الإلكتروني',

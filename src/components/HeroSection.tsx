@@ -160,7 +160,7 @@ const HeroSection = () => {
                     >
                       <img 
                         src="/logo-dark-bg.png" 
-                        alt="Quick-Site" 
+                        alt="Siango" 
                         className="h-5 w-auto"
                         style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))' }}
                       />

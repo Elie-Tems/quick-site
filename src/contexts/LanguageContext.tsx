@@ -28,7 +28,7 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'QuickSite-language';
+const STORAGE_KEY = 'Siango-language';
 
 interface LanguageProviderProps {
   children: ReactNode;

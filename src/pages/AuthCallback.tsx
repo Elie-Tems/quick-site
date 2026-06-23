@@ -154,7 +154,7 @@ const AuthCallback = () => {
 
   return (
     <>
-      <SEOHead title="AuthCallback | קוויקסייט" noindex={true} />
+      <SEOHead title="AuthCallback | סיאנגו" noindex={true} />
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto" />

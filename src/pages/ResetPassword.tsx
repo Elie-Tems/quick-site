@@ -118,7 +118,7 @@ const ResetPassword = () => {
     return (
       <>
         <Helmet>
-          <title>איפוס סיסמה | קוויקסייט</title>
+          <title>איפוס סיסמה | סיאנגו</title>
         </Helmet>
         <div className="min-h-screen bg-background flex items-center justify-center p-6">
           <div className="w-full max-w-md text-center">
@@ -147,7 +147,7 @@ const ResetPassword = () => {
     return (
       <>
         <Helmet>
-          <title>הסיסמה עודכנה | קוויקסייט</title>
+          <title>הסיסמה עודכנה | סיאנגו</title>
         </Helmet>
         <div className="min-h-screen bg-background flex items-center justify-center p-6">
           <div className="w-full max-w-md text-center">
@@ -168,7 +168,7 @@ const ResetPassword = () => {
   return (
     <>
       <Helmet>
-        <title>איפוס סיסמה | קוויקסייט</title>
+        <title>איפוס סיסמה | סיאנגו</title>
         <meta name="description" content="הזינו סיסמה חדשה לחשבון שלכם" />
       </Helmet>
 
@@ -179,7 +179,7 @@ const ResetPassword = () => {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-[hsl(280_60%_50%)] flex items-center justify-center shadow-soft">
               <span className="text-lg font-bold text-white">ק</span>
             </div>
-            <span className="font-semibold text-xl text-foreground">קוויקסייט</span>
+            <span className="font-semibold text-xl text-foreground">סיאנגו</span>
           </Link>
 
           {/* Header */}

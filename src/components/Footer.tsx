@@ -11,7 +11,7 @@ interface FooterProps {
 
 const Footer = ({
   isStorefront = false,
-  businessName = 'קוויקסייט',
+  businessName = 'סיאנגו',
   businessEmail = 'contact@quick-site.app',
 }: FooterProps) => {
   const currentYear = new Date().getFullYear();

@@ -7,7 +7,7 @@ const NotFound = () => {
   return (
     <>
       <Helmet>
-        <title>הדף לא נמצא | קוויקסייט</title>
+        <title>הדף לא נמצא | סיאנגו</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 

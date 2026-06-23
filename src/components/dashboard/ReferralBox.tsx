@@ -29,12 +29,12 @@ const ReferralBox = () => {
     
     const baseUrl = window.location.origin;
     const referralLink = `${baseUrl}/register?ref=${stats.referralCode}`;
-    const shareText = `הצטרפו לקוויקסייט וצרו את האתר המכירתי שלכם תוך 5 דקות! 🚀`;
+    const shareText = `הצטרפו לסיאנגו וצרו את האתר המכירתי שלכם תוך 5 דקות! 🚀`;
     
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "הזמנה לקוויקסייט",
+          title: "הזמנה לסיאנגו",
           text: shareText,
           url: referralLink,
         });

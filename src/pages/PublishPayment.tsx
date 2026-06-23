@@ -288,7 +288,7 @@ const PublishPayment = () => {
   }
 
   return (
-      <SEOHead title="PublishPayment | קוויקסייט" noindex={true} />
+      <SEOHead title="PublishPayment | סיאנגו" noindex={true} />
     <div className="min-h-screen bg-surface-1 flex flex-col">
       <div className="container max-w-5xl mx-auto px-4 py-8 flex flex-col gap-6 flex-1">
         <div className="text-center space-y-2">

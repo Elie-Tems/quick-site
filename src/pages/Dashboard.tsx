@@ -559,7 +559,7 @@ const Dashboard = () => {
 
   return (
     <ThemeProvider>
-      <SEOHead title="לוח ניהול | קוויקסייט" noindex={true} />
+      <SEOHead title="לוח ניהול | סיאנגו" noindex={true} />
       <div className="min-h-screen bg-muted/30">
         <DashboardHeader 
           businessName={settings.name} 

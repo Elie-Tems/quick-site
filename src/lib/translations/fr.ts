@@ -8,7 +8,7 @@ const fr: Record<string, string> = {
   // Hero Section
   'hero.title1': 'Site de vente',
   'hero.title2': 'En 5 minutes',
-  'hero.subtitle': 'Quick-Site crée pour vous une boutique en ligne magnifiquement conçue en quelques minutes',
+  'hero.subtitle': 'Siango crée pour vous une boutique en ligne magnifiquement conçue en quelques minutes',
   'hero.price': '69₪/mois',
   'hero.noCommitment': 'Sans engagement !',
   'hero.cta': 'Commencer maintenant',
@@ -32,7 +32,7 @@ const fr: Record<string, string> = {
   'howItWorks.step1.title': 'Ajoutez nom et logo',
   'howItWorks.step1.description': 'Entrez le nom de votre entreprise et téléchargez un logo. Le système analyse et crée un design personnalisé.',
   'howItWorks.step2.title': 'Choisissez le design',
-  'howItWorks.step2.description': 'Choisissez un modèle et des couleurs ou laissez Quick-Site choisir pour vous.',
+  'howItWorks.step2.description': 'Choisissez un modèle et des couleurs ou laissez Siango choisir pour vous.',
   'howItWorks.step3.title': 'Ajoutez des produits',
   'howItWorks.step3.description': 'Ajoutez facilement des produits avec images, prix et descriptions - et votre site est prêt à vendre.',
   
@@ -98,7 +98,7 @@ const fr: Record<string, string> = {
   'finalCta.badge': 'Commencez gratuitement aujourd\'hui',
   'finalCta.title1': 'Prêt à commencer',
   'finalCta.title2': 'à vendre en ligne ?',
-  'finalCta.subtitle': 'Rejoignez des milliers de propriétaires d\'entreprises qui vendent déjà avec Quick-Site',
+  'finalCta.subtitle': 'Rejoignez des milliers de propriétaires d\'entreprises qui vendent déjà avec Siango',
   'finalCta.cta': 'Commencer maintenant',
   'finalCta.readyIn5': 'Prêt en 5 minutes',
   'finalCta.cancelAnytime': 'Annulez à tout moment',
@@ -149,8 +149,8 @@ const fr: Record<string, string> = {
   
   // Login Page
   'login.title': 'Connexion',
-  'login.pageTitle': 'Connexion | Quick-Site',
-  'login.pageDescription': 'Connectez-vous à votre compte Quick-Site et gérez votre site de vente',
+  'login.pageTitle': 'Connexion | Siango',
+  'login.pageDescription': 'Connectez-vous à votre compte Siango et gérez votre site de vente',
   'login.welcome': 'Bienvenue ! Connectez-vous pour gérer votre site',
   'login.email': 'Email',
   'login.password': 'Mot de passe',
@@ -180,9 +180,9 @@ const fr: Record<string, string> = {
   
   // Register Page
   'register.title': 'Créer un compte',
-  'register.pageTitle': 'Inscription | Quick-Site - Créez votre site de vente',
-  'register.pageDescription': 'Inscrivez-vous à Quick-Site et créez votre site de vente en 5 minutes. Gratuit pour commencer !',
-  'register.subtitle': 'Rejoignez des milliers d\'entreprises qui vendent plus avec Quick-Site',
+  'register.pageTitle': 'Inscription | Siango - Créez votre site de vente',
+  'register.pageDescription': 'Inscrivez-vous à Siango et créez votre site de vente en 5 minutes. Gratuit pour commencer !',
+  'register.subtitle': 'Rejoignez des milliers d\'entreprises qui vendent plus avec Siango',
   'register.fullName': 'Nom complet',
   'register.businessName': 'Nom de l\'entreprise',
   'register.email': 'Email',

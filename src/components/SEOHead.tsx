@@ -10,14 +10,14 @@ interface SEOHeadProps {
 }
 
 const SEOHead = ({
-  title = "קוויקסייט - אתר מכירתי לעסק שלך תוך 5 דקות",
+  title = "סיאנגו - אתר מכירתי לעסק שלך תוך 5 דקות",
   description = "צור אתר מכירתי מקצועי לעסק שלך תוך 5 דקות בלבד. ללא מתכנת, ללא עיצוב, תשלום חודשי נמוך. מושלם לעסקים קטנים ובינוניים בישראל.",
   canonical = "https://quick-site.app/",
   ogImage = "https://quick-site.app/og-image.png",
   ogType = "website",
   noindex = false,
 }: SEOHeadProps) => {
-  const siteName = "קוויקסייט";
+  const siteName = "סיאנגו";
   
   // Organization Schema
   const organizationSchema = {
@@ -79,7 +79,7 @@ const SEOHead = ({
         "name": "כמה זמן לוקח לבנות אתר מכירות?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "עם קוויקסייט ניתן לבנות אתר מכירות מלא תוך 5 דקות בלבד. פשוט מזינים את פרטי העסק, מעלים מוצרים, והאתר מוכן."
+          "text": "עם סיאנגו ניתן לבנות אתר מכירות מלא תוך 5 דקות בלבד. פשוט מזינים את פרטי העסק, מעלים מוצרים, והאתר מוכן."
         }
       },
       {
@@ -103,7 +103,7 @@ const SEOHead = ({
         "name": "האם האתר מותאם למובייל?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "כן, כל האתרים שנבנים בקוויקסייט מותאמים אוטומטית לכל גודל מסך - מובייל, טאבלט ומחשב."
+          "text": "כן, כל האתרים שנבנים בסיאנגו מותאמים אוטומטית לכל גודל מסך - מובייל, טאבלט ומחשב."
         }
       }
     ]

@@ -13,8 +13,8 @@ const PrivacyPage = () => {
   return (
     <>
       <Helmet>
-        <title>מדיניות פרטיות | קוויקסייט</title>
-        <meta name="description" content="מדיניות הפרטיות של קוויקסייט - איסוף מידע, שימוש במידע וזכויות המשתמש" />
+        <title>מדיניות פרטיות | סיאנגו</title>
+        <meta name="description" content="מדיניות הפרטיות של סיאנגו - איסוף מידע, שימוש במידע וזכויות המשתמש" />
       </Helmet>
 
       <div className="min-h-screen bg-background">
@@ -41,7 +41,7 @@ const PrivacyPage = () => {
             {/* Introduction */}
             <section>
               <p className="text-muted-foreground leading-relaxed">
-                פלטפורמת קוויקסייט (Quick-Site) מופעלת על ידי <strong>ארפור טכנולוגיות בע"מ</strong>, ח.פ. 517331708 (להלן: "החברה").
+                פלטפורמת סיאנגו (Siango) מופעלת על ידי <strong>ארפור טכנולוגיות בע"מ</strong>, ח.פ. 517331708 (להלן: "החברה").
                 החברה מחויבת להגנה על פרטיות המשתמשים שלה. מדיניות פרטיות זו מסבירה
                 אילו נתונים אנו אוספים, כיצד אנו משתמשים בהם, ומהן זכויותיכם בנוגע למידע שלכם.
                 מדיניות זו משלימה את <Link to="/terms" className="text-primary hover:underline">תנאי השימוש</Link> (פרק 2),

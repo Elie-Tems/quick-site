@@ -31,7 +31,7 @@ const Header = () => {
             {/* Logo image with glow effect */}
             <motion.img 
               src={logoDarkBg}
-              alt="Quick-Site"
+              alt="Siango"
               className="relative h-14 md:h-20 w-auto"
               style={{
                 filter: `

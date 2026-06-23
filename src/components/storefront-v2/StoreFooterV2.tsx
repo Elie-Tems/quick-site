@@ -117,7 +117,7 @@ const StoreFooterV2 = ({ businessName, phone, email, storeSlug }: StoreFooterV2P
             className="group flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 transition-all duration-300 hover:scale-105"
           >
             <span className="text-sm font-medium text-foreground">נוצר על ידי</span>
-            <img src={logoDarkBg} alt="Quick-Site" className="h-6 w-auto opacity-90 group-hover:opacity-100 transition-opacity" />
+            <img src={logoDarkBg} alt="Siango" className="h-6 w-auto opacity-90 group-hover:opacity-100 transition-opacity" />
           </a>
         </div>
       </div>

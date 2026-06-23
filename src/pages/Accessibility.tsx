@@ -29,8 +29,8 @@ const AccessibilityPage = () => {
   return (
     <>
       <Helmet>
-        <title>הצהרת נגישות | קוויקסייט</title>
-        <meta name="description" content="הצהרת נגישות של אתר קוויקסייט בהתאם לתקן הישראלי 5568 ותקן WCAG 2.1 AA" />
+        <title>הצהרת נגישות | סיאנגו</title>
+        <meta name="description" content="הצהרת נגישות של אתר סיאנגו בהתאם לתקן הישראלי 5568 ותקן WCAG 2.1 AA" />
       </Helmet>
 
       <div className="min-h-screen bg-background">
@@ -57,7 +57,7 @@ const AccessibilityPage = () => {
             {/* Introduction */}
             <section>
               <p className="text-muted-foreground leading-relaxed">
-                אתר קוויקסייט מחויב להנגשת השירותים לאנשים עם מוגבלויות ופועל בהתאם 
+                אתר סיאנגו מחויב להנגשת השירותים לאנשים עם מוגבלויות ופועל בהתאם 
                 לתקן הישראלי 5568 ולתקן הבינלאומי WCAG 2.1 ברמת AA.
               </p>
               <p className="text-muted-foreground leading-relaxed">

@@ -166,7 +166,7 @@ const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
       {
         "@type": "ListItem",
         "position": 1,
-        "name": "קוויקסייט",
+        "name": "סיאנגו",
         "item": "https://quick-site.app"
       },
       {

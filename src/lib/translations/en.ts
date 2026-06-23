@@ -8,7 +8,7 @@ const en: Record<string, string> = {
   // Hero Section
   'hero.title1': 'Sales Website',
   'hero.title2': 'In 5 Minutes',
-  'hero.subtitle': 'Quick-Site creates a beautifully designed online store for you in minutes',
+  'hero.subtitle': 'Siango creates a beautifully designed online store for you in minutes',
   'hero.price': '₪69/month',
   'hero.noCommitment': 'No commitment!',
   'hero.cta': 'Get Started',
@@ -32,7 +32,7 @@ const en: Record<string, string> = {
   'howItWorks.step1.title': 'Upload Name & Logo',
   'howItWorks.step1.description': 'Enter your business name and upload a logo. The system analyzes and creates a custom design.',
   'howItWorks.step2.title': 'Choose Design',
-  'howItWorks.step2.description': 'Pick a template and colors or let Quick-Site choose for you.',
+  'howItWorks.step2.description': 'Pick a template and colors or let Siango choose for you.',
   'howItWorks.step3.title': 'Add Products',
   'howItWorks.step3.description': 'Easily upload products with images, prices and descriptions - and your site is ready to sell.',
   
@@ -98,7 +98,7 @@ const en: Record<string, string> = {
   'finalCta.badge': 'Start Free Today',
   'finalCta.title1': 'Ready to Start',
   'finalCta.title2': 'Selling Online?',
-  'finalCta.subtitle': 'Join thousands of business owners already selling with Quick-Site',
+  'finalCta.subtitle': 'Join thousands of business owners already selling with Siango',
   'finalCta.cta': 'Get Started',
   'finalCta.readyIn5': 'Ready in 5 minutes',
   'finalCta.cancelAnytime': 'Cancel anytime',
@@ -149,8 +149,8 @@ const en: Record<string, string> = {
   
   // Login Page
   'login.title': 'Login',
-  'login.pageTitle': 'Login | Quick-Site',
-  'login.pageDescription': 'Log in to your Quick-Site account and manage your sales website',
+  'login.pageTitle': 'Login | Siango',
+  'login.pageDescription': 'Log in to your Siango account and manage your sales website',
   'login.welcome': 'Welcome back! Log in to manage your site',
   'login.email': 'Email',
   'login.password': 'Password',
@@ -182,9 +182,9 @@ const en: Record<string, string> = {
   
   // Register Page
   'register.title': 'Create New Account',
-  'register.pageTitle': 'Register | Quick-Site - Create Your Sales Website',
-  'register.pageDescription': 'Register for Quick-Site and create your sales website in 5 minutes. Free to start!',
-  'register.subtitle': 'Join thousands of businesses selling more with Quick-Site',
+  'register.pageTitle': 'Register | Siango - Create Your Sales Website',
+  'register.pageDescription': 'Register for Siango and create your sales website in 5 minutes. Free to start!',
+  'register.subtitle': 'Join thousands of businesses selling more with Siango',
   'register.fullName': 'Full Name',
   'register.businessName': 'Business Name',
   'register.email': 'Email',

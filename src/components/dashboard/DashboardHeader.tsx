@@ -24,7 +24,7 @@ const DashboardHeader = ({ businessName, siteUrl }: DashboardHeaderProps) => {
     <header className="sticky top-0 z-40 bg-background border-b border-border">
       <div className="flex items-center justify-between h-14 px-4 md:px-6">
         <div className="flex items-center gap-4">
-          <img src={logoDarkBg} alt="Quick-Site" className="h-5 w-auto flex-shrink-0" />
+          <img src={logoDarkBg} alt="Siango" className="h-5 w-auto flex-shrink-0" />
           <div className="h-5 w-px bg-border flex-shrink-0" />
           <span className="font-semibold text-foreground truncate max-w-[28vw] sm:max-w-none">{businessName}</span>
         </div>
