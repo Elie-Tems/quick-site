@@ -23,6 +23,7 @@ const merchant: EmailSender = {
   email: "dana@example.com",
   address: 'דנה כהן, רחוב הרצל 1, תל אביב',
   brandColor: "#3B976C",
+  logoUrl: "https://siango.app/logo-light-bg1.png",
   unsubscribeUrl: "https://dana.siango.app/unsubscribe",
 };
 
@@ -49,7 +50,12 @@ const PreviewEmails = () => {
   items.push({
     label: "14 · ללקוח: אישור הזמנה (טרנזקציוני)",
     email: orderConfirmationCustomer(merchant, {
-      firstName: "נועה", storeName: "הבוטיק של דנה", orderTotal: 240, storeUrl: "https://dana.siango.app",
+      firstName: "נועה", storeName: "הבוטיק של דנה", storeUrl: "https://dana.siango.app",
+      orderNumber: "1042", orderTotal: 240,
+      items: [
+        { name: "שרשרת כסף", quantity: 1, price: 180 },
+        { name: "צמיד חרוזים", quantity: 2, price: 30 },
+      ],
     }),
   });
 

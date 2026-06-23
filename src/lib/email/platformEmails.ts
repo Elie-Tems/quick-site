@@ -7,7 +7,7 @@
  * dir=ltr around links/numbers, sender block in the footer).
  */
 
-import { renderEmail, h1, p, emailButton, ils, ltr, type EmailSender } from "./rtlEmail";
+import { renderEmail, h1, p, emailButton, emailItemsTable, ils, ltr, type EmailSender } from "./rtlEmail";
 
 const BRAND = "#3B976C";
 const SUPPORT_EMAIL = "office@siango.app";
@@ -20,6 +20,7 @@ export function siangoSender(dashboardUrl = "https://siango.app/dashboard"): Ema
     email: SUPPORT_EMAIL,
     address: LEGAL_NAME,
     brandColor: BRAND,
+    logoUrl: "https://siango.app/logo-light-bg1.png",
     unsubscribeUrl: `${dashboardUrl}?settings=notifications`,
   };
 }
@@ -219,15 +220,25 @@ export const newOrderMerchant = (c: PlatformCtx): BuiltEmail => ({
  */
 export const orderConfirmationCustomer = (
   merchant: EmailSender,
-  args: { firstName?: string; storeName: string; orderTotal?: number; storeUrl: string },
+  args: {
+    firstName?: string;
+    storeName: string;
+    orderTotal?: number;
+    storeUrl: string;
+    items?: { name: string; quantity: number; price: number }[];
+    orderNumber?: string;
+  },
 ): BuiltEmail => ({
   subject: `אישור הזמנה מ${args.storeName}`,
   html: renderEmail({
     sender: merchant,
-    previewText: "ההזמנה שלך התקבלה",
+    previewText: "ההזמנה שלך התקבלה — תודה רבה!",
     bodyHtml:
       h1("ההזמנה התקבלה ✅") +
-      p(`${args.firstName ? `היי ${args.firstName},` : "היי,"} תודה על ההזמנה מ${args.storeName}.${args.orderTotal ? ` סכום ההזמנה: ${ils(args.orderTotal)}.` : ""} ניצור קשר בהקדם להמשך.`) +
+      p(`${args.firstName ? `היי ${args.firstName},` : "היי,"} תודה רבה על הרכישה ב${args.storeName}! קיבלנו את ההזמנה שלך${args.orderNumber ? ` (מספר ${ltr(args.orderNumber)})` : ""} ואנחנו כבר מתחילים לטפל בה.`) +
+      p("להלן פירוט ההזמנה:") +
+      (args.items && args.items.length ? emailItemsTable(args.items, args.orderTotal) : "") +
+      p("נעדכן אותך בכל שלב. אם יש שאלה — פשוט השב/י למייל הזה ונשמח לעזור. 🙏") +
       emailButton("חזרה לחנות", args.storeUrl, merchant.brandColor || BRAND),
   }),
 });

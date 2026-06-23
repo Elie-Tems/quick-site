@@ -26,6 +26,8 @@ export interface EmailSender {
   unsubscribeUrl: string;
   /** Brand color for buttons/accents (defaults to refined emerald). */
   brandColor?: string;
+  /** Logo shown in the email header (must look good on a white card). */
+  logoUrl?: string;
 }
 
 /** Wrap numbers, prices, phone numbers and English text so they don't reverse in RTL. */
@@ -55,6 +57,31 @@ export const h1 = (text: string): string =>
 
 export const p = (html: string): string =>
   `<p dir="rtl" style="margin:0 0 14px;font-family:Arial,Tahoma,sans-serif;font-size:16px;line-height:1.7;color:#333333;text-align:right;">${html}</p>`;
+
+/** Itemized order table (product, qty, line total) + a bold total row. */
+export function emailItemsTable(
+  items: { name: string; quantity: number; price: number }[],
+  total?: number,
+): string {
+  const td = "font-family:Arial,Tahoma,sans-serif;font-size:14px;color:#333333;padding:10px 12px;border-bottom:1px solid #eeeeee;";
+  const rows = items
+    .map(
+      (it) =>
+        `<tr><td dir="rtl" style="${td}text-align:right;">${esc(it.name)} ${ltr("× " + it.quantity)}</td>` +
+        `<td dir="rtl" style="${td}text-align:left;white-space:nowrap;">${ils(it.price * it.quantity)}</td></tr>`,
+    )
+    .join("");
+  const sum = total ?? items.reduce((s, it) => s + it.price * it.quantity, 0);
+  return (
+    `<table role="presentation" dir="rtl" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 18px;border:1px solid #eeeeee;border-radius:8px;border-collapse:separate;overflow:hidden;">` +
+    `<tr><td dir="rtl" style="font-family:Arial,Tahoma,sans-serif;font-size:12px;font-weight:bold;color:#888888;padding:10px 12px;background:#fafafa;text-align:right;">פריט</td>` +
+    `<td dir="rtl" style="font-family:Arial,Tahoma,sans-serif;font-size:12px;font-weight:bold;color:#888888;padding:10px 12px;background:#fafafa;text-align:left;">סכום</td></tr>` +
+    rows +
+    `<tr><td dir="rtl" style="font-family:Arial,Tahoma,sans-serif;font-size:15px;font-weight:bold;color:#111111;padding:12px;text-align:right;">סה״כ</td>` +
+    `<td dir="rtl" style="font-family:Arial,Tahoma,sans-serif;font-size:15px;font-weight:bold;color:#111111;padding:12px;text-align:left;white-space:nowrap;">${ils(sum)}</td></tr>` +
+    `</table>`
+  );
+}
 
 interface RenderArgs {
   sender: EmailSender;
@@ -95,8 +122,12 @@ export function renderEmail({ sender, previewText = "", bodyHtml }: RenderArgs):
     `<table role="presentation" dir="rtl" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;">` +
     `<tr><td dir="rtl" align="center" style="padding:24px 12px;">` +
     `<!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0"><tr><td><![endif]-->` +
-    `<table role="presentation" dir="rtl" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">` +
-    `<tr><td dir="rtl" style="padding:28px 24px;">${bodyHtml}</td></tr>` +
+    `<table role="presentation" dir="rtl" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">` +
+    `<tr><td style="background:${brand};font-size:0;line-height:0;height:6px;">&nbsp;</td></tr>` +
+    (sender.logoUrl
+      ? `<tr><td dir="rtl" align="center" style="padding:26px 24px 6px;"><img src="${esc(sender.logoUrl)}" alt="${esc(sender.businessName)}" height="38" style="height:38px;width:auto;display:inline-block;border:0;"></td></tr>`
+      : "") +
+    `<tr><td dir="rtl" style="padding:24px 28px 28px;">${bodyHtml}</td></tr>` +
     `<tr><td>${footer}</td></tr>` +
     `</table>` +
     `<!--[if mso]></td></tr></table><![endif]-->` +
