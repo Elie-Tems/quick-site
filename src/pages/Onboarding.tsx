@@ -82,7 +82,7 @@ export interface OnboardingData {
   }>;
   
   // Step 6: Payments
-  paymentProvider?: "icredit" | "cardcom" | "paypal" | null;
+  paymentProvider?: "payplus" | "icredit" | "cardcom" | "paypal" | null;
   paymentConnected: boolean;
 }
 

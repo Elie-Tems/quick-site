@@ -258,6 +258,8 @@ const StepBrandStyle = ({ data, updateData, onNext, onBack }: StepBrandStyleProp
       setBrandingResult(branding);
       updateData({ extractedBranding: branding });
       toast.success("זיהינו את הצבעים מהקובץ");
+      // Scroll down so the result + "continue" are visible (they sit below the fold).
+      setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }), 150);
     } catch (err) {
       console.error("color extraction failed:", err);
       toast.error("לא הצלחנו לזהות צבעים מהקובץ - נסו קובץ אחר");
@@ -517,66 +519,16 @@ const StepBrandStyle = ({ data, updateData, onNext, onBack }: StepBrandStyleProp
                         </div>
                       </div>
 
-                      {/* Secondary colors editor */}
-                      <div className="space-y-2">
-                        <label className="text-xs font-medium text-foreground">צבעים משניים</label>
-                        <div className="flex gap-3">
-                          {brandingResult.colorPalette?.slice(0, 3).map((color, i) => (
-                            <Popover key={i}>
-                              <PopoverTrigger asChild>
-                                <button
-                                  className="w-10 h-10 rounded-lg shadow-sm cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
-                                  style={{ backgroundColor: color }}
-                                />
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-3" align="start">
-                                <div className="space-y-3">
-                                  <p className="text-xs font-medium text-muted-foreground">בחר צבע:</p>
-                                  <div className="grid grid-cols-5 gap-2">
-                                    {presetColors.map((presetColor) => (
-                                      <button
-                                        key={presetColor}
-                                        className={`w-8 h-8 rounded-lg transition-all hover:scale-110 ${
-                                          color === presetColor ? 'ring-2 ring-foreground ring-offset-2' : ''
-                                        }`}
-                                        style={{ backgroundColor: presetColor }}
-                                        onClick={() => updatePaletteColor(i, presetColor)}
-                                      />
-                                    ))}
-                                  </div>
-                                  <div className="pt-2 border-t border-border">
-                                    <Input
-                                      type="color"
-                                      value={color}
-                                      onChange={(e) => updatePaletteColor(i, e.target.value)}
-                                      className="w-full h-10 cursor-pointer"
-                                    />
-                                  </div>
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                          ))}
-                        </div>
-                      </div>
                     </div>
                   ) : (
                     <div className="flex gap-3 items-end">
                       <div className="flex flex-col items-center gap-1">
-                        <div 
+                        <div
                           className="w-14 h-14 rounded-lg shadow-md ring-2 ring-primary/30"
                           style={{ backgroundColor: brandingResult.primaryColor }}
                         />
-                        <span className="text-xs text-primary font-medium">ראשי</span>
+                        <span className="text-xs text-primary font-medium">צבע ראשי</span>
                       </div>
-                      {brandingResult.colorPalette?.slice(0, 3).map((color, i) => (
-                        <div key={i} className="flex flex-col items-center gap-1">
-                          <div 
-                            className="w-10 h-10 rounded-lg shadow-sm"
-                            style={{ backgroundColor: color }}
-                          />
-                          <span className="text-xs text-muted-foreground">משני</span>
-                        </div>
-                      ))}
                     </div>
                   )}
                 </div>
