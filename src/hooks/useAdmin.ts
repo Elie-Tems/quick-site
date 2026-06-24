@@ -102,11 +102,21 @@ export function usePlatformStats() {
         .select('id');
       
       if (profError) throw profError;
-      
+
+      // Siango's OWN revenue = paying subscriptions × monthly fee — NOT the
+      // merchants' order GMV (that belongs to the stores, not to us).
+      const { data: subs } = await supabase
+        .from('subscriptions')
+        .select('paid_until, monthly_total, status');
+      const nowTs = new Date();
+      const siangoRevenue = (subs || [])
+        .filter((s: any) => s.paid_until && new Date(s.paid_until) > nowTs && s.status === 'active')
+        .reduce((sum: number, s: any) => sum + (Number(s.monthly_total) || 69), 0);
+
       const stats: PlatformStats = {
         total_businesses: businesses?.length || 0,
         total_orders: orders?.length || 0,
-        total_revenue: orders?.reduce((sum, o) => sum + (o.total_price || 0), 0) || 0,
+        total_revenue: siangoRevenue,
         total_page_views: pageViews?.length || 0,
         total_unique_visitors: new Set(pageViews?.map(pv => pv.visitor_id).filter(Boolean)).size,
         total_products: products?.length || 0,

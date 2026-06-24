@@ -40,7 +40,7 @@ const AdminStatsCards = ({ stats, isLoading }: AdminStatsCardsProps) => {
       bgColor: 'bg-green-500/10',
     },
     {
-      label: 'סה"כ הכנסות',
+      label: 'הכנסה חודשית (מנויים)',
       value: formatCurrency(stats?.total_revenue || 0),
       icon: DollarSign,
       color: 'text-emerald-500',
