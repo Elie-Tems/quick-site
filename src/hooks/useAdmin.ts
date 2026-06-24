@@ -122,11 +122,14 @@ export function useAllBusinesses() {
   return useQuery({
     queryKey: ['admin-all-businesses'],
     queryFn: async () => {
+      // Cap the initial load so the admin never tries to pull thousands of rows
+      // at once (kept the most-recent 300; full search/pagination is the next step).
       const { data: businesses, error } = await supabase
         .from('businesses')
         .select('*')
-        .order('created_at', { ascending: false });
-      
+        .order('created_at', { ascending: false })
+        .limit(300);
+
       if (error) throw error;
       
       // Counts in BULK (3 queries total) instead of N+1 per business — the old
