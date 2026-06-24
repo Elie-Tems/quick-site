@@ -15,15 +15,16 @@ const FloatingHelpButton = () => {
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 1, duration: 0.3 }}
-      className="fixed bottom-6 right-6 z-50"
+      className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50"
     >
       <Link
         to="/help"
-        className="flex items-center gap-2 h-14 px-5 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform duration-200"
+        className="flex items-center justify-center gap-2 h-11 w-11 md:h-14 md:w-auto md:px-5 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform duration-200"
         title="בוט שירות ותמיכה"
       >
-        <HelpCircle className="w-6 h-6 flex-shrink-0" />
-        <span className="font-medium whitespace-nowrap">בוט שירות ותמיכה</span>
+        <HelpCircle className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" />
+        {/* Mobile: compact icon-only so it doesn't get in the way; desktop: full label */}
+        <span className="hidden md:inline font-medium whitespace-nowrap">בוט שירות ותמיכה</span>
       </Link>
     </motion.div>
   );
