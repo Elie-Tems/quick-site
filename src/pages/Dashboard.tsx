@@ -22,6 +22,7 @@ import DashboardAIImages from "@/components/dashboard/DashboardAIImages";
 import DashboardAIGeneratedImages from "@/components/dashboard/DashboardAIGeneratedImages";
 import DashboardShipping from "@/components/dashboard/DashboardShipping";
 import DashboardPayments from "@/components/dashboard/DashboardPayments";
+import DashboardUsage from "@/components/dashboard/DashboardUsage";
 import DashboardLegal from "@/components/dashboard/DashboardLegal";
 import DashboardAdBudget from "@/components/dashboard/DashboardAdBudget";
 import UnpublishedBanner from "@/components/dashboard/UnpublishedBanner";
@@ -503,6 +504,8 @@ const Dashboard = () => {
         );
       case 'ai-generated-images':
         return <DashboardAIGeneratedImages />;
+      case 'usage':
+        return <DashboardUsage businessId={business?.id} />;
       case 'subscription':
         return <DashboardSubscription />;
       case 'about':

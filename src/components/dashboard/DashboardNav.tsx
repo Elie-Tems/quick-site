@@ -1,7 +1,7 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Tag, Crown, Sparkles, Megaphone, Star, FolderOpen, Info, Truck, CreditCard, Palette, ScrollText, Target } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Tag, Crown, Sparkles, Megaphone, Star, FolderOpen, Info, Truck, CreditCard, Palette, ScrollText, Target, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -50,6 +50,7 @@ const navItems: {
   { id: "settings", label: "הגדרות", icon: Settings, group: "הגדרות" },
   { id: "legal", label: "מסמכים משפטיים", shortLabel: "משפטי", icon: ScrollText, group: "הגדרות" },
   { id: "about", label: "אודות", icon: Info, group: "הגדרות" },
+  { id: "usage", label: "שימוש ו-AI", icon: Gauge, group: "הגדרות" },
   { id: "subscription", label: "התוכנית שלי", icon: Crown, group: "הגדרות" },
 ];
 
