@@ -68,6 +68,33 @@ export const useAnalytics = (
   });
 };
 
+// Track a storefront event (add_to_cart / begin_checkout / purchase / view_product)
+// for the funnel + insights. Fire-and-forget; never blocks the UI.
+export const trackEvent = async (
+  businessId: string,
+  eventType: "view_product" | "add_to_cart" | "begin_checkout" | "purchase",
+  opts?: { productId?: string; value?: number; metadata?: Record<string, unknown> },
+) => {
+  if (!businessId) return;
+  let visitorId = localStorage.getItem("visitor_id");
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    localStorage.setItem("visitor_id", visitorId);
+  }
+  try {
+    await (supabase as any).from("analytics_events").insert({
+      business_id: businessId,
+      visitor_id: visitorId,
+      event_type: eventType,
+      product_id: opts?.productId ?? null,
+      value: opts?.value ?? null,
+      metadata: opts?.metadata ?? null,
+    });
+  } catch (error) {
+    console.error("Failed to track event:", error);
+  }
+};
+
 // Function to track a page view
 export const trackPageView = async (businessId: string, pagePath: string = "/") => {
   // Get or create visitor ID

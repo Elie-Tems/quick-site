@@ -21,7 +21,7 @@ import { useIsShabbatNow } from "@/hooks/useIsShabbatNow";
 import { useActiveCampaign, useCampaignBanners, useCampaignProducts } from "@/hooks/useCampaigns";
 import { Button } from "@/components/ui/button";
 import { BusinessCategory } from "@/lib/categoryConfig";
-import { trackPageView } from "@/hooks/useAnalytics";
+import { trackPageView, trackEvent } from "@/hooks/useAnalytics";
 import { useCreateOrder } from "@/hooks/useOrders";
 import { startPayplusPayment } from "@/hooks/usePayplus";
 import { toast } from "sonner";
@@ -371,6 +371,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       }
       return [...prev, { ...product, quantity: 1 }];
     });
+    trackEvent(business.id, "add_to_cart", { productId: product.id, value: product.price });
   };
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
@@ -390,6 +391,9 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   };
 
   const handleCheckout = () => {
+    trackEvent(business.id, "begin_checkout", {
+      value: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    });
     setViewState('checkout');
   };
 
@@ -448,6 +452,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         businessEmail: business.email ?? null,
         businessPhone: business.phone ?? null,
       });
+      trackEvent(business.id, "purchase", { value: orderTotal });
       setCartItems([]);
       setViewState('thankyou');
     } catch {
