@@ -1,4 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { PLATFORM_EMAILS } from "../_shared/email/platformEmails.ts";
+import { sendViaResend } from "../_shared/email/resend.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -217,6 +219,21 @@ Deno.serve(async (req) => {
     .from("publish_checkout_sessions")
     .update({ status: "completed", updated_at: now })
     .eq("id", session.id);
+
+  // Email the merchant that their site is live (no-ops until RESEND_API_KEY is set).
+  try {
+    if (user.email && business) {
+      const appUrl = Deno.env.get("VITE_APP_URL") || "https://siango.app";
+      const { subject, html } = PLATFORM_EMAILS.siteReady({
+        businessName: business.name,
+        siteUrl: `${appUrl}/store/${business.slug}`,
+        dashboardUrl: `${appUrl}/dashboard`,
+      });
+      await sendViaResend({ to: user.email, subject, html });
+    }
+  } catch (err) {
+    console.error("site-ready email failed (non-fatal):", err);
+  }
 
   // Send webhook after successful publish
   const webhookUrl = Deno.env.get("VITE_BUSINESS_WEBHOOK_URL");

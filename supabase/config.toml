@@ -41,3 +41,7 @@ verify_jwt = false
 # payments-verify is called by the logged-in merchant.
 [functions.payments-verify]
 verify_jwt = true
+
+# send-platform-email is called by the app (e.g. welcome after sign-up); requires a JWT.
+[functions.send-platform-email]
+verify_jwt = true
