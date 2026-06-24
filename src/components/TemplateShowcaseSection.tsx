@@ -189,7 +189,7 @@ const TemplateShowcaseSection = () => {
                 <div className="text-sm text-muted-foreground mt-1">בחרו קטגוריה והצבעים יתאימו אוטומטית</div>
               </div>
               <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-white font-bold text-sm transition-transform group-hover:-translate-x-1">
-                התחילו עכשיו בחינם
+                התחילו עכשיו
                 <ArrowLeft className="w-4 h-4" />
               </span>
             </Link>

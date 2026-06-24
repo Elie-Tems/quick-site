@@ -378,33 +378,30 @@ const HowItWorksSection = () => {
               transition={{ duration: 0.7, delay: 0.1 }}
               className="flex flex-col"
             >
-              {/* Header with number on side and centered content */}
-              <div className="relative mb-8 flex items-start justify-center">
-                {/* Step number badge - positioned on the right side */}
-                <div 
-                  className="absolute right-0 top-0 w-14 h-14 rounded-2xl glass-card border border-primary/40 flex items-center justify-center"
+              {/* Header: centered number badge, then icon + title, then description */}
+              <div className="mb-8 flex flex-col items-center text-center max-w-2xl mx-auto">
+                {/* Step number badge - centered on top */}
+                <div
+                  className="w-12 h-12 rounded-2xl glass-card border border-primary/40 flex items-center justify-center mb-4"
                   style={{ boxShadow: '0 0 30px hsl(var(--primary) / 0.3)' }}
                 >
                   <span className="text-lg font-bold neon-text">{step.number}</span>
                 </div>
-                
-                {/* Centered text content */}
-                <div className="text-center max-w-2xl">
-                  <div className="flex items-center justify-center gap-3 mb-2">
-                    <div 
-                      className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/30"
-                      style={{ boxShadow: '0 0 20px hsl(var(--primary) / 0.2)' }}
-                    >
-                      <step.icon className="w-5 h-5 text-primary" strokeWidth={1.5} />
-                    </div>
-                    <h3 className="font-display font-bold text-2xl md:text-3xl text-foreground">
-                      {step.title}
-                    </h3>
+
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <div
+                    className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/30 shrink-0"
+                    style={{ boxShadow: '0 0 20px hsl(var(--primary) / 0.2)' }}
+                  >
+                    <step.icon className="w-5 h-5 text-primary" strokeWidth={1.5} />
                   </div>
-                  <p className="text-lg text-muted-foreground leading-relaxed">
-                    {step.description}
-                  </p>
+                  <h3 className="font-display font-bold text-2xl md:text-3xl text-foreground">
+                    {step.title}
+                  </h3>
                 </div>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  {step.description}
+                </p>
               </div>
               
               {/* Mockup below */}

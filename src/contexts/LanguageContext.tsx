@@ -1,4 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+// Hebrew is the default + most common language. Bundle it statically so the very
+// first paint is already Hebrew — otherwise t() returns raw keys until the async
+// translation import resolves, which looked like a flash of "another language".
+import heTranslations from '@/lib/translations/he';
 
 export type Language = 'he' | 'en' | 'ar' | 'ru' | 'fr';
 
@@ -45,7 +49,9 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     return 'he';
   });
 
-  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [translations, setTranslations] = useState<Record<string, string>>(
+    language === 'he' ? (heTranslations as Record<string, string>) : {}
+  );
 
   const currentLanguage = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 

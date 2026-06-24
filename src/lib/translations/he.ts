@@ -95,7 +95,7 @@ const he: Record<string, string> = {
   'pricing.securePayment': 'תשלום מאובטח',
   
   // Final CTA Section
-  'finalCta.badge': 'התחל היום בחינם',
+  'finalCta.badge': 'התחילו היום',
   'finalCta.title1': 'מוכנים להתחיל',
   'finalCta.title2': 'למכור אונליין?',
   'finalCta.subtitle': 'הצטרפו לאלפי בעלי עסקים שכבר מוכרים עם Siango',

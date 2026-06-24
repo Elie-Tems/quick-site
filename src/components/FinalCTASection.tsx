@@ -191,7 +191,7 @@ const FinalCTASection = () => {
               הזדמנות אחרונה להתחיל
             </h3>
             <p className="text-xl mb-8 opacity-90">
-              הצטרפו היום וקבלו חודש ראשון בחינם!
+              הצטרפו היום — ללא התחייבות, אפשר לבטל בכל עת.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
