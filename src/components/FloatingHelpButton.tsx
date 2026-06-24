@@ -6,7 +6,7 @@ const FloatingHelpButton = () => {
   const { pathname } = useLocation();
   // Hide on the storefront (customer-facing store) and on the help page itself
   // (no point offering "open the bot" when you're already in the bot).
-  if (pathname.startsWith("/store") || pathname.startsWith("/help")) {
+  if (pathname.startsWith("/store") || pathname.startsWith("/help") || pathname.startsWith("/preview")) {
     return null;
   }
 

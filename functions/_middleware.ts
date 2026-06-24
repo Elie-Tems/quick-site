@@ -1,15 +1,15 @@
 /**
- * Cloudflare Pages Function — edge SEO renderer.
+ * Cloudflare Pages Function - edge SEO renderer.
  *
  * Problem it solves: the app is a client-rendered SPA. Search engines can
  * eventually render JS, but social/preview crawlers (WhatsApp, Facebook,
- * Twitter) never run JS — so shared store links get no title/image preview,
+ * Twitter) never run JS - so shared store links get no title/image preview,
  * and store indexing is weak/slow.
  *
  * What it does: for published storefront routes it fetches the business (and a
  * few products) from Supabase at the edge and injects real <title>, meta,
  * Open Graph / Twitter tags, JSON-LD, and a crawler-visible content block into
- * the served HTML — BEFORE any JavaScript runs. Real users still get the full
+ * the served HTML - BEFORE any JavaScript runs. Real users still get the full
  * interactive SPA (React clears #root on mount; the injected block is only seen
  * by no-JS crawlers).
  *
@@ -100,7 +100,7 @@ function esc(s: string): string {
     .replace(/'/g, "&apos;");
 }
 
-// Matches /store/:slug and /store/:slug/about (V1 only — V2 is not a live route).
+// Matches /store/:slug and /store/:slug/about (V1 only - V2 is not a live route).
 function matchStoreRoute(pathname: string): { slug: string; isAbout: boolean } | null {
   const m = pathname.match(/^\/store\/([^/]+)(\/about)?\/?$/);
   if (!m) return null;
@@ -135,7 +135,7 @@ async function fetchStore(env: Env, slug: string): Promise<{ business: StoreBusi
     );
     if (prodRes.ok) products = (await prodRes.json()) as StoreProduct[];
   } catch {
-    // Products are optional for the meta render — ignore failures.
+    // Products are optional for the meta render - ignore failures.
   }
 
   return { business, products };
@@ -228,7 +228,7 @@ function buildBodyContent(business: StoreBusiness, products: StoreProduct[], isA
   const productList =
     !isAbout && products.length > 0
       ? `<ul>${products
-          .map((p) => `<li>${esc(p.name)} — ${p.price} ₪${p.description ? `: ${esc(p.description)}` : ""}</li>`)
+          .map((p) => `<li>${esc(p.name)} - ${p.price} ₪${p.description ? `: ${esc(p.description)}` : ""}</li>`)
           .join("")}</ul>`
       : "";
   // Hidden from sighted users (SPA replaces #root anyway), present for no-JS crawlers.
@@ -304,7 +304,7 @@ export const onRequest = async (context: {
       headers,
     });
   } catch (err) {
-    // Fail open — never break the live site because of SEO rendering.
+    // Fail open - never break the live site because of SEO rendering.
     console.error("seo-middleware error:", err);
     return response;
   }

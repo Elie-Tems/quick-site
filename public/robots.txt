@@ -14,7 +14,7 @@ Disallow: /manage-x7k9
 Disallow: /preview/
 Crawl-delay: 1
 
-# AI crawlers — explicitly allowed (content citation)
+# AI crawlers - explicitly allowed (content citation)
 User-agent: GPTBot
 Allow: /
 

@@ -78,7 +78,7 @@ ON public.email_consents FOR SELECT
 USING (has_role(auth.uid(), 'admin'::app_role));
 
 -- ---- PUBLISH CHECKOUT SESSIONS ----
--- Only owner or admin — remove any accidental public read
+-- Only owner or admin - remove any accidental public read
 DROP POLICY IF EXISTS "Admins can view all publish sessions" ON public.publish_checkout_sessions;
 CREATE POLICY "Admins can view all publish sessions"
 ON public.publish_checkout_sessions FOR SELECT

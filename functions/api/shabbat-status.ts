@@ -1,9 +1,9 @@
 /**
- * Cloudflare Pages Function — /api/shabbat-status
+ * Cloudflare Pages Function - /api/shabbat-status
  *
  * Decides whether NEW-SITE creation (registration + onboarding) should be
  * closed right now because it is Shabbat or a Yom Tov **at the visitor's own
- * location**. Published customer stores are never affected — this only gates
+ * location**. Published customer stores are never affected - this only gates
  * the platform's signup flow.
  *
  * Location: taken from Cloudflare's edge geo (`request.cf`), so every visitor is

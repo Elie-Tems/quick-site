@@ -1,6 +1,6 @@
 # החלפת פרויקט Supabase (DB חדש)
 
-כשעוברים לפרויקט Supabase חדש עם כל הטבלאות המעודכנות – רשימת צ'ק ליסט.
+כשעוברים לפרויקט Supabase חדש עם כל הטבלאות המעודכנות - רשימת צ'ק ליסט.
 
 ---
 
@@ -14,7 +14,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY=eyJ...   # מפתח anon / public
 VITE_SUPABASE_PROJECT_ID=YOUR_NEW_PROJECT_REF
 ```
 
-- `VITE_ORDER_WEBHOOK_URL` – נשאר כמו שהוא (לא קשור ל־Supabase).
+- `VITE_ORDER_WEBHOOK_URL` - נשאר כמו שהוא (לא קשור ל־Supabase).
 
 ---
 
@@ -22,12 +22,12 @@ VITE_SUPABASE_PROJECT_ID=YOUR_NEW_PROJECT_REF
 
 ב־DB החדש **חייבים** שה־RLS יוגדר כמו במיגרציות:
 
-- **businesses** – כולם יכולים לקרוא (לחנות), רק הבעלים יכולים לעדכן/למחוק.
-- **profiles** – קשור ל־`auth.uid()`.
-- **products, banners, orders, order_items, campaigns** וכו' – לפי ownership (בעלים של העסק).
+- **businesses** - כולם יכולים לקרוא (לחנות), רק הבעלים יכולים לעדכן/למחוק.
+- **profiles** - קשור ל־`auth.uid()`.
+- **products, banners, orders, order_items, campaigns** וכו' - לפי ownership (בעלים של העסק).
 
-אם העתקת את כל המיגרציות והרצת אותן בפרויקט החדש – ה־RLS כבר אמור להיות מוגדר.  
-אם יצרת טבלאות ידנית – צריך להוסיף ידנית:
+אם העתקת את כל המיגרציות והרצת אותן בפרויקט החדש - ה־RLS כבר אמור להיות מוגדר.  
+אם יצרת טבלאות ידנית - צריך להוסיף ידנית:
 
 - `ALTER TABLE ... ENABLE ROW LEVEL SECURITY;`
 - `CREATE POLICY "..." ON ... FOR SELECT/INSERT/UPDATE/DELETE USING (...);`
@@ -44,9 +44,9 @@ VITE_SUPABASE_PROJECT_ID=YOUR_NEW_PROJECT_REF
 
 ## 3. Auth (התחברות משתמשים)
 
-- ב־Supabase החדש: **Authentication → Providers** – הפעל את מה שאתה משתמש (Email, Google וכו').
-- **Authentication → URL Configuration** – הוסף את ה־Site URL ואת Redirect URLs של האתר (localhost + דומיין פרודקשן).
-- משתמשים שנרשמו ב־DB הישן **לא** יועתקו אוטומטית – בפרויקט חדש צריך הרשמה מחדש (או migration של טבלת `auth.users` אם אתה מעתיק ידנית).
+- ב־Supabase החדש: **Authentication → Providers** - הפעל את מה שאתה משתמש (Email, Google וכו').
+- **Authentication → URL Configuration** - הוסף את ה־Site URL ואת Redirect URLs של האתר (localhost + דומיין פרודקשן).
+- משתמשים שנרשמו ב־DB הישן **לא** יועתקו אוטומטית - בפרויקט חדש צריך הרשמה מחדש (או migration של טבלת `auth.users` אם אתה מעתיק ידנית).
 
 ---
 
@@ -54,7 +54,7 @@ VITE_SUPABASE_PROJECT_ID=YOUR_NEW_PROJECT_REF
 
 האפליקציה משתמשת ב־bucket:
 
-- **`business-assets`** – תמונות עסק (לוגו, hero, תמונות מוצרים).
+- **`business-assets`** - תמונות עסק (לוגו, hero, תמונות מוצרים).
 
 ב־DB החדש:
 
@@ -63,7 +63,7 @@ VITE_SUPABASE_PROJECT_ID=YOUR_NEW_PROJECT_REF
    - כולם (או anon) יכולים **לקרוא** (לצורך הצגת תמונות בחנות).
    - רק משתמשים מאומתים שהם בעלי העסק יכולים **להעלות/לעדכן/למחוק** (בהתאם ל־RLS שאתה רוצה).
 
-אם יש buckets נוספים במיגרציות – צור גם אותם והגדר policies.
+אם יש buckets נוספים במיגרציות - צור גם אותם והגדר policies.
 
 ---
 
@@ -80,7 +80,7 @@ VITE_SUPABASE_PROJECT_ID=YOUR_NEW_PROJECT_REF
 - **Deploy** את ה־functions מהתיקייה `supabase/functions/` לפרויקט החדש (למשל `supabase functions deploy`).
 - ב־Dashboard: **Edge Functions** → וודא שיש להן **Secrets** נדרשים (אם משתמשים ב־API keys ל־AI וכו').
 
-ב־DB חדש ה־functions לא מועתקות אוטומטית – חייבים deploy מחדש.
+ב־DB חדש ה־functions לא מועתקות אוטומטית - חייבים deploy מחדש.
 
 ---
 
@@ -106,6 +106,6 @@ VITE_SUPABASE_PROJECT_ID=YOUR_NEW_PROJECT_REF
 | **Auth** | הפערת providers ו־URLs בפרויקט החדש |
 | **Storage** | יצירת bucket `business-assets` + policies |
 | **Edge Functions** | Deploy מחדש + הגדרת secrets אם צריך |
-| **משתמשים/נתונים** | בפרויקט חדש – אין נתונים; להעביר רק אם עושים migration ידני |
+| **משתמשים/נתונים** | בפרויקט חדש - אין נתונים; להעביר רק אם עושים migration ידני |
 
-אחרי כל השלבים – רענן את האפליקציה (או הפעל מחדש את שרת הפיתוח) ובדוק התחברות, יצירת עסק, העלאת תמונה ופתיחת חנות.
+אחרי כל השלבים - רענן את האפליקציה (או הפעל מחדש את שרת הפיתוח) ובדוק התחברות, יצירת עסק, העלאת תמונה ופתיחת חנות.

@@ -1,5 +1,5 @@
 /**
- * Cloudflare Pages Function — dynamic sitemap served at /sitemap.xml.
+ * Cloudflare Pages Function - dynamic sitemap served at /sitemap.xml.
  *
  * Must live on the same host (siango.app) as the URLs it lists, which is
  * why it's a Pages Function and not a Supabase edge function. Lists the static
@@ -12,7 +12,7 @@
  * Required environment variables (Cloudflare Pages project):
  *   SUPABASE_URL, SUPABASE_ANON_KEY, optional SITE_URL.
  *
- * NOTE: there must be no static public/sitemap.xml — a static asset of the
+ * NOTE: there must be no static public/sitemap.xml - a static asset of the
  * same path would shadow this function.
  */
 
