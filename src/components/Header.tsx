@@ -15,9 +15,9 @@ const Header = () => {
     <header className="fixed top-0 right-0 left-0 z-50">
       {/* Frosted glass navigation bar */}
       <div className="mx-4 mt-4 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
-        <div className="container flex items-center justify-between h-20">
+        <div className="flex items-center justify-between gap-2 px-4 h-16 md:h-20 overflow-hidden">
           {/* Logo with neon glow */}
-          <Link to="/" className="flex items-center group relative">
+          <Link to="/" className="flex items-center group relative shrink min-w-0">
             {/* Ambient glow behind logo */}
             <motion.div 
               animate={{ 
@@ -32,7 +32,7 @@ const Header = () => {
             <motion.img 
               src={logoDarkBg}
               alt="Siango"
-              className="relative h-14 md:h-20 w-auto"
+              className="relative h-9 sm:h-12 md:h-20 w-auto max-w-[48vw] object-contain"
               style={{
                 filter: `
                   drop-shadow(0 0 10px hsl(var(--primary) / 0.8))
@@ -49,14 +49,14 @@ const Header = () => {
           </Link>
 
           {/* Navigation Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <LanguageSwitcher />
             {user ? (
               <>
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="border-primary/50 text-primary hover:bg-primary/10 hover:border-primary transition-all duration-300 rounded-full px-5" 
+                  className="border-primary/50 text-primary hover:bg-primary/10 hover:border-primary transition-all duration-300 rounded-full px-3 sm:px-5 text-xs sm:text-sm" 
                   asChild
                 >
                   <Link to="/dashboard" className="flex items-center gap-2">
@@ -79,7 +79,7 @@ const Header = () => {
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="border-primary/50 text-primary hover:bg-primary/10 hover:border-primary transition-all duration-300 rounded-full px-5" 
+                  className="border-primary/50 text-primary hover:bg-primary/10 hover:border-primary transition-all duration-300 rounded-full px-3 sm:px-5 text-xs sm:text-sm" 
                   asChild
                 >
                   <Link to="/login" className="flex items-center gap-2">
@@ -89,7 +89,7 @@ const Header = () => {
                 </Button>
                 <Button
                   size="sm"
-                  className="bg-white text-black hover:bg-white/90 px-6 rounded-full font-bold transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.4),0_0_40px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(255,255,255,0.6),0_0_60px_rgba(255,255,255,0.4)]"
+                  className="bg-white text-black hover:bg-white/90 px-3.5 sm:px-6 text-xs sm:text-sm rounded-full font-bold transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.4),0_0_40px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(255,255,255,0.6),0_0_60px_rgba(255,255,255,0.4)]"
                   asChild
                 >
                   <Link to="/register">{t('header.startNow')}</Link>
