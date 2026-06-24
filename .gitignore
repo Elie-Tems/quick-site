@@ -33,3 +33,5 @@ build
 .env copy
 .env.*
 !.env.example
+
+supabase/.temp/
