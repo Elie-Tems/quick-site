@@ -1,4 +1,4 @@
-import { Check, ShoppingBag, CreditCard, Headphones, RefreshCw, Pencil } from "lucide-react";
+import { Check, ShoppingBag, CreditCard, Headphones, Pencil } from "lucide-react";
 
 /**
  * PROPOSAL / PREVIEW (item 10) - the "publish & pay" moment.
@@ -74,38 +74,38 @@ const PublishCheckoutPreview = () => {
 
       {/* Compact payment sheet anchored at the bottom; the site stays visible above */}
       <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center pointer-events-none">
-        <div className="w-full max-w-lg bg-white rounded-t-3xl shadow-[0_-8px_40px_rgba(0,0,0,0.18)] border-t border-zinc-100 p-5 md:p-6 text-center pointer-events-auto">
-          <h1 className="text-xl md:text-2xl font-bold text-zinc-900">האתר שלך מוכן! 🎉</h1>
-          <p className="text-zinc-500 text-sm mt-1">נשאר רק צעד אחד: להעלות אותו לאוויר ולהתחיל למכור.</p>
+        <div
+          className="w-full max-w-lg rounded-t-3xl shadow-[0_-10px_50px_rgba(0,0,0,0.35)] p-6 md:p-7 text-center pointer-events-auto text-white"
+          style={{ background: BRAND }}
+        >
+          <h1 className="text-2xl md:text-3xl font-extrabold">האתר שלך מוכן! 🎉</h1>
+          <p className="text-white/90 text-sm mt-1">נשאר רק צעד אחד: להעלות אותו לאוויר ולהתחיל למכור.</p>
 
-          <div className="my-4 flex items-center justify-center gap-2">
-            <span className="text-3xl font-extrabold text-zinc-900">₪69</span>
-            <span className="text-sm text-zinc-500">/ חודש · ללא התחייבות · ביטול בכל עת</span>
+          {/* price - single prominent line + sub-line */}
+          <div className="my-5">
+            <div className="text-4xl md:text-5xl font-extrabold leading-none">₪69 לחודש</div>
+            <div className="text-sm text-white/85 mt-2">ללא התחייבות · ביטול בכל עת</div>
           </div>
 
-          {/* what's included (no custom domain yet) */}
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mb-4 text-xs text-zinc-600">
+          {/* what's included (no domain, no "unlimited updates") */}
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 mb-5 text-sm text-white/90">
             {[
               { icon: CreditCard, t: "קבלת תשלומים" },
-              { icon: RefreshCw, t: "עדכונים ללא הגבלה" },
               { icon: Headphones, t: "תמיכה בעברית" },
             ].map((row, i) => (
               <span key={i} className="inline-flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5" style={{ color: BRAND }} />
-                <row.icon className="w-3.5 h-3.5 text-zinc-400" />
+                <Check className="w-4 h-4" />
+                <row.icon className="w-4 h-4 text-white/70" />
                 {row.t}
               </span>
             ))}
           </div>
 
-          <button
-            className="w-full h-14 rounded-2xl text-white text-lg font-bold hover:brightness-105 transition shadow-lg"
-            style={{ background: BRAND, boxShadow: `0 10px 24px ${BRAND}55` }}
-          >
+          <button className="w-full h-14 rounded-2xl bg-white text-lg font-extrabold hover:bg-white/95 transition shadow-lg" style={{ color: BRAND }}>
             כן, אני רוצה! קחו אותי לתשלום
           </button>
 
-          <p className="flex items-center justify-center gap-1.5 text-xs text-zinc-400 mt-3">
+          <p className="flex items-center justify-center gap-1.5 text-xs text-white/80 mt-3">
             <Pencil className="w-3.5 h-3.5" />
             אפשר לערוך הכל (טקסטים, מוצרים, עיצוב) גם אחרי הפרסום.
           </p>
