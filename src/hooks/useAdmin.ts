@@ -298,20 +298,25 @@ export function useMRR() {
     queryFn: async (): Promise<MRRPoint[]> => {
       const { data, error } = await supabase
         .from("subscriptions")
-        .select("plan_name, created_at, status, cancel_at")
+        .select("plan_name, created_at, status, cancel_at, paid_until, monthly_total")
         .order("created_at", { ascending: true });
       if (error) throw error;
 
       const planPrice: Record<string, number> = {
-        basic: 99,
-        recommended: 199,
-        premium: 299,
+        basic: 69,
+        recommended: 69,
+        premium: 69,
       };
 
       const byMonth: Record<string, { new_mrr: number; churned_mrr: number }> = {};
+      const now = new Date();
 
-      (data || []).forEach((sub) => {
-        const price = planPrice[sub.plan_name?.toLowerCase()] ?? 99;
+      (data || []).forEach((sub: any) => {
+        // Only count subscriptions that were ACTUALLY paid (real revenue), not
+        // every signup row — otherwise the dashboard shows demo/fake money.
+        const reallyPaid = sub.paid_until && new Date(sub.paid_until) > now && sub.status === "active";
+        if (!reallyPaid) return;
+        const price = Number(sub.monthly_total) || planPrice[sub.plan_name?.toLowerCase()] || 69;
         const createdMonth = sub.created_at?.slice(0, 7);
         if (createdMonth) {
           if (!byMonth[createdMonth]) byMonth[createdMonth] = { new_mrr: 0, churned_mrr: 0 };
