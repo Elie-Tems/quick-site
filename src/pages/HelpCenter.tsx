@@ -408,8 +408,8 @@ const HelpCenter = () => {
         {/* Chat Area */}
         <Card className="border-border/50 mb-6" dir="rtl">
           <CardContent className="p-0">
-            <ScrollArea 
-              className="h-[400px] md:h-[500px] p-4" 
+            <ScrollArea
+              className="h-[300px] md:h-[380px] p-4"
               ref={scrollRef}
             >
               <AnimatePresence>
@@ -519,7 +519,7 @@ const HelpCenter = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="שאל שאלה..."
-                  className="flex-1"
+                  className="flex-1 h-12 bg-white text-zinc-900 border-2 border-primary/40 placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
                   disabled={isLoading}
                 />
                 <Button type="submit" disabled={isLoading || !input.trim()}>

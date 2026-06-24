@@ -16,6 +16,7 @@ interface StepBrandStyleProps {
   data: OnboardingData;
   updateData: (updates: Partial<OnboardingData>) => void;
   onNext: () => void;
+  onBack?: () => void;
 }
 
 interface BrandingResult {
@@ -143,7 +144,7 @@ async function extractPaletteFromPdf(file: File): Promise<{ primaryColor: string
   return samplePaletteFromCanvas(ctx, canvas.width, canvas.height);
 }
 
-const StepBrandStyle = ({ data, updateData, onNext }: StepBrandStyleProps) => {
+const StepBrandStyle = ({ data, updateData, onNext, onBack }: StepBrandStyleProps) => {
   const [websiteUrl, setWebsiteUrl] = useState(data.websiteUrl || "");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [brandingResult, setBrandingResult] = useState<BrandingResult | null>(
@@ -717,12 +718,14 @@ const StepBrandStyle = ({ data, updateData, onNext }: StepBrandStyleProps) => {
       {/* Navigation */}
       <StepNavigation
         onNext={handleNext}
+        onBack={onBack}
         onSaveAndContinue={handleNext}
         nextLabel="הבא"
+        backLabel="חזרה"
         saveLabel="שמור והמשך"
         nextDisabled={!canContinue}
         saveDisabled={!canContinue}
-        showBack={false}
+        showBack={!!onBack}
         showPreview={true}
         showSave={true}
       />

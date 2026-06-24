@@ -375,6 +375,11 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
         )}
       </Button>
 
+      {/* Reassurance: nothing here is final */}
+      <p className="text-center text-sm text-muted-foreground mt-3">
+        ✏️ אל דאגה — תוכלו לערוך הכל (טקסטים, מוצרים, צבעים ועיצוב) גם אחרי שהאתר יהיה באוויר.
+      </p>
+
       {/* Navigation - just back button for this step */}
       <div className="pt-2">
         <Button

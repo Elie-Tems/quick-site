@@ -251,7 +251,7 @@ const Onboarding = () => {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <StepBrandStyle data={data} updateData={updateData} onNext={nextStep} />;
+        return <StepBrandStyle data={data} updateData={updateData} onNext={nextStep} onBack={() => navigate(-1)} />;
       case 2:
         return <StepCategory data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 3:
