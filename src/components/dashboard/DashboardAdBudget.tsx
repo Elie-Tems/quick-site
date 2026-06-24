@@ -158,7 +158,7 @@ function ChannelCard({ channel, businessId, onDelete }: {
               ? `₪${channel.budget_amount.toLocaleString()} ${PERIOD_LABELS[channel.budget_period]}`
               : "לא הוגדר תקציב"}
             {channel.budget_start_date && ` · ${channel.budget_start_date}`}
-            {channel.budget_end_date && ` – ${channel.budget_end_date}`}
+            {channel.budget_end_date && ` - ${channel.budget_end_date}`}
           </p>
         </div>
         <Badge variant="secondary" className="text-xs">{links?.length ?? 0} קישורים</Badge>

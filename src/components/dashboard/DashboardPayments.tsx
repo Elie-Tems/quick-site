@@ -55,7 +55,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           )}
         </div>
         <p className="text-lg font-bold text-foreground">PayPlus</p>
-        <p className="text-sm text-muted-foreground">מעטפת מלאה — סליקה · דף תשלום · חשבוניות. חיבור מהיר.</p>
+        <p className="text-sm text-muted-foreground">מעטפת מלאה - סליקה · דף תשלום · חשבוניות. חיבור מהיר.</p>
       </button>
 
       {/* Selected body */}
@@ -70,7 +70,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
             <Clock className="h-6 w-6 text-primary" />
           </div>
-          <h3 className="font-semibold text-foreground">חיבור ל{comingSoon?.name} — בקרוב!</h3>
+          <h3 className="font-semibold text-foreground">חיבור ל{comingSoon?.name} - בקרוב!</h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
             רוצים להיות הראשונים שמתחברים ל{comingSoon?.name}? כתבו לנו ונחבר אתכם אישית.
           </p>
@@ -85,7 +85,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
 
       {/* Secondary, de-emphasized providers */}
       <div className="mt-8">
-        <p className="text-xs text-muted-foreground mb-2">ספקים נוספים — בקרוב</p>
+        <p className="text-xs text-muted-foreground mb-2">ספקים נוספים - בקרוב</p>
         <div className="flex flex-wrap gap-2">
           {COMING_SOON.map((p) => (
             <button

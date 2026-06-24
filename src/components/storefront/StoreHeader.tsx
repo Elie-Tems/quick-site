@@ -128,7 +128,7 @@ const StoreHeader = ({
           <div className="container px-4 md:px-6">
             <div className="flex items-center justify-between h-16 md:h-[72px]">
 
-              {/* Hamburger — mobile only */}
+              {/* Hamburger - mobile only */}
               <button
                 className="lg:hidden flex items-center justify-center w-8 h-8 text-foreground"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -137,7 +137,7 @@ const StoreHeader = ({
                 {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
               </button>
 
-              {/* Logo — center on mobile, left on desktop (בדסקטופ: צד שני ביחס לניווט) */}
+              {/* Logo - center on mobile, left on desktop (בדסקטופ: צד שני ביחס לניווט) */}
               <div className="flex-1 flex justify-center lg:justify-start">
                 {onNavigateHome ? (
                   <button type="button" onClick={onNavigateHome} className="focus:outline-none">
@@ -148,7 +148,7 @@ const StoreHeader = ({
                 )}
               </div>
 
-              {/* Desktop Nav — center */}
+              {/* Desktop Nav - center */}
               <nav className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
                 {categories.map((cat) => {
                   const isSelected =
@@ -216,7 +216,7 @@ const StoreHeader = ({
           </div>
         </div>
 
-        {/* ── Category Bar — mobile (scrollable chips → editorial tabs) ── */}
+        {/* ── Category Bar - mobile (scrollable chips → editorial tabs) ── */}
         {categories.length > 0 && (
           <div className="lg:hidden border-b border-foreground/10 overflow-x-auto scrollbar-hide">
             <div className="container px-4 flex gap-0">

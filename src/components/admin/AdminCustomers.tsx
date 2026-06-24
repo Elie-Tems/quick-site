@@ -72,7 +72,7 @@ function CustomerCard({ c }: { c: CustomerRow }) {
 
         {/* Name + email */}
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm truncate">{c.full_name || "—"}</p>
+          <p className="font-semibold text-sm truncate">{c.full_name || "-"}</p>
           <p className="text-xs text-muted-foreground truncate">{c.email}</p>
         </div>
 

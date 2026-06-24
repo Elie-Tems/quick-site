@@ -510,7 +510,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     });
   };
 
-  // Products are no longer required to proceed — let users reach a live store +
+  // Products are no longer required to proceed - let users reach a live store +
   // payment without the chore, and add products later via the dashboard launch
   // checklist. Skipping is explicit ("דלג בינתיים") so it's intentional.
   const hasProducts = data.products.length > 0;
@@ -526,7 +526,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
           הוספת מוצרים או שירותים
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          הוסיפו את המוצרים שלכם — או דלגו עכשיו ותוסיפו בכל רגע מלוח הניהול.
+          הוסיפו את המוצרים שלכם - או דלגו עכשיו ותוסיפו בכל רגע מלוח הניהול.
         </p>
       </div>
 
@@ -603,7 +603,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             />
           </div>
 
-          {/* Products section — טופס מוצר חדש ליד הקטגוריות (לא מתחת) */}
+          {/* Products section - טופס מוצר חדש ליד הקטגוריות (לא מתחת) */}
           <div className="space-y-4">
             {showForm && !showExcelUpload ? (
               /* טופס מוצר חדש בעמודה הימנית (ליד הקטגוריות) */

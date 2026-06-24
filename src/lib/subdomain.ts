@@ -54,7 +54,7 @@ export function getTenantSlug(hostname: string = window.location.hostname): stri
 
   const label = host.slice(0, -suffix.length);
   if (!label) return null;              // the apex itself
-  if (label.includes(".")) return null; // multi-level subdomain — not a tenant
+  if (label.includes(".")) return null; // multi-level subdomain - not a tenant
   if (RESERVED_SUBDOMAINS.has(label)) return null;
 
   return label;

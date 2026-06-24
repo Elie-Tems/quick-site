@@ -7,7 +7,7 @@ import { useShabbatStatus } from "@/hooks/useShabbatStatus";
  * Gates NEW-SITE creation (registration + onboarding) during Shabbat / Yom Tov,
  * based on the visitor's own location. While open (the usual case) it just
  * renders its children. Published customer stores and the existing dashboard are
- * never wrapped by this — only the signup flow.
+ * never wrapped by this - only the signup flow.
  */
 const ShabbatGate = ({ children }: { children: ReactNode }) => {
   const { data, isLoading } = useShabbatStatus();
@@ -48,7 +48,7 @@ const ShabbatGate = ({ children }: { children: ReactNode }) => {
         <p className="text-base text-muted-foreground mb-8">{reopenText}</p>
 
         <div className="bg-card border border-border rounded-xl p-4 text-sm text-muted-foreground mb-8">
-          💡 שימו לב: <strong className="text-foreground">החנויות שכבר פורסמו ממשיכות לעבוד כרגיל</strong> —
+          💡 שימו לב: <strong className="text-foreground">החנויות שכבר פורסמו ממשיכות לעבוד כרגיל</strong> -
           הלקוחות שלכם יכולים להזמין בכל זמן.
         </div>
 

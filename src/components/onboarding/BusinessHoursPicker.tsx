@@ -88,7 +88,7 @@ const BusinessHoursPicker = ({ value, onChange }: BusinessHoursPickerProps) => {
     update(next);
   };
 
-  // Quick action: copy Sunday's hours to all weekdays (Sun–Thu).
+  // Quick action: copy Sunday's hours to all weekdays (Sun-Thu).
   const applyToWeekdays = () => {
     const base = hours[0];
     const next = hours.map((d, i) => (i <= 4 ? { ...base, open: true } : d));
@@ -123,7 +123,7 @@ const BusinessHoursPicker = ({ value, onChange }: BusinessHoursPickerProps) => {
                   onChange={(e) => setTime(i, "from", e.target.value)}
                   className="h-9 px-2 rounded-lg bg-[#222] border border-[#333] text-sm text-foreground focus:border-primary focus:outline-none"
                 />
-                <span className="text-muted-foreground">–</span>
+                <span className="text-muted-foreground">-</span>
                 <input
                   type="time"
                   value={hours[i].to}
@@ -144,7 +144,7 @@ const BusinessHoursPicker = ({ value, onChange }: BusinessHoursPickerProps) => {
           onClick={applyToWeekdays}
           className="text-xs text-primary hover:underline"
         >
-          החל את שעות יום ראשון על א׳–ה׳
+          החל את שעות יום ראשון על א׳-ה׳
         </button>
         {preview && (
           <span className="text-xs text-muted-foreground truncate" title={preview}>

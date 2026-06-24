@@ -253,7 +253,7 @@ const PublishPayment = () => {
       if (data?.pendingPayment) {
         toast({
           title: "ממתינים לאישור תשלום",
-          description: "אם כבר שילמת, רגע אחד — האישור יגיע מהסליקה.",
+          description: "אם כבר שילמת, רגע אחד - האישור יגיע מהסליקה.",
         });
       }
     } catch (e: unknown) {
@@ -320,7 +320,7 @@ const PublishPayment = () => {
                 <p className="font-medium text-foreground mb-2">חסר קישור לעמוד סליקה</p>
                 <p className="text-muted-foreground">
                   הגדירו ב־<code className="text-xs bg-muted px-1 rounded">.env</code> את{" "}
-                  <code className="text-xs bg-muted px-1 rounded">VITE_ICOUNT_PAYMENT_BASE_URL</code> — כתובת עמוד
+                  <code className="text-xs bg-muted px-1 rounded">VITE_ICOUNT_PAYMENT_BASE_URL</code> - כתובת עמוד
                   הסליקה מ-iCount (כולל מצב embed / onsite אם קיים אצלכם).
                 </p>
               </div>
@@ -329,7 +329,7 @@ const PublishPayment = () => {
               <>
                 <div className="px-4 py-3 border-b border-border bg-gradient-to-r from-primary/10 to-accent/10 text-sm font-medium text-foreground text-center flex items-center justify-center gap-2">
                   <CreditCard className="w-4 h-4" />
-                  תשלום מאובטח — iCount
+                  תשלום מאובטח - iCount
                 </div>
                 <iframe
                   title="תשלום מאובטח iCount"

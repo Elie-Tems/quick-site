@@ -26,7 +26,7 @@ export function useShabbatStatus() {
   return useQuery<ShabbatStatus>({
     queryKey: ["shabbat-status", preview],
     queryFn: async () => {
-      // Local preview overrides — let us see the closed screen without waiting.
+      // Local preview overrides - let us see the closed screen without waiting.
       if (preview === "1") {
         return { closed: true, until: null, label: "שבת" };
       }

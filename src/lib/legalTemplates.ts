@@ -100,7 +100,7 @@ const PRIVACY_SECTIONS: Omit<LegalSection, "id">[] = [
   {
     heading: "שימוש במידע",
     body:
-      "המידע משמש לצורך עיבוד הזמנות, מתן שירות, יצירת קשר, שיפור האתר, ובכפוף להסכמתכם — לצרכים " +
+      "המידע משמש לצורך עיבוד הזמנות, מתן שירות, יצירת קשר, שיפור האתר, ובכפוף להסכמתכם - לצרכים " +
       "שיווקיים.",
   },
   {
@@ -167,9 +167,9 @@ export function injectBusinessDetails(
 ): string {
   return text
     .replace(/\{\{businessName\}\}/g, details.name || "העסק")
-    .replace(/\{\{businessEmail\}\}/g, details.email || "—")
-    .replace(/\{\{businessPhone\}\}/g, details.phone || "—")
-    .replace(/\{\{businessAddress\}\}/g, details.address || "—");
+    .replace(/\{\{businessEmail\}\}/g, details.email || "-")
+    .replace(/\{\{businessPhone\}\}/g, details.phone || "-")
+    .replace(/\{\{businessAddress\}\}/g, details.address || "-");
 }
 
 export const LEGAL_DOC_TITLES: Record<LegalDocType, string> = {

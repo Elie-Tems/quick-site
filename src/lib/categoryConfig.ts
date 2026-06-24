@@ -230,7 +230,7 @@ const categoryConfigs: Record<BusinessCategory, CategoryConfig> = {
   },
 };
 
-/** רשימת קטגוריות עסק עם תוויות עבריות – מקור אמת אחד לאונבורדינג, דשבורד וחנות */
+/** רשימת קטגוריות עסק עם תוויות עבריות - מקור אמת אחד לאונבורדינג, דשבורד וחנות */
 export const businessCategoryList: { id: BusinessCategory; label: string }[] = [
   { id: "bakery", label: "מאפייה" },
   { id: "restaurant", label: "מסעדה" },

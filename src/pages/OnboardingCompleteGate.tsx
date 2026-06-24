@@ -5,7 +5,7 @@ import OnboardingComplete from "@/components/onboarding/OnboardingComplete";
 import type { OnboardingData } from "@/pages/Onboarding";
 
 /**
- * /onboarding/complete — requires onboarding payload in location.state (from publish flow).
+ * /onboarding/complete - requires onboarding payload in location.state (from publish flow).
  */
 const OnboardingCompleteGate = () => {
   const navigate = useNavigate();

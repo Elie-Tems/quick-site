@@ -99,7 +99,7 @@ const StoreFavorites = ({ products, onAddToCart, onRemoveFavorite, onBack }: Sto
                   <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
                 </button>
 
-                {/* Add to cart — slide up on hover, desktop */}
+                {/* Add to cart - slide up on hover, desktop */}
                 <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out hidden md:block">
                   <button
                     onClick={() => onAddToCart(product)}

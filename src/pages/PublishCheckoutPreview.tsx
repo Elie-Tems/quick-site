@@ -1,15 +1,15 @@
 import { Rocket, Check, ShoppingBag, CreditCard, Globe, Headphones, Pencil } from "lucide-react";
 
 /**
- * PROPOSAL / PREVIEW (item 10) — the "publish & pay" moment.
+ * PROPOSAL / PREVIEW (item 10) - the "publish & pay" moment.
  *
  * Concept: instead of a busy dashboard banner, the merchant sees their FINISHED
  * site clearly behind (no blur), with one focused payment card on top. Seeing
- * "my site, ready" creates the desire to publish — a single clear action.
+ * "my site, ready" creates the desire to publish - a single clear action.
  *
  * This route (/preview/publish) is a static mock for approval. In production the
  * background becomes the merchant's real store preview and the button triggers
- * the publish payment. TEMPORARY — remove the /preview/* routes before launch.
+ * the publish payment. TEMPORARY - remove the /preview/* routes before launch.
  */
 
 const products = [
@@ -68,10 +68,10 @@ const StorePreview = () => (
 const PublishCheckoutPreview = () => {
   return (
     <div className="relative min-h-screen" dir="rtl">
-      {/* The merchant's real site — clear, not blurred */}
+      {/* The merchant's real site - clear, not blurred */}
       <StorePreview />
 
-      {/* Readability scrim (no blur — the site stays clearly visible) */}
+      {/* Readability scrim (no blur - the site stays clearly visible) */}
       <div className="fixed inset-0 bg-black/55" />
 
       {/* Focused payment card */}
@@ -82,7 +82,7 @@ const PublishCheckoutPreview = () => {
           </div>
 
           <h1 className="text-2xl md:text-3xl font-bold text-zinc-900">האתר שלך מוכן! 🎉</h1>
-          <p className="text-zinc-500 mt-2">נשאר רק צעד אחד — להעלות אותו לאוויר ולהתחיל למכור.</p>
+          <p className="text-zinc-500 mt-2">נשאר רק צעד אחד - להעלות אותו לאוויר ולהתחיל למכור.</p>
 
           {/* price */}
           <div className="my-6 rounded-2xl border-2 border-[#3B976C]/30 bg-[#3B976C]/5 py-5">

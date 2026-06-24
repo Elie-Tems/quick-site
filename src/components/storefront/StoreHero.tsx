@@ -74,7 +74,7 @@ const StoreHero = ({
     <section className="relative w-full" dir="rtl">
       {/* ── Full-bleed Hero ── */}
       <div className="relative h-[55vh] min-h-[280px] sm:h-[65vh] md:h-[75vh] lg:h-[88vh] overflow-hidden bg-background">
-        {/* Fallback gradient: תמיד מתחת או כשהתמונה לא זמינה — במובייל מונע מסך ריק */}
+        {/* Fallback gradient: תמיד מתחת או כשהתמונה לא זמינה - במובייל מונע מסך ריק */}
         {(!hasValidImage || showGradientUntilLoaded) && (
           <div
             className="absolute inset-0"
@@ -99,7 +99,7 @@ const StoreHero = ({
           />
         )}
 
-        {/* Gradient overlays — editorial: strong bottom fade + subtle left vignette */}
+        {/* Gradient overlays - editorial: strong bottom fade + subtle left vignette */}
         {hasValidImage && imageLoaded && (
           <>
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10" />
@@ -112,14 +112,14 @@ const StoreHero = ({
           <div className="container px-4 md:px-6 pb-10 md:pb-14 lg:pb-16">
             <div className="max-w-xl">
 
-              {/* Badge — thin pill, editorial */}
+              {/* Badge - thin pill, editorial */}
               {displayHeroBadge && (
                 <span className="inline-block mb-4 text-[10px] font-bold tracking-[0.25em] uppercase text-white/90 border border-white/30 px-3 py-1">
                   {displayHeroBadge}
                 </span>
               )}
 
-              {/* Title — large editorial serif feel via tight tracking */}
+              {/* Title - large editorial serif feel via tight tracking */}
               {displayTitle && (
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.05] tracking-[-0.02em] mb-4">
                   {displayTitle}
@@ -133,7 +133,7 @@ const StoreHero = ({
                 </p>
               )}
 
-              {/* CTA — flat, editorial, no rounded */}
+              {/* CTA - flat, editorial, no rounded */}
               {displayCtaText && (
                 <button
                   onClick={scrollToProducts}
@@ -148,7 +148,7 @@ const StoreHero = ({
           </div>
         </div>
 
-        {/* Issue number / decorative element — top left corner, editorial touch */}
+        {/* Issue number / decorative element - top left corner, editorial touch */}
         <div className="absolute top-5 left-5 hidden md:flex flex-col items-center gap-1 opacity-40">
           <div className="w-px h-8 bg-white" />
           <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-white rotate-90 origin-center translate-y-4">

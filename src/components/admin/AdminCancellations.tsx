@@ -3,16 +3,16 @@ import { Loader2, XCircle } from "lucide-react";
 import { useCancellations } from "@/hooks/useAdmin";
 
 const formatDate = (d: string | null) => {
-  if (!d) return "—";
+  if (!d) return "-";
   try {
     return new Date(d).toLocaleDateString("he-IL");
   } catch {
-    return "—";
+    return "-";
   }
 };
 
 const typeLabel = (t: string | null) =>
-  t === "immediate" ? "הורדה מיידית" : t === "end_of_period" ? "עד תום התקופה" : "—";
+  t === "immediate" ? "הורדה מיידית" : t === "end_of_period" ? "עד תום התקופה" : "-";
 
 const AdminCancellations = () => {
   const { data: cancellations, isLoading, isError } = useCancellations();
@@ -99,7 +99,7 @@ const AdminCancellations = () => {
                     <td className="py-2.5 text-foreground">{formatDate(c.cancel_at || c.created_at)}</td>
                     <td className="py-2.5 text-muted-foreground">{c.plan_name}</td>
                     <td className="py-2.5 text-muted-foreground">{typeLabel(c.cancel_type)}</td>
-                    <td className="py-2.5 text-muted-foreground">{c.cancel_reason || "—"}</td>
+                    <td className="py-2.5 text-muted-foreground">{c.cancel_reason || "-"}</td>
                   </tr>
                 ))}
               </tbody>

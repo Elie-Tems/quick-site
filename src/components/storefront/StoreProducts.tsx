@@ -170,7 +170,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
           {/* Dark overlay on hover */}
           <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/10 transition-all duration-500" />
 
-          {/* Badges — editorial style: thin, uppercase, tight tracking */}
+          {/* Badges - editorial style: thin, uppercase, tight tracking */}
           <div className="absolute top-3 right-3 flex flex-col gap-1.5">
             {product.isHot && (
               <span className="flex items-center gap-1 bg-orange-500 text-white text-[9px] font-bold tracking-[0.15em] uppercase px-2 py-1">
@@ -201,7 +201,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
             />
           </button>
 
-          {/* Slide-up Add to Cart — desktop */}
+          {/* Slide-up Add to Cart - desktop */}
           <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out hidden md:block">
             <button
               onClick={() => handleAddToCart(product)}
@@ -277,7 +277,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
     <section id="products" dir="rtl" className="py-12 md:py-20">
       <div className="container px-4 md:px-6">
 
-        {/* ── HOT PRODUCTS — Editorial Feature Layout ── */}
+        {/* ── HOT PRODUCTS - Editorial Feature Layout ── */}
         {hotProducts.length > 0 && (
           <div className="mb-16 md:mb-24">
             {/* Section label */}
@@ -326,7 +326,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
 
         {/* ── FILTER / SORT BAR ── */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between border-t border-b border-foreground/10 py-4 md:py-3 mb-8 md:mb-10 gap-4 md:gap-3">
-          {/* Title + count — שורה נפרדת במובייל */}
+          {/* Title + count - שורה נפרדת במובייל */}
           <div className="flex items-baseline gap-2 flex-shrink-0">
             <h2 className="text-sm font-bold tracking-[0.15em] uppercase text-foreground whitespace-nowrap">
               {hotProducts.length > 0 ? "כל המוצרים" : "המוצרים שלנו"}
@@ -334,7 +334,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
             <span className="text-xs text-muted-foreground whitespace-nowrap">{displayedProducts.length} פריטים</span>
           </div>
 
-          {/* Filter chips + sort — שורה שנייה במובייל, גלילה אופקית */}
+          {/* Filter chips + sort - שורה שנייה במובייל, גלילה אופקית */}
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5 md:pb-0 md:flex-wrap md:justify-end">
             <div className="flex gap-1.5 flex-shrink-0">
               {(Object.keys(FILTER_LABELS) as FilterOption[]).map((key) => (
@@ -375,7 +375,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
           </div>
         </div>
 
-        {/* ── PRODUCTS GRID — Mixed editorial layout ── */}
+        {/* ── PRODUCTS GRID - Mixed editorial layout ── */}
 
         {/* Mobile: clean uniform 2-col grid */}
         <div className="grid grid-cols-2 gap-3 md:hidden">

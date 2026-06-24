@@ -258,7 +258,7 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
         <p className="text-muted-foreground">
           {skipPublishPayment
             ? "בדוק את הפרטים ולחץ להשלמה (מצב פיתוח ללא תשלום)"
-            : "בדוק את הפרטים — נשמור את החנות ונמשיך לתשלום לפרסום בכתובת הציבורית"}
+            : "בדוק את הפרטים - נשמור את החנות ונמשיך לתשלום לפרסום בכתובת הציבורית"}
         </p>
       </div>
 
@@ -333,7 +333,7 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
         </p>
       </div>
 
-      {/* Legal acknowledgment — non-blocking baseline, but must be confirmed once */}
+      {/* Legal acknowledgment - non-blocking baseline, but must be confirmed once */}
       <div className="p-5 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-3">
         <h3 className="font-semibold text-foreground flex items-center gap-2">⚖️ נושאים משפטיים</h3>
         <p className="text-sm text-muted-foreground">
@@ -377,7 +377,7 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
 
       {/* Reassurance: nothing here is final */}
       <p className="text-center text-sm text-muted-foreground mt-3">
-        ✏️ אל דאגה — תוכלו לערוך הכל (טקסטים, מוצרים, צבעים ועיצוב) גם אחרי שהאתר יהיה באוויר.
+        ✏️ אל דאגה - תוכלו לערוך הכל (טקסטים, מוצרים, צבעים ועיצוב) גם אחרי שהאתר יהיה באוויר.
       </p>
 
       {/* Navigation - just back button for this step */}

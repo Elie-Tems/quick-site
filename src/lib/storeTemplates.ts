@@ -40,7 +40,7 @@ export interface StoreTemplate {
     hoverEffect: 'zoom' | 'lift' | 'none';
     borderStyle: 'none' | 'subtle' | 'bold';
   };
-  /** קטגוריות מוצרים מוצעות לתבנית – יופיעו באונבורדינג ובקטגוריות בדשבורד */
+  /** קטגוריות מוצרים מוצעות לתבנית - יופיעו באונבורדינג ובקטגוריות בדשבורד */
   defaultCategories?: Array<{ name: string; description?: string }>;
   /** Tailwind CSS classes for implementing this template */
   cssClasses?: {

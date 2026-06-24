@@ -11,7 +11,7 @@
  *  - Access/erasure requests handled within 30 days (Amendment 13).
  */
 
-/** A provable consent record — store one per opt-in (Chok HaSpam evidence). */
+/** A provable consent record - store one per opt-in (Chok HaSpam evidence). */
 export interface ConsentRecord {
   email: string;
   businessId: string;
@@ -27,7 +27,7 @@ export interface ConsentRecord {
 export const consentLabel = (businessName: string): string =>
   `אני מאשר/ת לקבל מ${businessName} עדכונים והצעות בדוא"ל. ניתן להסיר בכל עת.`;
 
-/** מאגר מידע disclosure shown near the opt-in (Amendment 13 — collection notice). */
+/** מאגר מידע disclosure shown near the opt-in (Amendment 13 - collection notice). */
 export const databaseDisclosure = (businessName: string): string =>
   `הפרטים שתמסור יישמרו במאגר המידע של ${businessName} וישמשו ליצירת קשר, מתן שירות ושליחת עדכונים שיווקיים ` +
   `(בכפוף להסכמתך). באפשרותך לעיין בפרטיך, לתקנם או לבקש את מחיקתם בכל עת.`;
@@ -36,7 +36,7 @@ export const databaseDisclosure = (businessName: string): string =>
 export const buildUnsubscribeUrl = (siteUrl: string, slug: string, token: string): string =>
   `${siteUrl.replace(/\/$/, "")}/store/${slug}/unsubscribe?t=${encodeURIComponent(token)}`;
 
-/** Compliance checklist — surface in the merchant UI before enabling campaigns. */
+/** Compliance checklist - surface in the merchant UI before enabling campaigns. */
 export const COMPLIANCE_CHECKLIST: { id: string; label: string }[] = [
   { id: "optin", label: "איסוף נמענים בהסכמה מפורשת (opt-in) בלבד" },
   { id: "disclosure", label: 'הצגת הודעת "מאגר מידע" בעת איסוף הפרטים' },

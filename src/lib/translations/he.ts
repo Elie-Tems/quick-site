@@ -122,7 +122,7 @@ const he: Record<string, string> = {
   // Template Showcase
   'templates.badge': 'תבניות מעוצבות',
   'templates.title': 'לא צריך להיות מעצבים או מתכנתים',
-  'templates.subtitle': 'אנחנו עושים את הכל — אתם רק תבחרו את הסגנון',
+  'templates.subtitle': 'אנחנו עושים את הכל - אתם רק תבחרו את הסגנון',
   'templates.fashion': 'אופנה',
   'templates.fashion.desc': 'בגדים, נעליים ואקססוריז',
   'templates.jewelry': 'תכשיטים',

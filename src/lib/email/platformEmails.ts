@@ -52,9 +52,9 @@ export const accountWelcome = (c: PlatformCtx): BuiltEmail => ({
     previewText: "בלי מתכנתים, בלי כאב ראש, בלי 40 עמודי הוראות",
     bodyHtml:
       h1("ברוכים הבאים למשפחה! 🎉") +
-      p(`${hi(c)}איזה כיף שהצטרפתם. עשיתם החלטה מצוינת — ועכשיו החלק הקל: לבנות אתר מכירות שנראה כאילו שילמתם עליו הון (בלי לשלם הון 😉).`) +
-      p("בלי מתכנתים, בלי מעצבים, ובלי לקרוא 40 עמודי הוראות — כי למי יש כוח לזה. תוך כמה דקות יש לכם חנות באוויר.") +
-      emailHighlight("💡 טיפ קטן: תכינו מראש לוגו ותמונה יפה אחת — וזהו, השאר עלינו.") +
+      p(`${hi(c)}איזה כיף שהצטרפתם. עשיתם החלטה מצוינת - ועכשיו החלק הקל: לבנות אתר מכירות שנראה כאילו שילמתם עליו הון (בלי לשלם הון 😉).`) +
+      p("בלי מתכנתים, בלי מעצבים, ובלי לקרוא 40 עמודי הוראות - כי למי יש כוח לזה. תוך כמה דקות יש לכם חנות באוויר.") +
+      emailHighlight("💡 טיפ קטן: תכינו מראש לוגו ותמונה יפה אחת - וזהו, השאר עלינו.") +
       emailButton("יאללה, בונים אתר 🚀", dash(c), BRAND),
   }),
 });
@@ -64,10 +64,10 @@ export const onboardingAbandoned1 = (c: PlatformCtx): BuiltEmail => ({
   subject: "האתר שלכם מנמנם ומחכה לכם 😴",
   html: renderEmail({
     sender: siangoSender(c.dashboardUrl),
-    previewText: "ההתקדמות נשמרה — לא צריך להתחיל מהתחלה",
+    previewText: "ההתקדמות נשמרה - לא צריך להתחיל מהתחלה",
     bodyHtml:
       h1("אז... החיים קרו ☕") +
-      p(`${hi(c)}התחלתם לבנות אתר, ואז כנראה צלצל הטלפון / הילדים קראו / נגמר הקפה — אנחנו מבינים לגמרי.`) +
+      p(`${hi(c)}התחלתם לבנות אתר, ואז כנראה צלצל הטלפון / הילדים קראו / נגמר הקפה - אנחנו מבינים לגמרי.`) +
       p(`החדשות הטובות: האתר של ${biz(c)} יושב בדיוק איפה שהשארתם אותו, שמור ומסודר. אפילו לא צריך להתחיל מהתחלה (פיו! 😅).`) +
       emailHighlight("⏱️ זה לוקח עוד כ-5 דקות לסיים. פחות זמן מאשר למצוא מה לראות בנטפליקס.") +
       emailButton("ממשיכים מאיפה שעצרנו", c.continueUrl || dash(c), BRAND),
@@ -82,7 +82,7 @@ export const onboardingAbandoned2 = (c: PlatformCtx): BuiltEmail => ({
     previewText: "עוד כמה קליקים והאתר באוויר",
     bodyHtml:
       h1("נשאר ממש צעד אחד 🙌") +
-      p(`${hi(c)}זו התזכורת האחרונה שלנו — מבטיחים. האתר שלכם כבר 90% מוכן, חבל שיישאר בארון.`) +
+      p(`${hi(c)}זו התזכורת האחרונה שלנו - מבטיחים. האתר שלכם כבר 90% מוכן, חבל שיישאר בארון.`) +
       p(`תקועים על משהו? תכתבו לנו ל-${ltr(SUPPORT_EMAIL)} ואנחנו נעזור באהבה (ובלי ז'רגון טכני מעצבן).`) +
       emailButton("לסיום ההקמה", c.continueUrl || dash(c), BRAND),
   }),
@@ -96,9 +96,9 @@ export const siteReady = (c: PlatformCtx): BuiltEmail => ({
     previewText: "הגיע הזמן להתרברב בוואטסאפ המשפחתי",
     bodyHtml:
       h1("זהו, אתם באוויר! 🎉🚀") +
-      p(`${hi(c)}האתר של ${biz(c)} עלה רשמית והוא כבר מתאמן על קבלת לקוחות. הרגע הזה שבו עסק קטן הופך לעסק עם אתר — נהנים ממנו!`) +
+      p(`${hi(c)}האתר של ${biz(c)} עלה רשמית והוא כבר מתאמן על קבלת לקוחות. הרגע הזה שבו עסק קטן הופך לעסק עם אתר - נהנים ממנו!`) +
       (c.siteUrl ? emailHighlight(`🔗 כתובת האתר שלכם:<br><b>${ltr(c.siteUrl)}</b>`) : "") +
-      p("מה עכשיו? משתפים את הקישור בכל מקום — וואטסאפ, אינסטגרם, אצל הדודה בקבוצה. כל שיתוף = עוד לקוח פוטנציאלי. 😉") +
+      p("מה עכשיו? משתפים את הקישור בכל מקום - וואטסאפ, אינסטגרם, אצל הדודה בקבוצה. כל שיתוף = עוד לקוח פוטנציאלי. 😉") +
       emailButton("לצפייה באתר החי 👀", c.siteUrl || dash(c), BRAND) +
       emailButton("לדשבורד הניהול", dash(c), "#555555"),
   }),
@@ -120,13 +120,13 @@ export const paymentReceipt = (c: PlatformCtx): BuiltEmail => ({
 
 /** 6. Charge failed (day 0). */
 export const paymentFailed = (c: PlatformCtx): BuiltEmail => ({
-  subject: "אופס — הכרטיס אמר 'לא היום' 💳",
+  subject: "אופס - הכרטיס אמר 'לא היום' 💳",
   html: renderEmail({
     sender: siangoSender(c.dashboardUrl),
     previewText: "רגע קטן של עדכון וחוזרים לעניינים",
     bodyHtml:
       h1("החיוב לא עבר 💳") +
-      p(`${hi(c)}ניסינו לחייב את אמצעי התשלום${c.amountIls ? ` בסך ${ils(c.amountIls)}` : ""} — והוא קצת התעקש. קורה לכולם (כרטיס שפג, מסגרת, או סתם יום קשה לבנק 🙂).`) +
+      p(`${hi(c)}ניסינו לחייב את אמצעי התשלום${c.amountIls ? ` בסך ${ils(c.amountIls)}` : ""} - והוא קצת התעקש. קורה לכולם (כרטיס שפג, מסגרת, או סתם יום קשה לבנק 🙂).`) +
       emailHighlight("✅ האתר שלכם עדיין פעיל ועובד כרגיל. רק צריך לעדכן אמצעי תשלום כדי שיישאר ככה.") +
       emailButton("עדכון אמצעי תשלום", dash(c), BRAND),
   }),
@@ -134,14 +134,14 @@ export const paymentFailed = (c: PlatformCtx): BuiltEmail => ({
 
 /** 7. Dunning reminder (days 3 & 7). */
 export const paymentReminder = (c: PlatformCtx): BuiltEmail => ({
-  subject: "תזכורת קטנה — התשלום עוד ממתין 🙏",
+  subject: "תזכורת קטנה - התשלום עוד ממתין 🙏",
   html: renderEmail({
     sender: siangoSender(c.dashboardUrl),
     previewText: "כדי שהאתר יישאר באוויר",
     bodyHtml:
       h1("רק תזכורת ידידותית 🙏") +
       p(`${hi(c)}עדיין לא הצלחנו לחייב את המנוי. לא נעים לנו לנדנד, אבל לא נעים לנו עוד יותר אם האתר של ${biz(c)} יושהה.`) +
-      emailHighlight("⏸️ אם התשלום לא יוסדר בימים הקרובים, האתר יושהה זמנית (אבל לא נמחק — אפשר תמיד להחזיר).") +
+      emailHighlight("⏸️ אם התשלום לא יוסדר בימים הקרובים, האתר יושהה זמנית (אבל לא נמחק - אפשר תמיד להחזיר).") +
       emailButton("להסדרת התשלום עכשיו", dash(c), BRAND),
   }),
 });
@@ -151,27 +151,27 @@ export const siteFrozen = (c: PlatformCtx): BuiltEmail => ({
   subject: "האתר שלכם לקח פסק זמן ⏸️",
   html: renderEmail({
     sender: siangoSender(c.dashboardUrl),
-    previewText: "הוא לא נעלם — רק ממתין לכם",
+    previewText: "הוא לא נעלם - רק ממתין לכם",
     bodyHtml:
       h1("האתר הושהה זמנית ⏸️") +
-      p(`${hi(c)}מאחר שהתשלום לא הוסדר, האתר של ${biz(c)} הושהה ואינו זמין כרגע ללקוחות. אבל אל דאגה — הוא לא נעלם לשום מקום, כל התכנים והנתונים שמורים.`) +
-      emailHighlight("⚡ רגע של הסדרת תשלום — והאתר קופץ בחזרה לחיים, בדיוק כמו שהיה.") +
+      p(`${hi(c)}מאחר שהתשלום לא הוסדר, האתר של ${biz(c)} הושהה ואינו זמין כרגע ללקוחות. אבל אל דאגה - הוא לא נעלם לשום מקום, כל התכנים והנתונים שמורים.`) +
+      emailHighlight("⚡ רגע של הסדרת תשלום - והאתר קופץ בחזרה לחיים, בדיוק כמו שהיה.") +
       emailButton("החזרת האתר לפעילות", dash(c), BRAND),
   }),
 });
 
-/** 9. Pre-deletion warning. (Serious, clear — no jokes about data loss.) */
+/** 9. Pre-deletion warning. (Serious, clear - no jokes about data loss.) */
 export const deletionWarning = (c: PlatformCtx): BuiltEmail => ({
   subject: `חשוב: הנתונים יימחקו בעוד ${c.daysLeft ?? 14} ימים`,
   html: renderEmail({
     sender: siangoSender(c.dashboardUrl),
     previewText: "פעולה אחרונה לשמירת האתר והנתונים",
     bodyHtml:
-      h1("שימו לב — האתר עומד להימחק") +
+      h1("שימו לב - האתר עומד להימחק") +
       p(`${hi(c)}האתר של ${biz(c)} מושהה זה זמן מה עקב אי-תשלום. אנחנו לא רוצים שתאבדו את העבודה שהשקעתם.`) +
       emailHighlight(`⚠️ אם התשלום לא יוסדר עד ${c.deleteDate ? ltr(c.deleteDate) : `${c.daysLeft ?? 14} ימים`}, האתר, התכנים והנתונים יימחקו לצמיתות ולא ניתן יהיה לשחזרם.`) +
-      p("עדיין אפשר להציל הכל — פשוט מסדירים את התשלום והאתר חוזר לפעול.") +
-      emailButton("הצלת האתר — להסדרת התשלום", dash(c), BRAND),
+      p("עדיין אפשר להציל הכל - פשוט מסדירים את התשלום והאתר חוזר לפעול.") +
+      emailButton("הצלת האתר - להסדרת התשלום", dash(c), BRAND),
   }),
 });
 
@@ -184,7 +184,7 @@ export const siteDeleted = (c: PlatformCtx): BuiltEmail => ({
     bodyHtml:
       h1("האתר נמחק") +
       p(`${hi(c)}בהתאם לתנאי השימוש, האתר של ${biz(c)} והנתונים נמחקו עקב אי-תשלום ממושך.`) +
-      p("חבל שנפרדנו ככה — אבל הדלת תמיד פתוחה. אם תרצו לחזור, נשמח לבנות איתכם אתר חדש מאפס, מתי שתרצו. 🙏") +
+      p("חבל שנפרדנו ככה - אבל הדלת תמיד פתוחה. אם תרצו לחזור, נשמח לבנות איתכם אתר חדש מאפס, מתי שתרצו. 🙏") +
       emailButton("פתיחת אתר חדש", dash(c), BRAND),
   }),
 });
@@ -197,21 +197,21 @@ export const siteReactivated = (c: PlatformCtx): BuiltEmail => ({
     previewText: "הכל חזר לעבוד במצב רוח מצוין",
     bodyHtml:
       h1("האתר שוב באוויר! 🎉") +
-      p(`${hi(c)}התשלום הוסדר והאתר של ${biz(c)} חזר לפעול כרגיל — ובמצב רוח מצוין. תודה שחזרתם! 💚`) +
+      p(`${hi(c)}התשלום הוסדר והאתר של ${biz(c)} חזר לפעול כרגיל - ובמצב רוח מצוין. תודה שחזרתם! 💚`) +
       emailButton("צפייה באתר", c.siteUrl || dash(c), BRAND),
   }),
 });
 
 /** 12. Subscription cancelled confirmation. */
 export const subscriptionCancelled = (c: PlatformCtx): BuiltEmail => ({
-  subject: "המנוי בוטל — נתראה (בתקווה) בקרוב 👋",
+  subject: "המנוי בוטל - נתראה (בתקווה) בקרוב 👋",
   html: renderEmail({
     sender: siangoSender(c.dashboardUrl),
     previewText: "פרטי הביטול בפנים",
     bodyHtml:
       h1("המנוי בוטל 👋") +
       p(`${hi(c)}קלטנו את בקשת הביטול.${c.freezeDate ? ` האתר יישאר פעיל עד ${ltr(c.freezeDate)}, אז יש עוד זמן להתחרט 😉.` : ""}`) +
-      p("היה לנו כיף לארח אתכם. אם אי פעם תרצו לחזור — אנחנו כאן, והכפתור למטה תמיד עובד.") +
+      p("היה לנו כיף לארח אתכם. אם אי פעם תרצו לחזור - אנחנו כאן, והכפתור למטה תמיד עובד.") +
       emailButton("חידוש מנוי", dash(c), BRAND),
   }),
 });
@@ -224,7 +224,7 @@ export const newOrderMerchant = (c: PlatformCtx): BuiltEmail => ({
     previewText: "הרגע של ריקוד קטן בכיסא",
     bodyHtml:
       h1("הזמנה חדשה נחתה! 🛍️🎉") +
-      p(`${hi(c)}מישהו בדיוק קנה אצלכם${c.amountIls ? ` בסך ${ils(c.amountIls)}` : ""} ב-${biz(c)}. זה הרגע שבו מותר לעשות ריקוד קטן בכיסא — מגיע לכם. 💃`) +
+      p(`${hi(c)}מישהו בדיוק קנה אצלכם${c.amountIls ? ` בסך ${ils(c.amountIls)}` : ""} ב-${biz(c)}. זה הרגע שבו מותר לעשות ריקוד קטן בכיסא - מגיע לכם. 💃`) +
       emailHighlight("📦 כל הפרטים (מה הוזמן, פרטי הלקוח, כתובת) מחכים לכם בדשבורד.") +
       emailButton("לצפייה בהזמנה", dash(c), BRAND),
   }),
@@ -248,10 +248,10 @@ export const orderConfirmationCustomer = (
     previewText: "תודה רבה! הנה כל הפרטים",
     bodyHtml:
       h1("ההזמנה התקבלה! 🎉") +
-      p(`${args.firstName ? `היי ${args.firstName}! ` : "היי! "}תודה רבה על הרכישה ב${args.storeName} — בחירה מצוינת, אם יורשה לנו לומר 😉. קיבלנו את ההזמנה${args.orderNumber ? ` (מספר ${ltr(args.orderNumber)})` : ""} וכבר מתחילים לטפל בה.`) +
+      p(`${args.firstName ? `היי ${args.firstName}! ` : "היי! "}תודה רבה על הרכישה ב${args.storeName} - בחירה מצוינת, אם יורשה לנו לומר 😉. קיבלנו את ההזמנה${args.orderNumber ? ` (מספר ${ltr(args.orderNumber)})` : ""} וכבר מתחילים לטפל בה.`) +
       p("הנה מה שהזמנת:") +
       (args.items && args.items.length ? emailItemsTable(args.items, args.orderTotal) : "") +
-      p("נעדכן אותך בכל שלב. יש שאלה? פשוט השב/י למייל הזה — אנחנו אנשים אמיתיים ונשמח לעזור. 🙏") +
+      p("נעדכן אותך בכל שלב. יש שאלה? פשוט השב/י למייל הזה - אנחנו אנשים אמיתיים ונשמח לעזור. 🙏") +
       emailButton("חזרה לחנות", args.storeUrl, merchant.brandColor || BRAND),
   }),
 });

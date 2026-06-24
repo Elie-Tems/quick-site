@@ -113,7 +113,7 @@ const StoreCartPage = ({
                   {formatPrice(item.price)}
                 </p>
 
-                {/* Quantity controls — editorial minimal */}
+                {/* Quantity controls - editorial minimal */}
                 <div className="flex items-center gap-0 mt-3 border border-foreground/15 w-fit">
                   <button
                     onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}

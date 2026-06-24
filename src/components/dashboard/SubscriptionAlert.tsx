@@ -45,7 +45,7 @@ const SubscriptionAlert = ({ onManage }: Props) => {
   if (overdueDays < FREEZE_DAYS) {
     tone = "warning";
     title = "התשלום החודשי לא עבר 💳";
-    body = `כדי שהאתר יישאר פעיל, עדכנו את אמצעי התשלום. אם לא יוסדר — האתר יושהה בעוד ${FREEZE_DAYS - overdueDays} ימים.`;
+    body = `כדי שהאתר יישאר פעיל, עדכנו את אמצעי התשלום. אם לא יוסדר - האתר יושהה בעוד ${FREEZE_DAYS - overdueDays} ימים.`;
   } else if (overdueDays < DELETE_DAYS) {
     tone = "danger";
     icon = <AlertTriangle className="h-5 w-5 shrink-0" />;

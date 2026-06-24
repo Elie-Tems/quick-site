@@ -282,7 +282,7 @@ const DashboardAIImages = ({ businessId, onNavigateToSubscription }: DashboardAI
                 </div>
 
                 <Button onClick={() => setStep("upload")} className="w-full" size="lg">
-                  המשך — העלאת תמונה
+                  המשך - העלאת תמונה
                   <ChevronRight className="h-4 w-4 mr-2" />
                 </Button>
               </div>
@@ -330,7 +330,7 @@ const DashboardAIImages = ({ businessId, onNavigateToSubscription }: DashboardAI
                         <Upload className="h-8 w-8 text-primary" />
                       </div>
                       <p className="font-semibold text-base">לחץ לבחירת תמונה</p>
-                      <p className="text-sm text-muted-foreground">PNG, JPG — עד 10MB</p>
+                      <p className="text-sm text-muted-foreground">PNG, JPG - עד 10MB</p>
                     </div>
                   )}
                   <Input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploading || usageStatus?.imageUploadBlocked} />
@@ -439,7 +439,7 @@ const DashboardAIImages = ({ businessId, onNavigateToSubscription }: DashboardAI
                         <Wand2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                         <div>
                           <p className="font-semibold text-sm">תאר בחופשיות איך תרצה את התמונה</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">כתוב כל פרט — רקע, תאורה, אווירה, סביבה</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">כתוב כל פרט - רקע, תאורה, אווירה, סביבה</p>
                         </div>
                       </div>
                       <Textarea
@@ -538,7 +538,7 @@ const DashboardAIImages = ({ businessId, onNavigateToSubscription }: DashboardAI
                     {generateImage.isPending ? (
                       <><Loader2 className="h-4 w-4 ml-2 animate-spin" />יוצר תמונה...</>
                     ) : (
-                      <><Sparkles className="h-4 w-4 ml-2" />צור תמונה עכשיו — 1 קרדיט</>
+                      <><Sparkles className="h-4 w-4 ml-2" />צור תמונה עכשיו - 1 קרדיט</>
                     )}
                   </Button>
                 </div>

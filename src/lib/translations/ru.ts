@@ -122,7 +122,7 @@ const ru: Record<string, string> = {
   // Template Showcase
   'templates.badge': 'Дизайнерские шаблоны',
   'templates.title': 'Не нужно быть дизайнером или программистом',
-  'templates.subtitle': 'Мы делаем все — вы только выбираете стиль',
+  'templates.subtitle': 'Мы делаем все - вы только выбираете стиль',
   'templates.fashion': 'Мода',
   'templates.fashion.desc': 'Одежда, обувь и аксессуары',
   'templates.jewelry': 'Ювелирные изделия',

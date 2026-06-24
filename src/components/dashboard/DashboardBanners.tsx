@@ -141,7 +141,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return '—';
+    if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('he-IL');
   };
 
@@ -181,7 +181,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
               placeholder="לדוגמה: באנר מבצע קיץ"
               required
             />
-            <p className="text-xs text-muted-foreground">שם לזיהוי הבאנר בלוח הניהול בלבד — לא מוצג ללקוחות.</p>
+            <p className="text-xs text-muted-foreground">שם לזיהוי הבאנר בלוח הניהול בלבד - לא מוצג ללקוחות.</p>
           </div>
 
           <div className="space-y-2">
@@ -375,7 +375,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
                 {(banner.startDate || banner.endDate) && (
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
                     <Calendar className="h-3 w-3" />
-                    <span>{formatDate(banner.startDate)} — {formatDate(banner.endDate)}</span>
+                    <span>{formatDate(banner.startDate)} - {formatDate(banner.endDate)}</span>
                   </div>
                 )}
 

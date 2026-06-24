@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
   // If approval number provided, find business_id
   if (approvalNum) {
     // Always validate the approval number against the approval_num table.
-    // The table is the source of truth — it records which business each
+    // The table is the source of truth - it records which business each
     // payment-approval number belongs to. Never trust a client-supplied
     // businessId on its own, otherwise any logged-in user could mark their
     // own business "paid" with an arbitrary approval number.

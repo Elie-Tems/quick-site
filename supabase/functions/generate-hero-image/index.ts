@@ -335,7 +335,7 @@ serve(async (req) => {
     }
 
     // Poll Nano Banana for hero result.
-    // Poll faster (1.2s) so a finished image is detected sooner — the previous
+    // Poll faster (1.2s) so a finished image is detected sooner - the previous
     // 2s cadence added up to ~2s of dead wait after the image was already ready.
     // maxAttempts raised to keep roughly the same overall timeout (~80s).
     const maxAttempts = 66;

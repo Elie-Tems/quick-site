@@ -20,7 +20,7 @@ interface DashboardHomeProps {
 }
 
 const DashboardHome = ({ stats, businessId, isPublished, hasAbout, onNavigate }: DashboardHomeProps) => {
-  // Launch checklist — orients a brand-new owner on what to do to go live.
+  // Launch checklist - orients a brand-new owner on what to do to go live.
   const launchSteps: { id: string; label: string; desc: string; done: boolean; view: DashboardView; icon: typeof Package }[] = [
     { id: "products", label: "הוספת מוצרים", desc: "הוסיפו את המוצרים הראשונים לחנות", done: stats.totalProducts > 0, view: "products", icon: Package },
     { id: "payments", label: "הגדרת סליקה", desc: "חברו אמצעי תשלום כדי לקבל הזמנות", done: stats.paymentEnabled, view: "payments", icon: CreditCard },
@@ -44,7 +44,7 @@ const DashboardHome = ({ stats, businessId, isPublished, hasAbout, onNavigate }:
     <div className="p-4 md:p-6 space-y-6">
       <h1 className="text-2xl font-bold text-foreground">דשבורד</h1>
 
-      {/* Launch checklist — guides a new store to go live; replaced by a success
+      {/* Launch checklist - guides a new store to go live; replaced by a success
           banner once everything is done. */}
       {allDone ? (
         <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5 flex items-center gap-4">
@@ -53,7 +53,7 @@ const DashboardHome = ({ stats, businessId, isPublished, hasAbout, onNavigate }:
           </div>
           <div className="flex-1">
             <p className="font-bold text-foreground">האתר שלך באוויר ומוכן! 🎉</p>
-            <p className="text-sm text-muted-foreground">כל הכבוד — השלמת את כל שלבי ההשקה.</p>
+            <p className="text-sm text-muted-foreground">כל הכבוד - השלמת את כל שלבי ההשקה.</p>
           </div>
           <Button variant="outline" className="gap-2 hidden sm:flex" onClick={() => onNavigate("preview")}>
             <Eye className="h-4 w-4" /> צפה באתר

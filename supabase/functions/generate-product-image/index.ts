@@ -25,7 +25,7 @@ serve(async (req) => {
       throw new Error("Supabase configuration missing");
     }
 
-    // Require an authenticated user — this endpoint calls a paid image API.
+    // Require an authenticated user - this endpoint calls a paid image API.
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(

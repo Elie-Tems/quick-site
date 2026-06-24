@@ -78,7 +78,7 @@ export function useProductCategories(businessId: string | undefined) {
     onError: (e) => toast.error("שגיאה: " + (e as Error).message),
   });
 
-  /** ייבוא קטגוריות מ-categoryConfig לפי סוג העסק – נשמרות ב-DB ומופיעות בניהול */
+  /** ייבוא קטגוריות מ-categoryConfig לפי סוג העסק - נשמרות ב-DB ומופיעות בניהול */
   const seedFromBusinessCategoryMutation = useMutation({
     mutationFn: async ({
       businessId,

@@ -2,10 +2,10 @@
  * RTL-safe HTML email builder for the Israeli market.
  *
  * Why a custom builder: Hebrew email must render correctly in Outlook (common in
- * Israeli businesses) and Walla Mail (gmail.co.il) — both behave differently from
+ * Israeli businesses) and Walla Mail (gmail.co.il) - both behave differently from
  * Gmail. Rules applied here (per israeli-email-sequences guidance):
  *   - dir="rtl" on <html> and on every <table>/<td>.
- *   - Web-safe fonts only (Arial, Tahoma) — Google Fonts don't load in Outlook.
+ *   - Web-safe fonts only (Arial, Tahoma) - Google Fonts don't load in Outlook.
  *   - Numbers / prices / English / phone wrapped in <span dir="ltr"> to avoid reversal.
  *   - MSO conditional comments to fix Outlook table width.
  *   - A LEGALLY-REQUIRED footer (Chok HaSpam): sender identity, physical address,
@@ -18,11 +18,11 @@
 export interface EmailSender {
   /** Display name of the legal sender (the merchant, or "SIANGO"). */
   businessName: string;
-  /** Physical address — required by Chok HaSpam in the footer. */
+  /** Physical address - required by Chok HaSpam in the footer. */
   address?: string;
   /** Contact email shown in the footer. */
   email?: string;
-  /** Working one-click unsubscribe URL — REQUIRED. */
+  /** Working one-click unsubscribe URL - REQUIRED. */
   unsubscribeUrl: string;
   /** Brand color for buttons/accents (defaults to refined emerald). */
   brandColor?: string;

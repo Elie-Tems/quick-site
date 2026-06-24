@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
   }
 
   // Log only the payload field names for debugging. Never log the full
-  // payload or req.url — they can contain the webhook secret (query param)
+  // payload or req.url - they can contain the webhook secret (query param)
   // and customer payment details.
   console.log("icount-webhook received fields:", Object.keys(payload).join(", "));
 

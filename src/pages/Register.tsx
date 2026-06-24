@@ -144,7 +144,7 @@ const Register = () => {
       return;
     }
     // Google provides the user's name; business details are collected later in
-    // onboarding — so don't block the OAuth CTA on the manual fields.
+    // onboarding - so don't block the OAuth CTA on the manual fields.
     // Store whatever was already filled for onboarding prefill (optional).
     if (formData.businessName.trim()) {
       localStorage.setItem("onboarding_business", formData.businessName);
@@ -552,7 +552,7 @@ const Register = () => {
                 {/* Consent notice */}
                 <FormConsentNotice />
 
-                {/* Terms & Privacy acceptance — required for all signup paths */}
+                {/* Terms & Privacy acceptance - required for all signup paths */}
                 <div className="register-field-wrapper">
                   <label className="flex items-start gap-2 cursor-pointer text-sm text-muted-foreground leading-relaxed">
                     <input

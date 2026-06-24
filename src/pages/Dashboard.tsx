@@ -111,15 +111,15 @@ const Dashboard = () => {
 
     const currentById = new Map(banners.map((b) => [b.id, b]));
 
-    // Deleted banners – exist in current but לא ב־new
+    // Deleted banners - exist in current but לא ב־new
     const deletedBanners = banners.filter(
       (b) => !newBanners.some((nb) => nb.id === b.id),
     );
 
-    // New banners – id שלא קיים ברשימה הנוכחית
+    // New banners - id שלא קיים ברשימה הנוכחית
     const newOnes = newBanners.filter((b) => !currentById.has(b.id));
 
-    // Existing banners – להשוות שדות ולשמור רק אם השתנו
+    // Existing banners - להשוות שדות ולשמור רק אם השתנו
     const maybeUpdated = newBanners.filter((b) => currentById.has(b.id));
 
     deletedBanners.forEach((b) => {

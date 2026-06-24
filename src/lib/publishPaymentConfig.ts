@@ -4,7 +4,7 @@ export function getPublishFeeIls(): number {
   return Number.isFinite(n) && n > 0 ? n : 69;
 }
 
-/** iframe (ברירת מחדל) או קישור חיצוני — אם iCount חוסמים iframe, הגדרו VITE_ICOUNT_PAYMENT_EMBED_MODE=link */
+/** iframe (ברירת מחדל) או קישור חיצוני - אם iCount חוסמים iframe, הגדרו VITE_ICOUNT_PAYMENT_EMBED_MODE=link */
 export function getIcountEmbedMode(): "iframe" | "link" {
   const m = (import.meta.env.VITE_ICOUNT_PAYMENT_EMBED_MODE || "iframe").toLowerCase();
   return m === "link" ? "link" : "iframe";

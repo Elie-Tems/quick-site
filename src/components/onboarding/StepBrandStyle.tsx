@@ -45,7 +45,7 @@ const options = [
   {
     id: "auto" as const,
     icon: Wand2,
-    title: "אין – תבחרו אתם",
+    title: "אין - תבחרו אתם",
     description: "ניצור עיצוב מותאם אוטומטית",
   },
 ];
@@ -59,7 +59,7 @@ const presetColors = [
 
 // Sample a categorized palette from a rendered canvas. Brand (saturated) colors
 // and base (neutral: black/white/gray) colors are tracked separately so a dark
-// design's black base is NOT lost — primary is the dominant brand color (or the
+// design's black base is NOT lost - primary is the dominant brand color (or the
 // dominant base if the image has no real color), and the palette keeps the base.
 function samplePaletteFromCanvas(
   ctx: CanvasRenderingContext2D,
@@ -123,7 +123,7 @@ async function extractPaletteFromImage(file: File): Promise<{ primaryColor: stri
 }
 
 // Extract a palette from a PDF (e.g. an ad / prospectus) by rendering its first
-// page to a canvas, then sampling — same logic as images.
+// page to a canvas, then sampling - same logic as images.
 async function extractPaletteFromPdf(file: File): Promise<{ primaryColor: string; colorPalette: string[] }> {
   const pdfjs = await import("pdfjs-dist");
   const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
@@ -260,7 +260,7 @@ const StepBrandStyle = ({ data, updateData, onNext, onBack }: StepBrandStyleProp
       toast.success("זיהינו את הצבעים מהקובץ");
     } catch (err) {
       console.error("color extraction failed:", err);
-      toast.error("לא הצלחנו לזהות צבעים מהקובץ — נסו קובץ אחר");
+      toast.error("לא הצלחנו לזהות צבעים מהקובץ - נסו קובץ אחר");
     }
   };
 

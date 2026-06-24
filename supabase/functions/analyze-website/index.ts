@@ -38,7 +38,7 @@ function isSafePublicUrl(raw: string): boolean {
 
 // Default palettes baked into common frameworks (WordPress/Gutenberg + Bootstrap).
 // These appear in the CSS of almost every site of that stack and are NOT the
-// site's real brand colors — exclude them from frequency-based detection.
+// site's real brand colors - exclude them from frequency-based detection.
 const DEFAULT_PALETTE_DENYLIST = new Set<string>([
   // WordPress / Gutenberg preset palette
   "#FF6900", "#FCB900", "#7BDCB5", "#00D084", "#8ED1FC", "#0693E3", "#ABB8C3",
@@ -82,7 +82,7 @@ serve(async (req) => {
   }
 
   try {
-    // Require an authenticated user — this endpoint fetches arbitrary URLs
+    // Require an authenticated user - this endpoint fetches arbitrary URLs
     // server-side and burns OpenAI tokens.
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
@@ -231,7 +231,7 @@ serve(async (req) => {
       });
       const html = await siteResponse.text();
 
-      // Also fetch external stylesheets — modern sites keep their brand colors
+      // Also fetch external stylesheets - modern sites keep their brand colors
       // in linked CSS files, not inline in the HTML. Without this, detection
       // misses the real palette and returns stray inline colors. SSRF-guarded
       // and capped in count + total size.
@@ -266,7 +266,7 @@ serve(async (req) => {
         console.error("stylesheet fetch failed:", cssErr);
       }
 
-      // <meta name="theme-color"> is a strong brand-color signal — weight it
+      // <meta name="theme-color"> is a strong brand-color signal - weight it
       // by repeating it so the frequency sort favours it.
       const themeColor = html.match(
         /<meta[^>]*name=["']theme-color["'][^>]*content=["'](#[0-9a-fA-F]{3,6})["']/i,
@@ -303,14 +303,14 @@ serve(async (req) => {
       
       const declaredInfo =
         declaredColors.length > 0
-          ? `\nDECLARED BRAND COLORS (the site's actual chosen palette — HIGHEST priority, use these): ${declaredColors
+          ? `\nDECLARED BRAND COLORS (the site's actual chosen palette - HIGHEST priority, use these): ${declaredColors
               .map((d) => `${d.label}=${d.value}`)
               .join(", ")}`
           : "";
       const themeInfo = themeColor ? `\nTheme color meta (strong brand signal): ${themeColor}` : "";
       const freqInfo =
         extractedColors.length > 0
-          ? `\nOther colors found (LOW priority, fallback only — may include leftovers): ${extractedColors
+          ? `\nOther colors found (LOW priority, fallback only - may include leftovers): ${extractedColors
               .slice(0, 10)
               .join(", ")}`
           : "";
@@ -338,13 +338,13 @@ Return a JSON object with the following structure:
 }
 
 CRITICAL GUIDELINES FOR COLORS (follow this priority order strictly):
-1. If "DECLARED BRAND COLORS" are provided, they ARE the real palette — use them. Map: the
+1. If "DECLARED BRAND COLORS" are provided, they ARE the real palette - use them. Map: the
    "primary" declared color → primaryColor; "secondary"/"accent"/"text" → colorPalette.
 2. If no declared colors, use the "Theme color meta" as primaryColor.
 3. Only if neither exists, fall back to "Other colors found".
 - IGNORE generic framework default colors (e.g. bright #FF6900 orange, #CF2E2E red, #0693E3 blue
-  from WordPress, or Bootstrap reds/greens) — these are NOT brand colors.
-- A near-black/near-white may legitimately be the brand's base — don't discard it if it's declared.
+  from WordPress, or Bootstrap reds/greens) - these are NOT brand colors.
+- A near-black/near-white may legitimately be the brand's base - don't discard it if it's declared.
 - Treat colorPalette as: secondary color, then accent/touch colors.
 
 Other Guidelines:

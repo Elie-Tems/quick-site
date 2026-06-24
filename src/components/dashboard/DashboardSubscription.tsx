@@ -691,7 +691,7 @@ const DashboardSubscription = () => {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
 
-                  {/* Optional reason — retention insight, doesn't block cancellation */}
+                  {/* Optional reason - retention insight, doesn't block cancellation */}
                   <div className="space-y-2 py-1">
                     <p className="text-sm text-muted-foreground">מה הסיבה לביטול? <span className="text-xs">(לא חובה)</span></p>
                     <div className="flex flex-wrap gap-2">

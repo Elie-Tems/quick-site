@@ -30,7 +30,7 @@ import type { Product } from "./types";
 
 interface DashboardCategoriesProps {
   businessId: string | undefined;
-  /** סוג העסק – מאפשר ייבוא קטגוריות מומלצות שיישמרו ב-DB ויופיעו כאן בניהול */
+  /** סוג העסק - מאפשר ייבוא קטגוריות מומלצות שיישמרו ב-DB ויופיעו כאן בניהול */
   businessCategory?: string | null;
   /** מעבר למסך מוצרים עם סינון לפי קטגוריה שנבחרה */
   onViewCategoryProducts?: (categoryId: string, categoryName: string) => void;
@@ -234,7 +234,7 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
             </div>
             <p className="text-lg font-semibold text-foreground mb-1">סדרו את המוצרים בקטגוריות</p>
             <p className="text-sm text-muted-foreground mt-1 mb-4">
-              הקטגוריות שמופיעות באתר (לפי סוג העסק) לא נשמרות כאן – ייבא אותן כדי לערוך, למחוק או לשייך מוצרים.
+              הקטגוריות שמופיעות באתר (לפי סוג העסק) לא נשמרות כאן - ייבא אותן כדי לערוך, למחוק או לשייך מוצרים.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               {businessId && businessCategory && businessCategory !== "other" && (

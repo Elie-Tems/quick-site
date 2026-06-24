@@ -169,7 +169,7 @@ const DashboardProducts = ({
 
   // עדכון סינון לפי קטגוריה כאשר מגיעים ממסך הקטגוריות
   if (initialCategoryFilterId && categoryFilter === 'all') {
-    // נקבע רק פעם אחת על כניסה – לא נשנה שוב כשמשתמש מחליף ידנית
+    // נקבע רק פעם אחת על כניסה - לא נשנה שוב כשמשתמש מחליף ידנית
     setCategoryFilter(initialCategoryFilterId);
   }
 
@@ -660,7 +660,7 @@ const DashboardProducts = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)] gap-6 items-start">
-            {/* Left side – text fields */}
+            {/* Left side - text fields */}
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name" className="!text-foreground">שם המוצר *</Label>
@@ -709,7 +709,7 @@ const DashboardProducts = ({
                     placeholder="לדוגמה: 1001"
                     dir="ltr"
                   />
-                  <p className="text-xs text-muted-foreground">מספר קטלוגי לזיהוי המוצר במלאי — אפשר להשאיר ריק.</p>
+                  <p className="text-xs text-muted-foreground">מספר קטלוגי לזיהוי המוצר במלאי - אפשר להשאיר ריק.</p>
                 </div>
 
                 {categories.length > 0 && (
@@ -781,7 +781,7 @@ const DashboardProducts = ({
               </div>
             </div>
 
-            {/* Right side – image upload */}
+            {/* Right side - image upload */}
             <div className="space-y-2">
               <Label htmlFor="imageUrl" className="!text-foreground">תמונה</Label>
               

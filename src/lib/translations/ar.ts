@@ -122,7 +122,7 @@ const ar: Record<string, string> = {
   // Template Showcase
   'templates.badge': 'قوالب مصممة',
   'templates.title': 'لا حاجة لأن تكون مصمماً أو مبرمجاً',
-  'templates.subtitle': 'نحن نفعل كل شيء — أنت فقط تختار الأسلوب',
+  'templates.subtitle': 'نحن نفعل كل شيء - أنت فقط تختار الأسلوب',
   'templates.fashion': 'أزياء',
   'templates.fashion.desc': 'ملابس وأحذية وإكسسوارات',
   'templates.jewelry': 'مجوهرات',

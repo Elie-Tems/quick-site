@@ -66,7 +66,7 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Require an authenticated user — this endpoint calls a paid image API
+    // Require an authenticated user - this endpoint calls a paid image API
     // and fetches a remote image server-side.
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {

@@ -6,7 +6,7 @@
 // sets the owner's business is_published=false. Immediate cancellations are
 // handled inline at cancel time, so they're not processed here.
 //
-// Auth: not a user request — guarded by a shared CRON_SECRET header. Set
+// Auth: not a user request - guarded by a shared CRON_SECRET header. Set
 // verify_jwt=false for this function in config.toml.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";

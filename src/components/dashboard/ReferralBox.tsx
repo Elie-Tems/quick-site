@@ -78,7 +78,7 @@ const ReferralBox = () => {
 
       {/* Description */}
       <p className="text-muted-foreground text-sm mb-5 leading-relaxed">
-        כל עסק שמצטרף דרכך והופך למנוי משלם – נותן לך <span className="font-semibold text-foreground">חודש שימוש ללא עלות</span>.
+        כל עסק שמצטרף דרכך והופך למנוי משלם - נותן לך <span className="font-semibold text-foreground">חודש שימוש ללא עלות</span>.
       </p>
 
       {/* Stats - Show if user has referrals */}
@@ -104,7 +104,7 @@ const ReferralBox = () => {
       {stats && stats.rewardedReferrals > 0 && (
         <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-lg p-3 mb-5">
           <p className="text-sm text-green-700 dark:text-green-300 text-center">
-            🎉 הבאת כבר {stats.totalReferrals} עסקים – הרווחת {stats.rewardedReferrals} חודשי שימוש!
+            🎉 הבאת כבר {stats.totalReferrals} עסקים - הרווחת {stats.rewardedReferrals} חודשי שימוש!
           </p>
         </div>
       )}

@@ -228,7 +228,7 @@ const AICreditPayment = () => {
               <>
                 <div className="px-4 py-3 border-b border-border bg-gradient-to-r from-primary/10 to-accent/10 text-sm font-medium text-foreground text-center flex items-center justify-center gap-2">
                   <CreditCard className="w-4 h-4" />
-                  תשלום מאובטח — iCount
+                  תשלום מאובטח - iCount
                 </div>
                 <iframe
                   title="תשלום מאובטח iCount"

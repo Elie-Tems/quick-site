@@ -60,7 +60,7 @@ const StoreBanners = ({ banners }: StoreBannersProps) => {
                 {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-l from-black/65 via-black/30 to-transparent" />
 
-                {/* Content — bottom-right aligned, editorial */}
+                {/* Content - bottom-right aligned, editorial */}
                 {(banner.title || banner.text || banner.ctaText) && (
                   <div className="absolute inset-0 flex items-end justify-end">
                     <div className="p-6 md:p-10 lg:p-14 max-w-md text-right">
@@ -89,7 +89,7 @@ const StoreBanners = ({ banners }: StoreBannersProps) => {
             ))}
           </div>
 
-          {/* ── Navigation arrows — flat, editorial ── */}
+          {/* ── Navigation arrows - flat, editorial ── */}
           {activeBanners.length > 1 && (
             <>
               <button
@@ -109,7 +109,7 @@ const StoreBanners = ({ banners }: StoreBannersProps) => {
             </>
           )}
 
-          {/* ── Dots — thin lines, editorial ── */}
+          {/* ── Dots - thin lines, editorial ── */}
           {activeBanners.length > 1 && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
               {activeBanners.map((_, index) => (

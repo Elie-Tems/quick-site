@@ -82,7 +82,7 @@ const TemplateShowcaseSection = () => {
             {t("templates.title")}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            כל תבנית מותאמת לסוג עסק אחר — הצבעים יתאימו למותג שלכם
+            כל תבנית מותאמת לסוג עסק אחר - הצבעים יתאימו למותג שלכם
           </p>
         </motion.div>
 
@@ -170,7 +170,7 @@ const TemplateShowcaseSection = () => {
             </motion.div>
           ))}
 
-          {/* 6th cell: signup CTA — fills the grid and drives registration */}
+          {/* 6th cell: signup CTA - fills the grid and drives registration */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}

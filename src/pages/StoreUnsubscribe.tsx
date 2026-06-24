@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useStorefront } from "@/hooks/useStorefront";
 
 /**
- * Public unsubscribe page (Chok HaSpam — working one-click opt-out).
+ * Public unsubscribe page (Chok HaSpam - working one-click opt-out).
  * `?email=` in the link triggers an automatic unsubscribe on load; otherwise the
  * visitor can type their address. Honored immediately via the scoped RPC.
  */

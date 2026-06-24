@@ -2,7 +2,7 @@
 // Adding a new gateway (Cardcom, Meshulam, iCount, Tranzila...) = implement one
 // PaymentProvider adapter (~50 lines) and register it in registry.ts. The
 // generic edge functions (payments-create / payments-callback / payments-verify)
-// stay untouched — they dispatch to the adapter by the business's payment_provider.
+// stay untouched - they dispatch to the adapter by the business's payment_provider.
 
 // The full payment_credentials row (provider-specific columns + the generic
 // `config` jsonb for fields that don't fit the PayPlus-shaped columns).

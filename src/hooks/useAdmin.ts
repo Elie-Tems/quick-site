@@ -270,7 +270,7 @@ export interface CancellationRow {
   created_at: string;
 }
 
-// All cancelled subscriptions (admin only — RLS "Admins can view all subscriptions").
+// All cancelled subscriptions (admin only - RLS "Admins can view all subscriptions").
 export function useCancellations() {
   return useQuery({
     queryKey: ["admin-cancellations"],

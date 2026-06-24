@@ -60,7 +60,7 @@ const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) =
         </p>
       </div>
 
-      {/* Clean category grid — line icons, single accent, flat tiles */}
+      {/* Clean category grid - line icons, single accent, flat tiles */}
       <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
         {businessCategoryList.map(({ id, label }) => {
           const isSelected = data.businessCategory === id;
@@ -93,7 +93,7 @@ const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) =
         })}
       </div>
 
-      {/* Custom category name — only when "other" is selected */}
+      {/* Custom category name - only when "other" is selected */}
       {data.businessCategory === "other" && (
         <div className="space-y-2">
           <Label htmlFor="customCategoryName" className="text-foreground font-medium">

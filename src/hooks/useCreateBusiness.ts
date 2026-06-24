@@ -265,7 +265,7 @@ export function useCreateBusiness() {
         }
       }
       
-      // 6. Create product categories: מאונבורדינג (תבנית) או מ-categoryConfig לפי סוג העסק – כדי שיופיעו בדשבורד
+      // 6. Create product categories: מאונבורדינג (תבנית) או מ-categoryConfig לפי סוג העסק - כדי שיופיעו בדשבורד
       const categoryIdMap = new Map<string, string>();
       let categories = data.productCategories ?? [];
       if (categories.length === 0 && data.businessCategory) {

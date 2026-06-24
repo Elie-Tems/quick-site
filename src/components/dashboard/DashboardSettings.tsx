@@ -150,7 +150,7 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
   const effectiveUseCtaText = formData.useCtaText ?? Boolean(formData.ctaText);
   const effectiveUseHeroBenefits = formData.useHeroBenefits ?? Boolean(formData.heroBenefits && formData.heroBenefits.length);
 
-  // לעדכן את האובייקט settings של הדשבורד בכל שינוי טופס – בשביל תצוגה מקדימה חיה
+  // לעדכן את האובייקט settings של הדשבורד בכל שינוי טופס - בשביל תצוגה מקדימה חיה
   useEffect(() => {
     onSettingsChange(formData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -456,7 +456,7 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
                 />
               </div>
 
-              {/* Shabbat mode — auto-close the store on Shabbat/Yom Tov */}
+              {/* Shabbat mode - auto-close the store on Shabbat/Yom Tov */}
               <div className="flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/30 p-4">
                 <div>
                   <p className="font-medium text-foreground">🕯️ סגירת החנות בשבת</p>
@@ -1222,7 +1222,7 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
                 <p className="text-sm text-muted-foreground">
                   {formData.whatsappEnabled ?? true
                     ? "כפתור וואטסאפ צף יופיע בחנות שלך ויאפשר ללקוחות ליצור איתך קשר בקלות"
-                    : "הכפתור מוסתר בחנות. להצגת כפתור וואטסאפ — הפעל את המתג למעלה."}
+                    : "הכפתור מוסתר בחנות. להצגת כפתור וואטסאפ - הפעל את המתג למעלה."}
                 </p>
                 <Switch
                   checked={formData.whatsappEnabled ?? true}

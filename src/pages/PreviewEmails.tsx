@@ -4,7 +4,7 @@ import {
 import type { EmailSender } from "@/lib/email/rtlEmail";
 
 // Public, no-auth preview that renders every platform/transactional email so we
-// can review & approve them. Temporary — remove when done.
+// can review & approve them. Temporary - remove when done.
 const ctx: PlatformCtx = {
   firstName: "ישראל",
   businessName: "הבוטיק של דנה",
@@ -32,7 +32,7 @@ const LABELS: Record<string, string> = {
   onboardingAbandoned1: "2 · התחיל בנייה ולא סיים (24ש')",
   onboardingAbandoned2: "3 · תזכורת שנייה (72ש')",
   siteReady: "4 · האתר באוויר",
-  paymentReceipt: "5 · קבלה — חיוב הצליח",
+  paymentReceipt: "5 · קבלה - חיוב הצליח",
   paymentFailed: "6 · חיוב נכשל (יום 0)",
   paymentReminder: "7 · תזכורת חיוב (יום 3/7)",
   siteFrozen: "8 · האתר הוקפא (יום 10)",
@@ -63,7 +63,7 @@ const PreviewEmails = () => {
     <div style={{ minHeight: "100vh", background: "#0A0B0D", padding: "24px 12px" }} dir="rtl">
       <div style={{ maxWidth: 680, margin: "0 auto" }}>
         <h1 style={{ color: "#F3F5F4", fontFamily: "Arial, sans-serif", fontSize: 22, marginBottom: 4 }}>
-          תצוגת מיילים — לאישור
+          תצוגת מיילים - לאישור
         </h1>
         <p style={{ color: "#9aa0a6", fontFamily: "Arial, sans-serif", fontSize: 14, marginBottom: 24 }}>
           {items.length} מיילים. נתונים לדוגמה.

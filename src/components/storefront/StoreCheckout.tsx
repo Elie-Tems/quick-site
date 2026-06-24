@@ -295,7 +295,7 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
               ) : (
                 <>
                   <ShoppingBag className="h-4 w-4" />
-                  {hasPayment ? `לתשלום — ${formatPrice(totalPrice)}` : 'שלח הזמנה'}
+                  {hasPayment ? `לתשלום - ${formatPrice(totalPrice)}` : 'שלח הזמנה'}
                 </>
               )}
             </button>

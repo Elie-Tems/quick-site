@@ -16,7 +16,7 @@ export interface SendResult { ok: boolean; id?: string; error?: string; skipped?
 export async function sendViaResend(email: OutgoingEmail): Promise<SendResult> {
   const apiKey = Deno.env.get("RESEND_API_KEY");
   if (!apiKey) {
-    console.warn("[resend] RESEND_API_KEY not set — skipping send to", email.to);
+    console.warn("[resend] RESEND_API_KEY not set - skipping send to", email.to);
     return { ok: false, skipped: true };
   }
   const from = `${email.fromName || "סיאנגו"} <${email.fromEmail || "noreply@send.siango.app"}>`;

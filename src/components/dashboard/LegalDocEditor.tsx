@@ -46,7 +46,7 @@ const LegalDocEditor = ({ sections, onChange }: LegalDocEditorProps) => {
             <>
               <div className="flex items-center gap-2 mb-2 text-amber-600 dark:text-amber-400">
                 <Lock className="w-4 h-4" />
-                <span className="text-sm font-semibold">{section.heading} (חובה — לא ניתן למחוק)</span>
+                <span className="text-sm font-semibold">{section.heading} (חובה - לא ניתן למחוק)</span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">{section.body}</p>
             </>

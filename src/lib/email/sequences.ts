@@ -40,7 +40,7 @@ export interface EmailSequence {
 
 const hi = (ctx: SequenceContext) => (ctx.firstName ? `היי ${ctx.firstName},` : "היי,");
 
-/** Cart abandonment — 3 emails: 1h reminder, 24h urgency, 72h discount. */
+/** Cart abandonment - 3 emails: 1h reminder, 24h urgency, 72h discount. */
 export const cartAbandonment: EmailSequence = {
   id: "cart-abandonment",
   name: "עגלה נטושה",
@@ -57,7 +57,7 @@ export const cartAbandonment: EmailSequence = {
           previewText: "המוצרים שלך עדיין מחכים",
           bodyHtml:
             h1("שכחת משהו? 🛒") +
-            p(`${hi(c)} שמנו לב שהשארת מוצרים בעגלה ב${c.storeName} — הם עדיין שמורים לך.`) +
+            p(`${hi(c)} שמנו לב שהשארת מוצרים בעגלה ב${c.storeName} - הם עדיין שמורים לך.`) +
             (c.cartTotal ? p(`סה״כ בעגלה: ${ils(c.cartTotal)}`) : "") +
             emailButton("חזרה לעגלה", c.cartUrl || c.storeUrl, s.brandColor),
         }),
@@ -69,10 +69,10 @@ export const cartAbandonment: EmailSequence = {
       body: (c, s) =>
         renderEmail({
           sender: s,
-          previewText: "אל תפספס — השלם את ההזמנה",
+          previewText: "אל תפספס - השלם את ההזמנה",
           bodyHtml:
             h1("עוד לא השלמת את ההזמנה") +
-            p(`${hi(c)} לקוחות רבים כבר רכשו השבוע ב${c.storeName}. המלאי מוגבל — שווה להשלים עכשיו.`) +
+            p(`${hi(c)} לקוחות רבים כבר רכשו השבוע ב${c.storeName}. המלאי מוגבל - שווה להשלים עכשיו.`) +
             emailButton("להשלמת ההזמנה", c.cartUrl || c.storeUrl, s.brandColor),
         }),
     },
@@ -94,7 +94,7 @@ export const cartAbandonment: EmailSequence = {
   ],
 };
 
-/** Welcome — 5 emails over 10 days. */
+/** Welcome - 5 emails over 10 days. */
 export const welcome: EmailSequence = {
   id: "welcome",
   name: "ברוכים הבאים",
@@ -137,7 +137,7 @@ export const welcome: EmailSequence = {
       delayHours: 168,
       subject: () => `המוצרים המובילים שלנו`,
       body: (c, s) =>
-        renderEmail({ sender: s, bodyHtml: h1("המובילים שלנו") + p("ריכזנו את המוצרים הכי נמכרים — שווה הצצה.") + emailButton("לצפייה במוצרים", c.storeUrl, s.brandColor) }),
+        renderEmail({ sender: s, bodyHtml: h1("המובילים שלנו") + p("ריכזנו את המוצרים הכי נמכרים - שווה הצצה.") + emailButton("לצפייה במוצרים", c.storeUrl, s.brandColor) }),
     },
     {
       id: "offer",
@@ -149,14 +149,14 @@ export const welcome: EmailSequence = {
           previewText: "הטבה אישית בשבילך",
           bodyHtml:
             h1("הטבת הצטרפות 🎁") +
-            p(`${hi(c)} כתודה על ההצטרפות — הטבה אישית בתוקף מוגבל.` + (c.couponCode ? ` קוד: ${ltr(c.couponCode)}` : "")) +
+            p(`${hi(c)} כתודה על ההצטרפות - הטבה אישית בתוקף מוגבל.` + (c.couponCode ? ` קוד: ${ltr(c.couponCode)}` : "")) +
             emailButton("ממש עכשיו", c.storeUrl, s.brandColor),
         }),
     },
   ],
 };
 
-/** Post-purchase — 4 emails: thank-you, how-to, review, replenish. */
+/** Post-purchase - 4 emails: thank-you, how-to, review, replenish. */
 export const postPurchase: EmailSequence = {
   id: "post-purchase",
   name: "אחרי רכישה",
@@ -175,7 +175,7 @@ export const postPurchase: EmailSequence = {
       delayHours: 168,
       subject: (c) => `איך היה? נשמח לחוות דעתך`,
       body: (c, s) =>
-        renderEmail({ sender: s, bodyHtml: h1("איך היה? 🌟") + p(`${hi(c)} נשמח אם תשתף אותנו בחוות דעתך — זה עוזר לנו ולשאר הלקוחות.`) + emailButton("השאר ביקורת", c.storeUrl, s.brandColor) }),
+        renderEmail({ sender: s, bodyHtml: h1("איך היה? 🌟") + p(`${hi(c)} נשמח אם תשתף אותנו בחוות דעתך - זה עוזר לנו ולשאר הלקוחות.`) + emailButton("השאר ביקורת", c.storeUrl, s.brandColor) }),
     },
     {
       id: "replenish",

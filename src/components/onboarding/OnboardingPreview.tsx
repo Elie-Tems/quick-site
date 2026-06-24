@@ -463,7 +463,7 @@ const OnboardingPreview = ({ data, onEditStep, onUpdateTemplate, onUpdateData }:
               </Button>
             </div>
 
-            {/* Inline Template Selector + פלטת צבעים — פתוח בדיפולט */}
+            {/* Inline Template Selector + פלטת צבעים - פתוח בדיפולט */}
             {showTemplateSelector && (
               <div className="pt-3 border-t border-border space-y-4">
                 {/* פלטת צבעים */}

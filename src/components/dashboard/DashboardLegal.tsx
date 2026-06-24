@@ -83,7 +83,7 @@ const DashboardLegal = ({ business }: { business?: BusinessLike }) => {
       </div>
 
       <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-sm text-foreground mb-6">
-        ⚖️ המסמכים מגיעים כתבנית מוכנה. <strong>מומלץ להיוועץ בעורך דין</strong> ולהתאים אותם לעסק שלכם — האחריות
+        ⚖️ המסמכים מגיעים כתבנית מוכנה. <strong>מומלץ להיוועץ בעורך דין</strong> ולהתאים אותם לעסק שלכם - האחריות
         המשפטית על בעל האתר.
       </div>
 
