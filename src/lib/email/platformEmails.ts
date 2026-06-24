@@ -16,7 +16,7 @@ const LEGAL_NAME = 'ארפור טכנולוגיות בע"מ, ח.פ. 517331708';
 
 export function siangoSender(dashboardUrl = "https://siango.app/dashboard"): EmailSender {
   return {
-    businessName: "סיאנגו",
+    businessName: "Siango",
     email: SUPPORT_EMAIL,
     address: LEGAL_NAME,
     brandColor: BRAND,

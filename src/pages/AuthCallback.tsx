@@ -91,18 +91,8 @@ const AuthCallback = () => {
         
         console.log('✅ Profile found:', profile.id);
 
-        // Send the welcome email once (covers all sign-up methods that reach here).
-        if (!(profile as any).welcome_sent) {
-          const firstName = (user.user_metadata?.full_name || "").split(" ")[0] || undefined;
-          void supabase.functions.invoke("send-platform-email", {
-            body: {
-              type: "accountWelcome",
-              to: user.email,
-              ctx: { firstName, dashboardUrl: "https://siango.app/dashboard" },
-            },
-          });
-          void supabase.from("profiles").update({ welcome_sent: true } as any).eq("user_id", user.id);
-        }
+        // (Welcome email removed - the "site is live" email already welcomes them,
+        // and a separate welcome a few minutes earlier was redundant.)
 
         // Step 2: Update auth_provider if it's a Google login
         if (user.app_metadata?.provider === "google") {

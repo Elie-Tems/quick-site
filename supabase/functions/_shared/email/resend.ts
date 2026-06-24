@@ -19,7 +19,7 @@ export async function sendViaResend(email: OutgoingEmail): Promise<SendResult> {
     console.warn("[resend] RESEND_API_KEY not set - skipping send to", email.to);
     return { ok: false, skipped: true };
   }
-  const from = `${email.fromName || "סיאנגו"} <${email.fromEmail || "noreply@send.siango.app"}>`;
+  const from = `${email.fromName || "Siango"} <${email.fromEmail || "noreply@send.siango.app"}>`;
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",

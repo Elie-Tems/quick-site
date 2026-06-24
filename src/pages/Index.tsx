@@ -9,9 +9,25 @@ import FinalCTASection from "@/components/FinalCTASection";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+
+// Repeated conversion CTA placed between sections.
+const CtaBand = ({ title }: { title: string }) => (
+  <section className="py-14 px-4 text-center bg-background">
+    <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-5">{title}</h2>
+    <Link
+      to="/register"
+      className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-primary text-white font-bold text-lg hover:brightness-105 transition shadow-lg shadow-primary/30"
+    >
+      התחילו עכשיו
+      <ArrowLeft className="w-5 h-5" />
+    </Link>
+    <p className="text-sm text-muted-foreground mt-3">5 דקות · ללא ידע טכני · ללא התחייבות</p>
+  </section>
+);
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -46,8 +62,10 @@ const Index = () => {
         <HeroSection />
         <TemplateShowcaseSection />
         <HowItWorksSection />
+        <CtaBand title="מוכנים? האתר שלכם באוויר תוך 5 דקות" />
         <WhoIsThisForSection />
         <BenefitsSection />
+        <CtaBand title="כל מה שצריך כדי להתחיל למכור אונליין" />
         {/* <PricingSection />
         <FinalCTASection /> */}
       </main>
