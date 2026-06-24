@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CreditCard, Check, Clock, Mail, Star } from "lucide-react";
 import PayplusConnectForm from "@/components/payments/PayplusConnectForm";
 import PaymentsQuickStart from "@/components/payments/PaymentsQuickStart";
+import PaymentApprovalKit from "@/components/payments/PaymentApprovalKit";
 import type { BusinessSettings } from "@/components/dashboard/DashboardSettings";
 
 interface DashboardPaymentsProps {
@@ -33,6 +34,8 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           <p className="text-sm text-muted-foreground">חברו סליקה כדי לקבל תשלומים בכרטיס אשראי ישירות לחשבון שלכם</p>
         </div>
       </div>
+
+      <PaymentApprovalKit />
 
       <PaymentsQuickStart />
 
