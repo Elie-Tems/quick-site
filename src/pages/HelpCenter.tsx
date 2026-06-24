@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import logoDarkBg from "@/assets/logo-dark-bg.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyBusiness } from "@/hooks/useBusiness";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -198,7 +199,37 @@ const HelpCenter = () => {
   
   const { user, loading: authLoading } = useAuth();
   const { data: business, isLoading: businessLoading } = useMyBusiness();
-  
+
+  // Per-customer memory: load this user's saved conversation once on mount, and
+  // persist it after each completed exchange so the bot "remembers" across visits.
+  const conversationLoaded = useRef(false);
+  useEffect(() => {
+    if (!user?.id || conversationLoaded.current) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("help_conversations")
+        .select("messages")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data?.messages?.length) setMessages(data.messages as Message[]);
+      conversationLoaded.current = true;
+    })();
+  }, [user?.id]);
+
+  useEffect(() => {
+    // Only save after the initial load, when an exchange has settled (not mid-stream).
+    if (!user?.id || !conversationLoaded.current || isLoading || messages.length === 0) return;
+    const t = setTimeout(() => {
+      void (supabase as any)
+        .from("help_conversations")
+        .upsert(
+          { user_id: user.id, messages, updated_at: new Date().toISOString() },
+          { onConflict: "user_id" },
+        );
+    }, 500);
+    return () => clearTimeout(t);
+  }, [messages, isLoading, user?.id]);
+
   // Determine where to redirect: dashboard if has business, landing page otherwise
   const hasActiveBusiness = !!user && !!business;
   const backLink = hasActiveBusiness ? "/dashboard" : "/";
@@ -338,6 +369,9 @@ const HelpCenter = () => {
   const handleReset = () => {
     setMessages([]);
     setInput("");
+    if (user?.id) {
+      void (supabase as any).from("help_conversations").delete().eq("user_id", user.id);
+    }
   };
 
   return (
