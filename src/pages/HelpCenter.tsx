@@ -384,24 +384,17 @@ const HelpCenter = () => {
       />
       {/* Header */}
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container flex items-center justify-between h-16">
-          <Link to={backLink}>
-            <Button variant="outline" size="sm">
-              
-              {hasActiveBusiness ? (
-                <ArrowRight className="w-4 h-4 mr-2" />
-              ) : (
-                <ArrowRight className="w-4 h-4 mr-2" />
-              )}
-              {backText}
+        <div className="container flex items-center justify-between gap-2 h-16">
+          <Link to={backLink} className="shrink-0">
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <ArrowRight className="w-4 h-4" />
+              <span className="hidden sm:inline">{backText}</span>
             </Button>
           </Link>
-          
-          <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none">
-            <img src={logoDarkBg} alt="Siango" className="h-9 sm:h-12 w-auto max-w-[40vw] object-contain" />
-          </div>
-          
-          <div></div>
+
+          <img src={logoDarkBg} alt="Siango" className="h-9 sm:h-11 w-auto object-contain shrink-0" />
+
+          <div className="w-9 sm:w-28 shrink-0" />
         </div>
       </header>
 

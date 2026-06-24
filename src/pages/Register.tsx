@@ -76,10 +76,6 @@ const Register = () => {
       newErrors.password = t('register.passwordTooShort');
     }
     
-    if (!formData.businessName.trim()) {
-      newErrors.businessName = t('register.businessNameRequired');
-    }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -199,7 +195,7 @@ const Register = () => {
     }
   };
 
-  const isValid = formData.fullName && formData.email && formData.password && formData.businessName && acceptedTerms;
+  const isValid = formData.fullName && formData.email && formData.password && acceptedTerms;
 
   const benefits = [
     { icon: Zap, text: t('register.setupIn5') },
@@ -400,52 +396,6 @@ const Register = () => {
                     tabIndex={-1}
                     autoComplete="off"
                   />
-                </div>
-
-                {/* Business Name (first field) */}
-                <div className="register-field-wrapper">
-                  <Label htmlFor="businessName" className="register-label">
-                    {t('register.businessName')}
-                  </Label>
-                  <div className="register-input-container">
-                    <Building2 className={`register-input-icon ${focusedField === 'businessName' ? 'register-input-icon-active' : ''}`} />
-                    <Input
-                      id="businessName"
-                      name="businessName"
-                      type="text"
-                      autoComplete="organization"
-                      placeholder={dir === 'rtl' ? 'העסק שלי' : 'My Business'}
-                      value={formData.businessName}
-                      onChange={handleChange}
-                      onFocus={() => setFocusedField('businessName')}
-                      onBlur={() => setFocusedField(null)}
-                      className={`register-input ${errors.businessName ? 'register-input-error' : ''}`}
-                      aria-invalid={!!errors.businessName}
-                      aria-describedby={errors.businessName ? 'businessName-error' : undefined}
-                      required
-                    />
-                    {focusedField === 'businessName' && (
-                      <motion.div
-                        layoutId="input-focus"
-                        className="register-input-focus-ring"
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                      />
-                    )}
-                  </div>
-                  <AnimatePresence>
-                    {errors.businessName && (
-                      <motion.p 
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        id="businessName-error" 
-                        className="register-field-error" 
-                        role="alert"
-                      >
-                        {errors.businessName}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
                 </div>
 
                 {/* Full Name */}

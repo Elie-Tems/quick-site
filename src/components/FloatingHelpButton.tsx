@@ -4,8 +4,9 @@ import { motion } from "framer-motion";
 
 const FloatingHelpButton = () => {
   const { pathname } = useLocation();
-  // Show only on management app – hide on storefront (built store for customers)
-  if (pathname.startsWith("/store")) {
+  // Hide on the storefront (customer-facing store) and on the help page itself
+  // (no point offering "open the bot" when you're already in the bot).
+  if (pathname.startsWith("/store") || pathname.startsWith("/help")) {
     return null;
   }
 
