@@ -1,12 +1,12 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { OnboardingData, BusinessCategory } from "@/pages/Onboarding";
 import { businessCategoryList } from "@/lib/categoryConfig";
 import {
   Store, Utensils, Coffee, Shirt, Gem, Smartphone, Sparkles, Dumbbell, Car, PawPrint,
   Flower2, BookOpen, Home, ShoppingBasket, Wine, Plus, Gamepad2, Palette, Baby, Gift,
-  Pill, Sofa, Refrigerator, Scissors,
+  Pill, Sofa, Refrigerator, Scissors, Search, Check, ChevronDown,
 } from "lucide-react";
 import { StepNavigation } from "./StepNavigation";
 
@@ -17,7 +17,6 @@ interface StepCategoryProps {
   onBack?: () => void;
 }
 
-// One consistent line icon per category (single accent color, no emoji/gradients).
 const categoryIcons: Record<BusinessCategory, React.ComponentType<any>> = {
   bakery: Store, restaurant: Utensils, cafe: Coffee, clothing: Shirt, jewelry: Gem,
   electronics: Smartphone, beauty: Sparkles, fitness: Dumbbell, automotive: Car, pets: PawPrint,
@@ -27,19 +26,36 @@ const categoryIcons: Record<BusinessCategory, React.ComponentType<any>> = {
 };
 
 const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) => {
-  const handleCategoryChange = (categoryId: BusinessCategory) => {
-    updateData({ businessCategory: categoryId });
-  };
+  const selectedLabel = businessCategoryList.find(
+    (c) => c.id === data.businessCategory && c.id !== "other",
+  )?.label;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateData({ [e.target.name]: e.target.value });
+  const [query, setQuery] = useState(selectedLabel || data.customCategoryName || "");
+  const [showAll, setShowAll] = useState(false);
+  const [focused, setFocused] = useState(false);
+
+  const q = query.trim();
+  const matches = q
+    ? businessCategoryList.filter((c) => c.id !== "other" && c.label.includes(q)).slice(0, 6)
+    : [];
+  const showSuggestions = focused && q.length > 0 && selectedLabel !== q;
+
+  const pickCategory = (id: BusinessCategory, label: string) => {
+    updateData({ businessCategory: id, customCategoryName: undefined });
+    setQuery(label);
+    setFocused(false);
+  };
+  const useCustom = () => {
+    updateData({ businessCategory: "other", customCategoryName: q });
+    setFocused(false);
   };
 
   const isValid =
-    data.businessCategory && (data.businessCategory !== "other" || data.customCategoryName);
+    !!data.businessCategory && (data.businessCategory !== "other" || !!data.customCategoryName);
+  const selectionText = selectedLabel || (data.businessCategory === "other" ? data.customCategoryName : "");
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
         <div className="flex items-center justify-center gap-2 mb-3">
@@ -52,67 +68,108 @@ const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) =
             </Button>
           )}
         </div>
-        <h1 className="text-xl md:text-2xl font-medium text-foreground mb-1.5">
-          באיזה תחום העסק שלך?
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          בחרו קטגוריה ונתאים את האתר בשבילכם
-        </p>
+        <h1 className="text-xl md:text-2xl font-medium text-foreground mb-1.5">באיזה תחום העסק שלך?</h1>
+        <p className="text-sm text-muted-foreground">התחילו להקליד - ונשלים בשבילכם</p>
       </div>
 
-      {/* Clean category grid - line icons, single accent, flat tiles */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
-        {businessCategoryList.map(({ id, label }) => {
-          const isSelected = data.businessCategory === id;
-          const isOther = id === "other";
-          const Icon = categoryIcons[id];
-          return (
+      {/* Search with autocomplete */}
+      <div className="relative">
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+        <Input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setFocused(true)}
+          placeholder="למשל: פרחים, תכשיטים, מאפייה, חנות בגדים..."
+          className="h-12 rounded-xl pr-11"
+          autoComplete="off"
+        />
+
+        {showSuggestions && (
+          <div className="absolute z-20 left-0 right-0 mt-1 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+            {matches.map(({ id, label }) => {
+              const Icon = categoryIcons[id];
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => pickCategory(id, label)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-right hover:bg-primary/5 transition-colors"
+                >
+                  <Icon className="w-5 h-5 text-primary shrink-0" />
+                  <span className="text-sm text-foreground">{label}</span>
+                </button>
+              );
+            })}
             <button
-              key={id}
               type="button"
-              onClick={() => handleCategoryChange(id)}
-              aria-pressed={isSelected}
-              className={`flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-xl border transition-colors ${
-                isOther ? "border-dashed" : ""
-              } ${
-                isSelected
-                  ? "border-primary ring-1 ring-primary bg-primary/5"
-                  : "border-border hover:border-primary/40"
-              }`}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={useCustom}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-right hover:bg-primary/5 transition-colors border-t border-border"
             >
-              <Icon className={`h-6 w-6 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
-              <span
-                className={`text-xs text-center leading-tight ${
-                  isSelected ? "text-primary font-medium" : "text-foreground/80"
-                }`}
-              >
-                {label}
+              <Plus className="w-5 h-5 text-muted-foreground shrink-0" />
+              <span className="text-sm text-foreground">
+                השתמשו ב: <span className="font-medium">"{q}"</span> (תחום אחר)
               </span>
             </button>
-          );
-        })}
+          </div>
+        )}
       </div>
 
-      {/* Custom category name - only when "other" is selected */}
-      {data.businessCategory === "other" && (
-        <div className="space-y-2">
-          <Label htmlFor="customCategoryName" className="text-foreground font-medium">
-            שם הקטגוריה המותאמת אישית <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="customCategoryName"
-            name="customCategoryName"
-            type="text"
-            placeholder="לדוגמה: סטודיו צילום, שירותי ניקיון, מוצרי טבע..."
-            value={data.customCategoryName || ""}
-            onChange={handleChange}
-            className="h-12 rounded-xl"
-            required
-          />
-          <p className="text-xs text-muted-foreground">
-            הקטגוריה תשמש לזיהוי העסק במערכת ותוצג ללקוחות
-          </p>
+      {/* Selected confirmation */}
+      {isValid && (
+        <div className="flex items-center gap-2 text-sm text-primary">
+          <Check className="w-4 h-4" />
+          נבחר: <span className="font-medium">{selectionText}</span>
         </div>
+      )}
+
+      {/* Optional: browse all */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowAll((s) => !s)}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronDown className={`w-4 h-4 transition-transform ${showAll ? "rotate-180" : ""}`} />
+          {showAll ? "הסתר" : "עיון בכל הקטגוריות"}
+        </button>
+
+        {showAll && (
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5 mt-3">
+            {businessCategoryList.map(({ id, label }) => {
+              const isSelected = data.businessCategory === id;
+              const Icon = categoryIcons[id];
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => pickCategory(id, id === "other" ? "" : label)}
+                  className={`flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-xl border transition-colors ${
+                    isSelected ? "border-primary ring-1 ring-primary bg-primary/5" : "border-border hover:border-primary/40"
+                  }`}
+                >
+                  <Icon className={`h-6 w-6 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className={`text-xs text-center leading-tight ${isSelected ? "text-primary font-medium" : "text-foreground/80"}`}>
+                    {label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Custom name field when "other" with no name yet */}
+      {data.businessCategory === "other" && !data.customCategoryName && (
+        <Input
+          type="text"
+          placeholder="כתבו את תחום העסק..."
+          value={data.customCategoryName || ""}
+          onChange={(e) => updateData({ customCategoryName: e.target.value })}
+          className="h-12 rounded-xl"
+        />
       )}
 
       <StepNavigation
