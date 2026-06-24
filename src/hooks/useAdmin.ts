@@ -129,36 +129,30 @@ export function useAllBusinesses() {
       
       if (error) throw error;
       
-      // Get counts for each business
-      const businessesWithStats: BusinessWithStats[] = await Promise.all(
-        (businesses || []).map(async (biz) => {
-          // Products count
-          const { count: productsCount } = await supabase
-            .from('products')
-            .select('*', { count: 'exact', head: true })
-            .eq('business_id', biz.id);
-          
-          // Orders count
-          const { count: ordersCount } = await supabase
-            .from('orders')
-            .select('*', { count: 'exact', head: true })
-            .eq('business_id', biz.id);
-          
-          // Page views count
-          const { count: pageViewsCount } = await supabase
-            .from('page_views')
-            .select('*', { count: 'exact', head: true })
-            .eq('business_id', biz.id);
-          
-          return {
-            ...biz,
-            products_count: productsCount || 0,
-            orders_count: ordersCount || 0,
-            page_views_count: pageViewsCount || 0,
-          };
-        })
-      );
-      
+      // Counts in BULK (3 queries total) instead of N+1 per business — the old
+      // per-business loop fired dozens of concurrent queries and could hang.
+      const ids = (businesses || []).map((b) => b.id);
+      const safeIds = ids.length ? ids : ['00000000-0000-0000-0000-000000000000'];
+      const tally = (rows: { business_id: string }[] | null) => {
+        const m: Record<string, number> = {};
+        (rows || []).forEach((r) => { m[r.business_id] = (m[r.business_id] || 0) + 1; });
+        return m;
+      };
+
+      const [prodRes, orderRes] = await Promise.all([
+        supabase.from('products').select('business_id').in('business_id', safeIds),
+        supabase.from('orders').select('business_id').in('business_id', safeIds),
+      ]);
+      const pc = tally(prodRes.data as any);
+      const oc = tally(orderRes.data as any);
+
+      const businessesWithStats: BusinessWithStats[] = (businesses || []).map((biz) => ({
+        ...biz,
+        products_count: pc[biz.id] || 0,
+        orders_count: oc[biz.id] || 0,
+        page_views_count: 0,
+      }));
+
       return businessesWithStats;
     },
   });
