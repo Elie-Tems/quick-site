@@ -1,4 +1,5 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Tag, Crown, Sparkles, Megaphone, Star, FolderOpen, Info, Truck, CreditCard, Palette, ScrollText, Target, Gauge } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Tag, Crown, Sparkles, Megaphone, Star, FolderOpen, Info, Truck, CreditCard, Palette, ScrollText, Target, Gauge, ChevronDown } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage';
@@ -68,6 +69,12 @@ const DashboardNav = ({
     return true;
   });
 
+  const activeGroup = navItems.find((i) => i.id === currentView)?.group;
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(NAV_GROUPS.map((g) => [g, g === activeGroup])),
+  );
+  const toggleGroup = (g: NavGroup) => setOpenGroups((s) => ({ ...s, [g]: !s[g] }));
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border md:sticky md:top-14 md:border-t-0 md:border-l md:w-56 md:h-[calc(100vh-3.5rem)] md:overflow-y-auto">
       {/* Mobile: Bottom tabs */}
@@ -94,16 +101,21 @@ const DashboardNav = ({
         })}
       </div>
 
-      <div className="hidden md:flex md:flex-col p-4 gap-1">
+      <div className="hidden md:flex md:flex-col p-3 gap-1">
         {NAV_GROUPS.map((group) => {
           const groupItems = itemsToRender.filter((item) => item.group === group);
           if (groupItems.length === 0) return null;
+          const open = openGroups[group];
           return (
             <div key={group} className="mb-1">
-              <p className="px-3 pt-3 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground/60">
-                {group}
-              </p>
-              {groupItems.map((item) => {
+              <button
+                onClick={() => toggleGroup(group)}
+                className="w-full flex items-center justify-between px-3 pt-3 pb-1.5 text-[11px] font-semibold tracking-wider text-muted-foreground/70 hover:text-foreground transition-colors"
+              >
+                <span>{group}</span>
+                <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open ? "" : "-rotate-90")} />
+              </button>
+              {open && groupItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentView === item.id;
                 return (
