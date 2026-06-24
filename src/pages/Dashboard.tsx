@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardNav, { type DashboardView } from "@/components/dashboard/DashboardNav";
+import SubscriptionAlert from "@/components/dashboard/SubscriptionAlert";
 import DashboardHome from "@/components/dashboard/DashboardHome";
 import DashboardProducts, { type Product } from "@/components/dashboard/DashboardProducts";
 import DashboardOrders, { type Order } from "@/components/dashboard/DashboardOrders";
@@ -577,6 +578,7 @@ const Dashboard = () => {
           />
           
           <main className="flex-1 pb-20 md:pb-0">
+            <SubscriptionAlert onManage={() => setCurrentView('subscription')} />
             <div className="container max-w-7xl mx-auto px-4 py-6">
               {business && !business.is_published && (
                 <UnpublishedBanner businessId={business.id} />
