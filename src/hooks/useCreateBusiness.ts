@@ -161,39 +161,56 @@ export function useCreateBusiness() {
       
       console.log('✅ Using profile ID:', profileId);
       
-      // 2. Generate unique slug
-      const slug = await generateUniqueSlug(data.slug || data.businessName);
-      
-      // 3. Create business record
-      const { data: business, error: businessError } = await supabase
-        .from('businesses')
-        .insert({
-          name: data.businessName,
-          slug,
-          phone: data.phone || null,
-          email: data.email || null,
-          tagline: data.tagline || null,
-          owner_id: profileId,
-          primary_color: data.primaryColor || '#7c3aed',
-          color_palette: data.colorPalette || [],
-          brand_style: data.brandStyle || 'modern',
-          template_id: data.templateId || null,
-          business_category: data.businessCategory || 'other',
-          custom_category_name: data.customCategoryName || null,
-          is_religious_audience: data.isReligiousAudience || false,
-          whatsapp_enabled: !!data.phone,
-          payment_enabled: data.paymentEnabled,
-          payment_provider: data.paymentProvider || null,
-          is_published: false,
-          // ברירות מחדל מפורשות לחלקים אופציונליים - כולם מכובים
-          marquee_bar_enabled: false,
-          hero_badge: null,
-          promo_text: null,
-        } as any)
-        .select('id')
-        .single();
-      
-      if (businessError) throw businessError;
+      // 2+3. Create the business, retrying with a fresh slug suffix on a unique
+      // violation. generateUniqueSlug's pre-check is RLS-scoped, so it can miss an
+      // existing same-slug row that this user can't see; the global constraint
+      // (businesses_slug_key) still fires on insert, so we handle 23505 here.
+      const slugify = (s: string) =>
+        s.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^֐-׿a-z0-9-]/g, "");
+      const baseSlug = slugify(data.slug || data.businessName) || "store";
+
+      let business: { id: string } | null = null;
+      let businessError: any = null;
+      let slug = "";
+      for (let attempt = 0; attempt < 6; attempt++) {
+        slug =
+          attempt === 0
+            ? await generateUniqueSlug(data.slug || data.businessName)
+            : `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
+        const res = await supabase
+          .from('businesses')
+          .insert({
+            name: data.businessName,
+            slug,
+            phone: data.phone || null,
+            email: data.email || null,
+            tagline: data.tagline || null,
+            owner_id: profileId,
+            primary_color: data.primaryColor || '#7c3aed',
+            color_palette: data.colorPalette || [],
+            brand_style: data.brandStyle || 'modern',
+            template_id: data.templateId || null,
+            business_category: data.businessCategory || 'other',
+            custom_category_name: data.customCategoryName || null,
+            is_religious_audience: data.isReligiousAudience || false,
+            whatsapp_enabled: !!data.phone,
+            payment_enabled: data.paymentEnabled,
+            payment_provider: data.paymentProvider || null,
+            is_published: false,
+            // ברירות מחדל מפורשות לחלקים אופציונליים - כולם מכובים
+            marquee_bar_enabled: false,
+            hero_badge: null,
+            promo_text: null,
+          } as any)
+          .select('id')
+          .single();
+        if (!res.error) { business = res.data; businessError = null; break; }
+        businessError = res.error;
+        const isDup = res.error.code === '23505' || String(res.error.message || '').includes('slug');
+        if (!isDup) break;
+      }
+
+      if (!business) throw businessError;
       
       const businessId = business.id;
 
