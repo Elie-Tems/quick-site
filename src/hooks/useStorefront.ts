@@ -74,7 +74,12 @@ export function useStorefront(slug: string | undefined) {
         .single();
       
       if (error) throw error;
-      
+
+      // Suspended sites are taken offline (data retained); show an "unavailable" page.
+      if ((data as any).is_suspended) {
+        throw new Error('SITE_SUSPENDED');
+      }
+
       // Check if business is published
       if (!data.is_published) {
         // If not published, only allow preview mode with authentication

@@ -315,7 +315,8 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   // Error or not found state
   if (isError || !business) {
     const isUnpublished = error instanceof Error && error.message === 'SITE_NOT_PUBLISHED';
-    
+    const isSuspended = error instanceof Error && error.message === 'SITE_SUSPENDED';
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md px-4">
@@ -323,10 +324,12 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
             <Store className="h-10 w-10 text-muted-foreground" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">
-            {isUnpublished ? 'האתר עדיין לא פורסם' : 'החנות לא נמצאה'}
+            {isSuspended ? 'האתר אינו זמין כעת' : isUnpublished ? 'האתר עדיין לא פורסם' : 'החנות לא נמצאה'}
           </h1>
           <p className="text-muted-foreground mb-6">
-            {isUnpublished 
+            {isSuspended
+              ? 'האתר מושהה זמנית. אנא נסו שוב מאוחר יותר.'
+              : isUnpublished
               ? 'אתר זה עדיין לא פורסם לציבור. אנא השלם את תהליך הפרסום כדי להפעיל את האתר.'
               : 'לא הצלחנו למצוא חנות בכתובת הזו. ייתכן שהיא הוסרה או שהכתובת שגויה.'
             }

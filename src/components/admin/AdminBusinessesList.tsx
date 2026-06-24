@@ -1,14 +1,18 @@
 import { useState } from "react";
-import { 
-  Building2, 
-  Eye, 
-  ShoppingCart, 
-  Package, 
-  Trash2, 
+import {
+  Building2,
+  Eye,
+  ShoppingCart,
+  Package,
+  Trash2,
   ExternalLink,
   Search,
-  AlertTriangle
+  AlertTriangle,
+  PauseCircle,
+  PlayCircle
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,8 +31,23 @@ import { useAllBusinesses, useDeleteBusiness } from "@/hooks/useAdmin";
 const AdminBusinessesList = () => {
   const { data: businesses, isLoading } = useAllBusinesses();
   const deleteBusiness = useDeleteBusiness();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  // Soft-suspend toggle: take a site offline (data retained) or restore it.
+  const toggleSuspend = async (biz: any) => {
+    const next = !biz.is_suspended;
+    await (supabase as any)
+      .from('businesses')
+      .update({
+        is_suspended: next,
+        suspended_at: next ? new Date().toISOString() : null,
+        suspend_reason: next ? 'manual' : null,
+      })
+      .eq('id', biz.id);
+    queryClient.invalidateQueries({ queryKey: ['admin-all-businesses'] });
+  };
 
   const filteredBusinesses = businesses?.filter(biz => {
     if (!searchQuery.trim()) return true;
@@ -92,6 +111,11 @@ const AdminBusinessesList = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-foreground truncate">{business.name}</h3>
+                    {(business as any).is_suspended && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-medium shrink-0">
+                        מושהה
+                      </span>
+                    )}
                     {business.slug && (
                       <a 
                         href={`/store/${business.slug}`}
@@ -144,6 +168,27 @@ const AdminBusinessesList = () => {
                       צפה בחנות
                     </Button>
                   )}
+                  {(business as any).is_suspended ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleSuspend(business)}
+                      className="gap-1.5 border-green-500/40 text-green-600 hover:bg-green-500/10"
+                    >
+                      <PlayCircle className="h-4 w-4" />
+                      שחזר אתר
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleSuspend(business)}
+                      className="gap-1.5 border-amber-500/40 text-amber-600 hover:bg-amber-500/10"
+                    >
+                      <PauseCircle className="h-4 w-4" />
+                      השהה
+                    </Button>
+                  )}
                   <Button
                     variant="destructive"
                     size="sm"
@@ -151,7 +196,7 @@ const AdminBusinessesList = () => {
                     className="gap-1.5"
                   >
                     <Trash2 className="h-4 w-4" />
-                    מחק
+                    מחק לצמיתות
                   </Button>
                 </div>
               </div>
