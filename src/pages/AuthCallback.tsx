@@ -33,7 +33,7 @@ const AuthCallback = () => {
         // Step 1: Get profile (trigger should have created it)
         const profileQuery = supabase
           .from("profiles")
-          .select("id, onboarding_completed_at")
+          .select("id, onboarding_completed_at, welcome_sent")
           .eq("user_id", user.id);
         
         console.log('📝 Profile query:', { userId: user.id });
@@ -64,7 +64,7 @@ const AuthCallback = () => {
             
             const { data: retryProfile, error: retryError } = await supabase
               .from("profiles")
-              .select("id, onboarding_completed_at")
+              .select("id, onboarding_completed_at, welcome_sent")
               .eq("user_id", user.id)
               .maybeSingle();
             
@@ -90,6 +90,19 @@ const AuthCallback = () => {
         }
         
         console.log('✅ Profile found:', profile.id);
+
+        // Send the welcome email once (covers all sign-up methods that reach here).
+        if (!(profile as any).welcome_sent) {
+          const firstName = (user.user_metadata?.full_name || "").split(" ")[0] || undefined;
+          void supabase.functions.invoke("send-platform-email", {
+            body: {
+              type: "accountWelcome",
+              to: user.email,
+              ctx: { firstName, dashboardUrl: "https://siango.app/dashboard" },
+            },
+          });
+          void supabase.from("profiles").update({ welcome_sent: true } as any).eq("user_id", user.id);
+        }
 
         // Step 2: Update auth_provider if it's a Google login
         if (user.app_metadata?.provider === "google") {
