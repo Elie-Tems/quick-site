@@ -78,7 +78,7 @@ const StoreFooter = ({ businessName, phone, email, storeSlug }: StoreFooterProps
         {/* ── Platform credit ── */}
         <div className="border-t border-foreground/8 py-4 flex items-center justify-center">
           <a
-            href={`https://${import.meta.env.VITE_WEBSITE_URL}`}
+            href={`https://${import.meta.env.VITE_WEBSITE_URL}?utm_source=store_credit`}
             target="_blank"
             rel="noopener noreferrer"
             className="group flex items-center gap-2 text-[10px] font-bold tracking-[0.15em] uppercase text-lime-400 hover:text-lime-300 transition-colors"

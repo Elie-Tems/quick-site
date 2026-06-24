@@ -77,6 +77,13 @@ export const trackPageView = async (businessId: string, pagePath: string = "/") 
     localStorage.setItem("visitor_id", visitorId);
   }
 
+  let utmSource: string | null = null;
+  try {
+    utmSource = new URLSearchParams(window.location.search).get("utm_source");
+  } catch {
+    /* ignore */
+  }
+
   try {
     await supabase.from("page_views").insert({
       business_id: businessId,
@@ -84,7 +91,8 @@ export const trackPageView = async (businessId: string, pagePath: string = "/") 
       page_path: pagePath,
       referrer: document.referrer || null,
       user_agent: navigator.userAgent,
-    });
+      utm_source: utmSource,
+    } as any);
   } catch (error) {
     console.error("Failed to track page view:", error);
   }

@@ -1,8 +1,8 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Tag, Crown, Sparkles, Megaphone, Star, FolderOpen, Info, Truck, CreditCard, Palette, ScrollText, Target, Gauge, ChevronDown } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Tag, Crown, Sparkles, Megaphone, Star, FolderOpen, Info, Truck, CreditCard, Palette, ScrollText, Target, Gauge, ChevronDown, Radar } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -36,6 +36,7 @@ const navItems: {
 
   // שיווק ותצוגה
   { id: "ad-budget", label: "תקציב פרסום", shortLabel: "פרסום", icon: Target, group: "שיווק ותצוגה" },
+  { id: "traffic", label: "מקורות הגעה", shortLabel: "מקורות", icon: Radar, group: "שיווק ותצוגה" },
   { id: "banners", label: "באנרים", icon: Image, group: "שיווק ותצוגה" },
   { id: "campaigns", label: "קמפיינים", icon: Megaphone, group: "שיווק ותצוגה" },
   { id: "coupons", label: "קופונים", icon: Ticket, group: "שיווק ותצוגה" },

@@ -111,7 +111,7 @@ const StoreFooterV2 = ({ businessName, phone, email, storeSlug }: StoreFooterV2P
         {/* Platform credit */}
         <div className="border-t border-border/50 py-6 flex items-center justify-center">
           <a
-            href={`https://${import.meta.env.VITE_WEBSITE_URL}`}
+            href={`https://${import.meta.env.VITE_WEBSITE_URL}?utm_source=store_credit`}
             target="_blank"
             rel="noopener noreferrer"
             className="group flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 transition-all duration-300 hover:scale-105"
