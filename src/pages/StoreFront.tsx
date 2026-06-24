@@ -22,6 +22,7 @@ import { useActiveCampaign, useCampaignBanners, useCampaignProducts } from "@/ho
 import { Button } from "@/components/ui/button";
 import { BusinessCategory } from "@/lib/categoryConfig";
 import { trackPageView, trackEvent } from "@/hooks/useAnalytics";
+import { supabase } from "@/integrations/supabase/client";
 import { useCreateOrder } from "@/hooks/useOrders";
 import { startPayplusPayment } from "@/hooks/usePayplus";
 import { toast } from "sonner";
@@ -453,6 +454,29 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         businessPhone: business.phone ?? null,
       });
       trackEvent(business.id, "purchase", { value: orderTotal });
+      // Customer order confirmation, sent FROM the merchant (reply-to the merchant).
+      if (data.email) {
+        supabase.functions
+          .invoke("send-platform-email", {
+            body: {
+              type: "orderConfirmationCustomer",
+              to: data.email,
+              merchant: {
+                storeName: business.name,
+                email: business.email || undefined,
+                storeUrl: `https://${import.meta.env.VITE_WEBSITE_URL}/store/${business.slug}`,
+                brandColor: (business as any).primary_color || undefined,
+                logoUrl: business.logo_url || undefined,
+              },
+              order: {
+                firstName: data.fullName?.split(" ")[0],
+                orderTotal,
+                items: cartItems.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
+              },
+            },
+          })
+          .catch(() => {});
+      }
       setCartItems([]);
       setViewState('thankyou');
     } catch {

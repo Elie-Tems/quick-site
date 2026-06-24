@@ -3,7 +3,7 @@
 // (verify_jwt=true) so it can't be abused anonymously to send from our domain.
 // No-ops gracefully if RESEND_API_KEY is not configured yet.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { PLATFORM_EMAILS } from "../_shared/email/platformEmails.ts";
+import { PLATFORM_EMAILS, orderConfirmationCustomer } from "../_shared/email/platformEmails.ts";
 import { sendViaResend } from "../_shared/email/resend.ts";
 
 const corsHeaders = {
@@ -15,18 +15,59 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { type, to, ctx, fromName, replyTo } = await req.json();
-
-    const builder = (PLATFORM_EMAILS as Record<string, (c: unknown) => { subject: string; html: string }>)[type];
-    if (!builder || !to) {
-      return new Response(JSON.stringify({ ok: false, error: "type and to are required" }), {
+    const { type, to, ctx, fromName, replyTo, merchant, order } = await req.json();
+    if (!to) {
+      return new Response(JSON.stringify({ ok: false, error: "to is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { subject, html } = builder(ctx || {});
-    const result = await sendViaResend({ to, subject, html, fromName, replyTo });
+    let subject: string;
+    let html: string;
+    let sendFromName = fromName;
+    let sendReplyTo = replyTo;
+
+    if (type === "orderConfirmationCustomer") {
+      // Customer-facing order email: FROM the merchant, reply-to the merchant.
+      const m = merchant || {};
+      const storeName = m.storeName || "החנות";
+      const storeUrl = m.storeUrl || "https://siango.app";
+      const built = orderConfirmationCustomer(
+        {
+          businessName: storeName,
+          email: m.email,
+          brandColor: m.brandColor,
+          logoUrl: m.logoUrl,
+          unsubscribeUrl: `${storeUrl}/unsubscribe`,
+        },
+        {
+          firstName: order?.firstName,
+          storeName,
+          orderTotal: order?.orderTotal,
+          storeUrl,
+          items: order?.items,
+          orderNumber: order?.orderNumber,
+        },
+      );
+      subject = built.subject;
+      html = built.html;
+      sendFromName = storeName;            // shown as the sender
+      sendReplyTo = m.email || replyTo;    // replies go to the merchant
+    } else {
+      const builder = (PLATFORM_EMAILS as Record<string, (c: unknown) => { subject: string; html: string }>)[type];
+      if (!builder) {
+        return new Response(JSON.stringify({ ok: false, error: "unknown type" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const b = builder(ctx || {});
+      subject = b.subject;
+      html = b.html;
+    }
+
+    const result = await sendViaResend({ to, subject, html, fromName: sendFromName, replyTo: sendReplyTo });
 
     return new Response(JSON.stringify(result), {
       status: result.ok || result.skipped ? 200 : 502,
