@@ -363,8 +363,8 @@ const HelpCenter = () => {
             </Button>
           </Link>
           
-          <div className="absolute left-1/2 transform -translate-x-1/2">
-            <img src={logoDarkBg} alt="Siango" className="h-16" />
+          <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none">
+            <img src={logoDarkBg} alt="Siango" className="h-9 sm:h-12 w-auto max-w-[40vw] object-contain" />
           </div>
           
           <div></div>
