@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { ShoppingBag, Gem, Laptop, Gift, Home } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ShoppingBag, Gem, Laptop, Gift, Home, Sparkles, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const TemplateShowcaseSection = () => {
@@ -168,6 +169,31 @@ const TemplateShowcaseSection = () => {
               </div>
             </motion.div>
           ))}
+
+          {/* 6th cell: signup CTA — fills the grid and drives registration */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <Link
+              to="/register"
+              className="group h-full min-h-[280px] flex flex-col items-center justify-center text-center gap-4 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/[0.04] p-8 transition-all hover:border-primary/60 hover:bg-primary/[0.08]"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center">
+                <Sparkles className="w-7 h-7 text-primary" />
+              </div>
+              <div>
+                <div className="text-xl font-bold text-foreground">האתר שלכם יכול להיראות ככה</div>
+                <div className="text-sm text-muted-foreground mt-1">בחרו קטגוריה והצבעים יתאימו אוטומטית</div>
+              </div>
+              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-white font-bold text-sm transition-transform group-hover:-translate-x-1">
+                התחילו עכשיו בחינם
+                <ArrowLeft className="w-4 h-4" />
+              </span>
+            </Link>
+          </motion.div>
         </div>
       </div>
     </section>

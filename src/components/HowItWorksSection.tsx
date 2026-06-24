@@ -359,16 +359,6 @@ const HowItWorksSection = () => {
           transition={{ duration: 0.6 }}
           className="text-center max-w-2xl mx-auto mb-20"
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-6"
-          >
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm text-muted-foreground">פשוט וקל</span>
-          </motion.div>
-          
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground mb-6">
             איך זה עובד?
           </h2>

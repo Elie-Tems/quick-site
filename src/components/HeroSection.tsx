@@ -150,7 +150,7 @@ const HeroSection = () => {
                   <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-black rounded-full z-20" />
                   
                   {/* Screen content - Vibrant Store UI */}
-                  <div className="w-full h-full bg-gradient-to-b from-zinc-950 to-black p-3 pt-10">
+                  <div className="w-full h-full bg-gradient-to-b from-zinc-950 to-black p-3 pt-10 flex flex-col">
                     {/* Store header with logo */}
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
@@ -179,7 +179,7 @@ const HeroSection = () => {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 1, duration: 0.6 }}
-                      className="relative h-28 rounded-2xl overflow-hidden mb-3"
+                      className="relative h-24 rounded-2xl overflow-hidden mb-3 shrink-0"
                     >
                       <img 
                         src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80"
@@ -244,7 +244,7 @@ const HeroSection = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 1.6, duration: 0.5 }}
-                      className="absolute bottom-4 left-3 right-3"
+                      className="mt-auto pt-3"
                     >
                       <div className="h-11 rounded-xl bg-primary flex items-center justify-center gap-2">
                         <span className="text-xs font-bold text-white">{t('hero.addToCart')}</span>
