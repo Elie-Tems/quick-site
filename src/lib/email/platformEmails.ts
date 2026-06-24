@@ -101,7 +101,8 @@ export const siteReady = (c: PlatformCtx): BuiltEmail => ({
       (c.siteUrl ? emailHighlight(`🔗 כתובת האתר שלכם:<br><b>${ltr(c.siteUrl)}</b>`) : "") +
       p("מה עכשיו? משתפים את הקישור בכל מקום - וואטסאפ, אינסטגרם, אצל הדודה בקבוצה. כל שיתוף = עוד לקוח פוטנציאלי. 😉") +
       emailButton("לצפייה באתר החי 👀", c.siteUrl || dash(c), BRAND) +
-      emailButton("לדשבורד הניהול", dash(c), "#555555"),
+      emailButton("לדשבורד הניהול", dash(c), "#555555") +
+      emailHighlight("🎁 רוצים חודש שימוש חינם? על כל חבר שמצטרף דרככם והופך למנוי - חודש חינם. ההזמנה מחכה לכם בדשבורד."),
   }),
 });
 

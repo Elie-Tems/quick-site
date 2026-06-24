@@ -6,6 +6,7 @@ import Confetti from "@/components/ui/confetti";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import ReferralBox from "@/components/dashboard/ReferralBox";
 
 interface OnboardingCompleteProps {
   data: OnboardingData;
@@ -149,6 +150,11 @@ const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
               <span>חבר דומיין מותאם אישית</span>
             </li>
           </ul>
+        </div>
+
+        {/* Referral - peak excitement moment to ask for a share */}
+        <div className="mt-6">
+          <ReferralBox />
         </div>
       </div>
     </div>
