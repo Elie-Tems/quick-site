@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Building2, ShoppingCart, CreditCard,
   Gift, XCircle, TrendingUp, BarChart3, GitMerge, Users2,
   Trophy, Moon, PieChart, AlertCircle, Settings, Zap,
-  ChevronRight, Menu, X,
+  ChevronRight, Menu, X, Ticket,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlatformStats } from "@/hooks/useAdmin";
@@ -25,13 +25,14 @@ import AdminActivityFeed from "./AdminActivityFeed";
 import AdminPaymentErrors from "./AdminPaymentErrors";
 import AdminCohortRetention from "./AdminCohortRetention";
 import AdminCustomers from "./AdminCustomers";
+import AdminSubscriptionCoupons from "./AdminSubscriptionCoupons";
 
 type AdminView =
   | "overview" | "customers" | "businesses" | "orders" | "payments"
   | "referrals" | "cancellations" | "activity"
   | "mrr" | "funnel" | "churn" | "cohort" | "analytics"
   | "top" | "dormant" | "categories" | "payment-errors"
-  | "settings";
+  | "coupons" | "settings";
 
 interface NavItem {
   id: AdminView;
@@ -51,6 +52,7 @@ const NAV: NavItem[] = [
   { id: "orders",         label: "הזמנות",           icon: ShoppingCart,    group: "מכירות" },
   { id: "payments",       label: "תשלומים",          icon: CreditCard,      group: "מכירות" },
   { id: "referrals",      label: "הפניות",           icon: Gift,            group: "מכירות" },
+  { id: "coupons",        label: "קופוני מנוי",      icon: Ticket,          group: "מכירות" },
   { id: "cancellations",  label: "ביטולים",          icon: XCircle,         group: "מכירות" },
   // אנליטיקס
   { id: "mrr",            label: "MRR / ARR",        icon: TrendingUp,      group: "אנליטיקס" },
@@ -76,7 +78,7 @@ const VIEW_TITLES: Record<AdminView, string> = {
   mrr: "MRR / ARR", funnel: "Conversion Funnel", churn: "שיעור נטישה",
   cohort: "Cohort Retention", analytics: "צפיות וביקורים",
   top: "Top Performers", dormant: "עסקים רדומים", categories: "פילוח קטגוריות",
-  "payment-errors": "שגיאות תשלום", settings: "הגדרות מערכת",
+  "payment-errors": "שגיאות תשלום", coupons: "קופוני מנוי", settings: "הגדרות מערכת",
 };
 
 function Sidebar({ current, onChange, collapsed, onToggle }: {
@@ -166,6 +168,7 @@ function ViewContent({ view, stats, statsLoading }: {
     case "payments":       return <AdminPayments />;
     case "referrals":      return <AdminReferrals />;
     case "cancellations":  return <AdminCancellations />;
+    case "coupons":        return <AdminSubscriptionCoupons />;
     case "mrr":            return <AdminMRR />;
     case "funnel":         return <AdminFunnel />;
     case "churn":          return <AdminChurnRate />;
