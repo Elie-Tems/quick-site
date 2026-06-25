@@ -34,6 +34,7 @@ import AICreditPayment from "./pages/AICreditPayment";
 import PreviewPayments from "./pages/PreviewPayments";
 import PreviewEmails from "./pages/PreviewEmails";
 import PublishCheckoutPreview from "./pages/PublishCheckoutPreview";
+import PreviewOnboardingV2 from "./pages/PreviewOnboardingV2";
 import OnboardingCompleteGate from "./pages/OnboardingCompleteGate";
 import ThankYou from "./pages/ThankYou";
 import { getTenantSlug } from "@/lib/subdomain";
@@ -84,6 +85,7 @@ const App = () => {
                   <Route path="/preview/payments" element={<PreviewPayments />} />
                   <Route path="/preview/emails" element={<PreviewEmails />} />
                   <Route path="/preview/publish" element={<PublishCheckoutPreview />} />
+                  <Route path="/preview/onboarding-v2" element={<PreviewOnboardingV2 />} />
                   <Route path="/store" element={<StoreFront />} />
                   <Route path="/store/:slug" element={<StoreFront />} />
                   <Route path="/store/:slug/v2" element={<StoreFrontV2 />} />
