@@ -33,6 +33,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Track credit deduction so a failed/timed-out generation can refund it.
+  let creditBusinessId: string | null = null;
+  let creditWasDeducted = false;
+
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
@@ -193,6 +197,8 @@ serve(async (req) => {
       }
 
       console.log(`Credits deducted. Remaining: ${newCreditsRemaining}`);
+      creditBusinessId = businessId;
+      creditWasDeducted = true;
 
       // Create job record with pending status
       const { data: jobData, error: jobError } = await supabase
@@ -469,7 +475,26 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error generating hero image:", error);
-    
+
+    // Refund the credit if one was already deducted - a failed or timed-out
+    // generation must never cost the merchant a credit.
+    try {
+      if (creditWasDeducted && creditBusinessId) {
+        const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+        const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+          const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+          const { data: c } = await sb.from("ai_credits").select("credits_remaining").eq("business_id", creditBusinessId).single();
+          if (c) {
+            await sb.from("ai_credits").update({ credits_remaining: (c.credits_remaining || 0) + 1 }).eq("business_id", creditBusinessId);
+            console.log("Refunded 1 credit after failed hero generation");
+          }
+        }
+      }
+    } catch (refundErr) {
+      console.error("Failed to refund credit:", refundErr);
+    }
+
     // Try to update job status to failed if we have a jobId
     try {
       const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
