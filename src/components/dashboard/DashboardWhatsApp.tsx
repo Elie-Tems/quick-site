@@ -7,7 +7,7 @@ import {
   Plus, Upload, Loader2, BadgeCheck, ShieldCheck,
 } from "lucide-react";
 
-interface Props { businessId?: string }
+interface Props { businessId?: string; forceConnected?: boolean }
 
 type Tab = "contacts" | "campaigns" | "settings";
 
@@ -29,20 +29,23 @@ interface Campaign {
  * settings. The store-bot revenue layer. BUILD-ONLY: gated by a feature flag so
  * it isn't surfaced to merchants until Moti approves.
  */
-const DashboardWhatsApp = ({ businessId }: Props) => {
+const DashboardWhatsApp = ({ businessId, forceConnected }: Props) => {
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("contacts");
 
   const { data: account, isLoading } = useQuery({
     queryKey: ["wa-account", businessId],
-    enabled: !!businessId,
+    enabled: !!businessId && !forceConnected,
     queryFn: async () => {
       const { data } = await (supabase as any).from("whatsapp_accounts").select("id, status, phone_number, display_name, messaging_limit").eq("business_id", businessId).maybeSingle();
       return data as Account | null;
     },
   });
 
-  const connected = account?.status === "connected";
+  // Preview mode (private link): show the connected layout with sample data.
+  const previewAccount: Account = { id: "preview", status: "connected", phone_number: "+972 50-123-4567", display_name: "החנות שלי", messaging_limit: 1000 };
+  const connected = forceConnected ? true : account?.status === "connected";
+  const shownAccount = forceConnected ? previewAccount : account;
 
   if (isLoading) {
     return <div className="container max-w-4xl mx-auto px-4 py-10 text-center" dir="rtl"><Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" /></div>;
@@ -66,7 +69,7 @@ const DashboardWhatsApp = ({ businessId }: Props) => {
         <>
           <div className="flex items-center gap-2 rounded-xl border border-[#25D366]/30 bg-[#25D366]/5 px-4 py-3">
             <BadgeCheck className="h-5 w-5 text-[#25D366]" />
-            <span className="text-sm text-foreground">מחובר{account?.phone_number ? <> · <span dir="ltr" className="font-medium">{account.phone_number}</span></> : null}</span>
+            <span className="text-sm text-foreground">מחובר{shownAccount?.phone_number ? <> · <span dir="ltr" className="font-medium">{shownAccount.phone_number}</span></> : null}</span>
           </div>
 
           <div className="flex gap-1 bg-muted rounded-lg p-1 w-fit">
@@ -78,9 +81,9 @@ const DashboardWhatsApp = ({ businessId }: Props) => {
             ))}
           </div>
 
-          {tab === "contacts" && <ContactsTab businessId={businessId} />}
-          {tab === "campaigns" && <CampaignsTab businessId={businessId} />}
-          {tab === "settings" && <SettingsTab account={account} />}
+          {tab === "contacts" && <ContactsTab businessId={businessId} preview={forceConnected} />}
+          {tab === "campaigns" && <CampaignsTab businessId={businessId} preview={forceConnected} />}
+          {tab === "settings" && <SettingsTab account={shownAccount} />}
         </>
       )}
     </div>
@@ -157,21 +160,27 @@ const GuidanceScreen = ({ businessId, onConnected }: { businessId?: string; onCo
 };
 
 /* ---------- Contacts (mailing list) ---------- */
-const ContactsTab = ({ businessId }: { businessId?: string }) => {
+const ContactsTab = ({ businessId, preview }: { businessId?: string; preview?: boolean }) => {
   const qc = useQueryClient();
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [importText, setImportText] = useState("");
   const [showImport, setShowImport] = useState(false);
 
-  const { data: contacts } = useQuery({
+  const { data: contactsData } = useQuery({
     queryKey: ["wa-contacts", businessId],
-    enabled: !!businessId,
+    enabled: !!businessId && !preview,
     queryFn: async () => {
       const { data } = await (supabase as any).from("whatsapp_contacts").select("id, phone, name, opted_in, tags, source").eq("business_id", businessId).order("created_at", { ascending: false }).limit(2000);
       return (data || []) as Contact[];
     },
   });
+  const sampleContacts: Contact[] = [
+    { id: "s1", phone: "+972 50-111-2222", name: "דנה כהן", opted_in: true, tags: ["לקוחות"], source: "checkout" },
+    { id: "s2", phone: "+972 52-333-4444", name: "יוסי לוי", opted_in: true, tags: [], source: "import" },
+    { id: "s3", phone: "+972 54-555-6666", name: null, opted_in: false, tags: [], source: "manual" },
+  ];
+  const contacts = preview ? sampleContacts : contactsData;
   const refresh = () => qc.invalidateQueries({ queryKey: ["wa-contacts", businessId] });
 
   const add = async () => {
@@ -246,20 +255,25 @@ const ContactsTab = ({ businessId }: { businessId?: string }) => {
 };
 
 /* ---------- Campaigns ---------- */
-const CampaignsTab = ({ businessId }: { businessId?: string }) => {
+const CampaignsTab = ({ businessId, preview }: { businessId?: string; preview?: boolean }) => {
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const [tag, setTag] = useState("");
   const [sending, setSending] = useState<string | null>(null);
 
-  const { data: campaigns } = useQuery({
+  const { data: campaignsData } = useQuery({
     queryKey: ["wa-campaigns", businessId],
-    enabled: !!businessId,
+    enabled: !!businessId && !preview,
     queryFn: async () => {
       const { data } = await (supabase as any).from("whatsapp_campaigns").select("id, name, status, audience_tag, total_count, sent_count, delivered_count, read_count").eq("business_id", businessId).order("created_at", { ascending: false }).limit(200);
       return (data || []) as Campaign[];
     },
   });
+  const sampleCampaigns: Campaign[] = [
+    { id: "c1", name: "מבצע סוף עונה", status: "sent", audience_tag: "לקוחות", total_count: 120, sent_count: 120, delivered_count: 118, read_count: 94 },
+    { id: "c2", name: "השקת מוצר חדש", status: "draft", audience_tag: null, total_count: 0, sent_count: 0, delivered_count: 0, read_count: 0 },
+  ];
+  const campaigns = preview ? sampleCampaigns : campaignsData;
   const refresh = () => qc.invalidateQueries({ queryKey: ["wa-campaigns", businessId] });
 
   const create = async () => {
