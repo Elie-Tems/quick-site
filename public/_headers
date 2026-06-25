@@ -1,0 +1,11 @@
+# Security headers for all pages (served by Cloudflare Pages).
+# CSP is intentionally omitted for now - a strict policy needs per-domain
+# allow-listing (Supabase, GA/GTM, Google Fonts, PayPlus/iCount iframes) and
+# is easy to get wrong; add it as report-only first before enforcing.
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+  X-XSS-Protection: 0
