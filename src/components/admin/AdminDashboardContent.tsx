@@ -29,6 +29,7 @@ import AdminSubscriptionCoupons from "./AdminSubscriptionCoupons";
 import AdminPartnerEarnings from "./AdminPartnerEarnings";
 import AdminMarketplace from "./AdminMarketplace";
 import AdminDomainSettings from "./AdminDomainSettings";
+import AdminCommandCenter from "./AdminCommandCenter";
 
 type AdminView =
   | "overview" | "customers" | "businesses" | "orders" | "payments"
@@ -154,7 +155,7 @@ function ViewContent({ view, stats, statsLoading }: {
     case "overview":
       return (
         <div className="space-y-6">
-          <AdminStatsCards stats={stats} isLoading={statsLoading} />
+          <AdminCommandCenter />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <h3 className="text-sm font-semibold mb-3 text-muted-foreground">פעילות אחרונה</h3>
@@ -165,6 +166,7 @@ function ViewContent({ view, stats, statsLoading }: {
               <AdminMRR />
             </div>
           </div>
+          <AdminStatsCards stats={stats} isLoading={statsLoading} />
         </div>
       );
     case "activity":       return <AdminActivityFeed />;

@@ -35,3 +35,6 @@ build
 !.env.example
 
 supabase/.temp/
+
+# Wrangler build artifacts
+.wrangler/
