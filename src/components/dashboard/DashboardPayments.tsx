@@ -63,8 +63,11 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
         <p className="text-xs text-muted-foreground mb-3">פתחו חשבון דרכנו ותיהנו מתנאים מועדפים.</p>
         <div className="grid gap-3 sm:grid-cols-2">
           {PARTNER_LINKS.map((p) => (
-            <div key={p.id} className="rounded-xl border border-border bg-card p-4 flex flex-col">
-              <p className="font-bold text-foreground">{p.name}</p>
+            <div key={p.id} className={`rounded-xl border bg-card p-4 flex flex-col ${p.highlight ? "border-primary ring-1 ring-primary/30" : "border-border"}`}>
+              <div className="flex items-center gap-1.5">
+                <p className="font-bold text-foreground">{p.name}</p>
+                {p.highlight && <span className="text-[10px] font-bold text-primary bg-primary/10 rounded-full px-1.5 py-0.5">מומלץ</span>}
+              </div>
               <p className="text-xs text-muted-foreground mt-1 flex-1">{p.blurb}</p>
               <button
                 type="button"

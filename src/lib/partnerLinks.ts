@@ -7,6 +7,7 @@ export interface PartnerLink {
   name: string;
   url: string | null; // affiliate URL; null = link not received yet
   blurb: string;
+  highlight?: boolean; // preferred partner (shown first / emphasized)
 }
 
 export const PARTNER_LINKS: PartnerLink[] = [
@@ -14,7 +15,8 @@ export const PARTNER_LINKS: PartnerLink[] = [
     id: "cardcom",
     name: "Cardcom",
     url: null,
-    blurb: "סליקת אשראי מתקדמת. נציג Cardcom ייצור איתך קשר להקמה - בלי התעסקות מצדך.",
+    blurb: "סליקת אשראי מתקדמת בתנאים מועדפים. נציג Cardcom ייצור איתך קשר להקמה - בלי התעסקות מצדך.",
+    highlight: true,
   },
   {
     id: "hyp",

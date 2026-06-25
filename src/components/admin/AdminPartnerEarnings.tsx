@@ -21,6 +21,7 @@ interface Partner {
   perMerchant: number | null; // flat ₪ per qualifying merchant (one-time), else null
   note?: string;
   link?: string;
+  highlight?: boolean; // best earner - emphasize
 }
 
 // Real terms from the signed agreements (2026-06-25). Update here if they change.
@@ -45,6 +46,7 @@ const PARTNERS: Partner[] = [
     cycle: "התחשבנות ב-25 לחודש · מינ׳ ₪500 · מול חשבונית",
     perMerchant: null,
     note: "הסכום המדויק תלוי במחזור של כל עסק - מגיע מדוח Cardcom.",
+    highlight: true,
   },
   {
     key: "icount",
@@ -62,12 +64,11 @@ const PARTNERS: Partner[] = [
     key: "payplus",
     name: "PayPlus",
     match: ["payplus"],
-    commission: "ממתין לתנאים",
-    model: "-",
-    qualifying: "-",
-    cycle: "-",
-    perMerchant: null,
-    note: "התנאים טרם התקבלו מ-PayPlus.",
+    commission: "₪150 לעסק",
+    model: "חד-פעמי לעסק",
+    qualifying: "פעיל 3 חודשים",
+    cycle: "אחרי 3 חודשי פעילות",
+    perMerchant: 150,
   },
 ];
 
@@ -119,9 +120,12 @@ const AdminPartnerEarnings = () => {
           const connected = connectedFor(p);
           const estimate = p.perMerchant != null ? referred * p.perMerchant : null;
           return (
-            <div key={p.key} className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <div key={p.key} className={`rounded-xl border bg-card p-5 space-y-3 ${p.highlight ? "border-primary ring-1 ring-primary/30" : "border-border"}`}>
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-foreground">{p.name}</h3>
+                <h3 className="font-bold text-foreground flex items-center gap-1.5">
+                  {p.name}
+                  {p.highlight && <span className="text-[10px] font-bold text-primary bg-primary/10 rounded-full px-1.5 py-0.5">💰 הכי משתלם</span>}
+                </h3>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{p.model}</span>
               </div>
 
