@@ -36,6 +36,8 @@ export interface PlatformCtx {
   freezeDate?: string;
   deleteDate?: string;
   daysLeft?: number;
+  domainName?: string;
+  expiryDate?: string;
 }
 
 export interface BuiltEmail { subject: string; html: string; }
@@ -258,9 +260,51 @@ export const orderConfirmationCustomer = (
   }),
 });
 
+/** Domain registered successfully. */
+export const domainPurchased = (c: PlatformCtx): BuiltEmail => ({
+  subject: `הדומיין ${c.domainName || "שלך"} מוכן! 🎉`,
+  html: renderEmail({
+    sender: siangoSender(c.dashboardUrl),
+    previewText: "הדומיין נרשם בהצלחה ומחובר לאתר",
+    bodyHtml:
+      h1("הדומיין שלך נרשם בהצלחה! 🎉") +
+      p(`${hi(c)}הדומיין <b>${ltr(c.domainName || "")}</b> רשום עכשיו על שמך ומחובר אוטומטית לאתר של ${biz(c)}. כתובת אמיתית, מקצועית, משלך.`) +
+      (c.expiryDate ? emailHighlight(`📅 הדומיין תקף עד <b>${ltr(c.expiryDate)}</b> - נחדש אוטומטית כדי שלא תאבדו אותו.`) : "") +
+      emailButton("לניהול הדומיין", dash(c), BRAND),
+  }),
+});
+
+/** Domain expiring soon - renewal reminder. */
+export const domainExpiryReminder = (c: PlatformCtx): BuiltEmail => ({
+  subject: `הדומיין ${c.domainName || "שלך"} מתקרב לתפוגה ⏰`,
+  html: renderEmail({
+    sender: siangoSender(c.dashboardUrl),
+    previewText: "עוד זמן קצר לחידוש - שלא תאבדו את הכתובת",
+    bodyHtml:
+      h1("הדומיין שלך מתקרב לתפוגה ⏰") +
+      p(`${hi(c)}הדומיין <b>${ltr(c.domainName || "")}</b>${c.daysLeft != null ? ` יפוג בעוד ${c.daysLeft} ימים` : " עומד לפוג בקרוב"}. כדי שהאתר והמייל ימשיכו לעבוד - צריך לחדש אותו.`) +
+      emailHighlight("💡 אם החידוש האוטומטי פעיל - לא צריך לעשות כלום, נטפל בזה.") +
+      emailButton("לחידוש הדומיין", dash(c), BRAND),
+  }),
+});
+
+/** Domain about to be lost (renewal/payment failed). */
+export const domainExpiringUnpaid = (c: PlatformCtx): BuiltEmail => ({
+  subject: `🔴 שימו לב: הדומיין ${c.domainName || "שלך"} עומד לרדת`,
+  html: renderEmail({
+    sender: siangoSender(c.dashboardUrl),
+    previewText: "פעולה אחרונה כדי לא לאבד את הדומיין",
+    bodyHtml:
+      h1("הדומיין שלך בסכנת אובדן 🔴") +
+      p(`${hi(c)}לא הצלחנו לחדש את הדומיין <b>${ltr(c.domainName || "")}</b>${c.expiryDate ? ` (פג ב-${ltr(c.expiryDate)})` : ""}. אם לא יחודש בקרוב - הוא ישוחרר, וייתכן שלא נוכל להחזיר אותו.`) +
+      emailHighlight("⚠️ דומיין שאבד עלול להילקח על ידי מישהו אחר. עדכנו אמצעי תשלום או חדשו ידנית כדי לשמור עליו.") +
+      emailButton("להצלת הדומיין", dash(c), "#b91c1c"),
+  }),
+});
+
 export const PLATFORM_EMAILS = {
   accountWelcome, onboardingAbandoned1, onboardingAbandoned2, siteReady,
   paymentReceipt, paymentFailed, paymentReminder, siteFrozen,
   deletionWarning, siteDeleted, siteReactivated, subscriptionCancelled,
-  newOrderMerchant,
+  newOrderMerchant, domainPurchased, domainExpiryReminder, domainExpiringUnpaid,
 } as const;
