@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +11,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import AccessibilityWidget from "@/components/accessibility/AccessibilityWidget";
 import CookieConsent from "@/components/CookieConsent";
+import FloatingHelpButton from "@/components/FloatingHelpButton";
 // Kept eager: first-paint-critical pages (landing, storefront, auth entry).
 import Index from "./pages/Index";
 import Register from "./pages/Register";
@@ -21,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import { useResolvedTenant } from "@/hooks/useResolvedTenant";
 import ShabbatGate from "@/components/ShabbatGate";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { captureUtm } from "@/lib/utmCapture";
 // Lazy-loaded: heavy or non-first-paint pages get their own chunk, loaded on
 // demand. This keeps the initial bundle small so navigation feels snappy.
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -54,6 +56,9 @@ const App = () => {
   // exposed. On the apex it's the full platform. Custom domains resolve async, so
   // `resolving` covers the brief lookup window (avoid flashing the marketing site).
   const { tenantSlug, resolving } = useResolvedTenant();
+
+  // Capture first-touch UTM from ad links (Siango acquisition attribution).
+  useEffect(() => { captureUtm(); }, []);
 
   return (
   <ErrorBoundary>
@@ -121,6 +126,7 @@ const App = () => {
               )}
               </Suspense>
               <AccessibilityWidget />
+              {!tenantSlug && <FloatingHelpButton />}
               <CookieConsent />
             </BrowserRouter>
             </TooltipProvider>

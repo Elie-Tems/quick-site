@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { Megaphone, Eye, Target, Wallet, TrendingUp } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Megaphone, Eye, UserPlus, Wallet, Coins, Plus, Trash2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { useAdminMarketing } from "@/hooks/useAdminMarketing";
 
 const fmt = (n: number) => n.toLocaleString("he-IL");
@@ -12,19 +15,57 @@ const RANGES = [
 ];
 
 /**
- * Super-admin marketing view: ad budget per channel + per-source performance
- * (views, conversions, revenue) across ALL stores. Each ad link is UTM-tagged,
- * so we attribute conversions to the buyer's traffic source.
+ * Siango acquisition marketing (super-admin): budget per channel + the funnel
+ * for Siango's own ad campaigns (ad clicks -> signups), per UTM source, with
+ * cost per acquired signup. Channels are admin-editable here.
  */
 const AdminMarketing = () => {
   const [days, setDays] = useState(30);
   const { data, isLoading } = useAdminMarketing(days);
+  const qc = useQueryClient();
+
+  const [name, setName] = useState("");
+  const [budget, setBudget] = useState("");
+  const [period, setPeriod] = useState("monthly");
+  const [saving, setSaving] = useState(false);
+
+  const refresh = () => qc.invalidateQueries({ queryKey: ["admin-siango-marketing"] });
+
+  const addChannel = async () => {
+    if (!name.trim()) return;
+    setSaving(true);
+    try {
+      const { error } = await (supabase as any).from("siango_ad_channels").insert({
+        name: name.trim(),
+        budget_amount: Number(budget) || 0,
+        budget_period: period,
+      });
+      if (error) throw error;
+      setName(""); setBudget("");
+      toast.success("הערוץ נוסף ✓");
+      refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "שגיאה");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateBudget = async (id: string, amount: number) => {
+    await (supabase as any).from("siango_ad_channels").update({ budget_amount: amount, updated_at: new Date().toISOString() }).eq("id", id);
+    refresh();
+  };
+
+  const removeChannel = async (id: string) => {
+    await (supabase as any).from("siango_ad_channels").delete().eq("id", id);
+    refresh();
+  };
 
   const stats = [
     { label: "תקציב פרסום (סה\"כ)", value: data ? ils(data.totals.budget) : undefined, icon: Wallet },
-    { label: "צפיות מפרסום", value: data ? fmt(data.totals.views) : undefined, icon: Eye },
-    { label: "המרות", value: data ? fmt(data.totals.conversions) : undefined, icon: Target },
-    { label: "הכנסות משויכות", value: data ? ils(data.totals.revenue) : undefined, icon: TrendingUp },
+    { label: "צפיות / קליקים", value: data ? fmt(data.totals.views) : undefined, icon: Eye },
+    { label: "הרשמות מפרסום", value: data ? fmt(data.totals.signups) : undefined, icon: UserPlus },
+    { label: "עלות להרשמה", value: data ? (data.totals.costPerSignup ? ils(data.totals.costPerSignup) : "-") : undefined, icon: Coins },
   ];
 
   return (
@@ -33,17 +74,14 @@ const AdminMarketing = () => {
         <div className="flex items-start gap-3">
           <Megaphone className="w-7 h-7 text-primary shrink-0" />
           <div>
-            <h2 className="text-xl font-bold text-foreground">פרסום ושיווק</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">תקציב לפי ערוץ + ביצועי כל מקור (צפיות, המרות, הכנסות) על פני כל החנויות.</p>
+            <h2 className="text-xl font-bold text-foreground">פרסום ושיווק (סיאנגו)</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">הקמפיינים שלנו לגיוס סוחרים: תקציב לכל ערוץ, ומשפך מלא (קליקים → הרשמות) לכל מקור.</p>
           </div>
         </div>
         <div className="flex gap-1 bg-muted rounded-lg p-1">
           {RANGES.map((r) => (
-            <button
-              key={r.days}
-              onClick={() => setDays(r.days)}
-              className={`px-3 py-1.5 rounded-md text-sm transition-colors ${days === r.days ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground"}`}
-            >
+            <button key={r.days} onClick={() => setDays(r.days)}
+              className={`px-3 py-1.5 rounded-md text-sm transition-colors ${days === r.days ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground"}`}>
               {r.label}
             </button>
           ))}
@@ -68,56 +106,68 @@ const AdminMarketing = () => {
         })}
       </div>
 
-      {/* Budget per channel */}
+      {/* Channels + budgets (editable) */}
       <div className="rounded-xl border border-border bg-card p-5">
         <h3 className="font-semibold text-foreground mb-3">תקציב פרסום לפי ערוץ</h3>
+        <div className="flex flex-wrap gap-2 mb-4">
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="שם ערוץ (פייסבוק, גוגל...)"
+            className="flex-1 min-w-[140px] rounded-lg border border-border bg-background px-3 py-2 text-sm" />
+          <input value={budget} onChange={(e) => setBudget(e.target.value)} type="number" placeholder="תקציב ₪"
+            className="w-28 rounded-lg border border-border bg-background px-3 py-2 text-sm" dir="ltr" />
+          <select value={period} onChange={(e) => setPeriod(e.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm">
+            <option value="monthly">חודשי</option>
+            <option value="weekly">שבועי</option>
+            <option value="custom">חד-פעמי</option>
+          </select>
+          <button onClick={addChannel} disabled={saving || !name.trim()}
+            className="rounded-lg bg-primary text-white px-4 py-2 text-sm font-medium flex items-center gap-1.5 disabled:opacity-50">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} הוסף
+          </button>
+        </div>
+
         {isLoading ? (
           <p className="text-sm text-muted-foreground">טוען...</p>
         ) : !data?.channels.length ? (
-          <p className="text-sm text-muted-foreground">עדיין אין ערוצי פרסום מוגדרים בחנויות.</p>
+          <p className="text-sm text-muted-foreground">עדיין לא הוגדרו ערוצי פרסום. הוסיפו את הערוץ הראשון למעלה.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-xs text-muted-foreground border-b border-border">
-                  <th className="text-right font-medium py-2">ערוץ</th>
-                  <th className="text-left font-medium py-2">תקציב</th>
-                  <th className="text-left font-medium py-2">מחזור</th>
-                  <th className="text-left font-medium py-2">חנויות</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.channels.map((c) => (
-                  <tr key={c.name} className="border-b border-border/50">
-                    <td className="py-2.5 text-foreground font-medium">{c.name}</td>
-                    <td className="py-2.5 text-left text-foreground">{ils(c.totalBudget)}</td>
-                    <td className="py-2.5 text-left text-muted-foreground">{c.period === "monthly" ? "חודשי" : c.period === "weekly" ? "שבועי" : c.period}</td>
-                    <td className="py-2.5 text-left text-muted-foreground">{c.businesses}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-2">
+            {data.channels.map((c) => (
+              <div key={c.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+                <span className="flex-1 font-medium text-foreground">{c.name}</span>
+                <span className="text-xs text-muted-foreground">{c.budget_period === "monthly" ? "חודשי" : c.budget_period === "weekly" ? "שבועי" : "חד-פעמי"}</span>
+                <div className="relative">
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">₪</span>
+                  <input
+                    type="number" defaultValue={c.budget_amount} dir="ltr"
+                    onBlur={(e) => { const v = Number(e.target.value) || 0; if (v !== c.budget_amount) updateBudget(c.id, v); }}
+                    className="w-28 rounded-lg border border-border bg-background pr-6 pl-2 py-1.5 text-sm text-left"
+                  />
+                </div>
+                <button onClick={() => removeChannel(c.id)} className="text-muted-foreground hover:text-destructive p-1" title="מחק">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Source performance */}
+      {/* Source funnel */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <h3 className="font-semibold text-foreground mb-3">ביצועים לפי מקור (כל לינק)</h3>
+        <h3 className="font-semibold text-foreground mb-3">משפך לפי מקור (כל לינק/קמפיין)</h3>
         {isLoading ? (
           <p className="text-sm text-muted-foreground">טוען...</p>
         ) : !data?.sources.length ? (
-          <p className="text-sm text-muted-foreground">אין עדיין נתוני תנועה מתויגי-UTM לתקופה זו.</p>
+          <p className="text-sm text-muted-foreground">אין עדיין נתוני פרסום מתויגי-UTM לתקופה זו. הוסיפו <span dir="ltr">?utm_source=...&utm_campaign=...</span> ללינקים בקמפיינים.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-xs text-muted-foreground border-b border-border">
                   <th className="text-right font-medium py-2">מקור</th>
-                  <th className="text-left font-medium py-2">צפיות</th>
-                  <th className="text-left font-medium py-2">המרות</th>
+                  <th className="text-left font-medium py-2">צפיות/קליקים</th>
+                  <th className="text-left font-medium py-2">הרשמות</th>
                   <th className="text-left font-medium py-2">יחס המרה</th>
-                  <th className="text-left font-medium py-2">הכנסות</th>
                 </tr>
               </thead>
               <tbody>
@@ -125,9 +175,8 @@ const AdminMarketing = () => {
                   <tr key={s.source} className="border-b border-border/50">
                     <td className="py-2.5 text-foreground font-medium" dir="ltr">{s.source}</td>
                     <td className="py-2.5 text-left text-foreground">{fmt(s.views)}</td>
-                    <td className="py-2.5 text-left text-foreground">{fmt(s.conversions)}</td>
+                    <td className="py-2.5 text-left text-primary font-medium">{fmt(s.signups)}</td>
                     <td className="py-2.5 text-left text-muted-foreground">{s.convRate}%</td>
-                    <td className="py-2.5 text-left text-primary font-medium">{s.revenue ? ils(s.revenue) : "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -135,7 +184,7 @@ const AdminMarketing = () => {
           </div>
         )}
         <p className="text-xs text-muted-foreground mt-3">
-          המרות משויכות למקור לפי ה-UTM שדרכו הגיע המבקר שביצע רכישה. לינקים מתויגים נוצרים בדשבורד הסוחר (פרסום ותקציב).
+          הרשמות מיוחסות ל-UTM שדרכו הגיע הנרשם (תפיסת first-touch בכניסה לאתר). הצפיות נספרות בכל כניסה מלינק עם <span dir="ltr">utm_source</span>.
         </p>
       </div>
     </div>

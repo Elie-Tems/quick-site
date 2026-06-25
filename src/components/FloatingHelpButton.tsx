@@ -1,32 +1,27 @@
 import { Link, useLocation } from "react-router-dom";
 import { HelpCircle } from "lucide-react";
-import { motion } from "framer-motion";
 
+/**
+ * Discreet help/support entry point. Intentionally low-key: a small, semi-
+ * transparent icon that brightens on hover - present when needed, but never
+ * intrusive (no label, no pop-in animation, no pulsing).
+ */
 const FloatingHelpButton = () => {
   const { pathname } = useLocation();
-  // Hide on the storefront (customer-facing store) and on the help page itself
-  // (no point offering "open the bot" when you're already in the bot).
+  // Hide on the storefront, the help page itself, and previews.
   if (pathname.startsWith("/store") || pathname.startsWith("/help") || pathname.startsWith("/preview")) {
     return null;
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 1, duration: 0.3 }}
-      className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50"
+    <Link
+      to="/help"
+      title="עזרה ותמיכה"
+      aria-label="עזרה ותמיכה"
+      className="fixed bottom-4 right-4 z-40 h-9 w-9 rounded-full bg-card/80 backdrop-blur border border-border text-muted-foreground/70 shadow-sm flex items-center justify-center opacity-50 hover:opacity-100 hover:text-primary transition-opacity duration-200"
     >
-      <Link
-        to="/help"
-        className="flex items-center justify-center gap-2 h-11 w-11 md:h-14 md:w-auto md:px-5 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform duration-200"
-        title="בוט שירות ותמיכה"
-      >
-        <HelpCircle className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" />
-        {/* Mobile: compact icon-only so it doesn't get in the way; desktop: full label */}
-        <span className="hidden md:inline font-medium whitespace-nowrap">בוט שירות ותמיכה</span>
-      </Link>
-    </motion.div>
+      <HelpCircle className="w-4.5 h-4.5" />
+    </Link>
   );
 };
 

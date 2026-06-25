@@ -9,6 +9,7 @@ import FormConsentNotice from "@/components/FormConsentNotice";
 import FormErrorSummary from "@/components/FormErrorSummary";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getStoredUtm } from "@/lib/utmCapture";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, ArrowRight, Sparkles, Loader2, Gift, Zap, Check, Lock, Mail, User, Building2, Eye, EyeOff } from "lucide-react";
 
@@ -120,6 +121,7 @@ const Register = () => {
         referred_by: referralCode || undefined,
         signup_method: "email_password",
         preferred_language: language,
+        ...getStoredUtm(),
       });
       
       if (error) {

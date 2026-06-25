@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { getStoredUtm } from '@/lib/utmCapture';
 
 interface AuthContextType {
   user: User | null;
@@ -15,6 +16,10 @@ interface AuthContextType {
       referred_by?: string;
       signup_method?: string;
       preferred_language?: string;
+      utm_source?: string;
+      utm_medium?: string;
+      utm_campaign?: string;
+      utm_content?: string;
     }
   ) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -35,13 +40,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        // Capture the recipient's language once, so platform emails can be sent
-        // in the language they signed up in. Stored in user_metadata (no schema
-        // change); the guard prevents a write loop on the resulting USER_UPDATED.
-        if (session?.user && !session.user.user_metadata?.preferred_language) {
+        // Backfill signup attribution into user_metadata once (covers email +
+        // Google + pre-existing users): the language for localized emails, and
+        // the first-touch UTM for Siango's acquisition tracking. One write, and
+        // the guards prevent a loop on the resulting USER_UPDATED.
+        if (session?.user) {
           try {
-            const lang = localStorage.getItem("Siango-language") || "he";
-            void supabase.auth.updateUser({ data: { preferred_language: lang } });
+            const meta = session.user.user_metadata || {};
+            const patch: Record<string, string> = {};
+            if (!meta.preferred_language) patch.preferred_language = localStorage.getItem("Siango-language") || "he";
+            if (!meta.utm_source) {
+              const utm = getStoredUtm();
+              if (utm.utm_source) {
+                patch.utm_source = utm.utm_source;
+                if (utm.utm_medium) patch.utm_medium = utm.utm_medium;
+                if (utm.utm_campaign) patch.utm_campaign = utm.utm_campaign;
+                if (utm.utm_content) patch.utm_content = utm.utm_content;
+              }
+            }
+            if (Object.keys(patch).length) void supabase.auth.updateUser({ data: patch });
           } catch { /* non-fatal */ }
         }
       }
@@ -66,6 +83,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       referred_by?: string;
       signup_method?: string;
       preferred_language?: string;
+      utm_source?: string;
+      utm_medium?: string;
+      utm_campaign?: string;
+      utm_content?: string;
     }
   ) => {
     const { error } = await supabase.auth.signUp({

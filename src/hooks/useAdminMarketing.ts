@@ -2,34 +2,32 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Platform-wide marketing/ads intelligence for the super-admin: ad budget per
- * channel (across all stores) + per-source performance (views, conversions,
- * revenue, conversion rate). Built from ad_channels / ad_links / page_views /
- * analytics_events. Each query is independent (allSettled) so one failure never
- * blanks the screen.
+ * Siango's OWN acquisition marketing (admin-only): the funnel for the campaigns
+ * Siango runs to get new merchants. Per UTM source: ad visits (clicks) ->
+ * signups (conversions); plus admin-managed budget per channel and the overall
+ * cost per acquired signup. Built from siango_ad_visits + admin_signups_by_utm
+ * RPC + siango_ad_channels.
  */
-export interface ChannelBudget {
+export interface AdChannel {
+  id: string;
   name: string;
-  totalBudget: number;
-  currency: string;
-  period: string;
-  businesses: number;
-  links: number;
-  clicks: number;
+  budget_amount: number;
+  budget_currency: string;
+  budget_period: string;
+  notes: string | null;
 }
 
-export interface SourcePerformance {
+export interface SourceFunnel {
   source: string;
-  views: number;
-  conversions: number;
-  revenue: number;
-  convRate: number; // %
+  views: number;       // ad clicks / landings
+  signups: number;     // conversions
+  convRate: number;    // %
 }
 
 export interface AdminMarketingData {
-  channels: ChannelBudget[];
-  sources: SourcePerformance[];
-  totals: { budget: number; views: number; conversions: number; revenue: number };
+  channels: AdChannel[];
+  sources: SourceFunnel[];
+  totals: { budget: number; views: number; signups: number; costPerSignup: number };
 }
 
 const val = <T,>(r: PromiseSettledResult<{ data: T[] | null }>, fb: T[] = []): T[] =>
@@ -37,81 +35,60 @@ const val = <T,>(r: PromiseSettledResult<{ data: T[] | null }>, fb: T[] = []): T
 
 export function useAdminMarketing(days = 30) {
   return useQuery<AdminMarketingData>({
-    queryKey: ["admin-marketing", days],
+    queryKey: ["admin-siango-marketing", days],
     queryFn: async () => {
       const since = new Date();
       since.setDate(since.getDate() - days);
       const sinceIso = since.toISOString();
 
-      const [chR, lnR, pvR, evR] = await Promise.allSettled([
-        (supabase as any).from("ad_channels").select("name, budget_amount, budget_currency, budget_period, business_id").limit(10000),
-        (supabase as any).from("ad_links").select("channel_id, utm_source, clicks").limit(20000),
-        (supabase as any).from("page_views").select("visitor_id, utm_source").not("utm_source", "is", null).gte("created_at", sinceIso).limit(50000),
-        (supabase as any).from("analytics_events").select("visitor_id, value").eq("event_type", "purchase").gte("created_at", sinceIso).limit(50000),
+      const [chR, vsR, suR] = await Promise.allSettled([
+        (supabase as any).from("siango_ad_channels").select("id, name, budget_amount, budget_currency, budget_period, notes").order("budget_amount", { ascending: false }),
+        (supabase as any).from("siango_ad_visits").select("utm_source").gte("created_at", sinceIso).limit(100000),
+        (supabase as any).rpc("admin_signups_by_utm", { p_since: sinceIso }),
       ]);
 
-      const channels = val(chR) as Array<{ name: string; budget_amount: number | null; budget_currency: string | null; budget_period: string | null; business_id: string }>;
-      const links = val(lnR) as Array<{ channel_id: string; utm_source: string | null; clicks: number | null }>;
-      const pageViews = val(pvR) as Array<{ visitor_id: string | null; utm_source: string | null }>;
-      const purchases = val(evR) as Array<{ visitor_id: string | null; value: number | null }>;
+      const channels = val(chR) as AdChannel[];
+      const visits = val(vsR) as Array<{ utm_source: string | null }>;
+      const signupRows = (suR.status === "fulfilled" ? (suR.value.data || []) : []) as Array<{ source: string; campaign: string; signups: number }>;
 
-      // --- Budget per channel (grouped by normalized channel name) ---
-      // Map clicks per channel via channel_id is not available without the channel rows'
-      // ids; instead sum clicks per channel NAME by joining links->channels is skipped
-      // (ad_links lacks the name). We aggregate clicks by utm_source separately below.
-      const chMap = new Map<string, ChannelBudget>();
-      for (const c of channels) {
-        const name = (c.name || "אחר").trim();
-        const key = name.toLowerCase();
-        const e = chMap.get(key) || { name, totalBudget: 0, currency: c.budget_currency || "ILS", period: c.budget_period || "monthly", businesses: 0, links: 0, clicks: 0 };
-        e.totalBudget += Number(c.budget_amount) || 0;
-        e.businesses += 1;
-        chMap.set(key, e);
-      }
-      const channelBudgets = Array.from(chMap.values()).sort((a, b) => b.totalBudget - a.totalBudget);
-
-      // --- Visitor -> source map (for conversion attribution) ---
-      const visitorSource = new Map<string, string>();
+      // Views per source (ad clicks/landings).
       const viewsBySource: Record<string, number> = {};
-      for (const pv of pageViews) {
-        const src = (pv.utm_source || "").trim().toLowerCase();
-        if (!src) continue;
-        viewsBySource[src] = (viewsBySource[src] || 0) + 1;
-        if (pv.visitor_id && !visitorSource.has(pv.visitor_id)) visitorSource.set(pv.visitor_id, src);
+      for (const v of visits) {
+        const s = (v.utm_source || "").trim().toLowerCase();
+        if (!s) continue;
+        viewsBySource[s] = (viewsBySource[s] || 0) + 1;
+      }
+      // Signups per source (sum across campaigns), excluding direct/no-utm.
+      const signupsBySource: Record<string, number> = {};
+      for (const r of signupRows) {
+        const s = (r.source || "").trim().toLowerCase();
+        if (!s || s === "direct") continue;
+        signupsBySource[s] = (signupsBySource[s] || 0) + Number(r.signups || 0);
       }
 
-      // --- Conversions + revenue per source (attributed by the buyer's source) ---
-      const convBySource: Record<string, number> = {};
-      const revBySource: Record<string, number> = {};
-      for (const ev of purchases) {
-        const src = ev.visitor_id ? visitorSource.get(ev.visitor_id) : undefined;
-        if (!src) continue;
-        convBySource[src] = (convBySource[src] || 0) + 1;
-        revBySource[src] = (revBySource[src] || 0) + (Number(ev.value) || 0);
-      }
-
-      const sources: SourcePerformance[] = Object.keys(viewsBySource)
-        .map((src) => {
-          const views = viewsBySource[src];
-          const conversions = convBySource[src] || 0;
-          return {
-            source: src,
-            views,
-            conversions,
-            revenue: revBySource[src] || 0,
-            convRate: views ? Math.round((conversions / views) * 1000) / 10 : 0,
-          };
+      const allSources = new Set([...Object.keys(viewsBySource), ...Object.keys(signupsBySource)]);
+      const sources: SourceFunnel[] = Array.from(allSources)
+        .map((s) => {
+          const views = viewsBySource[s] || 0;
+          const signups = signupsBySource[s] || 0;
+          return { source: s, views, signups, convRate: views ? Math.round((signups / views) * 1000) / 10 : 0 };
         })
-        .sort((a, b) => b.views - a.views);
+        .sort((a, b) => b.signups - a.signups || b.views - a.views);
 
-      const totals = {
-        budget: channelBudgets.reduce((s, c) => s + c.totalBudget, 0),
-        views: sources.reduce((s, x) => s + x.views, 0),
-        conversions: sources.reduce((s, x) => s + x.conversions, 0),
-        revenue: sources.reduce((s, x) => s + x.revenue, 0),
+      const budget = channels.reduce((s, c) => s + (Number(c.budget_amount) || 0), 0);
+      const totalSignups = sources.reduce((s, x) => s + x.signups, 0);
+      const totalViews = sources.reduce((s, x) => s + x.views, 0);
+
+      return {
+        channels,
+        sources,
+        totals: {
+          budget,
+          views: totalViews,
+          signups: totalSignups,
+          costPerSignup: totalSignups ? Math.round((budget / totalSignups) * 10) / 10 : 0,
+        },
       };
-
-      return { channels: channelBudgets, sources, totals };
     },
   });
 }
