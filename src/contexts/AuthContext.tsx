@@ -14,6 +14,7 @@ interface AuthContextType {
       business_name?: string;
       referred_by?: string;
       signup_method?: string;
+      preferred_language?: string;
     }
   ) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -34,6 +35,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        // Capture the recipient's language once, so platform emails can be sent
+        // in the language they signed up in. Stored in user_metadata (no schema
+        // change); the guard prevents a write loop on the resulting USER_UPDATED.
+        if (session?.user && !session.user.user_metadata?.preferred_language) {
+          try {
+            const lang = localStorage.getItem("Siango-language") || "he";
+            void supabase.auth.updateUser({ data: { preferred_language: lang } });
+          } catch { /* non-fatal */ }
+        }
       }
     );
 
@@ -55,6 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       business_name?: string;
       referred_by?: string;
       signup_method?: string;
+      preferred_language?: string;
     }
   ) => {
     const { error } = await supabase.auth.signUp({

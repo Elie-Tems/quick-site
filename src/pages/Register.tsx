@@ -23,7 +23,7 @@ const Register = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const referralCode = searchParams.get('ref');
-  const { t, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
   const Arrow = dir === 'rtl' ? ArrowLeft : ArrowRight;
   const isHebrew = dir === 'rtl';
   
@@ -119,6 +119,7 @@ const Register = () => {
         business_name: formData.businessName,
         referred_by: referralCode || undefined,
         signup_method: "email_password",
+        preferred_language: language,
       });
       
       if (error) {
