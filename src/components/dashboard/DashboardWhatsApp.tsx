@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +7,7 @@ import {
   MessageCircle, Check, Users, Megaphone, Settings as SettingsIcon,
   Plus, Upload, Loader2, BadgeCheck, ShieldCheck, Bell,
   Sparkles, Send, Image as ImageIcon, ChevronDown, ArrowLeft, Eye, CheckCheck,
-  MessagesSquare, FileText, Bot, Smartphone, Facebook, FileSpreadsheet, Wand2,
+  MessagesSquare, FileText, Bot, Smartphone, Facebook, FileSpreadsheet, Wand2, Mic,
 } from "lucide-react";
 
 interface Props { businessId?: string; forceConnected?: boolean }
@@ -17,8 +17,9 @@ interface Account { id: string; status: string; phone_number: string | null; dis
 interface Contact { id: string; phone: string; name: string | null; opted_in: boolean; tags: string[] | null; source: string | null; }
 interface Campaign { id: string; name: string; status: string; audience_tag: string | null; total_count: number; sent_count: number; delivered_count: number; read_count: number; }
 
-const WA = "#25D366";
-const fade = (d = 0) => ({ initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.5, delay: d } });
+const WA = "#25D366";        // bright accent (used sparingly)
+const DEEP = "#075E54";      // classic WhatsApp deep green - the primary, designerly tone
+const fade = (d = 0) => ({ initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.45, delay: d } });
 
 /**
  * Merchant WhatsApp area - premium UX. Guidance (what to prepare + sells it),
@@ -49,18 +50,15 @@ const DashboardWhatsApp = ({ businessId, forceConnected }: Props) => {
   ];
 
   return (
-    <div className="relative overflow-hidden" dir="rtl">
-      <div className="pointer-events-none absolute -top-24 -right-24 w-[460px] h-[460px] rounded-full blur-[160px]" style={{ background: `${WA}1f` }} />
-      <div className="pointer-events-none absolute top-1/2 -left-20 w-[360px] h-[360px] rounded-full blur-[150px]" style={{ background: "#128C7E18" }} />
-
+    <div className="relative" dir="rtl">
       <div className="container relative z-10 max-w-5xl mx-auto px-4 py-8 space-y-8">
-        <motion.div {...fade()} className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: `linear-gradient(135deg, ${WA}, #128C7E)`, boxShadow: `0 10px 30px ${WA}40` }}>
-            <MessageCircle className="h-7 w-7 text-white" />
+        <motion.div {...fade()} className="flex items-center gap-4 pb-2 border-b border-border">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: DEEP }}>
+            <MessageCircle className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">וואטסאפ עסקי</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">הערוץ שכל לקוח ישראלי כבר נמצא בו - עכשיו עובד בשבילכם, אוטומטית.</p>
+            <h1 className="text-[28px] font-bold tracking-tight text-foreground">וואטסאפ עסקי</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">הערוץ שכל לקוח ישראלי כבר נמצא בו - עכשיו עובד בשבילכם.</p>
           </div>
         </motion.div>
 
@@ -115,9 +113,9 @@ const GuidanceScreen = () => {
     { icon: ImageIcon, title: "ניהול חנות מהוואטסאפ", desc: "שולחים תמונת מוצר + כיתוב לבוט - והוא מוסיף אותו לחנות. בלי מחשב.", grad: "from-lime-400/15 to-green-400/10", badge: "בלעדי" },
   ];
   const prepare = [
-    { icon: Smartphone, title: "מספר טלפון ייעודי", desc: "מספר נייד ישראלי פנוי (SIM נפרד) - לא הוואטסאפ האישי. אין לכם מספר פנוי? אפשר להזמין מאיתנו מספר מוכן (ראו למטה)." },
-    { icon: Facebook, title: "חשבון פייסבוק", desc: "החיבור מתבצע דרך Meta, אז צריך חשבון פייסבוק. אין לכם? פתחו חשבון חינם ב-facebook.com ותחזרו לכאן." },
-    { icon: FileText, title: "פרטי העסק", desc: "שם העסק וכתובת - לרישום מול Meta (אנחנו מנחים בתהליך)." },
+    { icon: Smartphone, title: "מספר טלפון ייעודי", desc: "מספר פנוי שיכול לקבל SMS/שיחה (לא חסום במענה קולי, ולא רשום כבר בוואטסאפ). אין לכם? אפשר להזמין מאיתנו מספר מוכן (למטה)." },
+    { icon: Facebook, title: "פייסבוק + חשבון עסקי ב-Meta", desc: "החיבור דרך Meta Business Manager (חינם). אין לכם פייסבוק? פתחו חשבון ב-facebook.com. אנחנו מלווים בפתיחת החשבון העסקי." },
+    { icon: FileText, title: "פרטי העסק + כתובת", desc: "שם העסק, כתובת ופרטי קשר - לרישום ולאימות מול Meta. אפשר להתחיל מיד; אימות עסק מלא (לתקרות שליחה גבוהות) נעשה בהמשך ולוקח ~1-2 שבועות אצל Meta." },
   ];
   const limits = [
     "המספר שמתחבר יוצא מאפליקציית וואטסאפ הרגילה (לכן מספר ייעודי).",
@@ -129,15 +127,15 @@ const GuidanceScreen = () => {
 
   return (
     <div className="space-y-7">
-      <motion.div {...fade(0.05)} className="relative overflow-hidden rounded-3xl p-8 md:p-10 text-white shadow-2xl" style={{ background: `linear-gradient(135deg, ${WA}, #0f8c6e 55%, #0b6e5a)`, boxShadow: `0 24px 60px ${WA}40` }}>
-        <div className="absolute -top-16 -left-16 w-72 h-72 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -bottom-20 -right-10 w-72 h-72 rounded-full bg-black/10 blur-3xl" />
+      <motion.div {...fade(0.05)} className="relative overflow-hidden rounded-2xl p-8 md:p-12 text-white" style={{ background: DEEP }}>
+        {/* subtle classic texture - a single faint diagonal sheen, no neon glow */}
+        <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "linear-gradient(135deg, #fff 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur text-xs font-medium mb-4"><Sparkles className="w-3.5 h-3.5" /> שדרוג הערך הכי גבוה לעסק שלכם</div>
-          <h2 className="text-2xl md:text-3xl font-extrabold leading-tight">הפכו את הוואטסאפ למכונת המכירות של העסק</h2>
-          <p className="mt-3 text-white/90 text-base leading-relaxed">בישראל כולם בוואטסאפ. עם חיבור אחד - הלקוחות מקבלים עדכוני הזמנה, תזכורות ומבצעים ישירות לצ'אט, ובוט AI עונה להם 24/7. יותר חזרה, יותר מכירות, פחות עבודה ידנית.</p>
-          <button onClick={connect} disabled={connecting} className="mt-7 inline-flex items-center gap-2 rounded-2xl bg-white text-[#0b6e5a] font-bold px-7 py-3.5 shadow-lg hover:scale-[1.03] active:scale-95 transition-transform disabled:opacity-60">
-            {connecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <MessageCircle className="w-5 h-5" />} חברו וואטסאפ עכשיו <ArrowLeft className="w-4 h-4" />
+          <div className="inline-flex items-center gap-2 text-xs font-medium tracking-wide text-white/70 uppercase mb-5" style={{ letterSpacing: "0.12em" }}>וואטסאפ עסקי · Siango</div>
+          <h2 className="text-3xl md:text-[40px] font-bold leading-[1.15]">הערוץ שבו הלקוחות שלכם<br/>כבר מחכים לכם</h2>
+          <p className="mt-4 text-white/80 text-base leading-relaxed max-w-xl">עדכוני הזמנה, תזכורות ומבצעים - ישירות לוואטסאפ של הלקוח, אוטומטית. ובוט שירות שעונה במקומכם, מסביב לשעון.</p>
+          <button onClick={connect} disabled={connecting} className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white text-[#075E54] font-semibold px-7 py-3.5 hover:bg-white/95 active:scale-[0.98] transition-all disabled:opacity-60">
+            {connecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <MessageCircle className="w-5 h-5" />} חברו וואטסאפ <ArrowLeft className="w-4 h-4" />
           </button>
         </div>
       </motion.div>
@@ -166,7 +164,7 @@ const GuidanceScreen = () => {
           <h3 className="font-bold text-foreground text-lg mb-3 flex items-center gap-2"><Sparkles className="w-5 h-5" style={{ color: WA }} /> כמה זה עולה</h3>
           <div className="space-y-2.5 text-sm">
             <div className="flex items-baseline justify-between"><span className="text-muted-foreground">הקמה חד-פעמית</span><span className="font-extrabold text-foreground text-lg">₪190</span></div>
-            <div className="flex items-baseline justify-between"><span className="text-muted-foreground">מנוי חודשי</span><span className="font-extrabold text-foreground text-lg">₪49<span className="text-xs font-normal text-muted-foreground">/חודש</span></span></div>
+            <div className="flex items-baseline justify-between"><span className="text-muted-foreground">מנוי חודשי</span><span className="font-extrabold text-foreground text-lg">₪89<span className="text-xs font-normal text-muted-foreground">/חודש</span></span></div>
             <div className="flex items-baseline justify-between pt-1 border-t border-border"><span className="text-muted-foreground">הודעות שיווק</span><span className="font-medium text-foreground">לפי שימוש (~₪0.26 להודעה)</span></div>
             <p className="text-xs text-muted-foreground pt-1">התראות שירות ללקוח - לרוב חינם. ללא התחייבות, אפשר לבטל בכל עת.</p>
           </div>
@@ -185,11 +183,11 @@ const GuidanceScreen = () => {
         {benefits.map((b, i) => {
           const Icon = b.icon;
           return (
-            <motion.div key={i} {...fade(0.15 + i * 0.06)} className={`group relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br ${b.grad} p-6 hover:shadow-xl hover:-translate-y-0.5 transition-all`}>
+            <motion.div key={i} {...fade(0.12 + i * 0.05)} className="group rounded-2xl border border-border bg-card p-6 hover:border-foreground/20 transition-colors">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm" style={{ background: `${WA}1f` }}><Icon className="w-5 h-5" style={{ color: "#0f8c6e" }} /></div>
-                <h3 className="font-bold text-foreground text-lg">{b.title}</h3>
-                {b.badge && <span className="text-[10px] font-bold text-white px-2 py-0.5 rounded-full" style={{ background: WA }}>{b.badge}</span>}
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center border" style={{ borderColor: `${DEEP}25`, background: `${DEEP}0a` }}><Icon className="w-5 h-5" style={{ color: DEEP }} /></div>
+                <h3 className="font-semibold text-foreground text-lg">{b.title}</h3>
+                {b.badge && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border" style={{ color: DEEP, borderColor: `${DEEP}30` }}>{b.badge}</span>}
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
             </motion.div>
@@ -453,10 +451,27 @@ const TemplatesTab = ({ businessId, preview }: { businessId?: string; preview?: 
     return <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${m.cls}`} style={s === "approved" ? { background: `${WA}1f` } : undefined}>{m.label}</span>;
   };
 
+  const starters = [
+    { name: "אישור הזמנה", category: "utility", body: "היי {{1}}, קיבלנו את ההזמנה שלך (מס' {{2}}) ✅ נעדכן אותך בכל שלב." },
+    { name: "ההזמנה בדרך", category: "utility", body: "{{1}}, ההזמנה שלך יצאה ובדרך אליך 🚚 צפי הגעה: {{2}}." },
+    { name: "מבצע ללקוחות", category: "marketing", body: "{{1}}, מבצע מיוחד רק לכם! {{2}} בתוקף עד סוף השבוע 🎁" },
+    { name: "תזכורת תור", category: "utility", body: "תזכורת: יש לך תור מחר ב-{{1}}. נשמח לראותך! לאישור השב/י 1." },
+  ];
+
   return (
     <div className="space-y-5">
-      <div className="rounded-3xl border border-border bg-card p-5 space-y-3">
-        <h3 className="font-semibold text-foreground flex items-center gap-2"><FileText className="w-4 h-4" style={{ color: WA }} /> בניית תבנית חדשה</h3>
+      <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+        <h3 className="font-semibold text-foreground flex items-center gap-2"><FileText className="w-4 h-4" style={{ color: DEEP }} /> בניית תבנית חדשה</h3>
+
+        <div>
+          <div className="text-xs text-muted-foreground mb-2">התחל מתבנית מוכנה:</div>
+          <div className="flex flex-wrap gap-2">
+            {starters.map((s, i) => (
+              <button key={i} onClick={() => { setName(s.name); setCategory(s.category); setBody(s.body); }} className="text-xs rounded-lg border border-border bg-background px-3 py-1.5 text-foreground hover:border-foreground/30 transition-colors">{s.name}</button>
+            ))}
+          </div>
+        </div>
+
         <div className="flex flex-wrap gap-2">
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="שם התבנית" className="flex-1 min-w-[160px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm" />
           <select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm">
@@ -464,9 +479,13 @@ const TemplatesTab = ({ businessId, preview }: { businessId?: string; preview?: 
           </select>
         </div>
         <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} placeholder="תוכן ההודעה. אפשר משתנים: {{1}} שם, {{2}} מספר הזמנה..." className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm" />
+        <div className="flex items-center gap-2 text-xs text-muted-foreground rounded-lg bg-muted/30 p-3">
+          <ImageIcon className="w-4 h-4 shrink-0" style={{ color: DEEP }} />
+          <span>אפשר לצרף לתבנית כותרת מדיה - <b className="text-foreground">תמונה עד 5MB</b> או <b className="text-foreground">וידאו עד 16MB</b> (מגבלות Meta). מסמך עד 100MB.</span>
+        </div>
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-xs text-muted-foreground">תבניות שיווק עוברות אישור של Meta (לרוב כמה דקות עד שעות). אנחנו שולחים אוטומטית.</p>
-          <button onClick={create} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 shadow-sm" style={{ background: WA }}><Plus className="w-4 h-4" /> שמור ושלח לאישור</button>
+          <p className="text-xs text-muted-foreground">תבניות שיווק עוברות אישור של Meta (לרוב דקות עד שעות). אנחנו שולחים לאישור אוטומטית.</p>
+          <button onClick={create} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5" style={{ background: DEEP }}><Plus className="w-4 h-4" /> שמור ושלח לאישור</button>
         </div>
       </div>
 
@@ -485,59 +504,104 @@ const TemplatesTab = ({ businessId, preview }: { businessId?: string; preview?: 
   );
 };
 
-/* ---------- AI service bot ---------- */
+/* ---------- AI service bot (classic look + voice prompt) ---------- */
 const BotTab = ({ account, preview }: { account: Account | null; preview?: boolean }) => {
   const [enabled, setEnabled] = useState(account?.bot_enabled ?? false);
   const [prompt, setPrompt] = useState(account?.bot_prompt ?? "");
   const [saving, setSaving] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const mediaRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
 
   const examples = [
-    "ענה בנימוס וקצר. אם שואלים על שעות פתיחה: א'-ה' 9:00-18:00, ו' 9:00-13:00. אם שואלים על משלוחים: עד 3 ימי עסקים, חינם מעל ₪200.",
-    "את/ה נציג/ת השירות של חנות התכשיטים. תמיד הציעו לקבוע פגישת התרשמות. אל תתחייבו למחירים - הפנו לוואטסאפ של הבעלים.",
+    "ענה בנימוס וקצר. שעות פתיחה: א'-ה' 9:00-18:00, ו' 9:00-13:00. משלוחים: עד 3 ימי עסקים, חינם מעל ₪200.",
+    "את/ה נציג/ת השירות של חנות התכשיטים. הציעו לקבוע פגישת התרשמות. אל תתחייבו למחירים - הפנו לבעלים.",
   ];
+
+  // Send the prompt (typed text or recorded audio) to our agent, which turns it
+  // into a professional bot instruction. Build-only: graceful in preview.
+  const refine = async (audioBase64?: string) => {
+    if (preview) { toast.info("שכלול חכם של ההנחיה יופעל כשנעלה לאוויר 🙂"); return; }
+    setProcessing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("whatsapp-bot-prompt", { body: audioBase64 ? { audio: audioBase64 } : { text: prompt } });
+      if (error) throw error;
+      if (data?.prompt) { setPrompt(data.prompt); toast.success("ההנחיה שוכללה ✓"); }
+      else toast.info("השכלול יופעל בקרוב.");
+    } catch { toast.info("השכלול יופעל כשנחבר את המנוע."); } finally { setProcessing(false); }
+  };
+
+  const startRec = async () => {
+    if (preview) { toast.info("הקלטה תופעל כשנעלה לאוויר 🎙️"); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      chunksRef.current = [];
+      mr.ondataavailable = (e) => chunksRef.current.push(e.data);
+      mr.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        const b64 = await new Promise<string>((res) => { const r = new FileReader(); r.onloadend = () => res((r.result as string).split(",")[1] || ""); r.readAsDataURL(blob); });
+        await refine(b64);
+      };
+      mediaRef.current = mr; mr.start(); setRecording(true);
+    } catch { toast.error("לא ניתן לגשת למיקרופון"); }
+  };
+  const stopRec = () => { mediaRef.current?.stop(); setRecording(false); };
 
   const save = async () => {
     if (preview || !account || account.id === "preview") { toast.success("נשמר ✓ (בתצוגה מקדימה)"); return; }
     setSaving(true);
-    try { await (supabase as any).from("whatsapp_accounts").update({ bot_enabled: enabled, bot_prompt: prompt, updated_at: new Date().toISOString() }).eq("id", account.id); toast.success("הבוט עודכן ✓"); } catch (e) { toast.error("שגיאה"); } finally { setSaving(false); }
+    try { await (supabase as any).from("whatsapp_accounts").update({ bot_enabled: enabled, bot_prompt: prompt, updated_at: new Date().toISOString() }).eq("id", account.id); toast.success("הבוט עודכן ✓"); } catch { toast.error("שגיאה"); } finally { setSaving(false); }
   };
 
   return (
     <div className="space-y-5">
-      <div className="relative overflow-hidden rounded-3xl p-6 text-white" style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)" }}>
-        <div className="absolute -top-10 -left-10 w-48 h-48 rounded-full bg-white/10 blur-2xl" />
-        <div className="relative z-10 flex items-start gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-white/15 flex items-center justify-center"><Bot className="w-6 h-6" /></div>
+      <div className="rounded-2xl p-7 text-white" style={{ background: DEEP }}>
+        <div className="flex items-start gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center"><Bot className="w-6 h-6" /></div>
           <div>
-            <h3 className="font-bold text-lg">בוט שירות חכם (AI)</h3>
-            <p className="text-sm text-white/90 mt-1">כתבו במילים שלכם איך הבוט צריך לענות ללקוחות - והוא יענה אוטומטית 24/7. רוצים שנשפר לכם את ההנחיה? נעשה את זה עם AI.</p>
+            <h3 className="font-semibold text-lg">בוט שירות חכם</h3>
+            <p className="text-sm text-white/80 mt-1 leading-relaxed max-w-lg">תארו במילים שלכם איך הבוט צריך לענות - בכתב או בהקלטה קולית. הסוכן שלנו ינסח את זה להנחיה מקצועית, והבוט יענה ללקוחות 24/7.</p>
           </div>
         </div>
       </div>
 
-      <div className="rounded-3xl border border-border bg-card p-5 space-y-4">
+      <div className="rounded-2xl border border-border bg-card p-6 space-y-5">
         <div className="flex items-center justify-between">
-          <div><div className="font-semibold text-foreground">הפעלת הבוט</div><div className="text-xs text-muted-foreground">כשהבוט פעיל, הוא עונה ללקוחות לפי ההנחיה למטה.</div></div>
-          <button onClick={() => setEnabled((e) => !e)} className={`relative w-12 h-7 rounded-full transition-colors ${enabled ? "" : "bg-muted"}`} style={enabled ? { background: WA } : undefined}>
+          <div><div className="font-semibold text-foreground">הפעלת הבוט</div><div className="text-xs text-muted-foreground">כשהבוט פעיל, הוא עונה ללקוחות לפי ההנחיה.</div></div>
+          <button onClick={() => setEnabled((e) => !e)} className={`relative w-12 h-7 rounded-full transition-colors ${enabled ? "" : "bg-muted"}`} style={enabled ? { background: DEEP } : undefined}>
             <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${enabled ? "right-1" : "right-6"}`} />
           </button>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-foreground flex items-center gap-1.5 mb-1.5"><Wand2 className="w-4 h-4" style={{ color: WA }} /> ההנחיה לבוט (Prompt)</label>
-          <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={5} placeholder="לדוגמה: ענה בנימוס וקצר. שעות פתיחה א'-ה' 9-18. משלוח חינם מעל ₪200. אם לא יודע - הפנה לבעלים." className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium text-foreground">ההנחיה לבוט</label>
+            <div className="flex items-center gap-2">
+              <button onClick={recording ? stopRec : startRec} className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-1.5 border transition-colors ${recording ? "border-red-300 text-red-600 bg-red-50" : "border-border text-foreground hover:bg-muted/50"}`}>
+                <Mic className="w-3.5 h-3.5" /> {recording ? "עצור הקלטה" : "הקלטה קולית"}
+              </button>
+              <button onClick={() => refine()} disabled={processing || !prompt.trim()} className="inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-1.5 text-white disabled:opacity-50" style={{ background: DEEP }}>
+                {processing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />} שכלל עם AI
+              </button>
+            </div>
+          </div>
+          <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={5} placeholder="לדוגמה: ענה בנימוס וקצר. שעות פתיחה א'-ה' 9-18. משלוח חינם מעל ₪200. אם לא יודע - הפנה לבעלים." className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:ring-2 focus:ring-[#075E54]/20 focus:border-[#075E54] focus:outline-none" />
+          {recording && <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" /> מקליט... דברו ולחצו "עצור" כשתסיימו, ונהפוך את זה להנחיה מקצועית.</p>}
         </div>
 
         <div>
-          <div className="text-xs text-muted-foreground mb-2">דוגמאות מוכנות (לחצו להעתקה):</div>
+          <div className="text-xs text-muted-foreground mb-2">דוגמאות (לחצו לשימוש):</div>
           <div className="space-y-2">
             {examples.map((ex, i) => (
-              <button key={i} onClick={() => setPrompt(ex)} className="w-full text-right text-xs text-muted-foreground bg-muted/40 hover:bg-muted/70 rounded-xl p-3 transition-colors">{ex}</button>
+              <button key={i} onClick={() => setPrompt(ex)} className="w-full text-right text-xs text-muted-foreground bg-muted/30 hover:bg-muted/60 rounded-lg p-3 transition-colors leading-relaxed">{ex}</button>
             ))}
           </div>
         </div>
 
-        <button onClick={save} disabled={saving} className="w-full rounded-xl py-3 text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ background: WA }}>
+        <button onClick={save} disabled={saving} className="w-full rounded-xl py-3 text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ background: DEEP }}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} שמירת הבוט
         </button>
       </div>
