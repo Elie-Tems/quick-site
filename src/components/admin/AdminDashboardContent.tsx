@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Building2, ShoppingCart, CreditCard,
   Gift, XCircle, TrendingUp, BarChart3, GitMerge, Users2,
   Trophy, Moon, PieChart, AlertCircle, Settings, Zap,
-  ChevronRight, Menu, X, Ticket, Handshake, Globe,
+  ChevronRight, Menu, X, Ticket, Handshake, Globe, Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlatformStats } from "@/hooks/useAdmin";
@@ -30,13 +30,14 @@ import AdminPartnerEarnings from "./AdminPartnerEarnings";
 import AdminMarketplace from "./AdminMarketplace";
 import AdminDomainSettings from "./AdminDomainSettings";
 import AdminCommandCenter from "./AdminCommandCenter";
+import AdminMarketing from "./AdminMarketing";
 
 type AdminView =
   | "overview" | "customers" | "businesses" | "orders" | "payments"
   | "referrals" | "cancellations" | "activity"
   | "mrr" | "funnel" | "churn" | "cohort" | "analytics"
   | "top" | "dormant" | "categories" | "payment-errors"
-  | "coupons" | "partners" | "marketplace" | "domains" | "settings";
+  | "coupons" | "partners" | "marketing" | "marketplace" | "domains" | "settings";
 
 interface NavItem {
   id: AdminView;
@@ -57,6 +58,7 @@ const NAV: NavItem[] = [
   { id: "payments",       label: "תשלומים",          icon: CreditCard,      group: "מכירות" },
   { id: "referrals",      label: "הפניות",           icon: Gift,            group: "מכירות" },
   { id: "partners",       label: "רווחי שותפים",     icon: Handshake,       group: "מכירות" },
+  { id: "marketing",      label: "פרסום ושיווק",     icon: Megaphone,       group: "מכירות" },
   { id: "domains",        label: "דומיינים",          icon: Globe,           group: "מכירות" },
   { id: "coupons",        label: "קופוני מנוי",      icon: Ticket,          group: "מכירות" },
   { id: "cancellations",  label: "ביטולים",          icon: XCircle,         group: "מכירות" },
@@ -85,7 +87,7 @@ const VIEW_TITLES: Record<AdminView, string> = {
   mrr: "MRR / ARR", funnel: "Conversion Funnel", churn: "שיעור נטישה",
   cohort: "Cohort Retention", analytics: "צפיות וביקורים",
   top: "Top Performers", dormant: "עסקים רדומים", categories: "פילוח קטגוריות",
-  "payment-errors": "שגיאות תשלום", coupons: "קופוני מנוי", partners: "רווחי שותפים", marketplace: "Marketplace", domains: "תמחור דומיינים", settings: "הגדרות מערכת",
+  "payment-errors": "שגיאות תשלום", coupons: "קופוני מנוי", partners: "רווחי שותפים", marketing: "פרסום ושיווק", marketplace: "Marketplace", domains: "תמחור דומיינים", settings: "הגדרות מערכת",
 };
 
 function Sidebar({ current, onChange, collapsed, onToggle }: {
@@ -178,6 +180,7 @@ function ViewContent({ view, stats, statsLoading }: {
     case "cancellations":  return <AdminCancellations />;
     case "coupons":        return <AdminSubscriptionCoupons />;
     case "partners":       return <AdminPartnerEarnings />;
+    case "marketing":      return <AdminMarketing />;
     case "marketplace":    return <AdminMarketplace />;
     case "domains":        return <AdminDomainSettings />;
     case "mrr":            return <AdminMRR />;

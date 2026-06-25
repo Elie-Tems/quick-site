@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,38 +10,40 @@ import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import AccessibilityWidget from "@/components/accessibility/AccessibilityWidget";
-import FloatingHelpButton from "@/components/FloatingHelpButton";
 import CookieConsent from "@/components/CookieConsent";
+// Kept eager: first-paint-critical pages (landing, storefront, auth entry).
 import Index from "./pages/Index";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import ResetPassword from "./pages/ResetPassword";
 import AuthCallback from "./pages/AuthCallback";
-import Onboarding from "./pages/Onboarding";
 import StoreFront from "./pages/StoreFront";
-import StoreAboutPage from "./pages/StoreAboutPage";
-import Dashboard from "./pages/Dashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import Accessibility from "./pages/Accessibility";
-import Privacy from "./pages/Privacy";
-import Terms from "./pages/Terms";
-import HelpCenter from "./pages/HelpCenter";
-import AllTemplates from "./pages/AllTemplates";
-import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
-import PublishPayment from "./pages/PublishPayment";
-import AICreditPayment from "./pages/AICreditPayment";
-import PreviewPayments from "./pages/PreviewPayments";
-import PreviewEmails from "./pages/PreviewEmails";
-import PublishCheckoutPreview from "./pages/PublishCheckoutPreview";
-import PreviewOnboardingV2 from "./pages/PreviewOnboardingV2";
-import OnboardingCompleteGate from "./pages/OnboardingCompleteGate";
-import ThankYou from "./pages/ThankYou";
 import { useResolvedTenant } from "@/hooks/useResolvedTenant";
 import ShabbatGate from "@/components/ShabbatGate";
-import StoreLegalPage from "./pages/StoreLegalPage";
-import StoreUnsubscribe from "./pages/StoreUnsubscribe";
 import ErrorBoundary from "@/components/ErrorBoundary";
+// Lazy-loaded: heavy or non-first-paint pages get their own chunk, loaded on
+// demand. This keeps the initial bundle small so navigation feels snappy.
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const StoreAboutPage = lazy(() => import("./pages/StoreAboutPage"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Accessibility = lazy(() => import("./pages/Accessibility"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const HelpCenter = lazy(() => import("./pages/HelpCenter"));
+const AllTemplates = lazy(() => import("./pages/AllTemplates"));
+const Contact = lazy(() => import("./pages/Contact"));
+const PublishPayment = lazy(() => import("./pages/PublishPayment"));
+const AICreditPayment = lazy(() => import("./pages/AICreditPayment"));
+const PreviewPayments = lazy(() => import("./pages/PreviewPayments"));
+const PreviewEmails = lazy(() => import("./pages/PreviewEmails"));
+const PublishCheckoutPreview = lazy(() => import("./pages/PublishCheckoutPreview"));
+const PreviewOnboardingV2 = lazy(() => import("./pages/PreviewOnboardingV2"));
+const OnboardingCompleteGate = lazy(() => import("./pages/OnboardingCompleteGate"));
+const ThankYou = lazy(() => import("./pages/ThankYou"));
+const StoreLegalPage = lazy(() => import("./pages/StoreLegalPage"));
+const StoreUnsubscribe = lazy(() => import("./pages/StoreUnsubscribe"));
 
 const queryClient = new QueryClient();
 
@@ -63,6 +66,11 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <Suspense fallback={
+                <div className="min-h-screen flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              }>
               {resolving ? (
                 <div className="min-h-screen flex items-center justify-center">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -111,9 +119,8 @@ const App = () => {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               )}
+              </Suspense>
               <AccessibilityWidget />
-              {/* Platform support button only on the platform itself, not on stores. */}
-              {!tenantSlug && <FloatingHelpButton />}
               <CookieConsent />
             </BrowserRouter>
             </TooltipProvider>
