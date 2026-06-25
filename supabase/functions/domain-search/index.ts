@@ -72,6 +72,7 @@ serve(async (req) => {
     const margin = Number(cfg?.margin_percent ?? 100);
     const coupon = Number(cfg?.coupon_percent ?? 15);
     const usdToIls = Number(cfg?.usd_to_ils ?? 3.7);
+    const maxPrice = Number(cfg?.max_price_ils ?? 135);
 
     const rows = (j?.data?.results || []) as Array<{
       domain?: string;
@@ -88,8 +89,14 @@ serve(async (req) => {
           ? r.price
           : r.price?.reseller?.price ?? null;
       // List price = cost x FX x (1+margin); customer price = list x (1-coupon). Rounded to ₪5.
+      const costIls = costUsd != null ? costUsd * usdToIls : null;
       const listIls = costUsd != null ? Math.ceil((costUsd * usdToIls * (1 + margin / 100)) / 5) * 5 : null;
-      const customerIls = listIls != null ? Math.ceil((listIls * (1 - coupon / 100)) / 5) * 5 : null;
+      let customerIls = listIls != null ? Math.ceil((listIls * (1 - coupon / 100)) / 5) * 5 : null;
+      // Cap at max_price_ils, but never below cost +10% (don't sell at a loss - matters for pricey TLDs like .co.il).
+      if (customerIls != null && costIls != null) {
+        const floor = Math.ceil((costIls * 1.1) / 5) * 5;
+        customerIls = Math.max(Math.min(customerIls, maxPrice), floor);
+      }
       return { domain, available, costUsd, listIls, customerIls };
     });
 

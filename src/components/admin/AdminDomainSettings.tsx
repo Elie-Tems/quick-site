@@ -14,13 +14,14 @@ const AdminDomainSettings = () => {
     queryKey: ["domain-settings-admin"],
     queryFn: async () => {
       const { data } = await (supabase as any).from("domain_settings").select("*").eq("id", 1).maybeSingle();
-      return data as { margin_percent: number; coupon_percent: number; usd_to_ils: number } | null;
+      return data as { margin_percent: number; coupon_percent: number; usd_to_ils: number; max_price_ils: number } | null;
     },
   });
 
   const [margin, setMargin] = useState("100");
   const [coupon, setCoupon] = useState("15");
   const [fx, setFx] = useState("3.7");
+  const [maxPrice, setMaxPrice] = useState("135");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -28,6 +29,7 @@ const AdminDomainSettings = () => {
       setMargin(String(data.margin_percent));
       setCoupon(String(data.coupon_percent));
       setFx(String(data.usd_to_ils));
+      setMaxPrice(String(data.max_price_ils ?? 135));
     }
   }, [data]);
 
@@ -40,6 +42,7 @@ const AdminDomainSettings = () => {
           margin_percent: Number(margin),
           coupon_percent: Number(coupon),
           usd_to_ils: Number(fx),
+          max_price_ils: Number(maxPrice),
           updated_at: new Date().toISOString(),
         })
         .eq("id", 1);
@@ -56,7 +59,8 @@ const AdminDomainSettings = () => {
   // Live preview on a sample $10 cost domain.
   const sampleCost = 10;
   const list = Math.ceil((sampleCost * Number(fx || 0) * (1 + Number(margin || 0) / 100)) / 5) * 5;
-  const final = Math.ceil((list * (1 - Number(coupon || 0) / 100)) / 5) * 5;
+  const uncapped = Math.ceil((list * (1 - Number(coupon || 0) / 100)) / 5) * 5;
+  const final = Math.min(uncapped, Number(maxPrice || 999999));
 
   const Field = ({ label, value, onChange, suffix }: { label: string; value: string; onChange: (v: string) => void; suffix: string }) => (
     <div className="space-y-1">
@@ -90,6 +94,7 @@ const AdminDomainSettings = () => {
           <Field label="אחוז רווח" value={margin} onChange={setMargin} suffix="%" />
           <Field label="קופון הנחה קבוע" value={coupon} onChange={setCoupon} suffix="%" />
           <Field label="שער המרה דולר→שקל" value={fx} onChange={setFx} suffix="₪/$" />
+          <Field label="תקרת מחיר ללקוח (לא נמכור מעל; מתחת לעלות לא נרד)" value={maxPrice} onChange={setMaxPrice} suffix="₪" />
 
           <div className="rounded-lg bg-muted/40 p-3 text-sm">
             <p className="text-muted-foreground mb-1">תצוגה מקדימה (דומיין שעולה לנו $10):</p>
