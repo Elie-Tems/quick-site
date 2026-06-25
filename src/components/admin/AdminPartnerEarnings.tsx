@@ -55,7 +55,7 @@ const PARTNERS: Partner[] = [
     match: ["icount"],
     commission: "15% ממה ש-iCount מקבל",
     model: "חוזר",
-    qualifying: "דרך קוד שותף 862330",
+    qualifying: "דרך קוד שותף 471310",
     cycle: "מדשבורד iCount",
     perMerchant: null,
     note: "לא נמדד אצלנו - הסכום המדויק בדשבורד השותפים של iCount.",
@@ -65,12 +65,12 @@ const PARTNERS: Partner[] = [
     key: "payplus",
     name: "PayPlus",
     match: ["payplus"],
-    commission: "₪150 על כלל השותפות (לא לעסק!)",
-    model: "תשלום שטוח, חד-פעמי",
-    qualifying: "-",
-    cycle: "חד-פעמי",
-    perMerchant: null,
-    note: "תשלום שטוח אחד על כל ההפניות יחד - לא מתגמל לפי כמות. בעיקר שירות ללקוח.",
+    commission: "₪150 לכל עסק שנשאר אצלם 3 חודשים",
+    model: "חד-פעמי לכל עסק · מתרחב עם הכמות",
+    qualifying: "עסק פעיל ב-PayPlus 3 חודשים",
+    cycle: "מול חשבונית",
+    perMerchant: 150,
+    highlight: true,
   },
 ];
 
@@ -168,7 +168,7 @@ const AdminPartnerEarnings = () => {
       </div>
 
       <p className="text-xs text-muted-foreground text-center">
-        ההערכה ל-HYP היא רצפה (₪100 לעסק מזכה); הסכום בפועל תלוי בעלות ההקמה ובכך שהעסק פעיל 3 חודשים ושילם.
+        ההערכה ל-HYP היא רצפה (₪100 לעסק מזכה, תלוי בעלות ההקמה); PayPlus ₪150 לכל עסק שנשאר אצלם 3 חודשים. שניהם מתרחבים עם כמות העסקים.
       </p>
     </div>
   );

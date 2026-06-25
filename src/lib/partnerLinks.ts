@@ -28,7 +28,7 @@ export const PARTNER_LINKS: PartnerLink[] = [
   {
     id: "icount",
     name: "iCount",
-    url: "https://www.icount.co.il/r?aff=862330",
+    url: "https://www.icount.co.il/r?aff=471310",
     blurb: "חשבוניות והנהלת חשבונות אוטומטית - ישירות מהמערכת.",
   },
 ];
