@@ -3,6 +3,7 @@ import SEOHead from "@/components/SEOHead";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { gtm } from "@/lib/gtm";
 import { Loader2 } from "lucide-react";
 
 const AuthCallback = () => {
@@ -100,6 +101,9 @@ const AuthCallback = () => {
             .from("profiles")
             .update({ auth_provider: "google" })
             .eq("user_id", user.id);
+          // Fire sign_up for new Google users (account created in the last 2 minutes)
+          const isNewUser = user.created_at && (Date.now() - new Date(user.created_at).getTime()) < 120_000;
+          if (isNewUser) gtm.signUp("google");
         }
 
         if (cancelled) return;
