@@ -22,7 +22,8 @@ export const PARTNER_LINKS: PartnerLink[] = [
     id: "hyp",
     name: "HYP (היפ)",
     url: null,
-    blurb: "פתרון סליקה מלא, אפליקציה לניהול וחשבוניות אוטומטיות.",
+    blurb: "פתרון סליקה מלא, אפליקציה לניהול וחשבוניות אוטומטיות. בתנאים מועדפים.",
+    highlight: true,
   },
   {
     id: "icount",
