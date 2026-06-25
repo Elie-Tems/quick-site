@@ -1,0 +1,138 @@
+// Twilio inbound webhook. Handles three things:
+//   1. STATUS CALLBACKS (MessageStatus) -> update whatsapp_messages delivered/read/failed.
+//   2. INBOUND customer messages to a MERCHANT's number -> upsert contact + log
+//      (opens the 24h service window).
+//   3. The SIANGO COMPANY BOT: a merchant texts our bot a product PHOTO + CAPTION
+//      -> we map the sender to their business, parse the caption, upload the image,
+//      create the product, and reply "added".
+// BUILD-ONLY: ready to deploy but not activated until Moti approves.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { twilioCreds, sendWhatsAppText, toE164 } from "../_shared/whatsapp/twilio.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-twilio-signature",
+};
+// Twilio expects TwiML or an empty 200; we just ack.
+const ack = () => new Response("<Response></Response>", { status: 200, headers: { ...corsHeaders, "Content-Type": "text/xml" } });
+
+async function parseForm(req: Request): Promise<Record<string, string>> {
+  const text = await req.text();
+  const out: Record<string, string> = {};
+  for (const [k, v] of new URLSearchParams(text).entries()) out[k] = v;
+  return out;
+}
+
+/** Best-effort caption parse: "<name> | <price> | <description>" OR detect a price
+ *  number and treat the rest as the name. Returns name/price/description. */
+function parseCaption(caption: string): { name: string; price: number | null; description: string | null } {
+  const raw = (caption || "").trim();
+  if (!raw) return { name: "מוצר חדש", price: null, description: null };
+  const parts = raw.split(/\s*[|\n]\s*/).filter(Boolean);
+  if (parts.length >= 2) {
+    const price = Number((parts[1].match(/[\d.]+/) || [])[0]);
+    return { name: parts[0].slice(0, 120), price: Number.isFinite(price) ? price : null, description: parts[2] || null };
+  }
+  // Single blob: pull a price like "₪89" / "89 שח" / "89", name = text without it.
+  const priceMatch = raw.match(/(?:₪\s*)?(\d+(?:\.\d+)?)(?:\s*(?:ש"?ח|שקל|nis|ils))?/i);
+  const price = priceMatch ? Number(priceMatch[1]) : null;
+  const name = raw.replace(priceMatch?.[0] || "", "").trim().slice(0, 120) || "מוצר חדש";
+  return { name, price, description: null };
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return ack();
+
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const admin = createClient(url, service);
+
+  const form = await parseForm(req);
+  const siangoBot = Deno.env.get("TWILIO_WHATSAPP_FROM"); // the Siango company-bot number
+
+  try {
+    // --- 1. Delivery/read status callback ---
+    if (form.MessageStatus && form.MessageSid) {
+      await admin.from("whatsapp_messages")
+        .update({ status: form.MessageStatus, updated_at: new Date().toISOString() })
+        .eq("provider_sid", form.MessageSid);
+      return ack();
+    }
+
+    const from = toE164(form.From || "");
+    const to = toE164(form.To || "");
+    const bodyText = form.Body || "";
+    const numMedia = Number(form.NumMedia || "0");
+
+    // --- 3. Siango company bot: a merchant managing their store via WhatsApp ---
+    if (siangoBot && toE164(siangoBot) === to) {
+      // Map the sender phone -> a business (via the owner profile's phone).
+      const { data: prof } = await admin.from("profiles").select("id, phone").eq("phone", from).maybeSingle();
+      let businessId: string | null = null;
+      if (prof) {
+        const { data: b } = await admin.from("businesses").select("id").eq("owner_id", prof.id).order("created_at", { ascending: true }).limit(1).maybeSingle();
+        businessId = b?.id || null;
+      }
+      const creds = twilioCreds();
+      const reply = async (msg: string) => { if (creds && siangoBot) await sendWhatsAppText(creds, siangoBot, from, msg); };
+
+      if (!businessId) {
+        await reply("היי! לא הצלחנו לזהות את החנות שלך לפי המספר הזה. ודא/י שזה המספר הרשום ב-Siango. 🙏");
+        return ack();
+      }
+      if (numMedia > 0 && form.MediaUrl0) {
+        // Product-upload bot: download the image, parse the caption, create the product.
+        const parsed = parseCaption(bodyText);
+        try {
+          const mediaRes = await fetch(form.MediaUrl0, {
+            headers: creds ? { Authorization: "Basic " + btoa(`${creds.accountSid}:${creds.authToken}`) } : undefined,
+          });
+          const ct = form.MediaContentType0 || mediaRes.headers.get("content-type") || "image/jpeg";
+          const ext = ct.includes("png") ? "png" : ct.includes("webp") ? "webp" : "jpg";
+          const bytes = new Uint8Array(await mediaRes.arrayBuffer());
+          const path = `${businessId}/products/wa-${Date.now()}.${ext}`;
+          await admin.storage.from("business-assets").upload(path, bytes, { contentType: ct, upsert: false });
+          const { data: pub } = admin.storage.from("business-assets").getPublicUrl(path);
+          const imageUrl = pub?.publicUrl ? `${pub.publicUrl}?t=${Date.now()}` : null;
+
+          const { error: insErr } = await admin.from("products").insert({
+            business_id: businessId,
+            name: parsed.name,
+            price: parsed.price ?? 0,
+            description: parsed.description,
+            image_url: imageUrl,
+            is_active: true,
+          });
+          if (insErr) throw insErr;
+          await reply(`נוסף ✅\nמוצר: ${parsed.name}${parsed.price ? `\nמחיר: ₪${parsed.price}` : "\n(לא זוהה מחיר - אפשר לעדכן בדשבורד)"}\nתוכל/י לערוך בדשבורד.`);
+        } catch (e) {
+          console.error("product-upload bot failed:", e);
+          await reply("אופס, משהו השתבש בהוספת המוצר. נסה/י שוב או הוסף/י מהדשבורד. 🙏");
+        }
+        return ack();
+      }
+      // Text-only to the bot: a friendly help reply.
+      await reply("היי! 👋 כדי להוסיף מוצר - שלח/י לי תמונה של המוצר עם כיתוב: שם | מחיר | תיאור. לדוגמה: \"חולצה כחולה | 89 | כותנה 100%\".");
+      return ack();
+    }
+
+    // --- 2. Inbound customer message to a merchant's number ---
+    const { data: acct } = await admin.from("whatsapp_accounts").select("business_id").eq("phone_number", `+${to.replace(/^\+/, "")}`).maybeSingle();
+    const businessId = acct?.business_id;
+    if (businessId && from) {
+      const now = new Date().toISOString();
+      await admin.from("whatsapp_contacts").upsert(
+        { business_id: businessId, phone: from, last_message_at: now, source: "inbound" },
+        { onConflict: "business_id,phone", ignoreDuplicates: false },
+      );
+      await admin.from("whatsapp_messages").insert({
+        business_id: businessId, contact_phone: from, direction: "in", body: bodyText, status: "delivered", category: "service",
+      });
+    }
+    return ack();
+  } catch (e) {
+    console.error("whatsapp-webhook error:", e);
+    return ack();
+  }
+});
