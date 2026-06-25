@@ -193,102 +193,95 @@ STRICTLY FORBIDDEN:
     console.log("Generating styled image with Nano Banana, prompt:", fullPrompt);
 
     // Prepare multipart/form-data request for Nano Banana (image-to-image)
-    const formData = new FormData();
-    formData.append("prompt", fullPrompt);
-    formData.append("model", "nano-banana-2");
-    formData.append("mode", "image-to-image");
-    formData.append("aspectRatio", "auto");
-    formData.append("imageSize", "1K");
-    formData.append("outputFormat", "png");
-    formData.append("imageUrl", originalImageUrl);
+    // Call Nano Banana (image-to-image), with ONE automatic retry on a transient
+    // failure (API error / timeout). Per-attempt budget bounded (35 x 1.5s) so
+    // two attempts fit the edge-function wall-clock limit.
+    const generateOnce = async (): Promise<string> => {
+      const formData = new FormData();
+      formData.append("prompt", fullPrompt);
+      formData.append("model", "nano-banana-2");
+      formData.append("mode", "image-to-image");
+      formData.append("aspectRatio", "auto");
+      formData.append("imageSize", "1K");
+      formData.append("outputFormat", "png");
+      formData.append("imageUrl", originalImageUrl);
 
-    const nanoResponse = await fetch("https://nanobananapro.cloud/api/v1/image/nano-banana", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${NANO_API_KEY}`,
-      },
-      body: formData,
-    });
-
-    if (!nanoResponse.ok) {
-      const errorText = await nanoResponse.text();
-      console.error("Nano Banana API error:", nanoResponse.status, errorText);
-
-      if (nanoResponse.status === 401) {
-        throw new Error("שגיאת אימות Nano Banana - בדוק את ה-API Key");
-      }
-      if (nanoResponse.status === 402) {
-        throw new Error("אין מספיק קרדיטים ב-Nano Banana");
-      }
-
-      throw new Error(`Nano Banana generation failed: ${nanoResponse.status} - ${errorText}`);
-    }
-
-    const nanoData = await nanoResponse.json();
-    console.log("Nano Banana raw response:", JSON.stringify(nanoData));
-
-    const taskId = nanoData?.data?.id;
-
-    // אם ה‑API מחזיר קוד שגיאה לוגי (גם אם HTTP 200)
-    if (typeof nanoData.code !== "undefined" && nanoData.code !== 0) {
-      throw new Error(
-        `Nano Banana error code=${nanoData.code}, message=${nanoData.message || "unknown"}`
-      );
-    }
-
-    if (!taskId) {
-      throw new Error(
-        `Nano Banana did not return task ID. Raw response: ${JSON.stringify(nanoData)}`
-      );
-    }
-
-    // Poll Nano Banana for the result (can take some time on free/slow tiers)
-    const maxAttempts = 40;
-    const delayMs = 2000;
-    let generatedImageUrl: string | null = null;
-    let lastStatus: string | undefined;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const res = await fetch("https://nanobananapro.cloud/api/v1/image/nano-banana/result", {
+      const nanoResponse = await fetch("https://nanobananapro.cloud/api/v1/image/nano-banana", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${NANO_API_KEY}`,
-        },
-        body: JSON.stringify({ taskId }),
+        headers: { Authorization: `Bearer ${NANO_API_KEY}` },
+        body: formData,
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("Nano Banana result error:", res.status, text);
-        throw new Error(`Nano Banana result failed: ${res.status} - ${text}`);
+      if (!nanoResponse.ok) {
+        const errorText = await nanoResponse.text();
+        console.error("Nano Banana API error:", nanoResponse.status, errorText);
+        if (nanoResponse.status === 401 || nanoResponse.status === 402) {
+          throw Object.assign(
+            new Error(nanoResponse.status === 401
+              ? "שגיאת אימות Nano Banana - בדוק את ה-API Key"
+              : "אין מספיק קרדיטים ב-Nano Banana"),
+            { noRetry: true },
+          );
+        }
+        throw new Error(`Nano Banana generation failed: ${nanoResponse.status} - ${errorText}`);
       }
 
-      const json = await res.json();
-      const status = json?.data?.status as string | undefined;
-      const results = json?.data?.results;
+      const nanoData = await nanoResponse.json();
+      console.log("Nano Banana raw response:", JSON.stringify(nanoData));
+      if (typeof nanoData.code !== "undefined" && nanoData.code !== 0) {
+        throw new Error(`Nano Banana error code=${nanoData.code}, message=${nanoData.message || "unknown"}`);
+      }
+      const taskId = nanoData?.data?.id;
+      if (!taskId) {
+        throw new Error(`Nano Banana did not return task ID. Raw response: ${JSON.stringify(nanoData)}`);
+      }
 
-      lastStatus = status;
-      console.log("Nano Banana poll:", { attempt, status, hasResults: !!results?.length });
+      const maxAttempts = 35;
+      const delayMs = 1500;
+      let lastStatus: string | undefined;
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const res = await fetch("https://nanobananapro.cloud/api/v1/image/nano-banana/result", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${NANO_API_KEY}` },
+          body: JSON.stringify({ taskId }),
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("Nano Banana result error:", res.status, text);
+          throw new Error(`Nano Banana result failed: ${res.status} - ${text}`);
+        }
+        const json = await res.json();
+        const status = json?.data?.status as string | undefined;
+        const results = json?.data?.results;
+        lastStatus = status;
+        console.log("Nano Banana poll:", { attempt, status, hasResults: !!results?.length });
+        if (status === "succeeded" && results && results.length > 0 && results[0].url) {
+          return results[0].url as string;
+        }
+        if (status === "failed") {
+          throw new Error(json?.data?.failure_reason || json?.data?.error || "Nano Banana generation failed");
+        }
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+      throw new Error(`Nano Banana generation timed out. Last known status: ${lastStatus ?? "unknown"}`);
+    };
 
-      if (status === "succeeded" && results && results.length > 0 && results[0].url) {
-        generatedImageUrl = results[0].url as string;
+    let generatedImageUrl: string | null = null;
+    let genError: any = null;
+    for (let tryNum = 1; tryNum <= 2; tryNum++) {
+      try {
+        generatedImageUrl = await generateOnce();
+        if (tryNum > 1) console.log("Nano Banana styled succeeded on retry");
         break;
+      } catch (e: any) {
+        genError = e;
+        if (e?.noRetry || tryNum === 2) break;
+        console.warn(`Nano Banana styled attempt ${tryNum} failed, retrying:`, e?.message || e);
+        await new Promise((resolve) => setTimeout(resolve, 1500));
       }
-
-      if (status === "failed") {
-        const failureReason =
-          json?.data?.failure_reason || json?.data?.error || "Nano Banana generation failed";
-        throw new Error(failureReason);
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
-
     if (!generatedImageUrl) {
-      throw new Error(
-        `Nano Banana generation timed out. Last known status: ${lastStatus ?? "unknown"}`
-      );
+      throw genError ?? new Error("Nano Banana generation failed");
     }
 
     // Download the generated image

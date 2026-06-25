@@ -38,3 +38,6 @@ supabase/.temp/
 
 # Wrangler build artifacts
 .wrangler/
+
+# Never commit deploy tokens
+pat.txt

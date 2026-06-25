@@ -285,111 +285,101 @@ serve(async (req) => {
       prompt += `\n\nIMPORTANT: The image is intended for a Haredi (ultra-Orthodox Jewish) audience. Do not generate women, immodest clothing, revealing images, or suggestive content. Use only modest and appropriate visuals such as landscapes, products, buildings, men in modest attire, or neutral graphic elements.`;
     }
 
-    // Generate image using Nano Banana (text-to-image)
+    // Generate image using Nano Banana (text-to-image), with ONE automatic retry
+    // on a transient failure (API error / timeout) so a single hiccup doesn't
+    // fail the whole generation - the main cause of "sometimes it fails". The
+    // per-attempt poll budget is bounded (40 x 1.2s ~= 48s) so two attempts fit
+    // safely inside the edge-function wall-clock limit.
     console.log("Generating hero image with Nano Banana");
 
-    const formData = new FormData();
-    formData.append("prompt", prompt);
-    formData.append("model", "nano-banana-2");
-    formData.append("mode", "text-to-image");
-    formData.append("aspectRatio", "16:9");
-    formData.append("imageSize", "1K");
-    formData.append("outputFormat", "png");
+    const generateOnce = async (): Promise<string> => {
+      const formData = new FormData();
+      formData.append("prompt", prompt);
+      formData.append("model", "nano-banana-2");
+      formData.append("mode", "text-to-image");
+      formData.append("aspectRatio", "16:9");
+      formData.append("imageSize", "1K");
+      formData.append("outputFormat", "png");
 
-    const nanoResponse = await fetch("https://nanobananapro.cloud/api/v1/image/nano-banana", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${NANO_API_KEY}`,
-      },
-      body: formData,
-    });
-
-    if (!nanoResponse.ok) {
-      const errorText = await nanoResponse.text();
-      console.error("Nano Banana hero API error:", nanoResponse.status, errorText);
-
-      if (nanoResponse.status === 401) {
-        return new Response(
-          JSON.stringify({ success: false, error: "שגיאת אימות Nano Banana - בדוק את ה-API Key" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (nanoResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ success: false, error: "אין מספיק קרדיטים במנוע התמונות" }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      throw new Error(`Nano Banana hero generation failed: ${nanoResponse.status} - ${errorText}`);
-    }
-
-    const nanoData = await nanoResponse.json();
-    console.log("Nano Banana hero raw response:", JSON.stringify(nanoData));
-
-    if (typeof nanoData.code !== "undefined" && nanoData.code !== 0) {
-      throw new Error(
-        `Nano Banana hero error code=${nanoData.code}, message=${nanoData.message || "unknown"}`
-      );
-    }
-
-    const taskId = nanoData?.data?.id;
-    if (!taskId) {
-      throw new Error(
-        `Nano Banana hero did not return task ID. Raw response: ${JSON.stringify(nanoData)}`
-      );
-    }
-
-    // Poll Nano Banana for hero result.
-    // Poll faster (1.2s) so a finished image is detected sooner - the previous
-    // 2s cadence added up to ~2s of dead wait after the image was already ready.
-    // maxAttempts raised to keep roughly the same overall timeout (~80s).
-    const maxAttempts = 66;
-    const delayMs = 1200;
-    let generatedImageUrl: string | null = null;
-    let lastStatus: string | undefined;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const res = await fetch("https://nanobananapro.cloud/api/v1/image/nano-banana/result", {
+      const nanoResponse = await fetch("https://nanobananapro.cloud/api/v1/image/nano-banana", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${NANO_API_KEY}`,
-        },
-        body: JSON.stringify({ taskId }),
+        headers: { Authorization: `Bearer ${NANO_API_KEY}` },
+        body: formData,
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("Nano Banana hero result error:", res.status, text);
-        throw new Error(`Nano Banana hero result failed: ${res.status} - ${text}`);
+      if (!nanoResponse.ok) {
+        const errorText = await nanoResponse.text();
+        console.error("Nano Banana hero API error:", nanoResponse.status, errorText);
+        // Auth / engine-credit problems are permanent - mark them non-retryable.
+        if (nanoResponse.status === 401 || nanoResponse.status === 402) {
+          throw Object.assign(
+            new Error(nanoResponse.status === 401
+              ? "שגיאת אימות Nano Banana - בדוק את ה-API Key"
+              : "אין מספיק קרדיטים במנוע התמונות"),
+            { noRetry: true },
+          );
+        }
+        throw new Error(`Nano Banana hero generation failed: ${nanoResponse.status} - ${errorText}`);
       }
 
-      const json = await res.json();
-      const status = json?.data?.status as string | undefined;
-      const results = json?.data?.results;
+      const nanoData = await nanoResponse.json();
+      console.log("Nano Banana hero raw response:", JSON.stringify(nanoData));
+      if (typeof nanoData.code !== "undefined" && nanoData.code !== 0) {
+        throw new Error(`Nano Banana hero error code=${nanoData.code}, message=${nanoData.message || "unknown"}`);
+      }
+      const taskId = nanoData?.data?.id;
+      if (!taskId) {
+        throw new Error(`Nano Banana hero did not return task ID. Raw response: ${JSON.stringify(nanoData)}`);
+      }
 
-      lastStatus = status;
-      console.log("Nano Banana hero poll:", { attempt, status, hasResults: !!results?.length });
+      // Poll for the result (1.2s cadence so a finished image is detected quickly).
+      const maxAttempts = 40;
+      const delayMs = 1200;
+      let lastStatus: string | undefined;
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const res = await fetch("https://nanobananapro.cloud/api/v1/image/nano-banana/result", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${NANO_API_KEY}` },
+          body: JSON.stringify({ taskId }),
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("Nano Banana hero result error:", res.status, text);
+          throw new Error(`Nano Banana hero result failed: ${res.status} - ${text}`);
+        }
+        const json = await res.json();
+        const status = json?.data?.status as string | undefined;
+        const results = json?.data?.results;
+        lastStatus = status;
+        console.log("Nano Banana hero poll:", { attempt, status, hasResults: !!results?.length });
+        if (status === "succeeded" && results && results.length > 0 && results[0].url) {
+          return results[0].url as string;
+        }
+        if (status === "failed") {
+          throw new Error(json?.data?.failure_reason || json?.data?.error || "Nano Banana hero generation failed");
+        }
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+      throw new Error(`Nano Banana hero generation timed out. Last known status: ${lastStatus ?? "unknown"}`);
+    };
 
-      if (status === "succeeded" && results && results.length > 0 && results[0].url) {
-        generatedImageUrl = results[0].url as string;
+    let generatedImageUrl: string | null = null;
+    let genError: any = null;
+    for (let tryNum = 1; tryNum <= 2; tryNum++) {
+      try {
+        generatedImageUrl = await generateOnce();
+        if (tryNum > 1) console.log("Nano Banana hero succeeded on retry");
         break;
+      } catch (e: any) {
+        genError = e;
+        if (e?.noRetry || tryNum === 2) break;
+        console.warn(`Nano Banana hero attempt ${tryNum} failed, retrying:`, e?.message || e);
+        await new Promise((resolve) => setTimeout(resolve, 1500));
       }
-
-      if (status === "failed") {
-        const failureReason =
-          json?.data?.failure_reason || json?.data?.error || "Nano Banana hero generation failed";
-        throw new Error(failureReason);
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
-
+    // Both attempts exhausted -> throw so the catch refunds the credit + reports.
     if (!generatedImageUrl) {
-      throw new Error(
-        `Nano Banana hero generation timed out. Last known status: ${lastStatus ?? "unknown"}`
-      );
+      throw genError ?? new Error("Nano Banana hero generation failed");
     }
 
     // Download the image from Nano Banana
