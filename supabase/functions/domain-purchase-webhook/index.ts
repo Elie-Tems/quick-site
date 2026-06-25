@@ -21,7 +21,9 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
 const APP_URL = () => Deno.env.get("VITE_APP_URL") || "https://siango.app";
-const ADMIN_EMAIL = () => Deno.env.get("ADMIN_ALERT_EMAIL") || "office@siango.app";
+// Urgent admin alerts go to both founders (same list as report-error / uptime-check).
+const ALERT_RECIPIENTS = ["moti4384@gmail.com", "furmand713@gmail.com"];
+const FALLBACK_EMAIL = "office@siango.app";
 
 interface DomainOrder {
   id: string;
@@ -105,7 +107,7 @@ Deno.serve(async (req) => {
       businessName = (b as any)?.name;
     }
     const alert = PLATFORM_EMAILS.domainFundsAlert({ domainName: order.domain, businessName, amountIls: order.price_ils, reason });
-    await sendViaResend({ to: ADMIN_EMAIL(), subject: alert.subject, html: alert.html, fromName: "Siango" });
+    await sendViaResend({ to: ALERT_RECIPIENTS, subject: alert.subject, html: alert.html, fromName: "Siango" });
     // Reassure the customer their money is safe and we're on it.
     if (order.reg_email) {
       await sendViaResend({
@@ -120,7 +122,7 @@ Deno.serve(async (req) => {
   // Register on the customer's name: create an Openprovider customer handle.
   const cust = await opCreateCustomer({
     name: order.reg_name || "Siango Customer",
-    email: order.reg_email || ADMIN_EMAIL(),
+    email: order.reg_email || FALLBACK_EMAIL,
     phone: order.reg_phone || "+972500000000",
     address: order.reg_address || "-",
     city: order.reg_city || "-",

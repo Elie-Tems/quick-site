@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { Loader2 } from "lucide-react";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -35,7 +36,7 @@ import PublishCheckoutPreview from "./pages/PublishCheckoutPreview";
 import PreviewOnboardingV2 from "./pages/PreviewOnboardingV2";
 import OnboardingCompleteGate from "./pages/OnboardingCompleteGate";
 import ThankYou from "./pages/ThankYou";
-import { getTenantSlug } from "@/lib/subdomain";
+import { useResolvedTenant } from "@/hooks/useResolvedTenant";
 import ShabbatGate from "@/components/ShabbatGate";
 import StoreLegalPage from "./pages/StoreLegalPage";
 import StoreUnsubscribe from "./pages/StoreUnsubscribe";
@@ -44,10 +45,12 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // When served from a tenant subdomain (e.g. aurora.siango.app) the whole
-  // app IS that one store: paths map to the store's home/about, and platform
-  // marketing/auth routes are not exposed. On the apex it's the full platform.
-  const tenantSlug = getTenantSlug();
+  // When served from a tenant subdomain (e.g. aurora.siango.app) OR a customer's
+  // own custom domain (bought via Siango), the whole app IS that one store: paths
+  // map to the store's home/about, and platform marketing/auth routes are not
+  // exposed. On the apex it's the full platform. Custom domains resolve async, so
+  // `resolving` covers the brief lookup window (avoid flashing the marketing site).
+  const { tenantSlug, resolving } = useResolvedTenant();
 
   return (
   <ErrorBoundary>
@@ -60,7 +63,11 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              {tenantSlug ? (
+              {resolving ? (
+                <div className="min-h-screen flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : tenantSlug ? (
                 <Routes>
                   <Route path="/" element={<StoreFront slugOverride={tenantSlug} />} />
                   <Route path="/about" element={<StoreAboutPage slugOverride={tenantSlug} />} />

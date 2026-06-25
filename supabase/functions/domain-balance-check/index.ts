@@ -11,6 +11,9 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Admin alerts go to both founders (same list as report-error / uptime-check).
+const ALERT_RECIPIENTS = ["moti4384@gmail.com", "furmand713@gmail.com"];
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
@@ -19,7 +22,6 @@ Deno.serve(async (req) => {
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const threshold = Number(Deno.env.get("DOMAIN_LOW_BALANCE_USD") || "20");
-  const adminEmail = Deno.env.get("ADMIN_ALERT_EMAIL") || "office@siango.app";
 
   try {
     const bal = await opGetBalance();
@@ -44,7 +46,7 @@ Deno.serve(async (req) => {
 
     if (sendAlert) {
       const mail = PLATFORM_EMAILS.domainLowBalance({ balance, currency });
-      await sendViaResend({ to: adminEmail, subject: mail.subject, html: mail.html, fromName: "Siango" });
+      await sendViaResend({ to: ALERT_RECIPIENTS, subject: mail.subject, html: mail.html, fromName: "Siango" });
     }
 
     return json({ ok: true, balance, currency, low, alerted: sendAlert });

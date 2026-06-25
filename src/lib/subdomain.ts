@@ -64,3 +64,18 @@ export function getTenantSlug(hostname: string = window.location.hostname): stri
 export function isTenantSubdomain(hostname?: string): boolean {
   return getTenantSlug(hostname) !== null;
 }
+
+/**
+ * True when the host is a *custom domain candidate* - i.e. NOT the platform apex,
+ * not a `*.siango.app` subdomain, not a `*.pages.dev` preview, and not local/IP.
+ * Such a host might be a customer's own domain (bought via Siango) that should
+ * serve their store; resolve it to a slug via the get_store_slug_for_domain RPC.
+ */
+export function isCustomDomainHost(hostname: string = window.location.hostname): boolean {
+  const host = hostname.toLowerCase().replace(/\.$/, "");
+  if (host === "localhost" || host.endsWith(".localhost") || /^[\d.]+$/.test(host)) return false;
+  if (host === BASE_DOMAIN || host.endsWith("." + BASE_DOMAIN)) return false; // apex + tenant subdomains
+  if (host === "pages.dev" || host.endsWith(".pages.dev")) return false;       // Cloudflare preview hosts
+  if (!host.includes(".")) return false;                                        // bare host, never a domain
+  return true;
+}
