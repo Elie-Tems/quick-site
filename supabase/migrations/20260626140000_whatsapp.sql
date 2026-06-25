@@ -22,6 +22,14 @@ create table if not exists public.whatsapp_accounts (
   business_verified boolean default false,
   provider_sid text,                  -- Twilio sender/service sid
   connected_at timestamptz,
+  -- AI service bot: the merchant writes a prompt (we may refine it with AI) and
+  -- the inbound webhook auto-replies to customers based on it.
+  bot_enabled boolean not null default false,
+  bot_prompt text,
+  -- Which events auto-send a WhatsApp (merchant settings).
+  notify_new_order boolean not null default true,
+  notify_shipping boolean not null default true,
+  notify_reminders boolean not null default true,
   created_at timestamptz default now(),
   updated_at timestamptz default now(),
   unique (business_id)
