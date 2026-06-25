@@ -115,7 +115,7 @@ const GuidanceScreen = () => {
     { icon: ImageIcon, title: "ניהול חנות מהוואטסאפ", desc: "שולחים תמונת מוצר + כיתוב לבוט - והוא מוסיף אותו לחנות. בלי מחשב.", grad: "from-lime-400/15 to-green-400/10", badge: "בלעדי" },
   ];
   const prepare = [
-    { icon: Smartphone, title: "מספר טלפון ייעודי", desc: "מספר נייד ישראלי פנוי (SIM נפרד) - לא הוואטסאפ האישי שלכם. המספר שמתחבר יוצא מהאפליקציה הרגילה." },
+    { icon: Smartphone, title: "מספר טלפון ייעודי", desc: "מספר נייד ישראלי פנוי (SIM נפרד) - לא הוואטסאפ האישי. אין לכם מספר פנוי? אפשר להזמין מאיתנו מספר מוכן (ראו למטה)." },
     { icon: Facebook, title: "חשבון פייסבוק", desc: "החיבור מתבצע דרך Meta, אז צריך חשבון פייסבוק. אין לכם? פתחו חשבון חינם ב-facebook.com ותחזרו לכאן." },
     { icon: FileText, title: "פרטי העסק", desc: "שם העסק וכתובת - לרישום מול Meta (אנחנו מנחים בתהליך)." },
   ];
@@ -159,6 +159,27 @@ const GuidanceScreen = () => {
           })}
         </div>
       </motion.div>
+
+      {/* Pricing + number ordering */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <motion.div {...fade(0.12)} className="rounded-3xl border border-border bg-card p-6">
+          <h3 className="font-bold text-foreground text-lg mb-3 flex items-center gap-2"><Sparkles className="w-5 h-5" style={{ color: WA }} /> כמה זה עולה</h3>
+          <div className="space-y-2.5 text-sm">
+            <div className="flex items-baseline justify-between"><span className="text-muted-foreground">הקמה חד-פעמית</span><span className="font-extrabold text-foreground text-lg">₪190</span></div>
+            <div className="flex items-baseline justify-between"><span className="text-muted-foreground">מנוי חודשי</span><span className="font-extrabold text-foreground text-lg">₪49<span className="text-xs font-normal text-muted-foreground">/חודש</span></span></div>
+            <div className="flex items-baseline justify-between pt-1 border-t border-border"><span className="text-muted-foreground">הודעות שיווק</span><span className="font-medium text-foreground">לפי שימוש (~₪0.26 להודעה)</span></div>
+            <p className="text-xs text-muted-foreground pt-1">התראות שירות ללקוח - לרוב חינם. ללא התחייבות, אפשר לבטל בכל עת.</p>
+          </div>
+        </motion.div>
+
+        <motion.div {...fade(0.16)} className="rounded-3xl border p-6 relative overflow-hidden" style={{ borderColor: `${WA}40`, background: `${WA}08` }}>
+          <div className="flex items-center gap-2 mb-2"><Smartphone className="w-5 h-5" style={{ color: "#0f8c6e" }} /><h3 className="font-bold text-foreground text-lg">אין לכם מספר פנוי?</h3></div>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-4">נספק לכם <b className="text-foreground">מספר וואטסאפ מוכן</b> ייעודי לעסק - בלי להוציא SIM נוסף. תוספת חודשית קטנה, ואנחנו מטפלים בהכל.</p>
+          <button onClick={() => toast.info("נרשמה בקשה למספר מוכן - ניצור קשר להשלמה 🙏")} className="rounded-2xl px-5 py-2.5 text-sm font-bold text-white inline-flex items-center gap-2 shadow-sm hover:scale-[1.02] transition-transform" style={{ background: WA }}>
+            <Plus className="w-4 h-4" /> הזמנת מספר מוכן · ₪19/חודש
+          </button>
+        </motion.div>
+      </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
         {benefits.map((b, i) => {
