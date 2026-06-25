@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { gtm } from "@/lib/gtm";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Loader2, Store } from "lucide-react";
@@ -454,6 +455,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         businessPhone: business.phone ?? null,
       });
       trackEvent(business.id, "purchase", { value: orderTotal });
+      gtm.purchase(orderTotal);
       // Customer order confirmation, sent FROM the merchant (reply-to the merchant).
       if (data.email) {
         supabase.functions

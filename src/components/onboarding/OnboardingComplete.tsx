@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import ReferralBox from "@/components/dashboard/ReferralBox";
+import { gtm } from "@/lib/gtm";
 
 interface OnboardingCompleteProps {
   data: OnboardingData;
@@ -33,11 +34,12 @@ const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
       // Update user status to onboarding_completed
       await supabase
         .from('profiles')
-        .update({ 
+        .update({
           status: 'onboarding_completed',
           onboarding_completed_at: new Date().toISOString()
         })
         .eq('user_id', user.id);
+      gtm.onboardingComplete();
       
       const { data: business } = await supabase
         .from('businesses')

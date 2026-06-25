@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { gtm } from "@/lib/gtm";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, useSearchParams, useLocation, Link } from "react-router-dom";
 import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight } from "lucide-react";
@@ -241,6 +242,7 @@ const PublishPayment = () => {
       });
       if (error) throw error;
       if (data?.ok) {
+        gtm.sitePublished();
         toast({
           title: "🎉 האתר פורסם בהצלחה!",
           description: "האתר שלך עכשיו זמין לציבור",
