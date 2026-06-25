@@ -13,6 +13,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import DomainSearch from "@/components/domains/DomainSearch";
 
 // Repeated conversion CTA placed between sections.
 const CtaBand = ({ title }: { title: string }) => (
@@ -96,6 +97,15 @@ const Index = () => {
         <HeroSection />
         <TemplateShowcaseSection />
         <HowItWorksSection />
+        <section className="py-14 px-4 bg-muted/30">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">תנו לעסק כתובת משלו 🌐</h2>
+            <p className="text-muted-foreground mb-6">דומיין מקצועי משלכם (כמו yourname.co.il). בדקו אם הוא פנוי - ותפסו אותו לפני שמישהו אחר.</p>
+            <div className="text-right">
+              <DomainSearch onBuy={() => navigate("/register")} />
+            </div>
+          </div>
+        </section>
         <CtaBand title="מוכנים? האתר שלכם באוויר תוך 5 דקות" />
         <WhoIsThisForSection />
         <BenefitsSection />
