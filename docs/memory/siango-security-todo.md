@@ -20,4 +20,6 @@ These live secret values were never written into any memory file.
 - Never print secrets in chat. When a key had to be captured, it was copied via the OS clipboard (textarea + execCommand -> Get-Clipboard) and set directly as a secret, never echoed.
 - Prohibited actions stay with the user: entering credentials/card numbers, executing financial transfers, etc. Claude builds and wires; the user performs card/credential steps (e.g. the PayPlus test card).
 
+**Supabase ownership / Pro (decided 2026-06-25):** the Supabase org is owned by `lieom.karaoke@gmail.com` (the dev's account, same situation as the GitHub repo under Elie-Tems). The user upgraded the org to **Pro ($25/mo, his card)** so the project no longer auto-pauses and has daily backups. He deliberately chose to **leave the dev as org Owner** so they can help remotely if problems arise - do NOT push to transfer ownership. Caveat to remember: the org owner can access all customer data.
+
 See [[siango-overview]], [[siango-architecture]].

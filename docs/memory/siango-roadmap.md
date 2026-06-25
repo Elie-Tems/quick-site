@@ -37,7 +37,7 @@ NEED FROM USER before building: (a) a fresh Supabase PAT to deploy + set secrets
 
 **5. SEO sitemap - DONE (2026-06-25).** `functions/sitemap.xml.ts` already enumerated published stores; set `SUPABASE_URL` + `SUPABASE_ANON_KEY` as Cloudflare Pages secrets via `wrangler pages secret put` (no PAT needed - public values). siango.app/sitemap.xml now returns 29 entries (9 static + published stores x2). Google will pick them up on next crawl.
 
-**6. Multi-language emails - now WANTED (no longer deferred).** The user said "תעשה בכל 5 שפות" - translate the ~14 templates into 5 languages. Confirm the exact set with the user; likely Hebrew, English, Arabic, Russian + one more (French/Spanish) given the Israeli market. Pick language per recipient.
+**6. Multi-language emails - now WANTED (no longer deferred).** Translate the ~14 templates into 5 languages, CONFIRMED set: **Hebrew, English, Arabic, Russian, French**. Pick language per recipient.
 
 **7. Improve AI image generation (requested).** The user does NOT want to merely de-emphasize it - he wants the actual generation improved (onboarding step 3 is slow and sometimes fails). Investigate the image-gen edge function / model + add clearer progress. Keep upload as a fallback.
 
