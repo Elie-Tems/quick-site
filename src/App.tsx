@@ -27,7 +27,7 @@ import HelpCenter from "./pages/HelpCenter";
 import AllTemplates from "./pages/AllTemplates";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
-import PublishPayment from "./pages/PublishPaymentOld";
+import PublishPayment from "./pages/PublishPayment";
 import AICreditPayment from "./pages/AICreditPayment";
 import PreviewPayments from "./pages/PreviewPayments";
 import PreviewEmails from "./pages/PreviewEmails";

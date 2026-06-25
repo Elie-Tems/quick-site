@@ -288,20 +288,33 @@ const PublishPayment = () => {
   }
 
   return (
-      <SEOHead title="PublishPayment | סיאנגו" noindex={true} />
+    <>
+      <SEOHead title="פרסום אתר | סיאנגו" noindex={true} />
     <div className="min-h-screen bg-surface-1 flex flex-col">
-      <div className="container max-w-5xl mx-auto px-4 py-8 flex flex-col gap-6 flex-1">
+      <div className="w-full px-4 py-8 flex flex-col gap-6 flex-1">
+        <div className="w-full max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <Button variant="ghost" asChild>
+              <Link to="/dashboard" className="gap-2">
+                <ArrowRight className="w-4 h-4" />
+                מעבר לדשבורד
+              </Link>
+            </Button>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">תשלום לפרסום האתר</h1>
+            <div className="w-[120px]"></div>
+          </div>
+        </div>
+
         <div className="text-center space-y-2">
           <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-2">
             <CreditCard className="w-7 h-7 text-primary" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">תשלום לפרסום האתר</h1>
           
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_minmax(280px,340px)] gap-6 items-start">
-          {/* iCount embed */}
-          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm min-h-[320px] flex flex-col">
+        {/* Centered wider iframe */}
+        <div className="w-full max-w-7xl mx-auto">
+          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-lg min-h-[320px] flex flex-col">
             {!basePaymentUrl && (
               <div className="p-6 text-right text-sm">
                 <p className="font-medium text-foreground mb-2">חסר קישור לעמוד סליקה</p>
@@ -314,13 +327,14 @@ const PublishPayment = () => {
             )}
             {basePaymentUrl && checkoutUrl && (
               <>
-                <div className="px-4 py-2 border-b border-border bg-muted/30 text-xs text-muted-foreground text-center">
+                <div className="px-4 py-3 border-b border-border bg-gradient-to-r from-primary/10 to-accent/10 text-sm font-medium text-foreground text-center flex items-center justify-center gap-2">
+                  <CreditCard className="w-4 h-4" />
                   תשלום מאובטח - iCount
                 </div>
                 <iframe
                   title="תשלום מאובטח iCount"
                   src={checkoutUrl}
-                  className="w-full grow min-h-[min(70vh,620px)] border-0 bg-background"
+                  className="w-full grow min-h-[min(80vh,800px)] border-0 bg-background"
                   allow="payment *"
                   sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-top-navigation-by-user-activation"
                 />
@@ -338,84 +352,11 @@ const PublishPayment = () => {
               </>
             )}
           </div>
-
-          {/* Sidebar */}
-          <div className="rounded-2xl border border-border bg-card p-6 space-y-6 text-right">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">ניתן לבטל בכל עת</p>
-              <p className="text-3xl font-bold text-foreground">
-                ₪{fee}
-                <span className="text-lg font-semibold text-muted-foreground mr-1">/חודש</span>
-              </p>
-              
-            </div>
-
-            <div className="space-y-3 border-t border-border pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="approvalNum" className="text-sm font-medium">
-                  מספר אישור מiCount
-                </Label>
-                <Input
-                  id="approvalNum"
-                  type="text"
-                  placeholder="הזן מספר אישור"
-                  value={approvalNum}
-                  onChange={(e) => setApprovalNum(e.target.value)}
-                  className="text-right"
-                  dir="rtl"
-                />
-                <p className="text-xs text-muted-foreground">
-                  לאחר התשלום ב-iframe למעלה, הזן את מספר האישור שקיבלת
-                </p>
-              </div>
-            </div>
-
-            {paymentStatus === 'paid' && (
-              <div className="space-y-3 text-sm border-t border-border pt-4">
-                <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                  <p className="font-medium text-green-700 dark:text-green-400 flex items-center gap-2 mb-2">
-                    <CheckCircle2 className="w-5 h-5 shrink-0" />
-                    התשלום אושר בהצלחה!
-                  </p>
-                  <p className="text-sm text-green-600 dark:text-green-500">
-                    לחץ על הכפתור למטה כדי לפרסם את האתר
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <Button
-              variant="hero"
-              size="lg"
-              className="w-full"
-              onClick={handlePublish}
-              disabled={publishing || !approvalNum.trim()}
-            >
-              {publishing ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  מפרסם את האתר...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  {paymentStatus === 'paid' ? 'פרסם את האתר והעלה לאוויר 🚀' : 'אשר תשלום ופרסם את האתר 🚀'}
-                </>
-              )}
-            </Button>
-
-            <div className="space-y-2">
-              <Button variant="ghost" className="w-full" asChild>
-                <Link to="/onboarding" className="gap-2">
-                  <ArrowRight className="w-4 h-4" />
-                  חזרה לעריכת האתר
-                </Link>
-              </Button>
-            </div>
-          </div>
         </div>
+
       </div>
     </div>
+    </>
   );
 };
 
