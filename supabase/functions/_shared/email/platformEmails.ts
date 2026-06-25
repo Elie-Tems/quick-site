@@ -7,7 +7,8 @@
  */
 
 import {
-  renderEmail, h1, p, emailButton, emailItemsTable, emailHighlight, ils, ltr, type EmailSender,
+  renderEmail, h1, p, emailButton, emailItemsTable, emailHighlight, ils, ltr,
+  dirForLang, type EmailSender, type EmailLang,
 } from "./rtlEmail.ts";
 
 const BRAND = "#3B976C";
@@ -41,6 +42,8 @@ export interface PlatformCtx {
   autoRenew?: boolean;
   registrantName?: string;
   siteHost?: string;
+  /** Recipient language (defaults "he"). Only localized templates honour it. */
+  lang?: EmailLang;
 }
 
 export interface BuiltEmail { subject: string; html: string; }
@@ -94,22 +97,88 @@ export const onboardingAbandoned2 = (c: PlatformCtx): BuiltEmail => ({
   }),
 });
 
-/** 4. Site is live. */
-export const siteReady = (c: PlatformCtx): BuiltEmail => ({
-  subject: "🎉 רשמית! האתר שלכם עלה לאוויר",
-  html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
-    previewText: "הגיע הזמן להתרברב בוואטסאפ המשפחתי",
-    bodyHtml:
-      h1("זהו, אתם באוויר! 🎉🚀") +
-      p(`${hi(c)}האתר של ${biz(c)} עלה רשמית והוא כבר מתאמן על קבלת לקוחות. הרגע הזה שבו עסק קטן הופך לעסק עם אתר - נהנים ממנו!`) +
-      (c.siteUrl ? emailHighlight(`🔗 כתובת האתר שלכם:<br><b>${ltr(c.siteUrl)}</b>`) : "") +
-      p("מה עכשיו? משתפים את הקישור בכל מקום - וואטסאפ, אינסטגרם, אצל הדודה בקבוצה. כל שיתוף = עוד לקוח פוטנציאלי. 😉") +
-      emailButton("לצפייה באתר החי 👀", c.siteUrl || dash(c), BRAND) +
-      emailButton("לדשבורד הניהול", dash(c), "#555555") +
-      emailHighlight("🎁 רוצים חודש שימוש חינם? על כל חבר שמצטרף דרככם והופך למנוי - חודש חינם. ההזמנה מחכה לכם בדשבורד."),
-  }),
-});
+/** 4. Site is live. Localized (he/en/ar/fr/ru); defaults to Hebrew. */
+export const siteReady = (c: PlatformCtx): BuiltEmail => {
+  const lang = c.lang || "he";
+  const dir = dirForLang(lang);
+  const nm = c.firstName;
+  const bn = c.businessName;
+  const site = c.siteUrl;
+  const dashUrl = dash(c);
+  const T = {
+    he: {
+      subject: "🎉 רשמית! האתר שלכם עלה לאוויר",
+      preview: "הגיע הזמן להתרברב בוואטסאפ המשפחתי",
+      h1: "זהו, אתם באוויר! 🎉🚀",
+      p1: `${nm ? `היי ${nm}! ` : "היי! "}האתר של ${bn || "העסק שלכם"} עלה רשמית והוא כבר מתאמן על קבלת לקוחות. הרגע הזה שבו עסק קטן הופך לעסק עם אתר - נהנים ממנו!`,
+      urlLabel: "🔗 כתובת האתר שלכם:",
+      p2: "מה עכשיו? משתפים את הקישור בכל מקום - וואטסאפ, אינסטגרם, אצל הדודה בקבוצה. כל שיתוף = עוד לקוח פוטנציאלי. 😉",
+      btnView: "לצפייה באתר החי 👀",
+      btnDash: "לדשבורד הניהול",
+      referral: "🎁 רוצים חודש שימוש חינם? על כל חבר שמצטרף דרככם והופך למנוי - חודש חינם. ההזמנה מחכה לכם בדשבורד.",
+    },
+    en: {
+      subject: "🎉 You're live! Your website is online",
+      preview: "Time to share it with everyone",
+      h1: "That's it - you're live! 🎉🚀",
+      p1: `${nm ? `Hi ${nm}! ` : "Hi! "}The ${bn || "your business"} website is officially online and ready to welcome customers. That moment when a small business gets its own website - enjoy it!`,
+      urlLabel: "🔗 Your website address:",
+      p2: "What now? Share the link everywhere - WhatsApp, Instagram, your group chats. Every share = another potential customer. 😉",
+      btnView: "View your live site 👀",
+      btnDash: "Go to dashboard",
+      referral: "🎁 Want a free month? For every friend who joins through you and becomes a subscriber - a month on us. Your invite link is in the dashboard.",
+    },
+    ar: {
+      subject: "🎉 موقعك أصبح مباشرًا الآن!",
+      preview: "حان وقت مشاركته مع الجميع",
+      h1: "تم - موقعك أصبح مباشرًا! 🎉🚀",
+      p1: `${nm ? `مرحبًا ${nm}! ` : "مرحبًا! "}موقع ${bn || "عملك"} أصبح مباشرًا رسميًا وجاهز لاستقبال العملاء. استمتع بهذه اللحظة!`,
+      urlLabel: "🔗 عنوان موقعك:",
+      p2: "ماذا الآن؟ شارك الرابط في كل مكان - واتساب، إنستغرام، مجموعاتك. كل مشاركة = عميل محتمل آخر. 😉",
+      btnView: "عرض موقعك المباشر 👀",
+      btnDash: "لوحة التحكم",
+      referral: "🎁 تريد شهرًا مجانيًا؟ عن كل صديق ينضم عبرك ويصبح مشتركًا - شهر مجاني. رابط الدعوة في لوحة التحكم.",
+    },
+    fr: {
+      subject: "🎉 C'est en ligne ! Votre site est publié",
+      preview: "Il est temps de le partager",
+      h1: "Ça y est, vous êtes en ligne ! 🎉🚀",
+      p1: `${nm ? `Bonjour ${nm} ! ` : "Bonjour ! "}Le site de ${bn || "votre entreprise"} est officiellement en ligne et prêt à accueillir des clients. Profitez de ce moment !`,
+      urlLabel: "🔗 L'adresse de votre site :",
+      p2: "Et maintenant ? Partagez le lien partout - WhatsApp, Instagram, vos groupes. Chaque partage = un client potentiel de plus. 😉",
+      btnView: "Voir votre site en ligne 👀",
+      btnDash: "Tableau de bord",
+      referral: "🎁 Envie d'un mois offert ? Pour chaque ami qui s'inscrit via vous et devient abonné - un mois offert. Votre lien d'invitation est dans le tableau de bord.",
+    },
+    ru: {
+      subject: "🎉 Ваш сайт онлайн!",
+      preview: "Самое время поделиться им",
+      h1: "Готово - вы онлайн! 🎉🚀",
+      p1: `${nm ? `Привет, ${nm}! ` : "Привет! "}Сайт ${bn || "вашего бизнеса"} официально опубликован и готов принимать клиентов. Насладитесь этим моментом!`,
+      urlLabel: "🔗 Адрес вашего сайта:",
+      p2: "Что дальше? Делитесь ссылкой везде - WhatsApp, Instagram, ваши чаты. Каждый репост = ещё один потенциальный клиент. 😉",
+      btnView: "Открыть ваш сайт 👀",
+      btnDash: "Панель управления",
+      referral: "🎁 Хотите бесплатный месяц? За каждого друга, который присоединится по вашей ссылке и оформит подписку - месяц бесплатно. Ссылка-приглашение в панели управления.",
+    },
+  }[lang];
+  return {
+    subject: T.subject,
+    html: renderEmail({
+      sender: siangoSender(dashUrl),
+      previewText: T.preview,
+      lang,
+      bodyHtml:
+        h1(T.h1, dir) +
+        p(T.p1, dir) +
+        (site ? emailHighlight(`${T.urlLabel}<br><b>${ltr(site)}</b>`, "#3B976C", dir) : "") +
+        p(T.p2, dir) +
+        emailButton(T.btnView, site || dashUrl, BRAND) +
+        emailButton(T.btnDash, dashUrl, "#555555") +
+        emailHighlight(T.referral, "#3B976C", dir),
+    }),
+  };
+};
 
 /** 5. Subscription charge succeeded (receipt). */
 export const paymentReceipt = (c: PlatformCtx): BuiltEmail => ({
@@ -263,32 +332,90 @@ export const orderConfirmationCustomer = (
   }),
 });
 
-/** Domain registered successfully - includes ownership + connection guide. */
-export const domainPurchased = (c: PlatformCtx): BuiltEmail => ({
-  subject: `הדומיין ${c.domainName || "שלך"} מוכן! 🎉`,
-  html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
-    previewText: "הדומיין נרשם על שמך ומתחבר לאתר",
-    bodyHtml:
-      h1("הדומיין שלך נרשם בהצלחה! 🎉") +
-      p(`${hi(c)}הדומיין <b>${ltr(c.domainName || "")}</b> רשום עכשיו <b>על שמך${c.registrantName ? ` (${c.registrantName})` : ""}</b> - אתם הבעלים הרשומים שלו. בחירה מצוינת לכתובת אמיתית ומקצועית ל${biz(c)}.`) +
-      emailHighlight(
-        "🔌 <b>מה קורה עכשיו - החיבור לאתר:</b><br/>" +
-        "כיוונּו את הדומיין לאתר שלכם אוטומטית. החיבור ברשת (DNS) יכול לקחת עד 24-48 שעות להתפשט בכל העולם - בזמן הזה ייתכן שהכתובת עדיין לא תיפתח אצל כולם, וזה נורמלי לגמרי. אין צורך לעשות כלום מצדכם." +
-        (c.siteHost ? `<br/>הכתובת שאליה מחובר הדומיין: <span dir="ltr">${ltr(c.siteHost)}</span>` : "")
-      ) +
-      (c.expiryDate
-        ? emailHighlight(
-            `📅 <b>חידוש:</b> הדומיין תקף עד <b>${ltr(c.expiryDate)}</b>. ` +
-            (c.autoRenew === false
-              ? "בחרתם ללא חידוש אוטומטי - נשלח לכם תזכורת לפני התפוגה כדי שתחליטו אם להאריך. דומיין שלא יחודש ישוחרר וייתכן שלא נוכל להחזיר אותו."
-              : "החידוש האוטומטי פעיל - נחדש מדי שנה כדי שלא תאבדו את הכתובת. אפשר לבטל בכל עת מהדשבורד.")
-          )
-        : "") +
-      p("שאלה על הדומיין? פשוט השב/י למייל הזה - אנחנו כאן. 🙏") +
-      emailButton("לניהול הדומיין", dash(c), BRAND),
-  }),
-});
+/** Domain registered successfully - ownership + connection guide. Localized. */
+export const domainPurchased = (c: PlatformCtx): BuiltEmail => {
+  const lang = c.lang || "he";
+  const dir = dirForLang(lang);
+  const dn = ltr(c.domainName || "");
+  const reg = c.registrantName ? ` (${c.registrantName})` : "";
+  const bn = c.businessName;
+  const greet = { he: c.firstName ? `היי ${c.firstName}! ` : "היי! ", en: c.firstName ? `Hi ${c.firstName}! ` : "Hi! ", ar: c.firstName ? `مرحبًا ${c.firstName}! ` : "مرحبًا! ", fr: c.firstName ? `Bonjour ${c.firstName} ! ` : "Bonjour ! ", ru: c.firstName ? `Привет, ${c.firstName}! ` : "Привет! " }[lang];
+  const host = c.siteHost;
+  const date = c.expiryDate ? ltr(c.expiryDate) : "";
+  const autoOff = c.autoRenew === false;
+  const T = {
+    he: {
+      subject: `הדומיין ${c.domainName || "שלך"} מוכן! 🎉`,
+      preview: "הדומיין נרשם על שמך ומתחבר לאתר",
+      h1: "הדומיין שלך נרשם בהצלחה! 🎉",
+      p1: `${greet}הדומיין <b>${dn}</b> רשום עכשיו <b>על שמך${reg}</b> - אתם הבעלים הרשומים שלו. בחירה מצוינת לכתובת אמיתית ומקצועית ל${bn || "העסק שלכם"}.`,
+      connect: "🔌 <b>מה קורה עכשיו - החיבור לאתר:</b><br/>כיוונּו את הדומיין לאתר שלכם אוטומטית. החיבור ברשת (DNS) יכול לקחת עד 24-48 שעות להתפשט בכל העולם - בזמן הזה ייתכן שהכתובת עדיין לא תיפתח אצל כולם, וזה נורמלי לגמרי. אין צורך לעשות כלום מצדכם.",
+      hostLine: host ? `<br/>הכתובת שאליה מחובר הדומיין: <span dir="ltr">${ltr(host)}</span>` : "",
+      renew: `📅 <b>חידוש:</b> הדומיין תקף עד <b>${date}</b>. ` + (autoOff ? "בחרתם ללא חידוש אוטומטי - נשלח לכם תזכורת לפני התפוגה כדי שתחליטו אם להאריך. דומיין שלא יחודש ישוחרר וייתכן שלא נוכל להחזיר אותו." : "החידוש האוטומטי פעיל - נחדש מדי שנה כדי שלא תאבדו את הכתובת. אפשר לבטל בכל עת מהדשבורד."),
+      pq: "שאלה על הדומיין? פשוט השב/י למייל הזה - אנחנו כאן. 🙏",
+      btn: "לניהול הדומיין",
+    },
+    en: {
+      subject: `Your domain ${c.domainName || ""} is ready! 🎉`,
+      preview: "Your domain is registered in your name and connecting to your site",
+      h1: "Your domain is registered! 🎉",
+      p1: `${greet}The domain <b>${dn}</b> is now registered <b>in your name${reg}</b> - you are its registered owner. A great choice for a real, professional address for ${bn || "your business"}.`,
+      connect: "🔌 <b>What happens now - connecting to your site:</b><br/>We pointed the domain to your site automatically. DNS propagation can take up to 24-48 hours worldwide - during that time the address may not open for everyone yet, which is completely normal. Nothing to do on your end.",
+      hostLine: host ? `<br/>The domain is connected to: <span dir="ltr">${ltr(host)}</span>` : "",
+      renew: `📅 <b>Renewal:</b> The domain is valid until <b>${date}</b>. ` + (autoOff ? "You chose no auto-renewal - we'll remind you before it expires so you can decide whether to extend. A domain that isn't renewed is released and may not be recoverable." : "Auto-renewal is on - we'll renew it every year so you don't lose the address. You can cancel anytime from the dashboard."),
+      pq: "A question about the domain? Just reply to this email - we're here. 🙏",
+      btn: "Manage your domain",
+    },
+    ar: {
+      subject: `نطاقك ${c.domainName || ""} جاهز! 🎉`,
+      preview: "تم تسجيل نطاقك باسمك وجارٍ ربطه بموقعك",
+      h1: "تم تسجيل نطاقك بنجاح! 🎉",
+      p1: `${greet}النطاق <b>${dn}</b> مسجَّل الآن <b>باسمك${reg}</b> - أنت المالك المسجَّل له. اختيار ممتاز لعنوان حقيقي واحترافي لـ${bn || "عملك"}.`,
+      connect: "🔌 <b>ماذا يحدث الآن - الربط بموقعك:</b><br/>وجّهنا النطاق إلى موقعك تلقائيًا. قد يستغرق انتشار الـ DNS حتى 24-48 ساعة حول العالم - خلال هذه الفترة قد لا يفتح العنوان لدى الجميع بعد، وهذا أمر طبيعي تمامًا. لا حاجة لأي إجراء من جانبك.",
+      hostLine: host ? `<br/>النطاق مرتبط بـ: <span dir="ltr">${ltr(host)}</span>` : "",
+      renew: `📅 <b>التجديد:</b> النطاق صالح حتى <b>${date}</b>. ` + (autoOff ? "اخترت عدم التجديد التلقائي - سنذكّرك قبل انتهاء الصلاحية لتقرر التمديد. النطاق غير المجدَّد يُحرَّر وقد لا يمكن استرجاعه." : "التجديد التلقائي مُفعَّل - سنجدده كل عام كي لا تفقد العنوان. يمكنك الإلغاء في أي وقت من لوحة التحكم."),
+      pq: "سؤال حول النطاق؟ فقط رُدّ على هذا البريد - نحن هنا. 🙏",
+      btn: "إدارة النطاق",
+    },
+    fr: {
+      subject: `Votre domaine ${c.domainName || ""} est prêt ! 🎉`,
+      preview: "Votre domaine est enregistré à votre nom et se connecte à votre site",
+      h1: "Votre domaine est enregistré ! 🎉",
+      p1: `${greet}Le domaine <b>${dn}</b> est désormais enregistré <b>à votre nom${reg}</b> - vous en êtes le propriétaire enregistré. Un excellent choix pour une adresse réelle et professionnelle pour ${bn || "votre entreprise"}.`,
+      connect: "🔌 <b>Que se passe-t-il maintenant - la connexion à votre site :</b><br/>Nous avons dirigé le domaine vers votre site automatiquement. La propagation DNS peut prendre jusqu'à 24-48 heures dans le monde - pendant ce temps, l'adresse peut ne pas s'ouvrir pour tout le monde, ce qui est tout à fait normal. Rien à faire de votre côté.",
+      hostLine: host ? `<br/>Le domaine est connecté à : <span dir="ltr">${ltr(host)}</span>` : "",
+      renew: `📅 <b>Renouvellement :</b> Le domaine est valable jusqu'au <b>${date}</b>. ` + (autoOff ? "Vous avez choisi sans renouvellement automatique - nous vous rappellerons avant l'expiration pour décider de prolonger. Un domaine non renouvelé est libéré et peut être irrécupérable." : "Le renouvellement automatique est activé - nous le renouvellerons chaque année pour ne pas perdre l'adresse. Vous pouvez annuler à tout moment depuis le tableau de bord."),
+      pq: "Une question sur le domaine ? Répondez simplement à cet e-mail - nous sommes là. 🙏",
+      btn: "Gérer le domaine",
+    },
+    ru: {
+      subject: `Ваш домен ${c.domainName || ""} готов! 🎉`,
+      preview: "Домен зарегистрирован на ваше имя и подключается к сайту",
+      h1: "Ваш домен зарегистрирован! 🎉",
+      p1: `${greet}Домен <b>${dn}</b> теперь зарегистрирован <b>на ваше имя${reg}</b> - вы его зарегистрированный владелец. Отличный выбор для настоящего профессионального адреса для ${bn || "вашего бизнеса"}.`,
+      connect: "🔌 <b>Что происходит сейчас - подключение к сайту:</b><br/>Мы автоматически направили домен на ваш сайт. Распространение DNS может занять до 24-48 часов по всему миру - в это время адрес может открываться не у всех, и это совершенно нормально. От вас ничего не требуется.",
+      hostLine: host ? `<br/>Домен подключён к: <span dir="ltr">${ltr(host)}</span>` : "",
+      renew: `📅 <b>Продление:</b> Домен действителен до <b>${date}</b>. ` + (autoOff ? "Вы выбрали без автопродления - мы напомним перед истечением срока, чтобы вы решили о продлении. Непродлённый домен освобождается, и вернуть его может быть невозможно." : "Автопродление включено - мы будем продлевать его каждый год, чтобы вы не потеряли адрес. Отменить можно в любой момент в панели управления."),
+      pq: "Вопрос о домене? Просто ответьте на это письмо - мы на связи. 🙏",
+      btn: "Управление доменом",
+    },
+  }[lang];
+  return {
+    subject: T.subject,
+    html: renderEmail({
+      sender: siangoSender(c.dashboardUrl),
+      previewText: T.preview,
+      lang,
+      bodyHtml:
+        h1(T.h1, dir) +
+        p(T.p1, dir) +
+        emailHighlight(T.connect + T.hostLine, "#3B976C", dir) +
+        (c.expiryDate ? emailHighlight(T.renew, "#3B976C", dir) : "") +
+        p(T.pq, dir) +
+        emailButton(T.btn, dash(c), BRAND),
+    }),
+  };
+};
 
 /** Domain expiring soon - renewal reminder. */
 export const domainExpiryReminder = (c: PlatformCtx): BuiltEmail => ({

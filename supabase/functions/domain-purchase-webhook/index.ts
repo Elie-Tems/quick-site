@@ -179,14 +179,22 @@ Deno.serve(async (req) => {
       const { data: b } = await admin.from("businesses").select("name").eq("id", order.business_id).maybeSingle();
       businessName = (b as any)?.name;
     }
+    // Send in the buyer's signup language (captured in user_metadata).
+    let lang: any = "he";
+    if (order.user_id) {
+      const { data: u } = await admin.auth.admin.getUserById(order.user_id);
+      lang = (u?.user?.user_metadata?.preferred_language as any) || "he";
+    }
+    const localeMap: Record<string, string> = { he: "he-IL", en: "en-US", ar: "ar", fr: "fr-FR", ru: "ru-RU" };
     const mail = PLATFORM_EMAILS.domainPurchased({
       businessName,
       domainName: order.domain,
       registrantName: order.reg_name || undefined,
-      expiryDate: new Date(expiresAt).toLocaleDateString("he-IL"),
+      expiryDate: new Date(expiresAt).toLocaleDateString(localeMap[lang] || "he-IL"),
       autoRenew: order.auto_renew,
       siteHost,
       dashboardUrl: `${APP_URL()}/dashboard`,
+      lang,
     });
     await sendViaResend({ to: order.reg_email, subject: mail.subject, html: mail.html, fromName: "Siango" });
   }

@@ -224,10 +224,13 @@ Deno.serve(async (req) => {
   try {
     if (user.email && business) {
       const appUrl = Deno.env.get("VITE_APP_URL") || "https://siango.app";
+      // Send in the language the merchant signed up in (captured in user_metadata).
+      const lang = (user.user_metadata?.preferred_language as any) || "he";
       const { subject, html } = PLATFORM_EMAILS.siteReady({
         businessName: business.name,
         siteUrl: `${appUrl}/store/${business.slug}`,
         dashboardUrl: `${appUrl}/dashboard`,
+        lang,
       });
       await sendViaResend({ to: user.email, subject, html });
     }
