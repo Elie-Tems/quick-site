@@ -17,9 +17,7 @@ import ResetPassword from "./pages/ResetPassword";
 import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
 import StoreFront from "./pages/StoreFront";
-import StoreFrontV2 from "./pages/StoreFrontV2";
 import StoreAboutPage from "./pages/StoreAboutPage";
-import StoreAboutPageV2 from "./pages/StoreAboutPageV2";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Accessibility from "./pages/Accessibility";
@@ -90,8 +88,6 @@ const App = () => {
                   <Route path="/preview/onboarding-v2" element={<PreviewOnboardingV2 />} />
                   <Route path="/store" element={<StoreFront />} />
                   <Route path="/store/:slug" element={<StoreFront />} />
-                  <Route path="/store/:slug/v2" element={<StoreFrontV2 />} />
-                  <Route path="/store/:slug/v2/about" element={<StoreAboutPageV2 />} />
                   <Route path="/store/:slug/about" element={<StoreAboutPage />} />
                   <Route path="/store/:slug/terms" element={<StoreLegalPage docType="terms" />} />
                   <Route path="/store/:slug/privacy" element={<StoreLegalPage docType="privacy" />} />
