@@ -40,6 +40,31 @@ function parseCaption(caption: string): { name: string; price: number | null; de
   return { name, price, description: null };
 }
 
+/** AI service-bot reply: generate a response to a customer using the merchant's
+ *  prompt, via the Lovable AI gateway (same as the rest of the app). Best-effort. */
+async function generateBotReply(botPrompt: string, customerMsg: string): Promise<string | null> {
+  const key = Deno.env.get("LOVABLE_API_KEY");
+  if (!key) return null;
+  try {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: `אתה נציג שירות בוואטסאפ של עסק. ענה קצר, אדיב ובעברית. הנחיות העסק:\n${botPrompt}\nאם אינך יודע - אמור שתעביר לבעל העסק.` },
+          { role: "user", content: customerMsg },
+        ],
+        max_tokens: 300,
+      }),
+    });
+    const j = await res.json().catch(() => ({}));
+    return j?.choices?.[0]?.message?.content?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return ack();
@@ -118,7 +143,9 @@ Deno.serve(async (req) => {
     }
 
     // --- 2. Inbound customer message to a merchant's number ---
-    const { data: acct } = await admin.from("whatsapp_accounts").select("business_id").eq("phone_number", `+${to.replace(/^\+/, "")}`).maybeSingle();
+    const { data: acct } = await admin.from("whatsapp_accounts")
+      .select("business_id, phone_number, bot_enabled, bot_prompt")
+      .eq("phone_number", `+${to.replace(/^\+/, "")}`).maybeSingle();
     const businessId = acct?.business_id;
     if (businessId && from) {
       const now = new Date().toISOString();
@@ -129,6 +156,20 @@ Deno.serve(async (req) => {
       await admin.from("whatsapp_messages").insert({
         business_id: businessId, contact_phone: from, direction: "in", body: bodyText, status: "delivered", category: "service",
       });
+
+      // AI service bot: if the merchant enabled it, auto-reply (within the 24h window).
+      const creds = twilioCreds();
+      if (acct?.bot_enabled && acct.bot_prompt && bodyText && creds && acct.phone_number) {
+        const reply = await generateBotReply(acct.bot_prompt, bodyText);
+        if (reply) {
+          const r = await sendWhatsAppText(creds, acct.phone_number, from, reply);
+          await admin.from("whatsapp_messages").insert({
+            business_id: businessId, contact_phone: from, direction: "out", body: reply,
+            status: r.ok ? (r.status || "sent") : "failed", category: "service",
+            provider_sid: r.sid || null, error: r.ok ? null : r.error || null,
+          });
+        }
+      }
     }
     return ack();
   } catch (e) {
