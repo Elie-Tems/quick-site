@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Globe, Loader2 } from "lucide-react";
+import { Globe, Loader2, Wallet, RefreshCw, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 /**
@@ -17,6 +17,31 @@ const AdminDomainSettings = () => {
       return data as { margin_percent: number; coupon_percent: number; usd_to_ils: number; max_price_ils: number } | null;
     },
   });
+
+  const { data: balance, refetch: refetchBalance } = useQuery({
+    queryKey: ["domain-provider-status"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("domain_provider_status").select("*").eq("provider", "openprovider").maybeSingle();
+      return data as { balance: number | null; currency: string | null; low_balance_alert_sent: boolean; checked_at: string | null } | null;
+    },
+  });
+  const [refreshingBalance, setRefreshingBalance] = useState(false);
+
+  const refreshBalance = async () => {
+    setRefreshingBalance(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("domain-balance-check");
+      if (error) throw error;
+      if (data?.ok === false) throw new Error(data?.error || "balance check failed");
+      await refetchBalance();
+      toast.success("היתרה עודכנה ✓");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "שגיאה בבדיקת היתרה");
+    } finally {
+      setRefreshingBalance(false);
+    }
+  };
 
   const [margin, setMargin] = useState("100");
   const [coupon, setCoupon] = useState("15");
@@ -85,6 +110,36 @@ const AdminDomainSettings = () => {
           <h2 className="text-xl font-bold text-foreground">תמחור דומיינים</h2>
           <p className="text-sm text-muted-foreground mt-0.5">קבע את אחוז הרווח והקופון. המחיר ללקוח מתעדכן אוטומטית בכל מקומות הרכישה.</p>
         </div>
+      </div>
+
+      {/* Openprovider reseller balance (low balance blocks customer purchases). */}
+      <div className={`rounded-xl border p-4 ${balance && balance.balance != null && balance.balance < 20 ? "border-destructive/40 bg-destructive/5" : "border-border bg-card"}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <Wallet className="w-5 h-5 text-primary" />
+            <div>
+              <div className="text-sm font-semibold text-foreground">יתרת Openprovider</div>
+              <div className="text-xs text-muted-foreground">
+                {balance?.balance != null
+                  ? <>{balance.currency || "USD"} <b className="text-foreground">{balance.balance}</b>{balance.checked_at ? ` · נבדק ${new Date(balance.checked_at).toLocaleString("he-IL")}` : ""}</>
+                  : "טרם נבדק"}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={refreshBalance}
+            disabled={refreshingBalance}
+            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 disabled:opacity-50 hover:bg-muted/50"
+          >
+            {refreshingBalance ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+            רענון
+          </button>
+        </div>
+        {balance && balance.balance != null && balance.balance < 20 && (
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-destructive">
+            <AlertTriangle className="w-3.5 h-3.5" /> יתרה נמוכה - רכישות דומיין עלולות להיכשל. כדאי לטעון יתרה.
+          </div>
+        )}
       </div>
 
       {isLoading ? (

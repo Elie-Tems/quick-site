@@ -45,3 +45,17 @@ verify_jwt = true
 # send-platform-email is called by the app (e.g. welcome after sign-up); requires a JWT.
 [functions.send-platform-email]
 verify_jwt = true
+
+# domain-purchase is called by the logged-in merchant to start a domain buy.
+[functions.domain-purchase]
+verify_jwt = true
+
+# domain-purchase-webhook is the iCount IPN (no Supabase JWT); it authenticates
+# via ICOUNT_WEBHOOK_SECRET (header or ?secret=), like icount-webhook.
+[functions.domain-purchase-webhook]
+verify_jwt = false
+
+# domain-balance-check is invoked by a daily cron (anon bearer) and by the admin
+# refresh button (user JWT); both send a valid JWT.
+[functions.domain-balance-check]
+verify_jwt = true

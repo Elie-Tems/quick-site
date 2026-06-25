@@ -38,6 +38,9 @@ export interface PlatformCtx {
   daysLeft?: number;
   domainName?: string;
   expiryDate?: string;
+  autoRenew?: boolean;
+  registrantName?: string;
+  siteHost?: string;
 }
 
 export interface BuiltEmail { subject: string; html: string; }
@@ -260,16 +263,29 @@ export const orderConfirmationCustomer = (
   }),
 });
 
-/** Domain registered successfully. */
+/** Domain registered successfully - includes ownership + connection guide. */
 export const domainPurchased = (c: PlatformCtx): BuiltEmail => ({
   subject: `הדומיין ${c.domainName || "שלך"} מוכן! 🎉`,
   html: renderEmail({
     sender: siangoSender(c.dashboardUrl),
-    previewText: "הדומיין נרשם בהצלחה ומחובר לאתר",
+    previewText: "הדומיין נרשם על שמך ומתחבר לאתר",
     bodyHtml:
       h1("הדומיין שלך נרשם בהצלחה! 🎉") +
-      p(`${hi(c)}הדומיין <b>${ltr(c.domainName || "")}</b> רשום עכשיו על שמך ומחובר אוטומטית לאתר של ${biz(c)}. כתובת אמיתית, מקצועית, משלך.`) +
-      (c.expiryDate ? emailHighlight(`📅 הדומיין תקף עד <b>${ltr(c.expiryDate)}</b> - נחדש אוטומטית כדי שלא תאבדו אותו.`) : "") +
+      p(`${hi(c)}הדומיין <b>${ltr(c.domainName || "")}</b> רשום עכשיו <b>על שמך${c.registrantName ? ` (${c.registrantName})` : ""}</b> - אתם הבעלים הרשומים שלו. בחירה מצוינת לכתובת אמיתית ומקצועית ל${biz(c)}.`) +
+      emailHighlight(
+        "🔌 <b>מה קורה עכשיו - החיבור לאתר:</b><br/>" +
+        "כיוונּו את הדומיין לאתר שלכם אוטומטית. החיבור ברשת (DNS) יכול לקחת עד 24-48 שעות להתפשט בכל העולם - בזמן הזה ייתכן שהכתובת עדיין לא תיפתח אצל כולם, וזה נורמלי לגמרי. אין צורך לעשות כלום מצדכם." +
+        (c.siteHost ? `<br/>הכתובת שאליה מחובר הדומיין: <span dir="ltr">${ltr(c.siteHost)}</span>` : "")
+      ) +
+      (c.expiryDate
+        ? emailHighlight(
+            `📅 <b>חידוש:</b> הדומיין תקף עד <b>${ltr(c.expiryDate)}</b>. ` +
+            (c.autoRenew === false
+              ? "בחרתם ללא חידוש אוטומטי - נשלח לכם תזכורת לפני התפוגה כדי שתחליטו אם להאריך. דומיין שלא יחודש ישוחרר וייתכן שלא נוכל להחזיר אותו."
+              : "החידוש האוטומטי פעיל - נחדש מדי שנה כדי שלא תאבדו את הכתובת. אפשר לבטל בכל עת מהדשבורד.")
+          )
+        : "") +
+      p("שאלה על הדומיין? פשוט השב/י למייל הזה - אנחנו כאן. 🙏") +
       emailButton("לניהול הדומיין", dash(c), BRAND),
   }),
 });
@@ -302,9 +318,38 @@ export const domainExpiringUnpaid = (c: PlatformCtx): BuiltEmail => ({
   }),
 });
 
+/** INTERNAL admin alert: a paid domain order could not be registered (e.g. empty
+ *  reseller balance). The customer already paid - needs urgent manual handling. */
+export const domainFundsAlert = (c: PlatformCtx & { reason?: string }): BuiltEmail => ({
+  subject: `🔴 דחוף: רכישת דומיין נכשלה - ${c.domainName || ""}`,
+  html: renderEmail({
+    sender: siangoSender(c.dashboardUrl),
+    previewText: "לקוח שילם אך הרישום נכשל - טיפול ידני מיידי",
+    bodyHtml:
+      h1("רישום דומיין נכשל אחרי תשלום 🔴") +
+      p(`לקוח שילם על הדומיין <b>${ltr(c.domainName || "")}</b>${c.businessName ? ` (עסק: ${c.businessName})` : ""} אך הרישום ב-Openprovider נכשל.`) +
+      emailHighlight(`<b>סיבה:</b> ${(c as any).reason || "לא ידועה"}<br/>${c.amountIls != null ? `סכום שנגבה: ${ils(c.amountIls)}<br/>` : ""}פעולה נדרשת: לטעון יתרה ב-Openprovider ולרשום ידנית, או להחזיר ללקוח.`) +
+      emailButton("לחשבון Openprovider", "https://rcp.openprovider.eu/", "#b91c1c"),
+  }),
+});
+
+/** INTERNAL admin alert: Openprovider reseller balance is running low. */
+export const domainLowBalance = (c: PlatformCtx & { balance?: number; currency?: string }): BuiltEmail => ({
+  subject: `⚠️ יתרת Openprovider נמוכה`,
+  html: renderEmail({
+    sender: siangoSender(c.dashboardUrl),
+    previewText: "כדאי לטעון יתרה כדי לא לחסום רכישות דומיין",
+    bodyHtml:
+      h1("יתרת Openprovider נמוכה ⚠️") +
+      p(`היתרה בחשבון ה-reseller ירדה ל-<b>${(c as any).currency || "USD"} ${(c as any).balance ?? "?"}</b>.`) +
+      emailHighlight("כשאין יתרה - רכישות דומיין של לקוחות ייכשלו אחרי שהם כבר שילמו. כדאי לטעון יתרה עכשיו."),
+  }),
+});
+
 export const PLATFORM_EMAILS = {
   accountWelcome, onboardingAbandoned1, onboardingAbandoned2, siteReady,
   paymentReceipt, paymentFailed, paymentReminder, siteFrozen,
   deletionWarning, siteDeleted, siteReactivated, subscriptionCancelled,
   newOrderMerchant, domainPurchased, domainExpiryReminder, domainExpiringUnpaid,
+  domainFundsAlert, domainLowBalance,
 } as const;

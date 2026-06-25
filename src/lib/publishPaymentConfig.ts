@@ -29,6 +29,35 @@ export function buildIcountCheckoutUrl(baseUrl: string, sessionToken: string, bu
   }
 }
 
+/** Base URL of the iCount payment page used for domain purchases (variable amount).
+ *  Configure the page in iCount to take the amount from the `sum` URL parameter. */
+export function getDomainPaymentBaseUrl(): string {
+  return (import.meta.env.VITE_ICOUNT_DOMAIN_PAYMENT_BASE_URL || "").trim();
+}
+
+/** Build the iCount domain checkout URL: appends the order identifiers + amount so
+ *  the IPN (domain-purchase-webhook) can match the payment to the order. */
+export function buildIcountDomainCheckoutUrl(
+  baseUrl: string,
+  opts: { sessionToken: string; orderId: string; businessId?: string; sumIls?: number },
+): string {
+  const trimmed = baseUrl.trim();
+  if (!trimmed) return "";
+  try {
+    const u = trimmed.includes("://") ? new URL(trimmed) : new URL(`https://${trimmed}`);
+    u.searchParams.set("session_token", opts.sessionToken);
+    u.searchParams.set("order_id", opts.orderId);
+    if (opts.businessId) u.searchParams.set("business_id", opts.businessId);
+    if (opts.sumIls != null) u.searchParams.set("sum", String(opts.sumIls));
+    return u.toString();
+  } catch {
+    let url = `${trimmed}${trimmed.includes("?") ? "&" : "?"}session_token=${encodeURIComponent(opts.sessionToken)}&order_id=${encodeURIComponent(opts.orderId)}`;
+    if (opts.businessId) url += `&business_id=${encodeURIComponent(opts.businessId)}`;
+    if (opts.sumIls != null) url += `&sum=${encodeURIComponent(String(opts.sumIls))}`;
+    return url;
+  }
+}
+
 /** Get AI credit payment URL by package ID */
 export function getAICreditPaymentUrl(packageId: string): string {
   switch (packageId) {

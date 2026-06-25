@@ -1,19 +1,35 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Globe } from "lucide-react";
-import { toast } from "sonner";
 import DomainSearch from "@/components/domains/DomainSearch";
+import DomainPurchaseDialog from "@/components/domains/DomainPurchaseDialog";
 
 interface Props {
   businessId?: string;
 }
 
 /**
- * Merchant Domains screen: search + buy a domain, and see the domains already
- * registered for this store. Purchase flow is wired once Openprovider API access
- * is approved.
+ * Merchant Domains screen: search + buy a domain (payment-first via iCount; the
+ * domain is registered on the customer's name after payment), and see the
+ * domains already registered for this store.
  */
 const DashboardDomains = ({ businessId }: Props) => {
+  const [buying, setBuying] = useState<{ domain: string; price: number | null } | null>(null);
+
+  const { data: biz } = useQuery({
+    queryKey: ["domain-biz-prefill", businessId],
+    enabled: !!businessId,
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("businesses")
+        .select("name, email, phone")
+        .eq("id", businessId)
+        .maybeSingle();
+      return data as { name?: string; email?: string; phone?: string } | null;
+    },
+  });
+
   const { data: owned } = useQuery({
     queryKey: ["my-domains", businessId],
     enabled: !!businessId,
@@ -27,9 +43,8 @@ const DashboardDomains = ({ businessId }: Props) => {
     },
   });
 
-  const onBuy = (domain: string) => {
-    // Purchase goes live once Openprovider API access is enabled on the account.
-    toast.info(`עוד רגע נוכל לרכוש את ${domain} בקליק - אנחנו משלימים את החיבור לרכישה.`);
+  const onBuy = (domain: string, priceIls: number | null) => {
+    setBuying({ domain, price: priceIls });
   };
 
   return (
@@ -62,6 +77,17 @@ const DashboardDomains = ({ businessId }: Props) => {
             ))}
           </div>
         </div>
+      )}
+
+      {buying && (
+        <DomainPurchaseDialog
+          open={!!buying}
+          onOpenChange={(o) => !o && setBuying(null)}
+          domain={buying.domain}
+          priceIls={buying.price}
+          businessId={businessId}
+          prefill={{ name: biz?.name, email: biz?.email, phone: biz?.phone }}
+        />
       )}
     </div>
   );
