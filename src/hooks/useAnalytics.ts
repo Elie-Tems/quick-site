@@ -21,7 +21,7 @@ export const useAnalytics = (
 
       let query = supabase
         .from("page_views")
-        .select("*")
+        .select("visitor_id, created_at")
         .eq("business_id", businessId);
 
       if (startDate) {
@@ -34,7 +34,7 @@ export const useAnalytics = (
         query = query.lte("created_at", endOfDay.toISOString());
       }
 
-      const { data, error } = await query.order("created_at", { ascending: true });
+      const { data, error } = await query.order("created_at", { ascending: true }).limit(50000);
 
       if (error) throw error;
 
@@ -61,7 +61,7 @@ export const useAnalytics = (
         viewsByDate,
       };
     },
-    enabled: false, // DISABLED - causes infinite loading, investigate RLS policy performance
+    enabled: !!businessId, // re-enabled: the page_views owner RLS policy was bugged (compared owner_id to auth.uid()); fixed + now selects only needed cols with a cap
     retry: 2,
     staleTime: 60000,
     gcTime: 300000,
