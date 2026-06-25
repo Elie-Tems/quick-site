@@ -1,0 +1,31 @@
+// Affiliate signup links for our payment/billing partners. When a merchant
+// opens an account through these, the partner attributes it to us (and we log
+// the referral on our side). Fill `url` for Cardcom/HYP once their personal
+// affiliate links arrive (Cardcom: provided after signing; HYP: from Rachel).
+export interface PartnerLink {
+  id: string;
+  name: string;
+  url: string | null; // affiliate URL; null = link not received yet
+  blurb: string;
+}
+
+export const PARTNER_LINKS: PartnerLink[] = [
+  {
+    id: "cardcom",
+    name: "Cardcom",
+    url: null,
+    blurb: "סליקת אשראי מתקדמת. נציג Cardcom ייצור איתך קשר להקמה - בלי התעסקות מצדך.",
+  },
+  {
+    id: "hyp",
+    name: "HYP (היפ)",
+    url: null,
+    blurb: "פתרון סליקה מלא, אפליקציה לניהול וחשבוניות אוטומטיות.",
+  },
+  {
+    id: "icount",
+    name: "iCount",
+    url: "https://www.icount.co.il/r?aff=862330",
+    blurb: "חשבוניות והנהלת חשבונות אוטומטית - ישירות מהמערכת.",
+  },
+];

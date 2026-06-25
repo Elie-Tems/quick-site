@@ -49,7 +49,7 @@ const PARTNERS: Partner[] = [
   {
     key: "icount",
     name: "iCount",
-    match: [],
+    match: ["icount"],
     commission: "15% ממה ש-iCount מקבל",
     model: "חוזר",
     qualifying: "דרך קוד שותף 862330",
@@ -71,29 +71,35 @@ const PARTNERS: Partner[] = [
   },
 ];
 
-const usePartnerCounts = () =>
+const tally = (rows: Array<Record<string, unknown>> | null, key: string) => {
+  const c: Record<string, number> = {};
+  (rows || []).forEach((r) => {
+    const p = String(r[key] || "").toLowerCase().trim();
+    if (p) c[p] = (c[p] || 0) + 1;
+  });
+  return c;
+};
+
+const usePartnerStats = () =>
   useQuery({
-    queryKey: ["partner-provider-counts"],
+    queryKey: ["partner-stats"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("businesses")
-        .select("payment_provider")
-        .not("payment_provider", "is", null)
-        .limit(10000);
-      const counts: Record<string, number> = {};
-      (data || []).forEach((r: { payment_provider: string | null }) => {
-        const p = (r.payment_provider || "").toLowerCase().trim();
-        if (p) counts[p] = (counts[p] || 0) + 1;
-      });
-      return counts;
+      const [biz, refs] = await Promise.all([
+        supabase.from("businesses").select("payment_provider").not("payment_provider", "is", null).limit(10000),
+        (supabase as any).from("partner_referrals").select("provider").limit(20000),
+      ]);
+      return {
+        connected: tally(biz.data as Array<Record<string, unknown>>, "payment_provider"),
+        referred: tally(refs.data as Array<Record<string, unknown>>, "provider"),
+      };
     },
   });
 
 const AdminPartnerEarnings = () => {
-  const { data: counts, isLoading } = usePartnerCounts();
+  const { data, isLoading } = usePartnerStats();
 
-  const countFor = (p: Partner) =>
-    p.match.reduce((sum, m) => sum + (counts?.[m] || 0), 0);
+  const referredFor = (p: Partner) => p.match.reduce((s, m) => s + (data?.referred?.[m] || 0), 0);
+  const connectedFor = (p: Partner) => p.match.reduce((s, m) => s + (data?.connected?.[m] || 0), 0);
 
   return (
     <div className="space-y-5" dir="rtl">
@@ -109,8 +115,9 @@ const AdminPartnerEarnings = () => {
 
       <div className="grid gap-4 md:grid-cols-2">
         {PARTNERS.map((p) => {
-          const n = countFor(p);
-          const estimate = p.perMerchant != null ? n * p.perMerchant : null;
+          const referred = referredFor(p);
+          const connected = connectedFor(p);
+          const estimate = p.perMerchant != null ? referred * p.perMerchant : null;
           return (
             <div key={p.key} className="rounded-xl border border-border bg-card p-5 space-y-3">
               <div className="flex items-center justify-between">
@@ -120,15 +127,15 @@ const AdminPartnerEarnings = () => {
 
               <div className="flex items-end justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-foreground">
-                    {isLoading ? "…" : p.match.length ? n : "—"}
+                  <div className="text-2xl font-bold text-foreground">{isLoading ? "…" : referred}</div>
+                  <div className="text-xs text-muted-foreground">
+                    הופנו דרכנו{connected ? ` · ${connected} מחוברות` : ""}
                   </div>
-                  <div className="text-xs text-muted-foreground">חנויות מחוברות דרכנו</div>
                 </div>
                 {estimate != null && (
                   <div className="text-left">
                     <div className="text-2xl font-bold text-primary">₪{estimate.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">הערכה (חד-פעמי)</div>
+                    <div className="text-xs text-muted-foreground">פוטנציאל (חד-פעמי)</div>
                   </div>
                 )}
               </div>
