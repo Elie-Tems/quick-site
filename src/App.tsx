@@ -41,6 +41,7 @@ import { getTenantSlug } from "@/lib/subdomain";
 import ShabbatGate from "@/components/ShabbatGate";
 import StoreLegalPage from "./pages/StoreLegalPage";
 import StoreUnsubscribe from "./pages/StoreUnsubscribe";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => {
   const tenantSlug = getTenantSlug();
 
   return (
+  <ErrorBoundary>
   <HelmetProvider>
     <LanguageProvider>
       <AccessibilityProvider>
@@ -117,6 +119,7 @@ const App = () => {
       </AccessibilityProvider>
     </LanguageProvider>
   </HelmetProvider>
+  </ErrorBoundary>
   );
 };
 
