@@ -18,13 +18,24 @@ Open work, roughly by priority.
 - Free exploration: date filters, drill-down, CSV export.
 - Recommended build order: Phase 1 = everything buildable from existing data (growth, health, marketplace, real-time, exploration); Phase 2 = SEO via GSC API; Phase 3 = CAC/ROI (needs ad spend) + geography (needs capture). Awaiting the user's final go + any must-have metric he adds.
 
-**2. iCount subscription billing - ACTIVE TOP PRIORITY (revenue-blocking).** The user explicitly said to handle this now ("אתה חייב לבדוק ולטפל בזה עכשיו!!!", "בוודאי"). Wire coupon application + verify the recurring (הו"ק) direct-debit actually charges every month even though the card is not stored with us. Investigate `icount-webhook` carefully; do NOT break existing charges; do NOT fake it. NOTE: deploying any function change here needs a fresh Supabase PAT (the old one was revoked) - ask the user for one before deploying.
+**2. iCount subscription billing - ACTIVE TOP PRIORITY (revenue-blocking).** The user explicitly said to handle this now ("אתה חייב לבדוק ולטפל בזה עכשיו!!!", "בוודאי").
+
+INVESTIGATION FINDINGS (2026-06-25): there is **NO iCount API integration and NO recurring-billing code anywhere**. Current flow is a ONE-TIME payment:
+- `src/lib/publishPaymentConfig.ts` builds a URL to an iCount **hosted page** (fixed ₪69) with session_token + business_id appended.
+- A `publish_checkout_sessions` row (status pending) is created; on payment, either `icount-webhook` (supabase/functions/icount-webhook/index.ts) fires -> marks session paid -> sets `businesses.is_published=true`, OR the merchant manually enters the iCount approval number in DashboardSubscription -> `finalize-publish` publishes.
+- `subscriptions` table has paid_until/status/cancel_at; `expire-subscriptions` function takes a site offline when it expires. But NOTHING recharges the card monthly. The "₪69/חודש" + cancel-dialog wording imply recurring, but it is not implemented. iCount holds the card (not us), per the user.
+
+PLAN options (do not fake; needs user input + a fresh PAT to deploy):
+- Option A (iCount-managed): set the iCount page up as a הו"ק/standing-order so iCount auto-charges monthly and fires the webhook each cycle; extend `icount-webhook` to handle RENEWAL events (extend paid_until, keep published) using a stable business/subscription reference.
+- Option B (we-managed via iCount API, also solves coupons): store the iCount customer/token at first charge; a scheduled function charges due subscriptions monthly via iCount's API with the amount we set (so a coupon can reduce it), then extends paid_until. Coupons cannot apply on the current fixed hosted page, so Option B is cleaner for coupons.
+
+NEED FROM USER before building: (a) a fresh Supabase PAT to deploy + set secrets; (b) iCount API credentials (CID/user/pass or API token), set as Supabase secrets, never pasted in chat; (c) confirmation of whether the current iCount page is one-time or already a הו"ק page, and the page/product id. Coupons UI exists (`AdminSubscriptionCoupons.tsx`) but is not wired to actual charging.
 
 **3. PayPlus end-to-end test** with a real test card. User action (Claude cannot enter card details).
 
 **4. Launch cleanup:** remove `/preview/*` routes before public launch (still used to show Daniel for now).
 
-**5. SEO sitemap:** add store pages to the sitemap by setting SUPABASE_URL + anon key as Cloudflare Pages env vars.
+**5. SEO sitemap - DONE (2026-06-25).** `functions/sitemap.xml.ts` already enumerated published stores; set `SUPABASE_URL` + `SUPABASE_ANON_KEY` as Cloudflare Pages secrets via `wrangler pages secret put` (no PAT needed - public values). siango.app/sitemap.xml now returns 29 entries (9 static + published stores x2). Google will pick them up on next crawl.
 
 **6. Multi-language emails - now WANTED (no longer deferred).** The user said "תעשה בכל 5 שפות" - translate the ~14 templates into 5 languages. Confirm the exact set with the user; likely Hebrew, English, Arabic, Russian + one more (French/Spanish) given the Israeli market. Pick language per recipient.
 
