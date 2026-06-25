@@ -121,18 +121,16 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
   /* ── Success ── */
   if (isSuccess) {
     return (
-      <div className="fixed inset-0 z-50 bg-background flex items-center justify-center p-4" dir="rtl">
-        <div className="text-center max-w-sm" role="status" aria-live="polite">
-          <CheckCircle className="w-10 h-10 text-foreground mx-auto mb-6" />
-          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-muted-foreground mb-3">ההזמנה התקבלה!</p>
-          <h2 className="text-xl font-bold text-foreground mb-3">תודה רבה</h2>
+      <div className="fixed inset-0 z-50 bg-gradient-to-b from-muted/40 to-background flex items-center justify-center p-4" dir="rtl">
+        <div className="text-center max-w-sm bg-card border border-border rounded-3xl shadow-2xl px-8 py-12" role="status" aria-live="polite">
+          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-primary" />
+          </div>
+          <h2 className="text-2xl font-extrabold text-foreground mb-2">ההזמנה התקבלה! 🎉</h2>
           <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-            {hasPayment ? 'התשלום התקבל בהצלחה. ניצור איתך קשר בהקדם.' : 'ניצור איתך קשר לתיאום התשלום.'}
+            {hasPayment ? 'התשלום התקבל בהצלחה. ניצור איתך קשר בהקדם.' : 'תודה רבה! ניצור איתך קשר לתיאום התשלום.'}
           </p>
-          <button
-            onClick={onBack}
-            className="text-[10px] font-bold tracking-[0.25em] uppercase border border-foreground/20 px-8 py-3 hover:bg-foreground hover:text-background transition-all"
-          >
+          <button onClick={onBack} className="rounded-2xl bg-primary text-primary-foreground font-bold px-8 py-3 hover:scale-[1.03] active:scale-95 transition-transform shadow-lg shadow-primary/25">
             חזרה לחנות
           </button>
         </div>
@@ -140,246 +138,139 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
     );
   }
 
+  const fieldCls = (err?: string) =>
+    `rounded-xl border-border bg-background h-12 px-4 text-[15px] focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary transition-shadow ${err ? 'border-destructive' : ''}`;
+  const lbl = "text-sm font-medium text-foreground mb-1.5 block";
+
   return (
     <>
-      <Helmet>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
 
-      <div className="fixed inset-0 z-50 bg-background overflow-y-auto" dir="rtl">
-        <div className="container max-w-lg py-10 px-4 md:px-6">
+      <div className="fixed inset-0 z-50 bg-gradient-to-b from-muted/30 to-background overflow-y-auto" dir="rtl">
+        <div className="container max-w-3xl py-8 px-4 md:px-6">
 
-          {/* ── Back ── */}
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors mb-10"
-            aria-label="חזרה לחנות"
-          >
-            <ArrowRight className="h-3.5 w-3.5" />
-            חזרה
+          <button onClick={onBack} className="inline-flex items-center gap-1.5 rounded-full bg-card border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:shadow-sm transition-all mb-6" aria-label="חזרה לחנות">
+            <ArrowRight className="h-4 w-4" /> חזרה לחנות
           </button>
 
-          {/* ── Header ── */}
-          <div className="flex items-baseline justify-between border-b border-foreground/10 pb-4 mb-8">
-            <h1 className="text-sm font-bold tracking-[0.2em] uppercase text-foreground">השלמת הזמנה</h1>
+          <div className="flex items-center gap-3 mb-7">
+            <div className="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center"><ShoppingBag className="h-5 w-5 text-primary" /></div>
+            <div>
+              <h1 className="text-2xl font-extrabold text-foreground leading-tight">השלמת הזמנה</h1>
+              <p className="text-sm text-muted-foreground">עוד כמה פרטים ואנחנו על זה 🚀</p>
+            </div>
           </div>
 
           <FormErrorSummary errors={errors} />
 
-          {/* ── Form ── */}
-          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+          <form onSubmit={handleSubmit} noValidate className="grid md:grid-cols-[1.45fr_1fr] gap-6 items-start">
             {/* Honeypot */}
             <div className="absolute -left-[9999px]" aria-hidden="true">
               <label htmlFor="company">Company</label>
               <input type="text" id="company" name="company" ref={honeypotRef} tabIndex={-1} autoComplete="off" />
             </div>
 
-            {/* Field helper */}
-            {(
-              [
-                { id: 'fullName', label: 'שם מלא', type: 'text', placeholder: 'הזן שם מלא', autoComplete: 'name', dir: undefined, ref: firstFieldRef },
+            {/* ── Details card ── */}
+            <div className="bg-card border border-border rounded-3xl shadow-sm p-6 space-y-5">
+              <h2 className="font-bold text-foreground text-lg">הפרטים שלך</h2>
+
+              {([
+                { id: 'fullName', label: 'שם מלא', type: 'text', placeholder: 'איך קוראים לך?', autoComplete: 'name', dir: undefined, ref: firstFieldRef },
                 { id: 'phone', label: 'טלפון', type: 'tel', placeholder: '050-0000000', autoComplete: 'tel', dir: 'ltr' as const, ref: undefined },
                 { id: 'email', label: 'אימייל', type: 'email', placeholder: 'email@example.com', autoComplete: 'email', dir: 'ltr' as const, ref: undefined },
-              ] as any[]
-            ).map(({ id, label, type, placeholder, autoComplete, dir, ref }) => (
-              <div key={id} className="space-y-1.5">
-                <label htmlFor={id} className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground">
-                  {label} *
-                </label>
-                <Input
-                  id={id}
-                  ref={ref}
-                  type={type}
-                  dir={dir}
-                  value={(formData as any)[id]}
-                  onChange={(e) => handleChange(id as keyof CheckoutData, e.target.value)}
-                  placeholder={placeholder}
-                  autoComplete={autoComplete}
-                  className={`rounded-none border-foreground/15 focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 ${(errors as any)[id] ? 'border-destructive' : ''}`}
-                  aria-invalid={!!(errors as any)[id]}
-                  required
-                />
-                {(errors as any)[id] && (
-                  <p className="text-xs text-destructive" role="alert">{(errors as any)[id]}</p>
-                )}
-              </div>
-            ))}
-
-            <div className="space-y-1.5">
-              <label htmlFor="notes" className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground">
-                הערות להזמנה
-              </label>
-              <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => handleChange('notes', e.target.value)}
-                placeholder="הערות נוספות (אופציונלי)"
-                rows={3}
-                className="rounded-none border-foreground/15 focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 resize-none"
-              />
-            </div>
-
-            {/* Delivery mode */}
-            {deliveryMode === 'pickup_and_delivery' && (
-              <div className="space-y-3">
-                <label className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground">
-                  אופן אספקה
-                </label>
-                <div className="flex gap-2">
-                  {(['pickup', 'delivery'] as const).map((method) => (
-                    <button
-                      key={method}
-                      type="button"
-                      onClick={() => setDeliveryMethod(method)}
-                      className={`flex-1 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase border transition-colors ${
-                        deliveryMethod === method
-                          ? 'border-foreground bg-foreground text-background'
-                          : 'border-foreground/15 text-muted-foreground hover:border-foreground/40'
-                      }`}
-                    >
-                      {method === 'pickup' ? 'איסוף עצמי' : 'משלוח'}
-                    </button>
-                  ))}
+              ] as any[]).map(({ id, label, type, placeholder, autoComplete, dir, ref }) => (
+                <div key={id}>
+                  <label htmlFor={id} className={lbl}>{label} *</label>
+                  <Input id={id} ref={ref} type={type} dir={dir} value={(formData as any)[id]} onChange={(e) => handleChange(id as keyof CheckoutData, e.target.value)} placeholder={placeholder} autoComplete={autoComplete} className={fieldCls((errors as any)[id])} aria-invalid={!!(errors as any)[id]} required />
+                  {(errors as any)[id] && <p className="text-xs text-destructive mt-1" role="alert">{(errors as any)[id]}</p>}
                 </div>
-                {deliveryMethod === 'delivery' && shippingCost > 0 && (
-                  <p className="text-[10px] tracking-wide text-muted-foreground">עלות משלוח: {formatPrice(shippingCost)}</p>
-                )}
-                {deliveryMethod === 'delivery' && (
-                  <div className="space-y-1.5">
-                    <label htmlFor="deliveryAddress" className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground">
-                      כתובת למשלוח *
-                    </label>
-                    <Input
-                      id="deliveryAddress"
-                      value={formData.deliveryAddress || ''}
-                      onChange={(e) => handleChange('deliveryAddress', e.target.value)}
-                      placeholder="רחוב, מספר בית, עיר"
-                      autoComplete="street-address"
-                      className={`rounded-none border-foreground/15 focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.deliveryAddress ? 'border-destructive' : ''}`}
-                    />
-                    {errors.deliveryAddress && (
-                      <p className="text-xs text-destructive" role="alert">{errors.deliveryAddress}</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Marketing opt-in (explicit consent, per Chok HaSpam) */}
-            <label className="flex items-start gap-2.5 cursor-pointer text-sm text-foreground/80">
-              <input
-                type="checkbox"
-                checked={marketingConsent}
-                onChange={(e) => setMarketingConsent(e.target.checked)}
-                className="mt-0.5 w-4 h-4 flex-shrink-0 accent-foreground"
-              />
-              <span>
-                אני מאשר/ת לקבל עדכונים והצעות בדוא"ל מ{businessName || 'העסק'}. ניתן להסיר בכל עת.
-                <span className="block text-xs text-muted-foreground mt-1">
-                  {databaseDisclosure(businessName || 'העסק')}
-                </span>
-              </span>
-            </label>
-
-            <FormConsentNotice />
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              aria-busy={isSubmitting}
-              className="w-full bg-foreground text-background py-4 text-[11px] font-bold tracking-[0.25em] uppercase hover:bg-foreground/85 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <ShoppingBag className="h-4 w-4" />
-                  {hasPayment ? `לתשלום - ${formatPrice(totalPrice)}` : 'שלח הזמנה'}
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* ── Order Summary ── */}
-          <section aria-labelledby="order-summary-title" className="mt-10 border-t border-foreground/10 pt-8">
-            <div className="flex items-center gap-3 mb-6">
-              <span id="order-summary-title" className="text-[10px] font-bold tracking-[0.3em] uppercase text-muted-foreground">
-                סיכום הזמנה
-              </span>
-              <div className="h-px flex-1 bg-foreground/10" />
-            </div>
-
-            <ul className="space-y-2.5 mb-5">
-              {items.map((item) => (
-                <li key={item.id} className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">{item.name} × {item.quantity}</span>
-                  <span className="text-xs font-medium tabular-nums">{formatPrice(item.price * item.quantity)}</span>
-                </li>
               ))}
-            </ul>
 
-            {/* Coupon */}
-            <div className="border-t border-foreground/10 pt-4 mb-4">
-              {appliedCoupon ? (
-                <div className="flex items-center justify-between py-2 px-3 border border-green-500/30 bg-green-50/50 dark:bg-green-950/20">
-                  <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
-                    <Ticket className="h-3.5 w-3.5" />
-                    <span className="text-[10px] font-bold tracking-[0.1em] uppercase">{appliedCoupon.coupon.code}</span>
-                    <span className="text-xs">(-{formatPrice(appliedCoupon.discount)})</span>
+              <div>
+                <label htmlFor="notes" className={lbl}>הערות להזמנה</label>
+                <Textarea id="notes" value={formData.notes} onChange={(e) => handleChange('notes', e.target.value)} placeholder="משהו שכדאי שנדע? (אופציונלי)" rows={3} className="rounded-xl border-border bg-background px-4 py-3 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary resize-none" />
+              </div>
+
+              {deliveryMode === 'pickup_and_delivery' && (
+                <div className="space-y-3">
+                  <label className={lbl}>אופן אספקה</label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {(['pickup', 'delivery'] as const).map((method) => (
+                      <button key={method} type="button" onClick={() => setDeliveryMethod(method)}
+                        className={`py-3 rounded-xl text-sm font-semibold border-2 transition-all ${deliveryMethod === method ? 'border-primary bg-primary/5 text-foreground' : 'border-border text-muted-foreground hover:border-primary/40'}`}>
+                        {method === 'pickup' ? '🏬 איסוף עצמי' : '🚚 משלוח'}
+                      </button>
+                    ))}
                   </div>
-                  <button type="button" onClick={handleRemoveCoupon} className="text-muted-foreground hover:text-foreground transition-colors">
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="קוד קופון"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      dir="ltr"
-                      className="rounded-none border-foreground/15 focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 text-xs"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleApplyCoupon}
-                      disabled={validateCoupon.isPending || !couponCode.trim()}
-                      className="px-4 border border-foreground/15 text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:border-foreground hover:text-foreground disabled:opacity-40 transition-colors whitespace-nowrap"
-                    >
-                      {validateCoupon.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "הפעל"}
-                    </button>
-                  </div>
-                  {couponError && <p className="text-xs text-destructive">{couponError}</p>}
+                  {deliveryMethod === 'delivery' && shippingCost > 0 && <p className="text-xs text-muted-foreground">עלות משלוח: {formatPrice(shippingCost)}</p>}
+                  {deliveryMethod === 'delivery' && (
+                    <div>
+                      <label htmlFor="deliveryAddress" className={lbl}>כתובת למשלוח *</label>
+                      <Input id="deliveryAddress" value={formData.deliveryAddress || ''} onChange={(e) => handleChange('deliveryAddress', e.target.value)} placeholder="רחוב, מספר בית, עיר" autoComplete="street-address" className={fieldCls(errors.deliveryAddress)} />
+                      {errors.deliveryAddress && <p className="text-xs text-destructive mt-1" role="alert">{errors.deliveryAddress}</p>}
+                    </div>
+                  )}
                 </div>
               )}
+
+              <label className="flex items-start gap-2.5 cursor-pointer text-sm text-foreground/80">
+                <input type="checkbox" checked={marketingConsent} onChange={(e) => setMarketingConsent(e.target.checked)} className="mt-0.5 w-4 h-4 flex-shrink-0 accent-primary" />
+                <span>אני מאשר/ת לקבל עדכונים והצעות בדוא"ל מ{businessName || 'העסק'}. ניתן להסיר בכל עת.
+                  <span className="block text-xs text-muted-foreground mt-1">{databaseDisclosure(businessName || 'העסק')}</span>
+                </span>
+              </label>
+              <FormConsentNotice />
             </div>
 
-            {/* Totals */}
-            <div className="space-y-2 border-t border-foreground/10 pt-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] tracking-wide text-muted-foreground">סכום ביניים</span>
-                <span className="text-xs tabular-nums">{formatPrice(subtotal)}</span>
+            {/* ── Sticky summary card ── */}
+            <div className="bg-card border border-border rounded-3xl shadow-lg p-6 md:sticky md:top-6 space-y-4">
+              <div className="flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" /><h2 className="font-bold text-foreground">סיכום הזמנה</h2></div>
+
+              <ul className="space-y-2.5 max-h-48 overflow-y-auto pl-1">
+                {items.map((item) => (
+                  <li key={item.id} className="flex items-center justify-between gap-2 text-sm">
+                    <span className="text-foreground/90 truncate">{item.name} <span className="text-muted-foreground">× {item.quantity}</span></span>
+                    <span className="font-semibold tabular-nums shrink-0">{formatPrice(item.price * item.quantity)}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="border-t border-border pt-4">
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between py-2 px-3 rounded-xl border border-primary/30 bg-primary/5">
+                    <div className="flex items-center gap-2 text-primary"><Ticket className="h-4 w-4" /><span className="text-sm font-bold">{appliedCoupon.coupon.code}</span><span className="text-xs">(-{formatPrice(appliedCoupon.discount)})</span></div>
+                    <button type="button" onClick={handleRemoveCoupon} className="text-muted-foreground hover:text-foreground transition-colors"><X className="h-4 w-4" /></button>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <div className="flex gap-2">
+                      <Input placeholder="קוד קופון" value={couponCode} onChange={(e) => setCouponCode(e.target.value.toUpperCase())} dir="ltr" className="rounded-xl border-border bg-background h-11 text-sm focus-visible:ring-2 focus-visible:ring-primary/30" />
+                      <button type="button" onClick={handleApplyCoupon} disabled={validateCoupon.isPending || !couponCode.trim()} className="px-4 rounded-xl bg-muted text-sm font-semibold text-foreground hover:bg-muted/70 disabled:opacity-40 transition-colors whitespace-nowrap">
+                        {validateCoupon.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "הפעל"}
+                      </button>
+                    </div>
+                    {couponError && <p className="text-xs text-destructive">{couponError}</p>}
+                  </div>
+                )}
               </div>
-              {discount > 0 && (
-                <div className="flex items-center justify-between text-green-600">
-                  <span className="text-[10px] tracking-wide">הנחה</span>
-                  <span className="text-xs tabular-nums">-{formatPrice(discount)}</span>
+
+              <div className="space-y-2 border-t border-border pt-4 text-sm">
+                <div className="flex items-center justify-between text-muted-foreground"><span>סכום ביניים</span><span className="tabular-nums">{formatPrice(subtotal)}</span></div>
+                {discount > 0 && <div className="flex items-center justify-between text-primary"><span>הנחה</span><span className="tabular-nums">-{formatPrice(discount)}</span></div>}
+                {shippingCost > 0 && <div className="flex items-center justify-between text-muted-foreground"><span>משלוח</span><span className="tabular-nums">{formatPrice(shippingCost)}</span></div>}
+                <div className="flex items-center justify-between pt-2 border-t border-border">
+                  <span className="font-bold text-foreground">סה״כ לתשלום</span>
+                  <span className="text-2xl font-extrabold text-primary tabular-nums">{formatPrice(totalPrice)}</span>
                 </div>
-              )}
-              {shippingCost > 0 && (
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] tracking-wide text-muted-foreground">משלוח</span>
-                  <span className="text-xs tabular-nums">{formatPrice(shippingCost)}</span>
-                </div>
-              )}
-              <div className="flex items-center justify-between pt-2 border-t border-foreground/10">
-                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground">סה״כ לתשלום</span>
-                <span className="text-base font-bold text-foreground tabular-nums">{formatPrice(totalPrice)}</span>
               </div>
+
+              <button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}
+                className="w-full rounded-2xl bg-primary text-primary-foreground py-4 text-base font-bold hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-transform shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
+                {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <>{hasPayment ? `לתשלום מאובטח · ${formatPrice(totalPrice)}` : 'שליחת הזמנה'}<ShoppingBag className="h-5 w-5" /></>}
+              </button>
+              <p className="text-[11px] text-center text-muted-foreground">בלחיצה על הכפתור את/ה מאשר/ת את ההזמנה.</p>
             </div>
-          </section>
+          </form>
 
         </div>
       </div>

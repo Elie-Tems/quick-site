@@ -1,5 +1,5 @@
 import { Phone, Mail } from "lucide-react";
-import logoDarkBg from "@/assets/logo-dark-bg.png";
+import logoLightBg from "@/assets/logo-light-bg1.png";
 
 interface StoreFooterProps {
   businessName: string;
@@ -76,17 +76,15 @@ const StoreFooter = ({ businessName, phone, email, storeSlug }: StoreFooterProps
         </div>
 
         {/* ── Platform credit ── */}
-        <div className="border-t border-foreground/8 py-4 flex items-center justify-center">
+        <div className="border-t border-foreground/10 py-5 flex items-center justify-center">
           <a
-            href={`https://${import.meta.env.VITE_WEBSITE_URL}?utm_source=store_credit`}
+            href={`https://${import.meta.env.VITE_WEBSITE_URL || "siango.app"}?utm_source=store_credit`}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-2 text-[10px] font-bold tracking-[0.15em] uppercase text-lime-400 hover:text-lime-300 transition-colors"
+            className="group inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-foreground/[0.03] px-4 py-2 hover:bg-foreground/[0.06] transition-colors"
           >
-            <span>נבנה ע"י</span>
-            <span className="font-bold text-lime-400 group-hover:text-lime-300 transition-colors">
-              <img src={logoDarkBg} alt="Siango" className="h-5 w-auto" />
-            </span>
+            <span className="text-[11px] font-medium tracking-wide text-muted-foreground">נבנה באהבה ע״י</span>
+            <img src={logoLightBg} alt="Siango" className="h-5 w-auto opacity-90 group-hover:opacity-100 transition-opacity" />
           </a>
         </div>
 
