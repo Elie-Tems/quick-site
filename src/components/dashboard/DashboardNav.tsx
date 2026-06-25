@@ -1,8 +1,8 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Tag, Crown, Sparkles, Megaphone, Star, FolderOpen, Info, Truck, CreditCard, Palette, ScrollText, Target, Gauge, ChevronDown, Radar, Lightbulb } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Tag, Crown, Sparkles, Megaphone, Star, FolderOpen, Info, Truck, CreditCard, Palette, ScrollText, Target, Gauge, ChevronDown, Radar, Lightbulb, Globe } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -48,6 +48,7 @@ const navItems: {
   // תפעול
   { id: "shipping", label: "משלוחים", icon: Truck, group: "תפעול" },
   { id: "payments", label: "סליקה", icon: CreditCard, group: "תפעול" },
+  { id: "domains", label: "דומיין", icon: Globe, group: "תפעול" },
 
   // הגדרות
   { id: "settings", label: "הגדרות", icon: Settings, group: "הגדרות" },

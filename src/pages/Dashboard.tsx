@@ -25,6 +25,7 @@ import DashboardPayments from "@/components/dashboard/DashboardPayments";
 import DashboardUsage from "@/components/dashboard/DashboardUsage";
 import DashboardTrafficSources from "@/components/dashboard/DashboardTrafficSources";
 import DashboardInsights from "@/components/dashboard/DashboardInsights";
+import DashboardDomains from "@/components/dashboard/DashboardDomains";
 import DashboardLegal from "@/components/dashboard/DashboardLegal";
 import DashboardAdBudget from "@/components/dashboard/DashboardAdBudget";
 import UnpublishedBanner from "@/components/dashboard/UnpublishedBanner";
@@ -512,6 +513,8 @@ const Dashboard = () => {
         return <DashboardTrafficSources businessId={business?.id} />;
       case 'insights':
         return <DashboardInsights businessId={business?.id} />;
+      case 'domains':
+        return <DashboardDomains businessId={business?.id} />;
       case 'subscription':
         return <DashboardSubscription />;
       case 'about':
