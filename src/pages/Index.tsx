@@ -8,9 +8,9 @@ import PricingSection from "@/components/PricingSection";
 import FinalCTASection from "@/components/FinalCTASection";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -29,15 +29,38 @@ const CtaBand = ({ title }: { title: string }) => (
   </section>
 );
 
+// True if a Supabase auth session is persisted in localStorage. Lets us decide
+// synchronously (before auth finishes initializing) whether to show a loader
+// instead of flashing the marketing page for a logged-in user about to be routed.
+const hasStoredSession = () => {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && /^sb-.*-auth-token$/.test(k)) return true;
+    }
+  } catch {
+    /* ignore */
+  }
+  return false;
+};
+
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  // Show a loader (not the marketing page) while we resolve where a logged-in
+  // user should go. Starts true only when a session is already stored, so
+  // anonymous visitors still get the marketing page instantly with no flash.
+  const [resolving, setResolving] = useState(hasStoredSession);
 
-  // Safety net: if a logged-in user who hasn't finished onboarding lands on the
-  // home page (e.g. an OAuth redirect that didn't reach /auth/callback), route
-  // them into onboarding instead of leaving them stuck on the marketing page.
+  // Safety net: a logged-in user who hasn't finished onboarding (e.g. an OAuth
+  // redirect that didn't reach /auth/callback, or an email-confirmation link
+  // that landed on the root) is routed straight into onboarding.
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading) return;
+    if (!user) {
+      setResolving(false);
+      return;
+    }
     let cancelled = false;
     (async () => {
       const { data: profile } = await supabase
@@ -45,14 +68,25 @@ const Index = () => {
         .select("onboarding_completed_at")
         .eq("user_id", user.id)
         .maybeSingle();
-      if (!cancelled && profile && !profile.onboarding_completed_at) {
+      if (cancelled) return;
+      if (profile && !profile.onboarding_completed_at) {
         navigate("/onboarding", { replace: true });
+      } else {
+        setResolving(false);
       }
     })();
     return () => {
       cancelled = true;
     };
   }, [user, loading, navigate]);
+
+  if (resolving) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="theme-refined">
