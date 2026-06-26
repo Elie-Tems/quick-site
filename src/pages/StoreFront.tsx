@@ -27,6 +27,7 @@ import { useCreateOrder } from "@/hooks/useOrders";
 import { startPayplusPayment } from "@/hooks/usePayplus";
 import { toast } from "sonner";
 import { getTemplate, type StoreTemplateId } from "@/lib/storeTemplates";
+import { getStoreFont, loadStoreFonts } from "@/lib/storeFonts";
 
 type ViewState = 'shopping' | 'checkout' | 'thankyou' | 'cart' | 'favorites';
 
@@ -134,6 +135,18 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       } else {
         document.body.classList.add('font-sans');
       }
+
+      // Per-store custom fonts (heading + body) - override the template default.
+      const headingFont = getStoreFont((business as any).font_heading);
+      const bodyFont = getStoreFont((business as any).font_body);
+      if (headingFont || bodyFont) {
+        loadStoreFonts((business as any).font_heading, (business as any).font_body);
+        if (bodyFont) document.body.style.fontFamily = bodyFont.family;
+        const styleEl = document.getElementById('store-font-style') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'store-font-style' }));
+        styleEl.textContent = headingFont
+          ? `body h1, body h2, body h3, body h4 { font-family: ${headingFont.family} !important; }`
+          : '';
+      }
     } catch (e) {
       console.error('Invalid color format:', e);
     }
@@ -145,6 +158,8 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       root.style.removeProperty('--accent');
       root.style.removeProperty('--gradient-start');
       root.style.removeProperty('--gradient-end');
+      document.body.style.removeProperty('font-family');
+      document.getElementById('store-font-style')?.remove();
     };
   }, [business, template]);
 

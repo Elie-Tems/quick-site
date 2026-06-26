@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
 import { storeTemplates, type StoreTemplateId, getTemplate } from "@/lib/storeTemplates";
-import { Check, Palette } from "lucide-react";
+import { STORE_FONTS, loadStoreFonts } from "@/lib/storeFonts";
+import { Check, Palette, Type } from "lucide-react";
 import { toast } from "sonner";
 
 interface DashboardDesignProps {
@@ -15,6 +18,29 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
     (currentTemplateId as StoreTemplateId) || 'bold-modern'
   );
   const updateBusiness = useUpdateBusiness();
+
+  // ── Per-store fonts (heading + body) ──
+  const [fontHeading, setFontHeading] = useState<string>("");
+  const [fontBody, setFontBody] = useState<string>("");
+  const { data: fonts } = useQuery({
+    queryKey: ["biz-fonts", businessId],
+    enabled: !!businessId,
+    queryFn: async () => {
+      const { data } = await (supabase as any).from("businesses").select("font_heading, font_body").eq("id", businessId).maybeSingle();
+      return data as { font_heading: string | null; font_body: string | null } | null;
+    },
+  });
+  useEffect(() => { if (fonts) { setFontHeading(fonts.font_heading || ""); setFontBody(fonts.font_body || ""); } }, [fonts]);
+  useEffect(() => { loadStoreFonts(fontHeading, fontBody); }, [fontHeading, fontBody]);
+
+  const fontsChanged = (fonts?.font_heading || "") !== fontHeading || (fonts?.font_body || "") !== fontBody;
+  const saveFonts = async () => {
+    if (!businessId) return;
+    try {
+      await updateBusiness.mutateAsync({ id: businessId, font_heading: fontHeading || null, font_body: fontBody || null } as any);
+      toast.success("הפונטים עודכנו! מתעדכן בחנות שלך.");
+    } catch { toast.error("שגיאה בשמירת הפונטים"); }
+  };
 
   const handleSaveTemplate = async () => {
     if (!businessId) {
@@ -152,6 +178,38 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
             </button>
           );
         })}
+      </div>
+
+      {/* ── Fonts ── */}
+      <div className="border-t border-border pt-6">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-xl font-bold text-foreground flex items-center gap-2"><Type className="h-5 w-5" /> פונטים</h3>
+          {fontsChanged && (
+            <Button onClick={saveFonts} disabled={updateBusiness.isPending}>{updateBusiness.isPending ? "שומר..." : "שמור פונטים"}</Button>
+          )}
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">בחרו פונט נפרד לכותרות ולטקסט - שליטה מדויקת על הסגנון של החנות.</p>
+
+        {/* Live preview */}
+        <div className="rounded-xl border border-border bg-card p-5 mb-5 text-center">
+          <div className="text-2xl font-bold text-foreground mb-1" style={{ fontFamily: STORE_FONTS.find(f => f.id === fontHeading)?.family }}>הכותרת של החנות שלי</div>
+          <div className="text-sm text-muted-foreground" style={{ fontFamily: STORE_FONTS.find(f => f.id === fontBody)?.family }}>וכך ייראה הטקסט הרגיל בחנות - תיאורי מוצרים, מחירים והכל. נקי, ברור ומקצועי.</div>
+        </div>
+
+        {([["כותרות", fontHeading, setFontHeading], ["טקסט (גוף)", fontBody, setFontBody]] as const).map(([label, val, set]) => (
+          <div key={label} className="mb-5">
+            <div className="text-sm font-medium text-foreground mb-2">{label}</div>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => set("")} className={`px-3 py-2 rounded-lg border text-sm transition-colors ${!val ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"}`}>ברירת מחדל</button>
+              {STORE_FONTS.map((f) => (
+                <button key={f.id} onClick={() => set(f.id)} style={{ fontFamily: f.family }}
+                  className={`px-3 py-2 rounded-lg border text-sm transition-colors ${val === f.id ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"}`}>
+                  {f.preview} <span className="text-xs opacity-60">· {f.label.split(" · ")[1] || f.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Info */}
