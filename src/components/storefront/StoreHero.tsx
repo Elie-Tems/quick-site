@@ -50,19 +50,38 @@ const StoreHero = ({
       : DEFAULT_STRIP_BENEFITS;
 
   const [imageLoadError, setImageLoadError] = useState(false);
+  const [useFallback, setUseFallback] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   useEffect(() => {
     setImageLoadError(false);
+    setUseFallback(false);
     setImageLoaded(false);
   }, [heroImageUrl]);
 
+  const FALLBACK_MAP: Record<string, string> = {
+    food: "/hero-fallback/food.jpg",
+    fashion: "/hero-fallback/fashion.jpg",
+    home: "/hero-fallback/home.jpg",
+  };
+  const FOOD_CATS = new Set(["bakery", "restaurant", "cafe", "grocery", "wine_alcohol"]);
+  const FASHION_CATS = new Set(["clothing", "jewelry", "beauty", "baby", "gifts", "handmade", "art", "toys"]);
+  const HOME_CATS = new Set(["home", "furniture", "appliances", "flowers", "books", "pharmacy", "pets"]);
+  const getFallbackImage = (cat?: string) => {
+    if (!cat) return FALLBACK_MAP.food;
+    if (FOOD_CATS.has(cat)) return FALLBACK_MAP.food;
+    if (FASHION_CATS.has(cat)) return FALLBACK_MAP.fashion;
+    if (HOME_CATS.has(cat)) return FALLBACK_MAP.home;
+    return "/hero-fallback/general.jpg";
+  };
+
   const hasCustomImage =
     typeof heroImageUrl === "string" && heroImageUrl.trim().length > 0;
-  const heroImage = hasCustomImage
+  const heroImage = useFallback
+    ? getFallbackImage(businessCategory)
+    : hasCustomImage
     ? heroImageUrl!.trim()
     : categoryConfig.heroImage;
-  const hasValidImage =
-    heroImage && heroImage.startsWith("http") && !imageLoadError;
+  const hasValidImage = !!heroImage && !imageLoadError;
   const showGradientUntilLoaded = hasValidImage && !imageLoaded;
 
   const scrollToProducts = () => {
@@ -95,7 +114,14 @@ const StoreHero = ({
             decoding="async"
             fetchPriority="high"
             onLoad={() => setImageLoaded(true)}
-            onError={() => setImageLoadError(true)}
+            onError={() => {
+              if (!useFallback) {
+                setUseFallback(true);
+                setImageLoaded(false);
+              } else {
+                setImageLoadError(true);
+              }
+            }}
           />
         )}
 
