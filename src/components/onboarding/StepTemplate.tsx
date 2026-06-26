@@ -19,80 +19,94 @@ interface TemplateStyle {
   description: string;
   icon: React.ReactNode;
   heroImage: string;
+  heroLayout: 'full-image' | 'split' | 'centered';
+  accentColor: string;
   products: Array<{ img: string; name: string; price: string; sale?: boolean; originalPrice?: string }>;
 }
 
 const templateStyles: TemplateStyle[] = [
   {
-    id: "urban-chic",
-    name: "אורבני עם דמויות",
-    description: "אנרגטי, סגנון חיים, דינמי",
-    icon: <Users className="w-4 h-4" />,
+    id: "luxury-boutique",
+    name: "בוטיק יוקרתי",
+    description: "מגזיני, אלגנטי, טקסט מעל תמונה",
+    icon: <Sparkles className="w-4 h-4" />,
+    heroLayout: "full-image",
+    accentColor: "#d4af37",
+    heroImage: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=600&q=80",
+    products: [
+      { img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&q=80", name: "שרשרת זהב", price: "₪1,899" },
+      { img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80", name: "שעון יוקרה", price: "₪3,499" },
+      { img: "https://images.unsplash.com/photo-1600721391776-b5cd0e0048f9?w=300&q=80", name: "טבעת", price: "₪5,999" },
+    ],
+  },
+  {
+    id: "bold-playful",
+    name: "נועז ושובב",
+    description: "פנל צבע + תמונה בצדדים",
+    icon: <Zap className="w-4 h-4" />,
+    heroLayout: "split",
+    accentColor: "#ff3cac",
     heroImage: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&q=80",
     products: [
       { img: "https://images.unsplash.com/photo-1556906781-9a412961c28c?w=300&q=80", name: "נעלי סניקרס", price: "₪699" },
-      { img: "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=300&q=80", name: "הודי אורבני", price: "₪349", sale: true, originalPrice: "₪449" },
+      { img: "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=300&q=80", name: "הודי", price: "₪349", sale: true, originalPrice: "₪449" },
       { img: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=300&q=80", name: "תיק גב", price: "₪289" },
     ],
   },
   {
-    id: "warm-sunset",
-    name: "אווירה חמה וביתית",
-    description: "כפרי, נעים, מזמין",
+    id: "natural-organic",
+    name: "טבעי ואורגני",
+    description: "טקסט ממורכז, אווירה ירוקה",
     icon: <Home className="w-4 h-4" />,
-    heroImage: "https://images.unsplash.com/photo-1616046229478-9901c5536a45?w=600&q=80",
+    heroLayout: "centered",
+    accentColor: "#4a7c59",
+    heroImage: "https://images.unsplash.com/photo-1466781783364-36c955e42a7f?w=600&q=80",
     products: [
-      { img: "https://images.unsplash.com/photo-1602028915047-37269d1a73f7?w=300&q=80", name: "כרית דקורטיבית", price: "₪179" },
+      { img: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=300&q=80", name: "סבון טבעי", price: "₪49" },
+      { img: "https://images.unsplash.com/photo-1607006344380-b6775a0824a7?w=300&q=80", name: "שמן ארומתי", price: "₪89", sale: true, originalPrice: "₪129" },
+      { img: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=300&q=80", name: "עציץ", price: "₪65" },
+    ],
+  },
+  {
+    id: "tech-minimal",
+    name: "טכנולוגי ומינימלי",
+    description: "כהה, מדויק, מוצר בצד ימין",
+    icon: <Zap className="w-4 h-4" />,
+    heroLayout: "split",
+    accentColor: "#3b82f6",
+    heroImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
+    products: [
+      { img: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=300&q=80", name: "אוזניות", price: "₪1,299" },
+      { img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80", name: "שעון חכם", price: "₪899" },
+      { img: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=300&q=80", name: "אוזניות TWS", price: "₪649" },
+    ],
+  },
+  {
+    id: "vintage-warm",
+    name: "וינטג׳ וחם",
+    description: "טקסט ממורכז, אווירה כפרית",
+    icon: <Heart className="w-4 h-4" />,
+    heroLayout: "centered",
+    accentColor: "#c1440e",
+    heroImage: "https://images.unsplash.com/photo-1495121553079-4c61bcce1894?w=600&q=80",
+    products: [
+      { img: "https://images.unsplash.com/photo-1602028915047-37269d1a73f7?w=300&q=80", name: "כרית", price: "₪179" },
       { img: "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=300&q=80", name: "נר ריחני", price: "₪89", sale: true, originalPrice: "₪129" },
       { img: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=300&q=80", name: "ספל קרמיקה", price: "₪65" },
     ],
   },
   {
-    id: "minimal",
-    name: "מינימליסטי נקי",
-    description: "יוקרתי, מדויק, סטודיו",
+    id: "royal-purple",
+    name: "סגול מלכותי",
+    description: "דרמטי, תמונה מלאה, יוקרתי",
     icon: <Sparkles className="w-4 h-4" />,
-    heroImage: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80",
-    products: [
-      { img: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=300&q=80", name: "אוזניות אלחוטיות", price: "₪1,299" },
-      { img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80", name: "שעון חכם", price: "₪899" },
-      { img: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=300&q=80", name: "אוזניות פרימיום", price: "₪649" },
-    ],
-  },
-  {
-    id: "bold-modern",
-    name: "מודרני נועז",
-    description: "קונטרסט חד, גרפי, אימפקט",
-    icon: <Zap className="w-4 h-4" />,
-    heroImage: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80",
-    products: [
-      { img: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=300&q=80", name: "כיסא מעצבים", price: "₪2,499" },
-      { img: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=300&q=80", name: "מנורת שולחן", price: "₪449", sale: true, originalPrice: "₪599" },
-      { img: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=300&q=80", name: "אגרטל גיאומטרי", price: "₪189" },
-    ],
-  },
-  {
-    id: "elegant-dark",
-    name: "יוקרה ואלגנטיות",
-    description: "פרימיום, מוזהב, תכשיטים",
-    icon: <Sparkles className="w-4 h-4" />,
+    heroLayout: "full-image",
+    accentColor: "#a855f7",
     heroImage: "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=600&q=80",
     products: [
-      { img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&q=80", name: "שרשרת זהב", price: "₪1,899" },
-      { img: "https://images.unsplash.com/photo-1608042314453-ae338d80c427?w=300&q=80", name: "צמיד יהלומים", price: "₪3,499", sale: true, originalPrice: "₪4,299" },
-      { img: "https://images.unsplash.com/photo-1600721391776-b5cd0e0048f9?w=300&q=80", name: "טבעת אירוסין", price: "₪5,999" },
-    ],
-  },
-  {
-    id: "natural",
-    name: "טבעי ואורגני",
-    description: "אקולוגי, ירוק, בריאות",
-    icon: <Home className="w-4 h-4" />,
-    heroImage: "https://images.unsplash.com/photo-1466781783364-36c955e42a7f?w=600&q=80",
-    products: [
-      { img: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=300&q=80", name: "סבון טבעי", price: "₪49" },
-      { img: "https://images.unsplash.com/photo-1607006344380-b6775a0824a7?w=300&q=80", name: "שמן ארומתי", price: "₪89", sale: true, originalPrice: "₪129" },
-      { img: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=300&q=80", name: "עציץ סוקולנט", price: "₪65" },
+      { img: "https://images.unsplash.com/photo-1608042314453-ae338d80c427?w=300&q=80", name: "צמיד", price: "₪3,499", sale: true, originalPrice: "₪4,299" },
+      { img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&q=80", name: "שרשרת", price: "₪1,899" },
+      { img: "https://images.unsplash.com/photo-1600721391776-b5cd0e0048f9?w=300&q=80", name: "טבעת", price: "₪5,999" },
     ],
   },
 ];
@@ -166,56 +180,104 @@ async function extractColorFromFile(file: File): Promise<string> {
   }
 }
 
+const MiniNavbar = ({ primaryColor, bg, card, text }: { primaryColor: string; bg: string; card: string; text: string }) => (
+  <div className="h-6 flex items-center justify-between px-2.5 border-b shrink-0" style={{ background: card, borderColor: "rgba(255,255,255,0.08)" }}>
+    <div className="flex items-center gap-1.5">
+      <div className="w-3.5 h-3.5 rounded flex items-center justify-center" style={{ background: primaryColor }}>
+        <ShoppingBag className="w-2 h-2 text-white" />
+      </div>
+      <span className="text-[8px] font-bold" style={{ color: text }}>החנות שלי</span>
+    </div>
+    <div className="flex items-center gap-1.5">
+      <Heart className="w-2 h-2 opacity-40" style={{ color: text }} />
+      <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: primaryColor }}>
+        <ShoppingBag className="w-2 h-2 text-white" />
+      </div>
+    </div>
+  </div>
+);
+
+const MiniProductGrid = ({ products, primaryColor, bg, card, text, muted }: {
+  products: TemplateStyle['products']; primaryColor: string; bg: string; card: string; text: string; muted: string;
+}) => (
+  <div className="p-1.5 grid grid-cols-3 gap-1">
+    {products.map((product, i) => (
+      <div key={i} className="relative overflow-hidden rounded-sm" style={{ background: card, border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="aspect-square overflow-hidden relative">
+          <img src={product.img} alt={product.name} className="w-full h-full object-cover" />
+          {product.sale && (
+            <div className="absolute top-0.5 right-0.5 px-0.5 py-px text-[4.5px] font-bold text-white rounded-sm" style={{ background: "#dc2626" }}>מבצע</div>
+          )}
+        </div>
+        <div className="p-1">
+          <div className="text-[5.5px] font-medium truncate mb-0.5" style={{ color: text }}>{product.name}</div>
+          <span className="text-[6.5px] font-bold" style={{ color: primaryColor }}>{product.price}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 const TemplatePreview = ({ template, primaryColor }: { template: TemplateStyle; primaryColor: string }) => {
+  const accent = primaryColor;
   const bg = "#0f0f0f";
   const card = "#1a1a1a";
   const text = "#ffffff";
   const muted = "#6b6b6b";
+
+  if (template.heroLayout === "split") {
+    return (
+      <div className="w-full h-full flex flex-col overflow-hidden" style={{ background: bg }}>
+        <MiniNavbar primaryColor={accent} bg={bg} card={card} text={text} />
+        <div className="flex flex-row flex-1 overflow-hidden" style={{ minHeight: 0 }}>
+          {/* Text panel */}
+          <div className="w-[45%] flex flex-col justify-center px-2 py-2 shrink-0" style={{ background: accent }}>
+            <span className="text-[5.5px] uppercase tracking-widest text-white/70 mb-1">חדש</span>
+            <span className="text-[9px] font-black text-white leading-tight mb-1.5">הקולקציה החדשה כאן</span>
+            <div className="px-1.5 py-0.5 text-[5.5px] font-bold text-white w-fit" style={{ background: "rgba(0,0,0,0.25)", borderRadius: 2 }}>קנו עכשיו</div>
+          </div>
+          {/* Image panel */}
+          <div className="flex-1 relative overflow-hidden">
+            <img src={template.heroImage} alt="" className="w-full h-full object-cover" />
+          </div>
+        </div>
+        <MiniProductGrid products={template.products} primaryColor={accent} bg={bg} card={card} text={text} muted={muted} />
+      </div>
+    );
+  }
+
+  if (template.heroLayout === "centered") {
+    return (
+      <div className="w-full h-full flex flex-col overflow-hidden" style={{ background: bg }}>
+        <MiniNavbar primaryColor={accent} bg={bg} card={card} text={text} />
+        <div className="relative h-[60px] overflow-hidden shrink-0">
+          <img src={template.heroImage} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.55)" }} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
+            <span className="text-[5.5px] uppercase tracking-widest mb-0.5 opacity-75" style={{ color: accent }}>ברוכים הבאים</span>
+            <span className="text-[10px] font-black text-white leading-tight mb-1.5">הקולקציה החדשה</span>
+            <div className="px-2 py-0.5 text-[5.5px] font-bold text-white rounded-full" style={{ background: accent }}>גלו עכשיו</div>
+          </div>
+        </div>
+        <MiniProductGrid products={template.products} primaryColor={accent} bg={bg} card={card} text={text} muted={muted} />
+      </div>
+    );
+  }
+
+  // full-image — editorial, text at bottom-left
   return (
-    <div className="w-full h-full overflow-hidden" style={{ background: bg }}>
-      <div className="h-7 flex items-center justify-between px-2.5 border-b" style={{ background: card, borderColor: "rgba(255,255,255,0.08)" }}>
-        <div className="flex items-center gap-1.5">
-          <div className="w-4 h-4 rounded-md flex items-center justify-center" style={{ background: primaryColor }}>
-            <ShoppingBag className="w-2.5 h-2.5 text-white" />
-          </div>
-          <span className="text-[9px] font-bold" style={{ color: text }}>החנות שלי</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Heart className="w-2.5 h-2.5" style={{ color: muted }} />
-          <div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px]" style={{ background: primaryColor }}>
-            <ShoppingBag className="w-2.5 h-2.5 text-white" />
-          </div>
+    <div className="w-full h-full flex flex-col overflow-hidden" style={{ background: bg }}>
+      <MiniNavbar primaryColor={accent} bg={bg} card={card} text={text} />
+      <div className="relative h-[65px] overflow-hidden shrink-0">
+        <img src={template.heroImage} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)" }} />
+        <div className="absolute bottom-1.5 right-2 text-right">
+          <span className="text-[5.5px] uppercase tracking-widest block mb-0.5 opacity-75" style={{ color: accent }}>חדש</span>
+          <span className="text-[9px] font-black text-white leading-tight block mb-1">הקולקציה<br />החדשה</span>
+          <div className="px-1.5 py-0.5 text-[5px] font-bold text-white border border-white/50 w-fit">גלו עכשיו</div>
         </div>
       </div>
-      <div className="relative h-[65px] overflow-hidden">
-        <img src={template.heroImage} alt={template.name} className="w-full h-full object-cover" />
-        <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${bg}ee, ${bg}40)` }} />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
-          <span className="text-[7px] uppercase tracking-wider mb-0.5 opacity-80" style={{ color: primaryColor }}>קולקציה חדשה</span>
-          <span className="text-[11px] font-bold" style={{ color: text }}>הנחות עד 50%</span>
-          <div className="mt-1 px-2 py-0.5 text-[6px] font-medium rounded-sm text-white" style={{ background: primaryColor }}>קנו עכשיו</div>
-        </div>
-      </div>
-      <div className="p-1.5 grid grid-cols-3 gap-1">
-        {template.products.map((product, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.08 }}
-            className="relative overflow-hidden rounded-sm" style={{ background: card, border: "1px solid rgba(255,255,255,0.06)" }}>
-            <div className="aspect-square overflow-hidden relative">
-              <img src={product.img} alt={product.name} className="w-full h-full object-cover" />
-              {product.sale && (
-                <div className="absolute top-0.5 right-0.5 px-1 py-0.5 text-[5px] font-bold text-white rounded-sm" style={{ background: "#dc2626" }}>מבצע</div>
-              )}
-            </div>
-            <div className="p-1">
-              <div className="text-[6px] font-medium truncate mb-0.5" style={{ color: text }}>{product.name}</div>
-              <div className="flex items-center gap-0.5">
-                <span className="text-[7px] font-bold" style={{ color: primaryColor }}>{product.price}</span>
-                {product.originalPrice && <span className="text-[5px] line-through" style={{ color: muted }}>{product.originalPrice}</span>}
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      <MiniProductGrid products={template.products} primaryColor={accent} bg={bg} card={card} text={text} muted={muted} />
     </div>
   );
 };

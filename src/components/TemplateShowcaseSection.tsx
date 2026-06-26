@@ -6,12 +6,16 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const TemplateShowcaseSection = () => {
   const { t } = useLanguage();
 
+  // heroLayout: 'full-image' = text bottom-left over image (magazine)
+  //             'split'      = colored panel left | image right
+  //             'centered'   = text centered with overlay
   const templates = [
     {
       id: 1,
       titleKey: "templates.fashion",
       description: "אופנתי, נקי, מודרני",
       icon: ShoppingBag,
+      heroLayout: "split" as const,
       hero: "/templates/fashion.jpg",
       products: ["/templates/fashion-p1.jpg", "/templates/fashion-p2.jpg", "/templates/fashion-p3.jpg"],
       prices: [189, 139, 89],
@@ -23,6 +27,7 @@ const TemplateShowcaseSection = () => {
       titleKey: "templates.jewelry",
       description: "יוקרתי, מוקפד, זוהר",
       icon: Gem,
+      heroLayout: "full-image" as const,
       hero: "/templates/jewelry.jpg",
       products: ["/templates/jewelry-p1.jpg", "/templates/jewelry-p2.jpg", "/templates/jewelry-p3.jpg"],
       prices: [590, 220, 390],
@@ -34,6 +39,7 @@ const TemplateShowcaseSection = () => {
       titleKey: "templates.electronics",
       description: "טכנולוגי, חדשני, חד",
       icon: Laptop,
+      heroLayout: "split" as const,
       hero: "/templates/electronics.jpg",
       products: ["/templates/electronics-p1.jpg", "/templates/electronics-p2.jpg", "/templates/electronics-p3.jpg"],
       prices: [899, 349, 259],
@@ -45,6 +51,7 @@ const TemplateShowcaseSection = () => {
       titleKey: "templates.gifts",
       description: "חם, מפנק, אלגנטי",
       icon: Gift,
+      heroLayout: "centered" as const,
       hero: "/templates/gifts.jpg",
       products: ["/templates/gifts-p1.jpg", "/templates/gifts-p2.jpg", "/templates/gifts-p3.jpg"],
       prices: [149, 89, 199],
@@ -56,6 +63,7 @@ const TemplateShowcaseSection = () => {
       titleKey: "templates.home",
       description: "כפרי, נעים, חם",
       icon: Home,
+      heroLayout: "full-image" as const,
       hero: "/templates/home.jpg",
       products: ["/templates/home-p1.jpg", "/templates/home-p2.jpg", "/templates/home-p3.jpg"],
       prices: [129, 79, 169],
@@ -110,25 +118,42 @@ const TemplateShowcaseSection = () => {
                 </div>
               </div>
 
-              {/* Hero banner (real category image + promo) */}
-              <div className="relative h-28 flex flex-col items-center justify-center text-center overflow-hidden">
-                <img
-                  src={template.hero}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{ background: `linear-gradient(135deg, ${template.banner}e6 0%, ${template.banner}b3 100%)` }}
-                />
-                <div className="relative z-10">
-                  <div className="text-[11px] text-white/80">קולקציה חדשה</div>
-                  <div className="text-lg font-bold text-white leading-tight">הנחות עד 50%</div>
-                  <div className="mt-1.5 inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-[11px] text-white">
-                    קנו עכשיו
+              {/* Hero banner — 3 distinct layouts */}
+              {template.heroLayout === "split" ? (
+                <div className="flex h-28 overflow-hidden">
+                  {/* Text panel */}
+                  <div className="w-[45%] flex flex-col justify-center px-3 py-2 shrink-0" style={{ backgroundColor: template.banner }}>
+                    <div className="text-[9px] text-white/70 uppercase tracking-widest mb-0.5">חדש</div>
+                    <div className="text-sm font-black text-white leading-tight mb-2">הקולקציה<br />החדשה</div>
+                    <div className="inline-block px-2 py-0.5 text-[9px] text-white rounded-sm" style={{ background: "rgba(0,0,0,0.3)" }}>קנו עכשיו</div>
+                  </div>
+                  {/* Image panel */}
+                  <div className="flex-1 relative overflow-hidden">
+                    <img src={template.hero} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   </div>
                 </div>
-              </div>
+              ) : template.heroLayout === "full-image" ? (
+                <div className="relative h-28 overflow-hidden">
+                  <img src={template.hero} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.15) 60%, transparent 100%)" }} />
+                  <div className="absolute bottom-2 right-3 text-right">
+                    <div className="text-[9px] text-white/70 uppercase tracking-wider mb-0.5">חדש</div>
+                    <div className="text-sm font-black text-white leading-tight">הנחות עד 50%</div>
+                    <div className="mt-1 inline-block px-2 py-0.5 border border-white/50 text-[9px] text-white">קנו עכשיו</div>
+                  </div>
+                </div>
+              ) : (
+                /* centered */
+                <div className="relative h-28 flex flex-col items-center justify-center text-center overflow-hidden">
+                  <img src={template.hero} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute inset-0" style={{ background: `${template.banner}cc` }} />
+                  <div className="relative z-10">
+                    <div className="text-[10px] text-white/80">קולקציה חדשה</div>
+                    <div className="text-base font-bold text-white leading-tight">הנחות עד 50%</div>
+                    <div className="mt-1.5 inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-[10px] text-white">קנו עכשיו</div>
+                  </div>
+                </div>
+              )}
 
               {/* Products row */}
               <div className="grid grid-cols-3 gap-2 p-3 bg-white">
