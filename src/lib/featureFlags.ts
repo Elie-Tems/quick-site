@@ -4,3 +4,7 @@
 // it dark. Flip the env var (Cloudflare Pages) only after approval.
 export const whatsappEnabled = (): boolean =>
   String(import.meta.env.VITE_WHATSAPP_ENABLED || "").toLowerCase() === "true";
+
+// Business email - same build-don't-deploy rule; hidden until approved + live.
+export const emailEnabled = (): boolean =>
+  String(import.meta.env.VITE_EMAIL_ENABLED || "").toLowerCase() === "true";

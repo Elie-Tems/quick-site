@@ -27,6 +27,7 @@ import DashboardTrafficSources from "@/components/dashboard/DashboardTrafficSour
 import DashboardInsights from "@/components/dashboard/DashboardInsights";
 import DashboardDomains from "@/components/dashboard/DashboardDomains";
 import DashboardWhatsApp from "@/components/dashboard/DashboardWhatsApp";
+import DashboardEmail from "@/components/dashboard/DashboardEmail";
 import DashboardLegal from "@/components/dashboard/DashboardLegal";
 import DashboardAdBudget from "@/components/dashboard/DashboardAdBudget";
 import UnpublishedBanner from "@/components/dashboard/UnpublishedBanner";
@@ -518,6 +519,8 @@ const Dashboard = () => {
         return <DashboardDomains businessId={business?.id} />;
       case 'whatsapp':
         return <DashboardWhatsApp businessId={business?.id} />;
+      case 'email':
+        return <DashboardEmail businessId={business?.id} onGoToDomains={() => setCurrentView('domains')} />;
       case 'subscription':
         return <DashboardSubscription />;
       case 'about':

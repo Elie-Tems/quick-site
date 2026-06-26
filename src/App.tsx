@@ -43,6 +43,7 @@ const PreviewEmails = lazy(() => import("./pages/PreviewEmails"));
 const PublishCheckoutPreview = lazy(() => import("./pages/PublishCheckoutPreview"));
 const PreviewOnboardingV2 = lazy(() => import("./pages/PreviewOnboardingV2"));
 const PreviewWhatsApp = lazy(() => import("./pages/PreviewWhatsApp"));
+const PreviewEmail = lazy(() => import("./pages/PreviewEmail"));
 const OnboardingCompleteGate = lazy(() => import("./pages/OnboardingCompleteGate"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const StoreLegalPage = lazy(() => import("./pages/StoreLegalPage"));
@@ -108,6 +109,7 @@ const App = () => {
                   <Route path="/preview/publish" element={<PublishCheckoutPreview />} />
                   <Route path="/preview/onboarding-v2" element={<PreviewOnboardingV2 />} />
                   <Route path="/preview/whatsapp" element={<PreviewWhatsApp />} />
+                  <Route path="/preview/email" element={<PreviewEmail />} />
                   <Route path="/store" element={<StoreFront />} />
                   <Route path="/store/:slug" element={<StoreFront />} />
                   <Route path="/store/:slug/about" element={<StoreAboutPage />} />

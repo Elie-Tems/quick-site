@@ -1,9 +1,9 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Tag, Crown, Sparkles, Megaphone, Star, FolderOpen, Info, Truck, CreditCard, Palette, ScrollText, Target, Gauge, ChevronDown, Radar, Lightbulb, Globe, MessageCircle } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Tag, Crown, Sparkles, Megaphone, Star, FolderOpen, Info, Truck, CreditCard, Palette, ScrollText, Target, Gauge, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { whatsappEnabled } from "@/lib/featureFlags";
+import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -51,6 +51,7 @@ const navItems: {
   { id: "payments", label: "סליקה", icon: CreditCard, group: "תפעול" },
   { id: "domains", label: "דומיין", icon: Globe, group: "תפעול" },
   { id: "whatsapp", label: "וואטסאפ", icon: MessageCircle, group: "תפעול" },
+  { id: "email", label: "מייל עסקי", icon: AtSign, group: "תפעול" },
 
   // הגדרות
   { id: "settings", label: "הגדרות", icon: Settings, group: "הגדרות" },
@@ -73,6 +74,7 @@ const DashboardNav = ({
     if (item.id === "ai-images" && !canUseAIImages) return false;
     // WhatsApp is built but stays hidden until the flag is flipped post-approval.
     if (item.id === "whatsapp" && !whatsappEnabled()) return false;
+    if (item.id === "email" && !emailEnabled()) return false;
     return true;
   });
 
