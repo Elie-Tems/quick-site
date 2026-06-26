@@ -5,7 +5,7 @@ import { ArrowRight, Eye } from "lucide-react";
 import logoDarkBg from "@/assets/logo-dark-bg.png";
 import { Button } from "@/components/ui/button";
 import OnboardingProgress from "@/components/onboarding/OnboardingProgress";
-import StepBrandStyle from "@/components/onboarding/StepBrandStyle";
+import StepTemplate from "@/components/onboarding/StepTemplate";
 import StepCategory from "@/components/onboarding/StepCategory";
 import StepBannerUpload from "@/components/onboarding/StepBannerUpload";
 import StepBusinessDetails from "@/components/onboarding/StepBusinessDetails";
@@ -122,7 +122,7 @@ const Onboarding = () => {
     paymentConnected: false,
   });
 
-  // With new flow: 1=BrandStyle, 2=Category, 3=Banner, 4=BusinessDetails, 5=OrderType, 6=Products, 7=Payments, 8=Publish
+  // Flow: 1=Template+Color, 2=Category, 3=Banner, 4=BusinessDetails, 5=OrderType, 6=Products, 7=Payments, 8=Publish
   // If orders-only, skip payments (step 7)
   const totalSteps = data.orderType === "orders-payments" ? 8 : 7;
 
@@ -251,7 +251,7 @@ const Onboarding = () => {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <StepBrandStyle data={data} updateData={updateData} onNext={nextStep} onBack={() => navigate(-1)} />;
+        return <StepTemplate data={data} updateData={updateData} onNext={nextStep} onBack={() => navigate(-1)} />;
       case 2:
         return <StepCategory data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 3:

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { gtm } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,6 +67,7 @@ const PayplusConnectForm = ({ businessId }: Props) => {
 
   const handleSave = async () => {
     if (!filled) return;
+    gtm.connectPaymentClick();
     await save.mutateAsync({
       businessId,
       api_key: apiKey.trim(),

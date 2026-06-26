@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredUtm } from '@/lib/utmCapture';
+import { gtm } from '@/lib/gtm';
 
 interface AuthContextType {
   user: User | null;
@@ -97,6 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         data: metadata,
       },
     });
+    if (!error) gtm.signUp(metadata?.signup_method ?? "email");
     return { error };
   };
 
