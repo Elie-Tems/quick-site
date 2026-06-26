@@ -3,7 +3,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -30,6 +30,7 @@ const navItems: {
 }[] = [
   // ניהול / יום־יום
   { id: "home", label: "דשבורד", icon: LayoutDashboard, group: "ניהול" },
+  { id: "upgrades", label: "שדרוגים לעסק", shortLabel: "שדרוגים", icon: Crown, group: "ניהול" },
   { id: "orders", label: "הזמנות", icon: ShoppingCart, group: "ניהול" },
   { id: "products", label: "מוצרים", icon: Package, group: "ניהול" },
   { id: "categories", label: "קטגוריות", icon: FolderOpen, group: "ניהול" },

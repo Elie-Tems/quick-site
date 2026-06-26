@@ -292,7 +292,8 @@ const ChatTab = ({ businessId, preview }: { businessId?: string; preview?: boole
 const ContactsTab = ({ businessId, preview }: { businessId?: string; preview?: boolean }) => {
   const qc = useQueryClient();
   const [phone, setPhone] = useState(""); const [name, setName] = useState("");
-  const [importText, setImportText] = useState(""); const [showImport, setShowImport] = useState(false);
+  const [importText, setImportText] = useState(""); const [showImport, setShowImport] = useState(false); const [importConsent, setImportConsent] = useState(false);
+  const [unsubText, setUnsubText] = useState(""); const [showUnsub, setShowUnsub] = useState(false);
 
   const { data: contactsData } = useQuery({
     queryKey: ["wa-contacts", businessId], enabled: !!businessId && !preview,
@@ -313,13 +314,27 @@ const ContactsTab = ({ businessId, preview }: { businessId?: string; preview?: b
     setPhone(""); setName(""); refresh(); toast.success("נוסף ✓");
   };
   const toggleOptIn = async (c: Contact) => { if (preview) return; await (supabase as any).from("whatsapp_contacts").update({ opted_in: !c.opted_in, opt_in_at: !c.opted_in ? new Date().toISOString() : null }).eq("id", c.id); refresh(); };
+  const parseNumbers = (t: string) => t.split(/[\n,;]+/).map((s) => s.trim()).filter((s) => /\d{6,}/.test(s));
   const doImport = async () => {
+    if (preview) { toast.info("בתצוגה מקדימה לא מיובא בפועל 🙂"); return; }
     if (!businessId) return;
-    const rows = importText.split(/[\n,;]+/).map((s) => s.trim()).filter((s) => /\d{6,}/.test(s));
+    if (!importConsent) return toast.error("צריך לאשר שכל אנשי הקשר הסכימו לקבל דיוור");
+    const rows = parseNumbers(importText);
     if (!rows.length) return toast.error("לא זוהו מספרים");
-    const { error } = await (supabase as any).from("whatsapp_contacts").upsert(rows.map((phone) => ({ business_id: businessId, phone, opt_in_source: "import", source: "import" })), { onConflict: "business_id,phone", ignoreDuplicates: true });
+    // The merchant attested consent -> mark as opted-in for marketing.
+    const { error } = await (supabase as any).from("whatsapp_contacts").upsert(rows.map((phone) => ({ business_id: businessId, phone, opted_in: true, opt_in_at: new Date().toISOString(), opt_in_source: "import-consent", source: "import" })), { onConflict: "business_id,phone", ignoreDuplicates: false });
     if (error) return toast.error(error.message);
-    setImportText(""); setShowImport(false); refresh(); toast.success(`יובאו ${rows.length} אנשי קשר ✓`);
+    setImportText(""); setShowImport(false); setImportConsent(false); refresh(); toast.success(`יובאו ${rows.length} אנשי קשר (מאושרים) ✓`);
+  };
+  // Upload a suppression / unsubscribe list: mark these numbers as opted-out.
+  const doUnsubImport = async () => {
+    if (preview) { toast.info("בתצוגה מקדימה לא מיובא בפועל 🙂"); return; }
+    if (!businessId) return;
+    const rows = parseNumbers(unsubText);
+    if (!rows.length) return toast.error("לא זוהו מספרים");
+    const { error } = await (supabase as any).from("whatsapp_contacts").upsert(rows.map((phone) => ({ business_id: businessId, phone, opted_in: false, opt_in_source: "unsubscribe-list", source: "unsubscribe" })), { onConflict: "business_id,phone", ignoreDuplicates: false });
+    if (error) return toast.error(error.message);
+    setUnsubText(""); setShowUnsub(false); refresh(); toast.success(`${rows.length} מספרים סומנו כהוסרו ✓`);
   };
 
   const total = contacts?.length || 0;
@@ -345,20 +360,34 @@ const ContactsTab = ({ businessId, preview }: { businessId?: string; preview?: b
           <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="מספר טלפון" dir="ltr" className="flex-1 min-w-[150px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="שם (לא חובה)" className="flex-1 min-w-[130px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
           <button onClick={add} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform" style={{ background: WA }}><Plus className="w-4 h-4" /> הוסף</button>
-          <button onClick={() => setShowImport((s) => !s)} className="rounded-xl border border-border px-4 py-2.5 text-sm flex items-center gap-1.5 hover:bg-muted/50"><Upload className="w-4 h-4" /> ייבוא מקובץ</button>
+          <button onClick={() => { setShowImport((s) => !s); setShowUnsub(false); }} className="rounded-xl border border-border px-4 py-2.5 text-sm flex items-center gap-1.5 hover:bg-muted/50"><Upload className="w-4 h-4" /> ייבוא רשימה</button>
+          <button onClick={() => { setShowUnsub((s) => !s); setShowImport(false); }} className="rounded-xl border border-border px-4 py-2.5 text-sm flex items-center gap-1.5 hover:bg-muted/50"><X className="w-4 h-4" /> רשימת הסרה</button>
         </div>
         {showImport && (
           <div className="space-y-3 rounded-2xl bg-muted/40 p-4">
             <div className="flex items-start gap-2 text-xs text-muted-foreground">
               <FileSpreadsheet className="w-4 h-4 mt-0.5 shrink-0" style={{ color: WA }} />
               <div>
-                <b className="text-foreground">איך מייבאים קובץ:</b> פתחו את הקובץ (Excel/Google Sheets), העתיקו את עמודת המספרים, והדביקו כאן. אפשר גם מספר בכל שורה או מופרדים בפסיק.<br/>
-                פורמט מספר: <span dir="ltr">050-1234567</span> או <span dir="ltr">+972501234567</span>. כפילויות מסוננות אוטומטית.
+                <b className="text-foreground">איך מייבאים:</b> פתחו את הקובץ (Excel/Google Sheets), העתיקו את עמודת המספרים והדביקו כאן (מספר בכל שורה או מופרדים בפסיק).<br/>
+                פורמט: <span dir="ltr">050-1234567</span> או <span dir="ltr">+972501234567</span>. כפילויות מסוננות.
               </div>
             </div>
             <textarea value={importText} onChange={(e) => setImportText(e.target.value)} rows={4} dir="ltr" placeholder={"050-1234567\n052-7654321\n+972541112222"} className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm" />
-            <button onClick={doImport} className="rounded-xl text-white px-5 py-2.5 text-sm font-semibold" style={{ background: WA }}>ייבא רשימה</button>
-            <p className="text-xs text-muted-foreground">⚠️ ייבוא לא הופך אנשי קשר ל"מאושרים לשיווק" - opt-in נדרש לפי חוק. שיווק יישלח רק למי שאישר.</p>
+            <label className="flex items-start gap-2 cursor-pointer text-xs text-foreground bg-amber-50/60 dark:bg-amber-500/5 border border-amber-200/60 dark:border-amber-500/20 rounded-xl p-3">
+              <input type="checkbox" checked={importConsent} onChange={(e) => setImportConsent(e.target.checked)} className="mt-0.5 w-4 h-4 accent-amber-500" />
+              <span>אני מאשר/ת ש<b>כל אנשי הקשר שאני מעלה נתנו את הסכמתם לקבל ממני דיוור</b> בוואטסאפ (לפי חוק הספאם). באחריותי לוודא זאת.</span>
+            </label>
+            <button onClick={doImport} disabled={!importConsent} className="rounded-xl text-white px-5 py-2.5 text-sm font-semibold disabled:opacity-50" style={{ background: WA }}>ייבא רשימה</button>
+          </div>
+        )}
+        {showUnsub && (
+          <div className="space-y-3 rounded-2xl bg-muted/40 p-4">
+            <div className="flex items-start gap-2 text-xs text-muted-foreground">
+              <X className="w-4 h-4 mt-0.5 shrink-0 text-red-500" />
+              <div><b className="text-foreground">העלאת רשימת הסרה:</b> הדביקו מספרים שלא רוצים שיקבלו דיוור (למשל מי שביקש להסיר במקום אחר). הם יסומנו אוטומטית כ"הוסרו" ולא יקבלו שיווק.</div>
+            </div>
+            <textarea value={unsubText} onChange={(e) => setUnsubText(e.target.value)} rows={4} dir="ltr" placeholder={"050-1234567\n052-7654321"} className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm" />
+            <button onClick={doUnsubImport} className="rounded-xl text-white px-5 py-2.5 text-sm font-semibold bg-red-500 hover:bg-red-600">סמן כהוסרו</button>
           </div>
         )}
       </div>

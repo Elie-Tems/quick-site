@@ -56,7 +56,7 @@ const DashboardEmail = ({ businessId, forceConnected, onGoToDomains }: Props) =>
       const address = `${localPart.trim().toLowerCase()}@${activeDomain}`;
       const { error } = await (supabase as any).from("email_mailboxes").insert({ business_id: businessId, domain: activeDomain, address, price_ils: PRICE, status: "pending" });
       if (error) throw error;
-      toast.success("התיבה נוצרה ✓ נפעיל אותה בקרוב");
+      toast.success("התיבה הוזמנה! ✓ נקים אותה ונשלח לך פרטי כניסה + מדריך תוך כמה שעות.");
       qc.invalidateQueries({ queryKey: ["email-mailboxes", businessId] });
       setLocalPart("");
     } catch (e) { toast.error(e instanceof Error ? e.message : "שגיאה"); } finally { setOrdering(false); }
@@ -134,6 +134,25 @@ const DashboardEmail = ({ businessId, forceConnected, onGoToDomains }: Props) =>
             </div>
           </motion.div>
         )}
+
+        {/* What happens after you order - for non-technical merchants */}
+        <motion.div {...fade(0.18)} className="rounded-2xl border border-border bg-card p-6">
+          <h3 className="font-semibold text-foreground text-lg mb-4">מה קורה אחרי שמזמינים? (פשוט, בלי טכני)</h3>
+          <div className="grid sm:grid-cols-2 gap-x-6 gap-y-4">
+            {[
+              { n: "1", t: "אנחנו מקימים את התיבה", d: "תוך כמה שעות אנחנו מגדירים הכל מאחורי הקלעים. אתם לא צריכים לעשות כלום." },
+              { n: "2", t: "מקבלים פרטי כניסה", d: "נשלח לכם בוואטסאפ/מייל את כתובת הכניסה, שם המשתמש והסיסמה לתיבה החדשה." },
+              { n: "3", t: "נכנסים מכל מקום", d: "דרך הדפדפן (כמו Gmail), או מחברים לאפליקציית המייל בנייד - אנחנו שולחים מדריך עם תמונות, צעד-צעד." },
+              { n: "4", t: "מתחילים לשלוח ולקבל", d: "וזהו! מייל מקצועי על הדומיין שלכם. צריך עזרה? אנחנו כאן בוואטסאפ." },
+            ].map((s) => (
+              <div key={s.n} className="flex gap-3">
+                <div className="w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center shrink-0">{s.n}</div>
+                <div><div className="font-medium text-foreground text-sm">{s.t}</div><p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{s.d}</p></div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border">💡 לא צריך ידע טכני בכלל - אנחנו מלווים אתכם בכל שלב עד שהמייל עובד אצלכם.</p>
+        </motion.div>
 
         {/* Benefits */}
         <div className="grid sm:grid-cols-2 gap-4">
