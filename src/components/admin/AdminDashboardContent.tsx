@@ -32,6 +32,7 @@ import AdminDomainSettings from "./AdminDomainSettings";
 import AdminCommandCenter from "./AdminCommandCenter";
 import AdminMarketing from "./AdminMarketing";
 import AdminWhatsApp from "./AdminWhatsApp";
+import AdminWhatsAppBot from "./AdminWhatsAppBot";
 import AdminEmailSettings from "./AdminEmailSettings";
 
 type AdminView =
@@ -39,7 +40,7 @@ type AdminView =
   | "referrals" | "cancellations" | "activity"
   | "mrr" | "funnel" | "churn" | "cohort" | "analytics"
   | "top" | "dormant" | "categories" | "payment-errors"
-  | "coupons" | "partners" | "marketing" | "whatsapp" | "marketplace" | "domains" | "email-pricing" | "settings";
+  | "coupons" | "partners" | "marketing" | "whatsapp" | "whatsapp-bot" | "marketplace" | "domains" | "email-pricing" | "settings";
 
 interface NavItem {
   id: AdminView;
@@ -62,6 +63,7 @@ const NAV: NavItem[] = [
   { id: "partners",       label: "רווחי שותפים",     icon: Handshake,       group: "מכירות" },
   { id: "marketing",      label: "פרסום ושיווק",     icon: Megaphone,       group: "מכירות" },
   { id: "whatsapp",       label: "וואטסאפ",           icon: MessageCircle,   group: "מכירות" },
+  { id: "whatsapp-bot",   label: "הבוט שלנו",         icon: MessageCircle,   group: "מכירות" },
   { id: "domains",        label: "דומיינים",          icon: Globe,           group: "מכירות" },
   { id: "email-pricing",  label: "מייל עסקי",         icon: AtSign,          group: "מכירות" },
   { id: "coupons",        label: "קופוני מנוי",      icon: Ticket,          group: "מכירות" },
@@ -91,7 +93,7 @@ const VIEW_TITLES: Record<AdminView, string> = {
   mrr: "MRR / ARR", funnel: "Conversion Funnel", churn: "שיעור נטישה",
   cohort: "Cohort Retention", analytics: "צפיות וביקורים",
   top: "Top Performers", dormant: "עסקים רדומים", categories: "פילוח קטגוריות",
-  "payment-errors": "שגיאות תשלום", coupons: "קופוני מנוי", partners: "רווחי שותפים", marketing: "פרסום ושיווק", whatsapp: "וואטסאפ", marketplace: "Marketplace", domains: "תמחור דומיינים", "email-pricing": "תמחור מייל עסקי", settings: "הגדרות מערכת",
+  "payment-errors": "שגיאות תשלום", coupons: "קופוני מנוי", partners: "רווחי שותפים", marketing: "פרסום ושיווק", whatsapp: "וואטסאפ", "whatsapp-bot": "הבוט של Siango", marketplace: "Marketplace", domains: "תמחור דומיינים", "email-pricing": "תמחור מייל עסקי", settings: "הגדרות מערכת",
 };
 
 function Sidebar({ current, onChange, collapsed, onToggle }: {
@@ -186,6 +188,7 @@ function ViewContent({ view, stats, statsLoading }: {
     case "partners":       return <AdminPartnerEarnings />;
     case "marketing":      return <AdminMarketing />;
     case "whatsapp":       return <AdminWhatsApp />;
+    case "whatsapp-bot":   return <AdminWhatsAppBot />;
     case "marketplace":    return <AdminMarketplace />;
     case "domains":        return <AdminDomainSettings />;
     case "email-pricing":  return <AdminEmailSettings />;

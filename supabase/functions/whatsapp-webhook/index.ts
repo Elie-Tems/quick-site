@@ -157,6 +157,17 @@ Deno.serve(async (req) => {
         business_id: businessId, contact_phone: from, direction: "in", body: bodyText, status: "delivered", category: "service",
       });
 
+      // Opt-out handling (Chok HaSpam + Meta): a STOP/הסר message unsubscribes
+      // the contact from marketing and we confirm. No bot reply after that.
+      const optOut = /^\s*(הסר|הסרה|הסירו|stop|unsubscribe|ביטול|בטל)\s*$/i.test(bodyText);
+      if (optOut) {
+        await admin.from("whatsapp_contacts").update({ opted_in: false, opt_in_source: "unsubscribe" }).eq("business_id", businessId).eq("phone", from);
+        const creds = twilioCreds();
+        const acctNum = (acct as any)?.phone_number;
+        if (creds && acctNum) await sendWhatsAppText(creds, acctNum, from, "הוסרת מרשימת התפוצה ולא תקבל/י עוד הודעות שיווק. תודה 🙏");
+        return ack();
+      }
+
       // AI service bot: if the merchant enabled it, auto-reply (within the 24h window).
       const creds = twilioCreds();
       if (acct?.bot_enabled && acct.bot_prompt && bodyText && creds && acct.phone_number) {

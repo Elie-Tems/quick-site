@@ -58,7 +58,10 @@ create table if not exists public.whatsapp_templates (
   name text not null,
   category text not null default 'utility',  -- utility | marketing | authentication
   language text not null default 'he',
+  header_text text,                          -- optional template header (text)
   body text not null,
+  footer_text text,                          -- optional template footer
+  buttons jsonb default '[]',                -- [{type:'quick_reply'|'url'|'call', text, value}]
   variables text[] default '{}',
   status text not null default 'draft',      -- draft | pending | approved | rejected
   meta_template_id text,

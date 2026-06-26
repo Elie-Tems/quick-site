@@ -10,7 +10,7 @@ import {
   MessagesSquare, FileText, Bot, Smartphone, Facebook, FileSpreadsheet, Wand2, Mic, Paperclip,
 } from "lucide-react";
 
-interface Props { businessId?: string; forceConnected?: boolean }
+interface Props { businessId?: string; forceConnected?: boolean; platformBot?: boolean }
 type Tab = "chat" | "contacts" | "campaigns" | "templates" | "bot" | "settings";
 
 interface Account { id: string; status: string; phone_number: string | null; display_name: string | null; messaging_limit: number | null; bot_enabled?: boolean; bot_prompt?: string | null; }
@@ -26,21 +26,22 @@ const fade = (d = 0) => ({ initial: { opacity: 0, y: 12 }, animate: { opacity: 1
  * then a full workspace: live chat inbox, mailing list, broadcasts with
  * analytics, message templates, and an AI service bot. BUILD-ONLY (flag-gated).
  */
-const DashboardWhatsApp = ({ businessId, forceConnected }: Props) => {
+const DashboardWhatsApp = ({ businessId, forceConnected, platformBot }: Props) => {
   const [tab, setTab] = useState<Tab>("chat");
+  const forced = forceConnected || platformBot;
 
   const { data: account, isLoading } = useQuery({
     queryKey: ["wa-account", businessId],
-    enabled: !!businessId && !forceConnected,
+    enabled: !!businessId && !forced,
     queryFn: async () => {
       const { data } = await (supabase as any).from("whatsapp_accounts").select("id, status, phone_number, display_name, messaging_limit, bot_enabled, bot_prompt").eq("business_id", businessId).maybeSingle();
       return data as Account | null;
     },
   });
 
-  const previewAccount: Account = { id: "preview", status: "connected", phone_number: "+972 50-123-4567", display_name: "החנות שלי", messaging_limit: 1000, bot_enabled: true, bot_prompt: "" };
-  const connected = forceConnected ? true : account?.status === "connected";
-  const shownAccount = forceConnected ? previewAccount : account;
+  const previewAccount: Account = { id: "preview", status: "connected", phone_number: platformBot ? "Siango +972 50-000-0000" : "+972 50-123-4567", display_name: platformBot ? "Siango" : "החנות שלי", messaging_limit: 1000, bot_enabled: true, bot_prompt: "" };
+  const connected = forced ? true : account?.status === "connected";
+  const shownAccount = forced ? previewAccount : account;
 
   if (isLoading) return <div className="container max-w-5xl mx-auto px-4 py-16 text-center" dir="rtl"><Loader2 className="w-7 h-7 animate-spin mx-auto" style={{ color: WA }} /></div>;
 
@@ -57,8 +58,8 @@ const DashboardWhatsApp = ({ businessId, forceConnected }: Props) => {
             <MessageCircle className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-[28px] font-bold tracking-tight text-foreground">וואטסאפ עסקי</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">הערוץ שכל לקוח ישראלי כבר נמצא בו - עכשיו עובד בשבילכם.</p>
+            <h1 className="text-[28px] font-bold tracking-tight text-foreground">{platformBot ? "הבוט של Siango" : "וואטסאפ עסקי"}</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">{platformBot ? "ניהול הבוט והשיחות מול הסוחרים - צ'אט, בוט, תבניות והכל." : "הערוץ שכל לקוח ישראלי כבר נמצא בו - עכשיו עובד בשבילכם."}</p>
           </div>
         </motion.div>
 
@@ -81,11 +82,11 @@ const DashboardWhatsApp = ({ businessId, forceConnected }: Props) => {
             </motion.div>
 
             <motion.div key={tab} {...fade()}>
-              {tab === "chat" && <ChatTab businessId={businessId} preview={forceConnected} />}
-              {tab === "contacts" && <ContactsTab businessId={businessId} preview={forceConnected} />}
-              {tab === "campaigns" && <CampaignsTab businessId={businessId} preview={forceConnected} />}
-              {tab === "templates" && <TemplatesTab businessId={businessId} preview={forceConnected} />}
-              {tab === "bot" && <BotTab account={shownAccount} preview={forceConnected} />}
+              {tab === "chat" && <ChatTab businessId={businessId} preview={forced} />}
+              {tab === "contacts" && <ContactsTab businessId={businessId} preview={forced} />}
+              {tab === "campaigns" && <CampaignsTab businessId={businessId} preview={forced} />}
+              {tab === "templates" && <TemplatesTab businessId={businessId} preview={forced} />}
+              {tab === "bot" && <BotTab account={shownAccount} preview={forced} />}
               {tab === "settings" && <SettingsTab account={shownAccount} />}
             </motion.div>
           </>
@@ -323,12 +324,20 @@ const ContactsTab = ({ businessId, preview }: { businessId?: string; preview?: b
 
   const total = contacts?.length || 0;
   const optedIn = (contacts || []).filter((c) => c.opted_in).length;
+  const [filter, setFilter] = useState<"all" | "in" | "out">("all");
+  const shown = (contacts || []).filter((c) => filter === "all" ? true : filter === "in" ? c.opted_in : !c.opted_in);
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-3">
         <StatChip label="אנשי קשר" value={total} icon={Users} />
-        <StatChip label="מאושרים לשיווק" value={optedIn} icon={CheckCheck} accent />
+        <StatChip label="מאושרים" value={optedIn} icon={CheckCheck} accent />
+        <StatChip label="הוסרו" value={total - optedIn} icon={Users} />
+      </div>
+      <div className="flex gap-1.5 p-1 rounded-xl bg-muted/60 w-fit">
+        {([["all", "הכל"], ["in", "מאושרים"], ["out", "הסרות"]] as const).map(([id, label]) => (
+          <button key={id} onClick={() => setFilter(id)} className={`px-3 py-1.5 rounded-lg text-sm transition-all ${filter === id ? "bg-background shadow-sm font-medium text-foreground" : "text-muted-foreground"}`}>{label}</button>
+        ))}
       </div>
 
       <div className="rounded-3xl border border-border bg-card p-5 space-y-3">
@@ -355,7 +364,7 @@ const ContactsTab = ({ businessId, preview }: { businessId?: string; preview?: b
       </div>
 
       <div className="rounded-3xl border border-border bg-card divide-y divide-border overflow-hidden">
-        {total === 0 ? (<p className="text-sm text-muted-foreground p-8 text-center">עדיין אין אנשי קשר. הוסיפו או ייבאו למעלה.</p>) : (contacts || []).map((c) => (
+        {shown.length === 0 ? (<p className="text-sm text-muted-foreground p-8 text-center">{total === 0 ? "עדיין אין אנשי קשר. הוסיפו או ייבאו למעלה." : "אין אנשי קשר בקטגוריה זו."}</p>) : shown.map((c) => (
           <div key={c.id} className="flex items-center justify-between gap-3 p-4 hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ background: `linear-gradient(135deg, ${WA}, #0f8c6e)` }}>{(c.name || c.phone).replace(/\D/g, "").slice(-2)}</div>
@@ -434,86 +443,138 @@ const CampaignsTab = ({ businessId, preview }: { businessId?: string; preview?: 
 };
 
 /* ---------- Templates ---------- */
+interface TplButton { type: "quick_reply" | "url" | "call"; text: string; value?: string }
 const TemplatesTab = ({ businessId, preview }: { businessId?: string; preview?: boolean }) => {
   const qc = useQueryClient();
-  const [name, setName] = useState(""); const [category, setCategory] = useState("marketing"); const [body, setBody] = useState("");
+  const [name, setName] = useState(""); const [category, setCategory] = useState("marketing");
+  const [header, setHeader] = useState(""); const [body, setBody] = useState(""); const [footer, setFooter] = useState("");
+  const [buttons, setButtons] = useState<TplButton[]>([]);
 
   const { data: tplData } = useQuery({
     queryKey: ["wa-templates", businessId], enabled: !!businessId && !preview,
-    queryFn: async () => { const { data } = await (supabase as any).from("whatsapp_templates").select("id, name, category, body, status").eq("business_id", businessId).order("created_at", { ascending: false }).limit(200); return data || []; },
+    queryFn: async () => { const { data } = await (supabase as any).from("whatsapp_templates").select("id, name, category, header_text, body, footer_text, buttons, status").eq("business_id", businessId).order("created_at", { ascending: false }).limit(200); return data || []; },
   });
   const sample = [
-    { id: "t1", name: "עדכון הזמנה", category: "utility", body: "היי {{1}}, ההזמנה שלך מספר {{2}} בדרך! 🚚", status: "approved" },
-    { id: "t2", name: "מבצע סוף שבוע", category: "marketing", body: "{{1}}, סוף שבוע = 20% הנחה! קוד: WEEKEND", status: "pending" },
-    { id: "t3", name: "תזכורת תור", category: "utility", body: "תזכורת: התור שלך מחר ב-{{1}}. נתראה!", status: "approved" },
+    { id: "t1", name: "עדכון הזמנה", category: "utility", header_text: "ההזמנה שלך אצלנו", body: "היי {{1}}, ההזמנה שלך מספר {{2}} בדרך! 🚚", footer_text: "תודה שקנית אצלנו", buttons: [{ type: "url", text: "מעקב הזמנה", value: "https://" }], status: "approved" },
+    { id: "t2", name: "מבצע סוף שבוע", category: "marketing", header_text: "", body: "{{1}}, סוף שבוע = 20% הנחה! קוד: WEEKEND", footer_text: "להסרה השב/י הסר", buttons: [{ type: "url", text: "לחנות", value: "https://" }, { type: "quick_reply", text: "לא מעוניין" }], status: "pending" },
   ];
   const templates = preview ? sample : (tplData || []);
   const refresh = () => qc.invalidateQueries({ queryKey: ["wa-templates", businessId] });
 
+  const addButton = () => { if (buttons.length < 3) setButtons([...buttons, { type: "url", text: "", value: "" }]); };
+  const updateButton = (i: number, patch: Partial<TplButton>) => setButtons(buttons.map((b, idx) => idx === i ? { ...b, ...patch } : b));
+  const removeButton = (i: number) => setButtons(buttons.filter((_, idx) => idx !== i));
+
   const create = async () => {
+    if (preview) { toast.info("בתצוגה מקדימה לא נשמר בפועל 🙂"); return; }
     if (!name.trim() || !body.trim() || !businessId) return;
-    const { error } = await (supabase as any).from("whatsapp_templates").insert({ business_id: businessId, name: name.trim(), category, body: body.trim(), status: "draft" });
+    const { error } = await (supabase as any).from("whatsapp_templates").insert({ business_id: businessId, name: name.trim(), category, header_text: header.trim() || null, body: body.trim(), footer_text: footer.trim() || null, buttons, status: "draft" });
     if (error) return toast.error(error.message);
-    setName(""); setBody(""); refresh(); toast.success("התבנית נשמרה ותישלח לאישור Meta ✓");
+    setName(""); setHeader(""); setBody(""); setFooter(""); setButtons([]); refresh(); toast.success("התבנית נשמרה ותישלח לאישור Meta ✓");
   };
 
   const statusBadge = (s: string) => {
     const map: Record<string, { label: string; cls: string }> = {
-      approved: { label: "אושר ✓", cls: "text-[#0f8c6e]" },
-      pending: { label: "ממתין לאישור", cls: "text-amber-600 bg-amber-500/10" },
-      rejected: { label: "נדחה", cls: "text-red-600 bg-red-500/10" },
-      draft: { label: "טיוטה", cls: "text-muted-foreground bg-muted" },
+      approved: { label: "אושר ✓", cls: "text-[#0f8c6e]" }, pending: { label: "ממתין לאישור", cls: "text-amber-600 bg-amber-500/10" },
+      rejected: { label: "נדחה", cls: "text-red-600 bg-red-500/10" }, draft: { label: "טיוטה", cls: "text-muted-foreground bg-muted" },
     };
     const m = map[s] || map.draft;
     return <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${m.cls}`} style={s === "approved" ? { background: `${WA}1f` } : undefined}>{m.label}</span>;
   };
 
   const starters = [
-    { name: "אישור הזמנה", category: "utility", body: "היי {{1}}, קיבלנו את ההזמנה שלך (מס' {{2}}) ✅ נעדכן אותך בכל שלב." },
-    { name: "ההזמנה בדרך", category: "utility", body: "{{1}}, ההזמנה שלך יצאה ובדרך אליך 🚚 צפי הגעה: {{2}}." },
-    { name: "מבצע ללקוחות", category: "marketing", body: "{{1}}, מבצע מיוחד רק לכם! {{2}} בתוקף עד סוף השבוע 🎁" },
-    { name: "תזכורת תור", category: "utility", body: "תזכורת: יש לך תור מחר ב-{{1}}. נשמח לראותך! לאישור השב/י 1." },
+    { name: "אישור הזמנה", category: "utility", header: "ההזמנה התקבלה", body: "היי {{1}}, קיבלנו את ההזמנה שלך (מס' {{2}}) ✅", footer: "תודה שקנית אצלנו", buttons: [{ type: "url" as const, text: "מעקב הזמנה", value: "https://" }] },
+    { name: "מבצע ללקוחות", category: "marketing", header: "מבצע מיוחד 🎁", body: "{{1}}, מבצע רק לכם! {{2}} עד סוף השבוע.", footer: "להסרה השב/י הסר", buttons: [{ type: "url" as const, text: "לחנות", value: "https://" }, { type: "quick_reply" as const, text: "לא מעוניין" }] },
   ];
+
+  // WhatsApp-style live preview bubble
+  const bubble = (t: { header_text?: string; body: string; footer_text?: string; buttons?: TplButton[] }) => (
+    <div className="rounded-2xl rounded-bl-sm bg-[#e8fce4] border border-[#cdeec4] p-3 max-w-sm text-right" dir="rtl">
+      {t.header_text && <div className="font-bold text-foreground text-sm mb-1">{t.header_text}</div>}
+      <div className="text-sm text-foreground whitespace-pre-wrap">{t.body || "תוכן ההודעה..."}</div>
+      {t.footer_text && <div className="text-[11px] text-muted-foreground mt-1.5">{t.footer_text}</div>}
+      {!!t.buttons?.length && (
+        <div className="mt-2 pt-2 border-t border-[#cdeec4] space-y-1">
+          {t.buttons.map((b, i) => (
+            <div key={i} className="text-center text-sm font-medium py-1.5 rounded-lg" style={{ color: "#0a7", background: "#fff" }}>
+              {b.type === "url" ? "🔗 " : b.type === "call" ? "📞 " : ""}{b.text || "כפתור"}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-        <h3 className="font-semibold text-foreground flex items-center gap-2"><FileText className="w-4 h-4" style={{ color: DEEP }} /> בניית תבנית חדשה</h3>
+      <div className="grid lg:grid-cols-[1fr_320px] gap-5 items-start">
+        {/* Editor */}
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+          <h3 className="font-semibold text-foreground flex items-center gap-2"><FileText className="w-4 h-4" style={{ color: DEEP }} /> בניית תבנית</h3>
 
-        <div>
-          <div className="text-xs text-muted-foreground mb-2">התחל מתבנית מוכנה:</div>
-          <div className="flex flex-wrap gap-2">
-            {starters.map((s, i) => (
-              <button key={i} onClick={() => { setName(s.name); setCategory(s.category); setBody(s.body); }} className="text-xs rounded-lg border border-border bg-background px-3 py-1.5 text-foreground hover:border-foreground/30 transition-colors">{s.name}</button>
-            ))}
+          <div>
+            <div className="text-xs text-muted-foreground mb-2">התחל מתבנית מוכנה:</div>
+            <div className="flex flex-wrap gap-2">
+              {starters.map((s, i) => (
+                <button key={i} onClick={() => { setName(s.name); setCategory(s.category); setHeader(s.header); setBody(s.body); setFooter(s.footer); setButtons(s.buttons); }} className="text-xs rounded-lg border border-border bg-background px-3 py-1.5 text-foreground hover:border-foreground/30 transition-colors">{s.name}</button>
+              ))}
+            </div>
           </div>
+
+          <div className="flex flex-wrap gap-2">
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="שם התבנית" className="flex-1 min-w-[160px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm" />
+            <select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm">
+              <option value="marketing">שיווק</option><option value="utility">שירות / עדכון</option>
+            </select>
+          </div>
+
+          <div><label className="text-xs font-medium text-muted-foreground">כותרת (אופציונלי)</label>
+            <input value={header} onChange={(e) => setHeader(e.target.value)} placeholder="כותרת ההודעה" className="w-full mt-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm" /></div>
+          <div><label className="text-xs font-medium text-muted-foreground">תוכן *</label>
+            <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} placeholder="תוכן ההודעה. משתנים: {{1}} שם, {{2}} מספר..." className="w-full mt-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm" /></div>
+          <div><label className="text-xs font-medium text-muted-foreground">פוטר (אופציונלי)</label>
+            <input value={footer} onChange={(e) => setFooter(e.target.value)} placeholder='למשל: "להסרה השב/י הסר"' className="w-full mt-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm" /></div>
+
+          {/* Buttons builder */}
+          <div>
+            <div className="flex items-center justify-between mb-2"><label className="text-xs font-medium text-muted-foreground">כפתורים (עד 3)</label>
+              {buttons.length < 3 && <button onClick={addButton} className="text-xs font-medium inline-flex items-center gap-1" style={{ color: DEEP }}><Plus className="w-3 h-3" /> הוסף כפתור</button>}</div>
+            <div className="space-y-2">
+              {buttons.map((b, i) => (
+                <div key={i} className="flex flex-wrap gap-2 items-center bg-muted/30 rounded-lg p-2">
+                  <select value={b.type} onChange={(e) => updateButton(i, { type: e.target.value as any })} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
+                    <option value="url">קישור</option><option value="call">חיוג</option><option value="quick_reply">תשובה מהירה</option>
+                  </select>
+                  <input value={b.text} onChange={(e) => updateButton(i, { text: e.target.value })} placeholder="טקסט הכפתור" className="flex-1 min-w-[100px] rounded-lg border border-border bg-background px-3 py-1.5 text-xs" />
+                  {b.type !== "quick_reply" && <input value={b.value || ""} onChange={(e) => updateButton(i, { value: e.target.value })} dir="ltr" placeholder={b.type === "call" ? "מספר טלפון" : "https://"} className="flex-1 min-w-[120px] rounded-lg border border-border bg-background px-3 py-1.5 text-xs" />}
+                  <button onClick={() => removeButton(i)} className="text-muted-foreground hover:text-destructive text-xs">✕</button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs text-muted-foreground rounded-lg bg-muted/30 p-3">
+            <ImageIcon className="w-4 h-4 shrink-0" style={{ color: DEEP }} />
+            <span>אפשר גם כותרת מדיה - <b className="text-foreground">תמונה 5MB</b> / <b className="text-foreground">וידאו 16MB</b> / מסמך 100MB.</span>
+          </div>
+          <button onClick={create} className="w-full rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center justify-center gap-1.5" style={{ background: DEEP }}><Plus className="w-4 h-4" /> שמור ושלח לאישור Meta</button>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="שם התבנית" className="flex-1 min-w-[160px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm" />
-          <select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm">
-            <option value="marketing">שיווק</option><option value="utility">שירות / עדכון</option>
-          </select>
-        </div>
-        <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} placeholder="תוכן ההודעה. אפשר משתנים: {{1}} שם, {{2}} מספר הזמנה..." className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm" />
-        <div className="flex items-center gap-2 text-xs text-muted-foreground rounded-lg bg-muted/30 p-3">
-          <ImageIcon className="w-4 h-4 shrink-0" style={{ color: DEEP }} />
-          <span>אפשר לצרף לתבנית כותרת מדיה - <b className="text-foreground">תמונה עד 5MB</b> או <b className="text-foreground">וידאו עד 16MB</b> (מגבלות Meta). מסמך עד 100MB.</span>
-        </div>
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-xs text-muted-foreground">תבניות שיווק עוברות אישור של Meta (לרוב דקות עד שעות). אנחנו שולחים לאישור אוטומטית.</p>
-          <button onClick={create} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5" style={{ background: DEEP }}><Plus className="w-4 h-4" /> שמור ושלח לאישור</button>
+        {/* Live preview */}
+        <div className="lg:sticky lg:top-6">
+          <div className="text-xs text-muted-foreground mb-2">תצוגה מקדימה:</div>
+          <div className="rounded-2xl p-4" style={{ background: "#d9dbd5" }}>{bubble({ header_text: header, body, footer_text: footer, buttons })}</div>
         </div>
       </div>
 
       <div className="space-y-3">
-        {templates.length === 0 ? (<p className="text-sm text-muted-foreground p-8 text-center rounded-3xl border border-border bg-card">אין עדיין תבניות.</p>) : templates.map((t: any) => (
-          <div key={t.id} className="rounded-3xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between gap-3 mb-2">
+        {templates.length === 0 ? (<p className="text-sm text-muted-foreground p-8 text-center rounded-2xl border border-border bg-card">אין עדיין תבניות.</p>) : templates.map((t: any) => (
+          <div key={t.id} className="rounded-2xl border border-border bg-card p-5">
+            <div className="flex items-center justify-between gap-3 mb-3">
               <div className="flex items-center gap-2"><span className="font-semibold text-foreground">{t.name}</span><span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{t.category === "marketing" ? "שיווק" : "שירות"}</span></div>
               {statusBadge(t.status)}
             </div>
-            <p className="text-sm text-muted-foreground bg-muted/40 rounded-xl p-3" dir="rtl">{t.body}</p>
+            {bubble(t)}
           </div>
         ))}
       </div>
