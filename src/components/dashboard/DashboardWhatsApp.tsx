@@ -7,7 +7,7 @@ import {
   MessageCircle, Check, Users, Megaphone, Settings as SettingsIcon,
   Plus, Upload, Loader2, BadgeCheck, ShieldCheck, Bell,
   Sparkles, Send, Image as ImageIcon, ChevronDown, ArrowLeft, Eye, CheckCheck,
-  MessagesSquare, FileText, Bot, Smartphone, Facebook, FileSpreadsheet, Wand2, Mic,
+  MessagesSquare, FileText, Bot, Smartphone, Facebook, FileSpreadsheet, Wand2, Mic, Paperclip,
 } from "lucide-react";
 
 interface Props { businessId?: string; forceConnected?: boolean }
@@ -228,7 +228,19 @@ const ChatTab = ({ businessId, preview }: { businessId?: string; preview?: boole
     ] },
   ];
   const [reply, setReply] = useState("");
+  const [attached, setAttached] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const conv = sample[active];
+
+  // WhatsApp media limits: image 5MB, video 16MB.
+  const pickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const isVideo = f.type.startsWith("video");
+    const maxMb = isVideo ? 16 : 5;
+    if (f.size > maxMb * 1024 * 1024) { toast.error(`קובץ גדול מדי. מקסימום ${isVideo ? "וידאו 16MB" : "תמונה 5MB"}.`); e.target.value = ""; return; }
+    setAttached(f.name);
+  };
 
   if (!preview && !businessId) return null;
 
@@ -261,9 +273,14 @@ const ChatTab = ({ businessId, preview }: { businessId?: string; preview?: boole
             </div>
           ))}
         </div>
-        <div className="p-3 border-t border-border flex items-center gap-2">
-          <input value={reply} onChange={(e) => setReply(e.target.value)} placeholder="כתבו תשובה..." className="flex-1 rounded-full border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
-          <button onClick={() => { if (reply.trim()) { toast.success("נשלח ✓ (בתצוגה מקדימה)"); setReply(""); } }} className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0" style={{ background: WA }}><Send className="w-4 h-4" /></button>
+        <div className="px-3 pt-2 border-t border-border">
+          {attached && <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5"><Paperclip className="w-3 h-3" /> {attached} <button onClick={() => setAttached(null)} className="text-muted-foreground hover:text-foreground">✕</button></div>}
+          <div className="flex items-center gap-2 pb-3">
+            <input ref={fileRef} type="file" accept="image/*,video/*" className="hidden" onChange={pickFile} />
+            <button onClick={() => fileRef.current?.click()} title="צרף תמונה/וידאו" className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 shrink-0"><Paperclip className="w-4.5 h-4.5" /></button>
+            <input value={reply} onChange={(e) => setReply(e.target.value)} placeholder="כתבו תשובה..." className="flex-1 rounded-full border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
+            <button onClick={() => { if (reply.trim() || attached) { toast.success("נשלח ✓ (בתצוגה מקדימה)"); setReply(""); setAttached(null); } }} className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0" style={{ background: WA }}><Send className="w-4 h-4" /></button>
+          </div>
         </div>
       </div>
     </div>

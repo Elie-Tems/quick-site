@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
   const admin = createClient(url, service);
 
   let body: {
-    businessId?: string; to?: string; body?: string;
+    businessId?: string; to?: string; body?: string; mediaUrl?: string;
     contentSid?: string; variables?: Record<string, string>; category?: string;
   };
   try { body = await req.json(); } catch { return json({ ok: false, error: "Invalid JSON" }, 400); }
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
 
   const result = body.contentSid
     ? await sendWhatsAppTemplate(creds, from, body.to, body.contentSid, body.variables)
-    : await sendWhatsAppText(creds, from, body.to, body.body || "");
+    : await sendWhatsAppText(creds, from, body.to, body.body || "", body.mediaUrl);
 
   await admin.from("whatsapp_messages").insert({
     business_id: body.businessId,

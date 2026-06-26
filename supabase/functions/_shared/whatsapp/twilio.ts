@@ -30,14 +30,19 @@ export interface SendResult {
   skipped?: boolean;
 }
 
-/** Send a freeform WhatsApp message (only valid inside the 24h service window). */
+/** Send a freeform WhatsApp message (only valid inside the 24h service window).
+ *  Pass mediaUrl to attach an image/video/document (publicly reachable URL). */
 export async function sendWhatsAppText(
   creds: TwilioCreds,
   from: string,
   to: string,
   body: string,
+  mediaUrl?: string,
 ): Promise<SendResult> {
-  return await postMessage(creds, { From: wa(from), To: wa(to), Body: body });
+  const params: Record<string, string> = { From: wa(from), To: wa(to) };
+  if (body) params.Body = body;
+  if (mediaUrl) params.MediaUrl = mediaUrl;
+  return await postMessage(creds, params);
 }
 
 /** Send a pre-approved template (Twilio Content API) - required outside the 24h window. */
