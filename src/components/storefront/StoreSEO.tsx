@@ -129,6 +129,45 @@ const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
     }))
   } : null;
 
+  const fallbackImage = ogImage;
+
+  const shippingDetails = {
+    "@type": "OfferShippingDetails",
+    "shippingRate": {
+      "@type": "MonetaryAmount",
+      "value": "0",
+      "currency": "ILS"
+    },
+    "shippingDestination": {
+      "@type": "DefinedRegion",
+      "addressCountry": "IL"
+    },
+    "deliveryTime": {
+      "@type": "ShippingDeliveryTime",
+      "handlingTime": {
+        "@type": "QuantitativeValue",
+        "minValue": 0,
+        "maxValue": 1,
+        "unitCode": "DAY"
+      },
+      "transitTime": {
+        "@type": "QuantitativeValue",
+        "minValue": 1,
+        "maxValue": 5,
+        "unitCode": "DAY"
+      }
+    }
+  };
+
+  const merchantReturnPolicy = {
+    "@type": "MerchantReturnPolicy",
+    "applicableCountry": "IL",
+    "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+    "merchantReturnDays": 14,
+    "returnMethod": "https://schema.org/ReturnByMail",
+    "returnFees": "https://schema.org/FreeReturn"
+  };
+
   // Individual Product Schemas (for first 5 products)
   const productSchemas = products.slice(0, 5).map(product => ({
     "@context": "https://schema.org",
@@ -136,7 +175,7 @@ const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
     "@id": `${storeUrl}#product-${product.id}`,
     "name": product.name,
     ...(product.description && { "description": product.description }),
-    ...(product.imageUrl && { "image": product.imageUrl }),
+    "image": product.imageUrl || fallbackImage,
     ...(product.sku && { "sku": product.sku }),
     "brand": {
       "@type": "Brand",
@@ -154,7 +193,9 @@ const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
       "seller": {
         "@type": "Organization",
         "name": siteName
-      }
+      },
+      "shippingDetails": shippingDetails,
+      "hasMerchantReturnPolicy": merchantReturnPolicy
     }
   }));
 
