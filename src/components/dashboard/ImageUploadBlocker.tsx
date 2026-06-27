@@ -74,7 +74,7 @@ export const ImageUploadBlocker = ({
                     <span className="font-medium">{plan.name}</span>
                   </div>
                   <div className="text-left">
-                    <span className="font-bold text-primary">{plan.label}/חודש</span>
+                    <span className="font-bold text-primary">{plan.label}/חודש + מע"מ</span>
                     <span className="text-xs text-muted-foreground block">עד {plan.productLimit} מוצרים</span>
                   </div>
                 </div>

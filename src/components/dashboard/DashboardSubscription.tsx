@@ -317,7 +317,7 @@ const DashboardSubscription = () => {
               {subscription && getStatusBadge(subscription.status, subscription.paid_until)}
             </div>
             <CardDescription>
-              {getCurrentPlan().name} - {getCurrentPlan().label}/חודש
+              {getCurrentPlan().name} - {getCurrentPlan().label}/חודש + מע"מ
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -389,7 +389,7 @@ const DashboardSubscription = () => {
             </div>
 
             <div className="bg-muted/50 rounded-lg p-3 text-center">
-              <span className="font-bold text-primary">{currentPlan.label}/חודש</span>
+              <span className="font-bold text-primary">{currentPlan.label}/חודש + מע"מ</span>
               <p className="text-xs text-muted-foreground">עד {currentPlan.productLimit} מוצרים</p>
             </div>
           </CardContent>
@@ -466,7 +466,7 @@ const DashboardSubscription = () => {
               >
                 <div className="font-bold">{pkg.credits}</div>
                 <div className="text-xs text-muted-foreground">קרדיטים</div>
-                <div className="text-sm font-medium text-primary mt-1">{pkg.label}</div>
+                <div className="text-sm font-medium text-primary mt-1">{pkg.label} <span className="text-[10px] font-normal text-muted-foreground">+ מע"מ</span></div>
               </div>
             ))}
           </div>

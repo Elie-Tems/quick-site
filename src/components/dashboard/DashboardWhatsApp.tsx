@@ -167,7 +167,7 @@ const GuidanceScreen = () => {
             <div className="flex items-baseline justify-between"><span className="text-muted-foreground">הקמה חד-פעמית</span><span className="font-extrabold text-foreground text-lg">₪190</span></div>
             <div className="flex items-baseline justify-between"><span className="text-muted-foreground">מנוי חודשי</span><span className="font-extrabold text-foreground text-lg">₪89<span className="text-xs font-normal text-muted-foreground">/חודש</span></span></div>
             <div className="flex items-baseline justify-between pt-1 border-t border-border"><span className="text-muted-foreground">הודעות שיווק</span><span className="font-medium text-foreground">לפי שימוש (~₪0.26 להודעה)</span></div>
-            <p className="text-xs text-muted-foreground pt-1">התראות שירות ללקוח - לרוב חינם. ללא התחייבות, אפשר לבטל בכל עת.</p>
+            <p className="text-xs text-muted-foreground pt-1">התראות שירות ללקוח - לרוב חינם. ללא התחייבות, אפשר לבטל בכל עת. המחירים אינם כוללים מע"מ.</p>
           </div>
         </motion.div>
 
@@ -175,7 +175,7 @@ const GuidanceScreen = () => {
           <div className="flex items-center gap-2 mb-2"><Smartphone className="w-5 h-5" style={{ color: "#0f8c6e" }} /><h3 className="font-bold text-foreground text-lg">אין לכם מספר פנוי?</h3></div>
           <p className="text-sm text-muted-foreground leading-relaxed mb-4">נספק לכם <b className="text-foreground">מספר וואטסאפ מוכן</b> ייעודי לעסק - בלי להוציא SIM נוסף. תוספת חודשית קטנה, ואנחנו מטפלים בהכל.</p>
           <button onClick={() => toast.info("נרשמה בקשה למספר מוכן - ניצור קשר להשלמה 🙏")} className="rounded-2xl px-5 py-2.5 text-sm font-bold text-white inline-flex items-center gap-2 shadow-sm hover:scale-[1.02] transition-transform" style={{ background: WA }}>
-            <Plus className="w-4 h-4" /> הזמנת מספר מוכן · ₪19/חודש
+            <Plus className="w-4 h-4" /> הזמנת מספר מוכן · ₪19/חודש + מע"מ
           </button>
         </motion.div>
       </div>

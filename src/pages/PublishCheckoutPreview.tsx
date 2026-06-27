@@ -83,7 +83,7 @@ const PublishCheckoutPreview = () => {
 
           {/* price - single prominent line + sub-line */}
           <div className="my-5">
-            <div className="text-4xl md:text-5xl font-extrabold leading-none">₪69 לחודש</div>
+            <div className="text-4xl md:text-5xl font-extrabold leading-none">₪69 לחודש <span className="text-lg font-semibold">+ מע"מ</span></div>
             <div className="text-sm text-white/85 mt-2">ללא התחייבות · ביטול בכל עת</div>
           </div>
 
