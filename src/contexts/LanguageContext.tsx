@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 // Hebrew is the default + most common language. Bundle it statically so the very
 // first paint is already Hebrew - otherwise t() returns raw keys until the async
 // translation import resolves, which looked like a flash of "another language".
@@ -39,6 +39,13 @@ interface LanguageProviderProps {
 }
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  // Did the visitor already pick a language? Captured once, before any effect
+  // writes to storage - so geo-detection never overrides an explicit choice.
+  const hadExplicitChoice = useRef(
+    typeof window !== 'undefined' &&
+      ['he', 'en', 'ar', 'ru', 'fr'].includes(localStorage.getItem(STORAGE_KEY) || ''),
+  );
+
   const [language, setLanguageState] = useState<Language>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -54,6 +61,38 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   );
 
   const currentLanguage = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
+
+  // Geo default: Hebrew for Israel (the instant initial state), English for
+  // visitors abroad - unless they already chose a language. Uses Cloudflare's
+  // free /cdn-cgi/trace (no API/function needed; siango.app is behind CF).
+  const geoChecked = useRef(false);
+  useEffect(() => {
+    if (geoChecked.current || hadExplicitChoice.current) return;
+    geoChecked.current = true;
+    // Only on the platform/marketing host - never on a merchant storefront
+    // (a tenant subdomain or custom domain), so we don't flip a Hebrew store to
+    // English/LTR for a visitor from abroad.
+    const host = window.location.hostname;
+    const isPlatformHost =
+      host === 'siango.app' || host === 'www.siango.app' || host === 'localhost' || host.endsWith('.pages.dev');
+    if (!isPlatformHost) return;
+    let cancelled = false;
+    fetch('/cdn-cgi/trace')
+      .then((r) => r.text())
+      .then((txt) => {
+        const m = txt.match(/^loc=([A-Z]{2})/m);
+        const country = m?.[1];
+        if (!cancelled && country && country !== 'IL') {
+          setLanguageState('en');
+        }
+      })
+      .catch(() => {
+        /* detection is best-effort; stay on the Hebrew default */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     // Dynamically import translations
