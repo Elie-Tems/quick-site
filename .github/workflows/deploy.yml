@@ -1,0 +1,46 @@
+name: Deploy to Cloudflare Pages
+
+# Auto-deploys the site to Cloudflare Pages on every push to main.
+# Replaces the manual `wrangler pages deploy`. The only secret you must add in
+# GitHub (Settings -> Secrets and variables -> Actions) is CLOUDFLARE_API_TOKEN
+# (a token with the "Cloudflare Pages: Edit" permission).
+#
+# The VITE_* values below are build-time PUBLIC values (the Supabase anon key,
+# public URLs) - they are embedded in the browser bundle anyway, so it is safe
+# to keep them here. WhatsApp/business-email stay OFF (their flags are not set).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        env:
+          VITE_SUPABASE_PROJECT_ID: ytqgeoviokgxxwalieev
+          VITE_SUPABASE_URL: https://ytqgeoviokgxxwalieev.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cWdlb3Zpb2tneHh3YWxpZWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzMTA0NjYsImV4cCI6MjA4Njg4NjQ2Nn0.jeSSSbTP3CbKVjlzqlYavwoGqooLW7bLV9JQTY9RhD8
+          VITE_WEBSITE_URL: siango.app
+          VITE_ORDER_WEBHOOK_URL: https://hook.eu2.make.com/09a6csp2wh8vgncyi5q88mcd9brwzdnu
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 6994fb55d0f593edfbd959e465045141
+          command: pages deploy dist --project-name=siango --branch=main
