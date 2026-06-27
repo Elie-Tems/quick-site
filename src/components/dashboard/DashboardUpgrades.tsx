@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Globe, MessageCircle, Mail, Sparkles, ArrowLeft, Crown, Check } from "lucide-react";
+import { Globe, MessageCircle, Mail, Sparkles, ArrowLeft, Crown, Check, BarChart3 } from "lucide-react";
 import type { DashboardView } from "@/components/dashboard/DashboardNav";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 
@@ -31,6 +31,12 @@ const DashboardUpgrades = ({ onNavigate }: Props) => {
       title: "מייל עסקי", price: '₪19/חודש + מע"מ',
       pitch: "כתובת מייל מקצועית על הדומיין שלכם - info@your-brand.co.il. הרבה יותר אמין מ-Gmail אישי.",
       bullets: ["אמון ומקצועיות", "עובד בכל מכשיר", "תיבות לפי מחלקה"], show: emailEnabled(),
+    },
+    {
+      id: "tracking" as DashboardView, icon: BarChart3, color: "#db2777",
+      title: "תגי שיווק ומעקב", price: 'חד-פעמי ₪149 + מע"מ',
+      pitch: "חברו את כלי הפרסום שלכם לחנות - Google Tag Manager, פיקסל פייסבוק/מטא, Google Ads, טיקטוק. חובה לכל מי שמפרסם, כדי למדוד המרות ולמטב קמפיינים.",
+      bullets: ["מדידת המרות מדויקת", "קהלי ריטרגטינג", "כל הפלטפורמות"], show: true,
     },
     {
       id: "ai-images" as DashboardView, icon: Sparkles, color: "#7c3aed",

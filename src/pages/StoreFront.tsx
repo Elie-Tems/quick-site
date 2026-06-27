@@ -18,6 +18,7 @@ import StoreFooter from "@/components/storefront/StoreFooter";
 import StoreSEO from "@/components/storefront/StoreSEO";
 import AgeVerificationModal from "@/components/storefront/AgeVerificationModal";
 import { useStorefront } from "@/hooks/useStorefront";
+import { useStoreTracking } from "@/components/storefront/StoreTracking";
 import { useIsShabbatNow } from "@/hooks/useIsShabbatNow";
 import { useActiveCampaign, useCampaignBanners, useCampaignProducts } from "@/hooks/useCampaigns";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,18 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   const { data: activeCampaign } = useActiveCampaign(business?.id);
   const { data: campaignBanners } = useCampaignBanners(activeCampaign?.id);
   const { data: campaignProducts } = useCampaignProducts(activeCampaign?.id);
+
+  // Merchant's own marketing tags (paid add-on) - injected into their store.
+  const b = business as any;
+  useStoreTracking({
+    paid: b?.tracking_paid,
+    gtmId: b?.tracking_gtm_id,
+    ga4Id: b?.tracking_ga4_id,
+    metaPixel: b?.tracking_meta_pixel,
+    googleAds: b?.tracking_google_ads,
+    tiktokPixel: b?.tracking_tiktok_pixel,
+    customHead: b?.tracking_custom_head,
+  });
   
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());

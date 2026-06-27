@@ -58,6 +58,14 @@ export function buildIcountDomainCheckoutUrl(
   }
 }
 
+/** One-time ₪149 payment page for the "marketing tags" add-on (iCount). */
+export function getTagsPaymentUrl(): string {
+  return (import.meta.env.VITE_ICOUNT_TAGS_PAYMENT_URL || "").trim();
+}
+
+/** Price of the marketing-tags add-on (one-time, pre-VAT). */
+export const TAGS_ADDON_PRICE_ILS = 149;
+
 /** Get AI credit payment URL by package ID */
 export function getAICreditPaymentUrl(packageId: string): string {
   switch (packageId) {
