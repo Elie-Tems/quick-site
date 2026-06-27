@@ -14,14 +14,20 @@ const BRAND = "#3B976C";
 const SUPPORT_EMAIL = "office@siango.app";
 const LEGAL_NAME = 'ארפור טכנולוגיות בע"מ, ח.פ. 517331708';
 
-export function siangoSender(dashboardUrl = "https://siango.app/dashboard"): EmailSender {
+// Public, logged-out, one-click unsubscribe (Chok HaSpam). The recipient email
+// is embedded so the link removes them on load - no login, no typing.
+export function siangoSender(opts: { siteUrl?: string; recipientEmail?: string } = {}): EmailSender {
+  const site = (opts.siteUrl || "https://siango.app").replace(/\/$/, "");
+  const unsubscribeUrl = opts.recipientEmail
+    ? `${site}/unsubscribe?email=${encodeURIComponent(opts.recipientEmail)}`
+    : `${site}/unsubscribe`;
   return {
     businessName: "Siango",
     email: SUPPORT_EMAIL,
     address: LEGAL_NAME,
     brandColor: BRAND,
     logoUrl: "https://siango.app/logo-light-bg1.png",
-    unsubscribeUrl: `${dashboardUrl}?settings=notifications`,
+    unsubscribeUrl,
   };
 }
 
@@ -36,6 +42,8 @@ export interface PlatformCtx {
   freezeDate?: string;
   deleteDate?: string;
   daysLeft?: number;
+  /** Recipient address - embedded in the one-click unsubscribe link. */
+  recipientEmail?: string;
 }
 
 export interface BuiltEmail { subject: string; html: string; }
@@ -48,7 +56,7 @@ const biz = (c: PlatformCtx) => c.businessName || "העסק שלכם";
 export const accountWelcome = (c: PlatformCtx): BuiltEmail => ({
   subject: "ברוכים הבאים לסיאנגו! 🎉 בואו נבנה את האתר שלכם",
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "נרשמתם בהצלחה. הצעד הבא: לבנות את האתר ב-3 צעדים פשוטים.",
     bodyHtml:
       h1("ברוכים הבאים לסיאנגו! 🎉") +
@@ -64,7 +72,7 @@ export const accountWelcome = (c: PlatformCtx): BuiltEmail => ({
 export const onboardingAbandoned1 = (c: PlatformCtx): BuiltEmail => ({
   subject: "האתר שלכם מנמנם ומחכה לכם 😴",
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "ההתקדמות נשמרה - לא צריך להתחיל מהתחלה",
     bodyHtml:
       h1("אז... החיים קרו ☕") +
@@ -79,7 +87,7 @@ export const onboardingAbandoned1 = (c: PlatformCtx): BuiltEmail => ({
 export const onboardingAbandoned2 = (c: PlatformCtx): BuiltEmail => ({
   subject: "תזכורת אחרונה (מבטיחים שלא ננדנד יותר 🤞)",
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "עוד כמה קליקים והאתר באוויר",
     bodyHtml:
       h1("נשאר ממש צעד אחד 🙌") +
@@ -93,7 +101,7 @@ export const onboardingAbandoned2 = (c: PlatformCtx): BuiltEmail => ({
 export const siteReady = (c: PlatformCtx): BuiltEmail => ({
   subject: "🎉 רשמית! האתר שלכם עלה לאוויר",
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "הגיע הזמן להתרברב בוואטסאפ המשפחתי",
     bodyHtml:
       h1("זהו, אתם באוויר! 🎉🚀") +
@@ -110,7 +118,7 @@ export const siteReady = (c: PlatformCtx): BuiltEmail => ({
 export const paymentReceipt = (c: PlatformCtx): BuiltEmail => ({
   subject: "התשלום עבר חלק ✅ (תודה!)",
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "הכל מסודר, האתר ממשיך לדהור",
     bodyHtml:
       h1("קיבלנו, תודה! ✅") +
@@ -124,7 +132,7 @@ export const paymentReceipt = (c: PlatformCtx): BuiltEmail => ({
 export const paymentFailed = (c: PlatformCtx): BuiltEmail => ({
   subject: "אופס - הכרטיס אמר 'לא היום' 💳",
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "רגע קטן של עדכון וחוזרים לעניינים",
     bodyHtml:
       h1("החיוב לא עבר 💳") +
@@ -138,7 +146,7 @@ export const paymentFailed = (c: PlatformCtx): BuiltEmail => ({
 export const paymentReminder = (c: PlatformCtx): BuiltEmail => ({
   subject: "תזכורת קטנה - התשלום עוד ממתין 🙏",
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "כדי שהאתר יישאר באוויר",
     bodyHtml:
       h1("רק תזכורת ידידותית 🙏") +
@@ -152,7 +160,7 @@ export const paymentReminder = (c: PlatformCtx): BuiltEmail => ({
 export const siteFrozen = (c: PlatformCtx): BuiltEmail => ({
   subject: "האתר שלכם לקח פסק זמן ⏸️",
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "הוא לא נעלם - רק ממתין לכם",
     bodyHtml:
       h1("האתר הושהה זמנית ⏸️") +
@@ -166,7 +174,7 @@ export const siteFrozen = (c: PlatformCtx): BuiltEmail => ({
 export const deletionWarning = (c: PlatformCtx): BuiltEmail => ({
   subject: `חשוב: הנתונים יימחקו בעוד ${c.daysLeft ?? 14} ימים`,
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "פעולה אחרונה לשמירת האתר והנתונים",
     bodyHtml:
       h1("שימו לב - האתר עומד להימחק") +
@@ -181,7 +189,7 @@ export const deletionWarning = (c: PlatformCtx): BuiltEmail => ({
 export const siteDeleted = (c: PlatformCtx): BuiltEmail => ({
   subject: "האתר והנתונים נמחקו",
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "תמיד אפשר להתחיל מחדש",
     bodyHtml:
       h1("האתר נמחק") +
@@ -195,7 +203,7 @@ export const siteDeleted = (c: PlatformCtx): BuiltEmail => ({
 export const siteReactivated = (c: PlatformCtx): BuiltEmail => ({
   subject: "חזרנו לאוויר! 🎉 האתר שוב פעיל",
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "הכל חזר לעבוד במצב רוח מצוין",
     bodyHtml:
       h1("האתר שוב באוויר! 🎉") +
@@ -208,7 +216,7 @@ export const siteReactivated = (c: PlatformCtx): BuiltEmail => ({
 export const subscriptionCancelled = (c: PlatformCtx): BuiltEmail => ({
   subject: "המנוי בוטל - נתראה (בתקווה) בקרוב 👋",
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "פרטי הביטול בפנים",
     bodyHtml:
       h1("המנוי בוטל 👋") +
@@ -222,7 +230,7 @@ export const subscriptionCancelled = (c: PlatformCtx): BuiltEmail => ({
 export const newOrderMerchant = (c: PlatformCtx): BuiltEmail => ({
   subject: "צ'אצ'ינג! 🛍️ קיבלתם הזמנה חדשה",
   html: renderEmail({
-    sender: siangoSender(c.dashboardUrl),
+    sender: siangoSender(c),
     previewText: "הרגע של ריקוד קטן בכיסא",
     bodyHtml:
       h1("הזמנה חדשה נחתה! 🛍️🎉") +

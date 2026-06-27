@@ -3,7 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useSearchParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { HelmetProvider } from "react-helmet-async";
 import { Loader2 } from "lucide-react";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
@@ -48,8 +49,25 @@ const OnboardingCompleteGate = lazy(() => import("./pages/OnboardingCompleteGate
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const StoreLegalPage = lazy(() => import("./pages/StoreLegalPage"));
 const StoreUnsubscribe = lazy(() => import("./pages/StoreUnsubscribe"));
+const PlatformUnsubscribe = lazy(() => import("./pages/PlatformUnsubscribe"));
 
 const queryClient = new QueryClient();
+
+/**
+ * The /dashboard route, with a safety net for legacy platform emails: older
+ * emails sent the unsubscribe link to `/dashboard?settings=notifications` (an
+ * auth-gated page that crashed for logged-out recipients). For a logged-out
+ * visitor arriving with that param we show the public unsubscribe page instead,
+ * so already-sent links work too. Logged-in users get the dashboard as normal.
+ */
+const DashboardRoute = () => {
+  const { user, loading } = useAuth();
+  const [searchParams] = useSearchParams();
+  if (!loading && !user && searchParams.get("settings") === "notifications") {
+    return <PlatformUnsubscribe />;
+  }
+  return <Dashboard />;
+};
 
 const App = () => {
   // When served from a tenant subdomain (e.g. aurora.siango.app) OR a customer's
@@ -116,7 +134,8 @@ const App = () => {
                   <Route path="/store/:slug/terms" element={<StoreLegalPage docType="terms" />} />
                   <Route path="/store/:slug/privacy" element={<StoreLegalPage docType="privacy" />} />
                   <Route path="/store/:slug/unsubscribe" element={<StoreUnsubscribe />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/unsubscribe" element={<PlatformUnsubscribe />} />
+                  <Route path="/dashboard" element={<DashboardRoute />} />
                   <Route path="/manage-x7k9" element={<AdminDashboard />} />
                   <Route path="/accessibility" element={<Accessibility />} />
                   <Route path="/privacy" element={<Privacy />} />

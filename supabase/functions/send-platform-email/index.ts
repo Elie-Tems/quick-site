@@ -11,6 +11,35 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Marketing/nudge emails (suppressed if the recipient unsubscribed from Siango).
+// Transactional emails (receipts, freeze/deletion, order, domain alerts) are
+// service messages and always send, as permitted under Chok HaSpam.
+const MARKETING_TYPES = new Set([
+  "accountWelcome",
+  "onboardingAbandoned1",
+  "onboardingAbandoned2",
+  "siteReady",
+  "siteReactivated",
+]);
+
+// Fail-open suppression check via the anon-callable, SECURITY DEFINER RPC.
+async function isPlatformUnsubscribed(email: string): Promise<boolean> {
+  try {
+    const url = Deno.env.get("SUPABASE_URL");
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_ANON_KEY");
+    if (!url || !key) return false;
+    const r = await fetch(`${url}/rest/v1/rpc/is_platform_unsubscribed`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: key, Authorization: `Bearer ${key}` },
+      body: JSON.stringify({ p_email: email }),
+    });
+    if (!r.ok) return false;
+    return (await r.json()) === true;
+  } catch {
+    return false;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -19,6 +48,14 @@ serve(async (req) => {
     if (!to) {
       return new Response(JSON.stringify({ ok: false, error: "to is required" }), {
         status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Honor unsubscribe for marketing emails (transactional ones always send).
+    if (MARKETING_TYPES.has(type) && (await isPlatformUnsubscribed(to))) {
+      return new Response(JSON.stringify({ ok: true, skipped: true, reason: "unsubscribed" }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -39,7 +76,7 @@ serve(async (req) => {
           email: m.email,
           brandColor: m.brandColor,
           logoUrl: m.logoUrl,
-          unsubscribeUrl: `${storeUrl}/unsubscribe`,
+          unsubscribeUrl: `${storeUrl}/unsubscribe?email=${encodeURIComponent(to)}`,
         },
         {
           firstName: order?.firstName,
@@ -62,7 +99,8 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const b = builder(ctx || {});
+      // Embed the recipient address so the email's unsubscribe link is one-click.
+      const b = builder({ ...(ctx || {}), recipientEmail: to });
       subject = b.subject;
       html = b.html;
     }

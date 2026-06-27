@@ -32,9 +32,10 @@ export const databaseDisclosure = (businessName: string): string =>
   `הפרטים שתמסור יישמרו במאגר המידע של ${businessName} וישמשו ליצירת קשר, מתן שירות ושליחת עדכונים שיווקיים ` +
   `(בכפוף להסכמתך). באפשרותך לעיין בפרטיך, לתקנם או לבקש את מחיקתם בכל עת.`;
 
-/** Build the merchant's unsubscribe URL for a given recipient token. */
-export const buildUnsubscribeUrl = (siteUrl: string, slug: string, token: string): string =>
-  `${siteUrl.replace(/\/$/, "")}/store/${slug}/unsubscribe?t=${encodeURIComponent(token)}`;
+/** Build the merchant's one-click unsubscribe URL for a recipient (matches the
+ *  public unsubscribe page, which reads ?email= to auto-remove on load). */
+export const buildUnsubscribeUrl = (siteUrl: string, slug: string, email: string): string =>
+  `${siteUrl.replace(/\/$/, "")}/store/${slug}/unsubscribe?email=${encodeURIComponent(email)}`;
 
 /** Compliance checklist - surface in the merchant UI before enabling campaigns. */
 export const COMPLIANCE_CHECKLIST: { id: string; label: string }[] = [

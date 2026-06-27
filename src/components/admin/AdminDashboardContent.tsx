@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Building2, ShoppingCart, CreditCard,
   Gift, XCircle, TrendingUp, BarChart3, GitMerge, Users2,
   Trophy, Moon, PieChart, AlertCircle, Settings, Zap,
-  ChevronRight, Menu, X, Ticket, Handshake, Globe, Megaphone, MessageCircle, AtSign,
+  ChevronRight, Menu, X, Ticket, Handshake, Globe, Megaphone, MessageCircle, AtSign, MailX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlatformStats } from "@/hooks/useAdmin";
@@ -34,13 +34,14 @@ import AdminMarketing from "./AdminMarketing";
 import AdminWhatsApp from "./AdminWhatsApp";
 import AdminWhatsAppBot from "./AdminWhatsAppBot";
 import AdminEmailSettings from "./AdminEmailSettings";
+import AdminUnsubscribes from "./AdminUnsubscribes";
 
 type AdminView =
   | "overview" | "customers" | "businesses" | "orders" | "payments"
   | "referrals" | "cancellations" | "activity"
   | "mrr" | "funnel" | "churn" | "cohort" | "analytics"
   | "top" | "dormant" | "categories" | "payment-errors"
-  | "coupons" | "partners" | "marketing" | "whatsapp" | "whatsapp-bot" | "marketplace" | "domains" | "email-pricing" | "settings";
+  | "coupons" | "partners" | "marketing" | "whatsapp" | "whatsapp-bot" | "marketplace" | "domains" | "email-pricing" | "unsubscribes" | "settings";
 
 interface NavItem {
   id: AdminView;
@@ -66,6 +67,7 @@ const NAV: NavItem[] = [
   { id: "whatsapp-bot",   label: "הבוט שלנו",         icon: MessageCircle,   group: "מכירות" },
   { id: "domains",        label: "דומיינים",          icon: Globe,           group: "מכירות" },
   { id: "email-pricing",  label: "מייל עסקי",         icon: AtSign,          group: "מכירות" },
+  { id: "unsubscribes",   label: "רשימת הסרות",      icon: MailX,           group: "הגדרות" },
   { id: "coupons",        label: "קופוני מנוי",      icon: Ticket,          group: "מכירות" },
   { id: "cancellations",  label: "ביטולים",          icon: XCircle,         group: "מכירות" },
   // אנליטיקס
@@ -93,7 +95,7 @@ const VIEW_TITLES: Record<AdminView, string> = {
   mrr: "MRR / ARR", funnel: "Conversion Funnel", churn: "שיעור נטישה",
   cohort: "Cohort Retention", analytics: "צפיות וביקורים",
   top: "Top Performers", dormant: "עסקים רדומים", categories: "פילוח קטגוריות",
-  "payment-errors": "שגיאות תשלום", coupons: "קופוני מנוי", partners: "רווחי שותפים", marketing: "פרסום ושיווק", whatsapp: "וואטסאפ", "whatsapp-bot": "הבוט של Siango", marketplace: "Marketplace", domains: "תמחור דומיינים", "email-pricing": "תמחור מייל עסקי", settings: "הגדרות מערכת",
+  "payment-errors": "שגיאות תשלום", coupons: "קופוני מנוי", partners: "רווחי שותפים", marketing: "פרסום ושיווק", whatsapp: "וואטסאפ", "whatsapp-bot": "הבוט של Siango", marketplace: "Marketplace", domains: "תמחור דומיינים", "email-pricing": "תמחור מייל עסקי", unsubscribes: "רשימת הסרות (הסרות דיוור)", settings: "הגדרות מערכת",
 };
 
 function Sidebar({ current, onChange, collapsed, onToggle }: {
@@ -192,6 +194,7 @@ function ViewContent({ view, stats, statsLoading }: {
     case "marketplace":    return <AdminMarketplace />;
     case "domains":        return <AdminDomainSettings />;
     case "email-pricing":  return <AdminEmailSettings />;
+    case "unsubscribes":   return <AdminUnsubscribes />;
     case "mrr":            return <AdminMRR />;
     case "funnel":         return <AdminFunnel />;
     case "churn":          return <AdminChurnRate />;
