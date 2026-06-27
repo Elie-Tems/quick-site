@@ -34,6 +34,27 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 const STORAGE_KEY = 'Siango-language';
 
+// Map a visitor's country (ISO-3166 alpha-2, from Cloudflare) to one of our 5
+// supported languages. Israel -> Hebrew; Arabic / Russian / French speaking
+// countries -> their language; anything else (no matching language) -> English.
+const COUNTRY_LANG: Record<string, Language> = {
+  IL: 'he',
+  // Arabic-speaking (Arab League)
+  SA: 'ar', AE: 'ar', EG: 'ar', JO: 'ar', LB: 'ar', IQ: 'ar', SY: 'ar', PS: 'ar',
+  KW: 'ar', QA: 'ar', BH: 'ar', OM: 'ar', YE: 'ar', DZ: 'ar', MA: 'ar', TN: 'ar',
+  LY: 'ar', SD: 'ar', MR: 'ar', SO: 'ar', DJ: 'ar', KM: 'ar',
+  // Russian-speaking
+  RU: 'ru', BY: 'ru', KZ: 'ru', KG: 'ru', TJ: 'ru', TM: 'ru', UZ: 'ru', AM: 'ru',
+  AZ: 'ru', MD: 'ru',
+  // French-speaking (France, Monaco + clearly Francophone countries)
+  FR: 'fr', MC: 'fr', SN: 'fr', CI: 'fr', CM: 'fr', ML: 'fr', BF: 'fr', NE: 'fr',
+  TG: 'fr', BJ: 'fr', GA: 'fr', CG: 'fr', CD: 'fr', MG: 'fr', GN: 'fr',
+};
+
+/** Country -> supported language. Unknown / unmapped country -> English. */
+const languageForCountry = (country?: string): Language =>
+  (country && COUNTRY_LANG[country]) || 'en';
+
 interface LanguageProviderProps {
   children: ReactNode;
 }
@@ -82,8 +103,10 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       .then((txt) => {
         const m = txt.match(/^loc=([A-Z]{2})/m);
         const country = m?.[1];
-        if (!cancelled && country && country !== 'IL') {
-          setLanguageState('en');
+        if (!cancelled && country) {
+          // Israel -> Hebrew (already the default), France -> French, Russia ->
+          // Russian, Arab countries -> Arabic, anything else -> English.
+          setLanguageState(languageForCountry(country));
         }
       })
       .catch(() => {
