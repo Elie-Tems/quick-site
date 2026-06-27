@@ -83,7 +83,7 @@ const he: Record<string, string> = {
   'pricing.subtitle': 'בחרו את החבילה המתאימה לכם',
   'pricing.cancelAnytime': 'ביטול בכל עת',
   'pricing.perMonth': '/חודש',
-  'pricing.inclVat': 'כולל מע"מ',
+  'pricing.inclVat': '+ מע"מ',
   'pricing.startNow': 'מתחילים',
   'pricing.mostPopular': 'הכי פופולרי',
   'pricing.aiUpgrade': 'שדרוג תמונות מקצועי',

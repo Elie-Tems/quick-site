@@ -99,7 +99,7 @@ const DomainPurchaseDialog = ({ open, onOpenChange, domain, priceIls, businessId
           </DialogTitle>
           <DialogDescription className="text-right">
             {priceIls != null ? (
-              <>מחיר: <b className="text-foreground">₪{priceIls}/שנה</b>. הדומיין יירשם על שמכם כבעלים.</>
+              <>מחיר: <b className="text-foreground">₪{priceIls}/שנה + מע"מ</b>. הדומיין יירשם על שמכם כבעלים.</>
             ) : (
               "הדומיין יירשם על שמכם כבעלים."
             )}
@@ -170,7 +170,7 @@ const DomainPurchaseDialog = ({ open, onOpenChange, domain, priceIls, businessId
 
           <Button onClick={submit} disabled={!canSubmit} className="w-full">
             {submitting ? <Loader2 className="h-4 w-4 animate-spin ml-1" /> : <ShoppingCart className="h-4 w-4 ml-1" />}
-            {priceIls != null ? `המשך לתשלום ₪${priceIls}` : "המשך לתשלום"}
+            {priceIls != null ? `המשך לתשלום ₪${priceIls} + מע"מ` : "המשך לתשלום"}
           </Button>
           <p className="text-[11px] text-center text-muted-foreground">תשלום מאובטח. הדומיין נרשם רק לאחר אישור התשלום.</p>
         </div>

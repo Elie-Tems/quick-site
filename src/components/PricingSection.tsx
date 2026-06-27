@@ -164,7 +164,7 @@ const PricingSection = () => {
                     <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
                     <div className="flex items-baseline justify-center gap-1">
                       <span className="text-4xl font-bold text-white">{plan.price}</span>
-                      <span className="text-white/80 text-sm">/חודש</span>
+                      <span className="text-white/80 text-sm">/חודש + מע"מ</span>
                     </div>
                     <p className="text-white/70 text-sm mt-2">{plan.description}</p>
                   </div>
@@ -269,7 +269,7 @@ const PricingSection = () => {
               
               <div>
                 <h4 className="font-bold mb-2">האם המחיר כולל מע"מ?</h4>
-                <p className="text-white/80 text-sm">כן, כל המחירים מוצגים כוללים מע"מ.</p>
+                <p className="text-white/80 text-sm">המחירים אינם כוללים מע"מ. מע"מ כחוק יתווסף בעת התשלום.</p>
               </div>
               
               <div>

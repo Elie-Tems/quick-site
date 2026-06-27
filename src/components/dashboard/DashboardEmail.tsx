@@ -110,10 +110,10 @@ const DashboardEmail = ({ businessId, forceConnected, onGoToDomains }: Props) =>
                 {ownedDomains.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
               <button onClick={order} disabled={ordering || !localPart.trim()} className="rounded-xl bg-primary text-primary-foreground font-semibold px-6 h-12 inline-flex items-center gap-2 disabled:opacity-50 hover:opacity-90 transition-opacity">
-                {ordering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} צור · ₪{PRICE}/חודש
+                {ordering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} צור · ₪{PRICE}/חודש + מע"מ
               </button>
             </div>
-            <p className="text-xs text-muted-foreground mt-3">התיבה תהיה <b className="text-foreground" dir="ltr">{localPart || "info"}@{activeDomain}</b> · {PRICE} ₪ לחודש לתיבה · 10GB · עובד עם Gmail/Outlook.</p>
+            <p className="text-xs text-muted-foreground mt-3">התיבה תהיה <b className="text-foreground" dir="ltr">{localPart || "info"}@{activeDomain}</b> · {PRICE} ₪ לחודש לתיבה + מע"מ · 10GB · עובד עם Gmail/Outlook.</p>
           </motion.div>
         )}
 
@@ -172,7 +172,7 @@ const DashboardEmail = ({ businessId, forceConnected, onGoToDomains }: Props) =>
 
         {/* Pricing note */}
         <motion.div {...fade(0.35)} className="rounded-2xl border border-border bg-muted/30 p-6 flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3"><Check className="w-5 h-5 text-primary" /><span className="text-sm text-foreground">תמחור פשוט: <b>₪{PRICE} לחודש</b> לכל תיבה · ללא התחייבות · 10GB אחסון · אפשר לבטל בכל עת.</span></div>
+          <div className="flex items-center gap-3"><Check className="w-5 h-5 text-primary" /><span className="text-sm text-foreground">תמחור פשוט: <b>₪{PRICE} לחודש + מע"מ</b> לכל תיבה · ללא התחייבות · 10GB אחסון · אפשר לבטל בכל עת.</span></div>
         </motion.div>
       </div>
     </div>

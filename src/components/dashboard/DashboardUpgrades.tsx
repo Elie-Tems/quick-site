@@ -16,19 +16,19 @@ const DashboardUpgrades = ({ onNavigate }: Props) => {
   const products = [
     {
       id: "domains" as DashboardView, icon: Globe, color: "#2563eb",
-      title: "דומיין אישי", price: "מ-₪50/שנה",
+      title: "דומיין אישי", price: 'מ-₪50/שנה + מע"מ',
       pitch: "כתובת אמיתית ומקצועית לאתר - your-brand.co.il במקום כתובת ארוכה. משדר אמון, נראה רציני, וקל לזכור.",
       bullets: ["נראים מקצועיים ללקוחות", "כתובת קלה לזכירה", "חיבור אוטומטי לאתר"], show: true,
     },
     {
       id: "whatsapp" as DashboardView, icon: MessageCircle, color: "#075E54",
-      title: "וואטסאפ עסקי", price: "₪89/חודש",
+      title: "וואטסאפ עסקי", price: '₪89/חודש + מע"מ',
       pitch: "הערוץ שכל לקוח ישראלי בו. התראות הזמנה אוטומטיות, דיוור שיווקי לרשימת התפוצה, ובוט AI שעונה 24/7.",
       bullets: ["יותר לקוחות חוזרים", "פחות עבודה ידנית", "בוט שירות חכם"], show: whatsappEnabled(),
     },
     {
       id: "email" as DashboardView, icon: Mail, color: "#0f766e",
-      title: "מייל עסקי", price: "₪19/חודש",
+      title: "מייל עסקי", price: '₪19/חודש + מע"מ',
       pitch: "כתובת מייל מקצועית על הדומיין שלכם - info@your-brand.co.il. הרבה יותר אמין מ-Gmail אישי.",
       bullets: ["אמון ומקצועיות", "עובד בכל מכשיר", "תיבות לפי מחלקה"], show: emailEnabled(),
     },

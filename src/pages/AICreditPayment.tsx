@@ -204,7 +204,7 @@ const AICreditPayment = () => {
 
         <div className="text-center">
           <div className="inline-flex items-center justify-center gap-4 px-6 py-3 rounded-full bg-card border border-border">
-            <span className="text-3xl font-bold text-foreground">{selectedPackage.label}</span>
+            <span className="text-3xl font-bold text-foreground">{selectedPackage.label} <span className="text-sm font-normal text-muted-foreground">+ מע"מ</span></span>
             <div className="h-6 w-px bg-border"></div>
             <span className="text-sm font-medium text-muted-foreground">חבילת {selectedPackage.name}</span>
             <div className="h-6 w-px bg-border"></div>

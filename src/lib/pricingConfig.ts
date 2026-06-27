@@ -1,5 +1,14 @@
-// Pricing configuration for the platform
-// All prices include VAT
+// Pricing configuration for the platform.
+// All Siango prices are shown PRE-VAT (VAT is added on top). Consumer Protection
+// Law requires stating clearly when a price excludes VAT - so every price the
+// customer sees must carry VAT_SUFFIX, and pages with prices show VAT_DISCLOSURE.
+
+/** Append next to any displayed Siango price, e.g. `₪69 {VAT_SUFFIX}`. */
+export const VAT_SUFFIX = '+ מע"מ';
+/** Full disclosure line for pages/sections that list prices. */
+export const VAT_DISCLOSURE = 'המחירים אינם כוללים מע"מ. מע"מ כחוק יתווסף בעת התשלום.';
+/** Build a price label with the VAT suffix, e.g. withVat("₪69") => "₪69 + מע\"מ". */
+export const withVat = (label: string): string => `${label} ${VAT_SUFFIX}`;
 
 export interface PlanConfig {
   id: string;
@@ -91,7 +100,7 @@ export const FREE_AI_CREDITS = 10;
 export interface AddOnConfig {
   id: string;
   name: string;
-  price: number; // monthly, ILS, incl. VAT
+  price: number; // monthly, ILS, pre-VAT (VAT added on top)
   label: string;
   description: string;
   available: boolean; // false = feature not live yet (don't surface to customers)

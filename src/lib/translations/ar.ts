@@ -83,7 +83,7 @@ const ar: Record<string, string> = {
   'pricing.subtitle': 'اختر الباقة المناسبة لك',
   'pricing.cancelAnytime': 'إلغاء في أي وقت',
   'pricing.perMonth': '/شهرياً',
-  'pricing.inclVat': 'شامل الضريبة',
+  'pricing.inclVat': '+ ضريبة القيمة المضافة',
   'pricing.startNow': 'ابدأ الآن',
   'pricing.mostPopular': 'الأكثر شعبية',
   'pricing.aiUpgrade': 'ترقية صور احترافية',

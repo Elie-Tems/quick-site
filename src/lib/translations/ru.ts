@@ -83,7 +83,7 @@ const ru: Record<string, string> = {
   'pricing.subtitle': 'Выберите подходящий пакет',
   'pricing.cancelAnytime': 'Отмена в любое время',
   'pricing.perMonth': '/месяц',
-  'pricing.inclVat': 'Включая НДС',
+  'pricing.inclVat': '+ НДС',
   'pricing.startNow': 'Начать',
   'pricing.mostPopular': 'Самый популярный',
   'pricing.aiUpgrade': 'Профессиональное улучшение фото',

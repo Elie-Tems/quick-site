@@ -199,7 +199,7 @@ export const CreditPurchaseModal = ({ open, onOpenChange, businessId }: CreditPu
                 
                 <div className="text-xl font-bold">
                   {pkg.label}
-                  <span className="text-xs font-normal text-muted-foreground block">כולל מע״מ</span>
+                  <span className="text-xs font-normal text-muted-foreground block">+ מע״מ</span>
                 </div>
 
                 <ul className="text-xs text-muted-foreground space-y-1">

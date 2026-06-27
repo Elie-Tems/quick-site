@@ -83,7 +83,7 @@ const en: Record<string, string> = {
   'pricing.subtitle': 'Choose the package that suits you',
   'pricing.cancelAnytime': 'Cancel anytime',
   'pricing.perMonth': '/month',
-  'pricing.inclVat': 'VAT included',
+  'pricing.inclVat': '+ VAT',
   'pricing.startNow': 'Get Started',
   'pricing.mostPopular': 'Most Popular',
   'pricing.aiUpgrade': 'Professional Image Upgrade',

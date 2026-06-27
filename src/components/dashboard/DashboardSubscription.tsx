@@ -483,11 +483,11 @@ const DashboardSubscription = () => {
           <div className="space-y-3">
             <div className="flex items-center justify-between py-2 border-b">
               <span className="text-muted-foreground">{getCurrentPlan().name}</span>
-              <span className="font-medium">{getCurrentPlan().label}</span>
+              <span className="font-medium">{getCurrentPlan().label} <span className="text-xs font-normal text-muted-foreground">+ מע"מ</span></span>
             </div>
             <div className="flex items-center justify-between py-3 bg-muted/50 rounded-lg px-3">
               <span className="font-bold">סה״כ לחודש</span>
-              <span className="font-bold text-xl text-primary">₪{calculateMonthlyTotal()}</span>
+              <span className="font-bold text-xl text-primary">₪{calculateMonthlyTotal()} <span className="text-xs font-normal text-muted-foreground">+ מע"מ</span></span>
             </div>
           </div>
         </CardContent>

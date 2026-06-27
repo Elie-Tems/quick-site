@@ -74,7 +74,7 @@ const AICreditPackages = ({ businessId, currentCredits, onPurchaseComplete }: AI
                 
                 <div className="text-2xl font-bold">
                   {pkg.label}
-                  <span className="text-xs font-normal text-muted-foreground block">כולל מע״מ</span>
+                  <span className="text-xs font-normal text-muted-foreground block">+ מע״מ</span>
                 </div>
 
                 <ul className="text-sm text-muted-foreground space-y-1">

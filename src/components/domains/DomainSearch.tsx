@@ -94,7 +94,7 @@ const DomainSearch = ({ onBuy, placeholder }: Props) => {
                     {r.listIls != null && r.customerIls != null && r.listIls > r.customerIls && (
                       <span className="text-muted-foreground line-through ml-1">₪{r.listIls}</span>
                     )}
-                    {r.customerIls != null && <b className="text-primary">₪{r.customerIls}/שנה</b>}
+                    {r.customerIls != null && <b className="text-primary">₪{r.customerIls}/שנה + מע"מ</b>}
                   </span>
                   <button
                     onClick={() => onBuy?.(r.domain, r.customerIls)}

@@ -83,7 +83,7 @@ const fr: Record<string, string> = {
   'pricing.subtitle': 'Choisissez le forfait qui vous convient',
   'pricing.cancelAnytime': 'Annulez à tout moment',
   'pricing.perMonth': '/mois',
-  'pricing.inclVat': 'TVA incluse',
+  'pricing.inclVat': '+ TVA',
   'pricing.startNow': 'Commencer',
   'pricing.mostPopular': 'Le plus populaire',
   'pricing.aiUpgrade': 'Amélioration d\'images professionnelle',
