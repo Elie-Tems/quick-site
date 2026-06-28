@@ -74,9 +74,10 @@ const StoreBanners = ({ banners }: StoreBannersProps) => {
                           {banner.text}
                         </p>
                       )}
-                      {banner.ctaText && banner.ctaUrl && (
+                      {banner.ctaText && banner.ctaUrl && /^https?:\/\//i.test(banner.ctaUrl) && (
                         <a
                           href={banner.ctaUrl}
+                          rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 bg-white text-foreground px-6 py-3 text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-white/90 transition-colors"
                         >
                           {banner.ctaText}
