@@ -39,6 +39,26 @@ account with each carrier (Siango integrates once).
 - Whether LionWheel/HFD allow a partner/reseller model so merchants ship under
   Siango without their own contract.
 
+## Contacts (verified online)
+- **LionWheel** - API/dev: **support@lionwheel.com** (also gives sandbox/testing env) · general: **info@lionwheel.com** · public API docs: support.lionwheel.com/en/article/api + github.com/lionwheel/api . (No public WhatsApp found - use email.)
+- **HFD** - **dev/API: hfd-dev@hfd.co.il** · general: support@hfd.co.il · phone 1-700-704-645 · partnerships: shirazi@hfd.co.il (+972-54-688-2297). WhatsApp customer line exists (via hfd.co.il contact page).
+
+## Draft outreach email (Hebrew) - send to both
+**Subject:** שיתוף פעולה / חיבור API - פלטפורמת Siango (בניית חנויות אונליין)
+
+> שלום,
+> אנחנו Siango (siango.app) - פלטפורמה ישראלית שבונה לעסקים קטנים חנויות אונליין תוך דקות. יש לנו קהל גדל של בעלי חנויות שצריכים פתרון משלוחים מובנה.
+>
+> אנחנו מעוניינים **לחבר את שירות המשלוחים שלכם ל-API שלנו**, כך שהסוחרים שלנו יוכלו לשלוח חבילות ישירות מהדשבורד. נשמח לדעת:
+> 1. האם יש מודל **שותף/ריסלר** שבו אנחנו מתממשקים פעם אחת והסוחרים שולחים תחת ההתקשרות שלנו - בלי שכל סוחר יצטרך לפתוח חשבון נפרד אצלכם? (אם לא - מה התהליך לחיבור סוחר?)
+> 2. גישה ל-API + סביבת בדיקות (sandbox): תיעוד, אימות, ואילו פעולות נתמכות - **תמחור/הצעת מחיר, יצירת תווית משלוח, נקודות איסוף, ומעקב (tracking)**.
+> 3. התנאים המסחריים (מחירים/עמלות) לנפח גדל.
+>
+> נשמח לשיחה קצרה או לקבל את החומר הטכני. תודה!
+> [שם] · Siango · siango.app
+
+*(שלח ל-support@lionwheel.com וגם ל-hfd-dev@hfd.co.il. ל-HFD אפשר גם בוואטסאפ דרך דף צור-קשר שלהם.)*
+
 ## Sources
 - LionWheel integrations: https://www.lionwheel.com/en/features-en/integrations
 - HFD: https://www.hfd.co.il/en/
