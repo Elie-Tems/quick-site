@@ -39,17 +39,20 @@ async function isSafePublicUrl(raw: string): Promise<boolean> {
   if (/^\d+$/.test(host) || /^0x/i.test(host)) return false;
   // Literal IP -> check directly.
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.includes(":")) return !ipIsBlocked(host);
-  // Hostname -> resolve and reject if ANY resolved IP is private (anti-rebinding).
-  try {
-    const ips: string[] = [];
-    for (const t of ["A", "AAAA"] as const) {
-      try { ips.push(...(await Deno.resolveDns(host, t))); } catch { /* no record of this type */ }
-    }
-    if (!ips.length) return false; // unresolvable -> don't fetch
-    return ips.every((ip) => !ipIsBlocked(ip));
-  } catch {
-    return false;
+  // Hostname -> if DNS resolution is available, reject when any resolved IP is
+  // private (anti-rebinding). If resolveDns isn't available in this runtime, fall
+  // back to the string checks above + redirect re-validation - do NOT hard-block
+  // legitimate sites (that would break the branding scan entirely).
+  if (typeof (Deno as { resolveDns?: unknown }).resolveDns === "function") {
+    try {
+      const ips: string[] = [];
+      for (const t of ["A", "AAAA"] as const) {
+        try { ips.push(...(await Deno.resolveDns(host, t))); } catch { /* no record of this type */ }
+      }
+      if (ips.length && ips.some((ip) => ipIsBlocked(ip))) return false;
+    } catch { /* resolution unavailable -> rely on string checks + redirect validation */ }
   }
+  return true;
 }
 
 // fetch that re-validates every redirect hop against the SSRF guard.

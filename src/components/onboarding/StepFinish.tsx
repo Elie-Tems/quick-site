@@ -123,7 +123,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         <p className="text-sm font-medium">איך תקבלו הזמנות?</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
-            { id: "orders-only" as const, icon: ShoppingCart, title: "הזמנות בלבד", desc: "ללא סליקה — גביה בהעברה / מזומן" },
+            { id: "orders-only" as const, icon: ShoppingCart, title: "הזמנות בלבד", desc: "ללא סליקה" },
             { id: "orders-payments" as const, icon: CreditCard, title: "הזמנות + תשלום אונליין", desc: "סליקת אשראי וביט ישירות באתר" },
           ].map(opt => {
             const selected = data.orderType === opt.id;
