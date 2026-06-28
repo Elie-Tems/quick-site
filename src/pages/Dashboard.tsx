@@ -8,6 +8,7 @@ import SubscriptionAlert from "@/components/dashboard/SubscriptionAlert";
 import DashboardHome from "@/components/dashboard/DashboardHome";
 import DashboardProducts, { type Product } from "@/components/dashboard/DashboardProducts";
 import DashboardOrders, { type Order } from "@/components/dashboard/DashboardOrders";
+import DashboardCustomers from "@/components/dashboard/DashboardCustomers";
 import DashboardBanners, { type Banner } from "@/components/dashboard/DashboardBanners";
 import DashboardCoupons from "@/components/dashboard/DashboardCoupons";
 import DashboardSales from "@/components/dashboard/DashboardSales";
@@ -532,6 +533,8 @@ const Dashboard = () => {
         );
       case 'orders':
         return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} />;
+      case 'customers':
+        return <DashboardCustomers orders={orders} />;
       case 'campaigns':
         return (
           <DashboardCampaigns 
