@@ -99,6 +99,13 @@ const Dashboard = () => {
     deliveryMode: "pickup_only",
   });
   const [productsCategoryFilter, setProductsCategoryFilter] = useState<string | null>(null);
+  // Products hub: list / categories / sales are now tabs inside one screen.
+  const [productsTab, setProductsTab] = useState<'list' | 'categories' | 'sales'>('list');
+  // Redirect legacy nav targets (categories / sales) into the products hub tab.
+  useEffect(() => {
+    if (currentView === 'categories') { setProductsTab('categories'); setCurrentView('products'); }
+    else if (currentView === 'sales') { setProductsTab('sales'); setCurrentView('products'); }
+  }, [currentView]);
 
   // Handle sale updates
   const handleSaleUpdate = useCallback((productId: string, updates: { sale_price?: number | null; is_on_sale?: boolean; is_hot?: boolean; sale_end_date?: string | null }) => {
@@ -437,51 +444,78 @@ const Dashboard = () => {
       case 'home':
         return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} hasAbout={!!(business as any)?.about_text?.trim()} onNavigate={setCurrentView} />;
       case 'products':
-        return (
-          <DashboardProducts 
-            products={products} 
-            onProductsChange={handleProductsChange}
-            businessId={business?.id}
-            categories={productCategories}
-            onNavigateToAI={() => setCurrentView('ai-images')}
-            onNavigateToSubscription={() => setCurrentView('subscription')}
-            initialCategoryFilterId={productsCategoryFilter}
-            onNavigateToCategories={() => setCurrentView('categories')}
-          />
-        );
       case 'categories':
-        return (
-          <DashboardCategories
-            businessId={business?.id}
-            businessCategory={business?.business_category ?? undefined}
-            products={products}
-            onProductUpdate={(productId, categoryId) => {
-              const updatedProducts = products.map(p => 
-                p.id === productId ? { ...p, categoryId } : p
-              );
-              handleProductsChange(updatedProducts);
-            }}
-            onViewCategoryProducts={(categoryId) => {
-              setProductsCategoryFilter(categoryId);
-              setCurrentView('products');
-            }}
-          />
-        );
       case 'sales':
         return (
-          <DashboardSales 
-            products={products.map(p => ({
-              id: p.id,
-              name: p.name,
-              price: p.price,
-              sale_price: (p as any).sale_price,
-              is_on_sale: (p as any).is_on_sale,
-              is_hot: (p as any).is_hot,
-              imageUrl: p.imageUrl,
-            }))}
-            onProductUpdate={handleSaleUpdate}
-            isLoading={productsLoading}
-          />
+          <div className="space-y-4">
+            {/* One product hub: list / categories / sales as tabs */}
+            <div className="flex gap-1 border-b border-border overflow-x-auto">
+              {([
+                { id: 'list', label: 'רשימת מוצרים' },
+                { id: 'categories', label: 'קטגוריות' },
+                { id: 'sales', label: 'מבצעים ומובילים' },
+              ] as const).map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setProductsTab(t.id)}
+                  className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${
+                    productsTab === t.id
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {productsTab === 'list' && (
+              <DashboardProducts
+                products={products}
+                onProductsChange={handleProductsChange}
+                businessId={business?.id}
+                categories={productCategories}
+                onNavigateToAI={() => setCurrentView('ai-images')}
+                onNavigateToSubscription={() => setCurrentView('subscription')}
+                initialCategoryFilterId={productsCategoryFilter}
+                onNavigateToCategories={() => setProductsTab('categories')}
+              />
+            )}
+
+            {productsTab === 'categories' && (
+              <DashboardCategories
+                businessId={business?.id}
+                businessCategory={business?.business_category ?? undefined}
+                products={products}
+                onProductUpdate={(productId, categoryId) => {
+                  const updatedProducts = products.map((p) =>
+                    p.id === productId ? { ...p, categoryId } : p
+                  );
+                  handleProductsChange(updatedProducts);
+                }}
+                onViewCategoryProducts={(categoryId) => {
+                  setProductsCategoryFilter(categoryId);
+                  setProductsTab('list');
+                }}
+              />
+            )}
+
+            {productsTab === 'sales' && (
+              <DashboardSales
+                products={products.map((p) => ({
+                  id: p.id,
+                  name: p.name,
+                  price: p.price,
+                  sale_price: (p as any).sale_price,
+                  is_on_sale: (p as any).is_on_sale,
+                  is_hot: (p as any).is_hot,
+                  imageUrl: p.imageUrl,
+                }))}
+                onProductUpdate={handleSaleUpdate}
+                isLoading={productsLoading}
+              />
+            )}
+          </div>
         );
       case 'orders':
         return <DashboardOrders orders={orders} onOrdersChange={setOrders} />;
