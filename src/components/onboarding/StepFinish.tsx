@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { OnboardingData } from "@/pages/Onboarding";
-import { ShoppingCart, CreditCard, Check, Rocket, Loader2 } from "lucide-react";
+import { ShoppingCart, CreditCard, Check, Rocket, Loader2, Info } from "lucide-react";
 import { useCreateBusiness } from "@/hooks/useCreateBusiness";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -173,7 +173,25 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
               {data.paymentProvider === "payplus" && <Check className="w-5 h-5 text-primary shrink-0" />}
             </div>
           </button>
-          <p className="text-xs text-muted-foreground">ניתן לחבר את הסליקה גם מתוך הדשבורד לאחר הפרסום</p>
+          {/* Guidance - the connect-later flow with step-by-step help */}
+          <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 flex items-start gap-2">
+            <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-xs text-foreground">
+              את חיבור חשבון ה-PayPlus נשלים בלוח הניהול מיד אחרי הפרסום - לוקח כ-2 דקות, עם הדרכה צעד-אחר-צעד. עד אז אפשר להמשיך רגיל.
+            </p>
+          </div>
+          {/* Other providers - coming soon */}
+          <div className="rounded-lg border border-border p-3">
+            <p className="text-xs font-medium text-muted-foreground mb-2">ספקים נוספים - בקרוב:</p>
+            <div className="flex flex-wrap gap-2">
+              {["משולם / Grow", "קארדקום", "iCount", "Tranzila", "PayPal"].map((name) => (
+                <span key={name} className="text-xs px-2.5 py-1 rounded-full bg-muted text-muted-foreground">{name}</span>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              מעוניינים בספק מסוים? כתבו ל-<span dir="ltr">office@siango.app</span>
+            </p>
+          </div>
         </div>
       )}
 
