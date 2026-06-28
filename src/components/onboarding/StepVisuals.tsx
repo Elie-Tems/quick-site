@@ -87,11 +87,13 @@ interface TemplateStyle {
   heroLayout: "full-image" | "split" | "centered";
   accentColor: string;
   products: Array<{ img: string; name: string; price: string; sale?: boolean }>;
+  audience: "general" | "religious-friendly";
 }
 
 const templateStyles: TemplateStyle[] = [
   {
     id: "luxury-boutique", name: "בוטיק יוקרתי", description: "קלאסי, אלגנטי",
+    audience: "general",
     icon: <Users className="w-4 h-4" />, heroLayout: "full-image", accentColor: "#b8860b",
     heroImage: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&q=80",
     products: [
@@ -102,6 +104,7 @@ const templateStyles: TemplateStyle[] = [
   },
   {
     id: "nature-organic", name: "טבעי ואורגני", description: "ירוק, רגוע, אמין",
+    audience: "religious-friendly",
     icon: <Home className="w-4 h-4" />, heroLayout: "centered", accentColor: "#4a7c59",
     heroImage: "https://images.unsplash.com/photo-1466781783364-36c955e42a7f?w=600&q=80",
     products: [
@@ -112,6 +115,7 @@ const templateStyles: TemplateStyle[] = [
   },
   {
     id: "tech-minimal", name: "טכנולוגי ומינימלי", description: "כהה, מדויק, מוצר בצד",
+    audience: "religious-friendly",
     icon: <Zap className="w-4 h-4" />, heroLayout: "split", accentColor: "#3b82f6",
     heroImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
     products: [
@@ -122,6 +126,7 @@ const templateStyles: TemplateStyle[] = [
   },
   {
     id: "royal-purple", name: "סגול מלכותי", description: "דרמטי, יוקרתי",
+    audience: "general",
     icon: <Sparkles className="w-4 h-4" />, heroLayout: "full-image", accentColor: "#a855f7",
     heroImage: "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=600&q=80",
     products: [
@@ -330,7 +335,7 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06 }}
-                onClick={() => updateData({ storeTemplate: template.id })}
+                onClick={() => updateData({ storeTemplate: template.id, isReligiousAudience: template.audience === "religious-friendly" })}
                 className={`group relative rounded-xl overflow-hidden transition-all duration-200 text-right ${
                   isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]" : "hover:ring-1 hover:ring-muted-foreground/30"
                 }`}
@@ -346,7 +351,16 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
                   )}
                 </div>
                 <div className="p-2.5 border-t border-white/10">
-                  <p className="text-xs font-semibold text-white">{template.name}</p>
+                  <div className="flex items-start justify-between gap-1 mb-0.5">
+                    <p className="text-xs font-semibold text-white">{template.name}</p>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full shrink-0 ${
+                      template.audience === "religious-friendly"
+                        ? "bg-emerald-500/20 text-emerald-400"
+                        : "bg-white/10 text-neutral-400"
+                    }`}>
+                      {template.audience === "religious-friendly" ? "מתאים לשומרי מסורת" : "קהל כללי"}
+                    </span>
+                  </div>
                   <p className="text-[10px] text-neutral-400">{template.description}</p>
                 </div>
               </motion.button>
