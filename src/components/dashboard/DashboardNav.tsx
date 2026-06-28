@@ -36,7 +36,6 @@ const navItems: {
   // (קטגוריות + מבצעים הם עכשיו טאבים בתוך "מוצרים")
   { id: "products", label: "מוצרים", icon: Package, group: "החנות שלי" },
   { id: "design", label: "עיצוב", icon: Palette, group: "החנות שלי" },
-  { id: "banners", label: "באנרים", icon: Image, group: "החנות שלי" },
   { id: "ai-images", label: "תמונות AI", icon: Sparkles, premium: true, group: "החנות שלי" },
   { id: "ai-generated-images", label: "גלריית AI", shortLabel: "גלריה", icon: Image, premium: true, group: "החנות שלי" },
   { id: "preview", label: "תצוגה מקדימה", shortLabel: "תצוגה", icon: Eye, group: "החנות שלי" },

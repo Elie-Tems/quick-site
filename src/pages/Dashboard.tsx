@@ -111,10 +111,13 @@ const Dashboard = () => {
   const [productsCategoryFilter, setProductsCategoryFilter] = useState<string | null>(null);
   // Products hub: list / categories / sales are now tabs inside one screen.
   const [productsTab, setProductsTab] = useState<'list' | 'categories' | 'sales'>('list');
-  // Redirect legacy nav targets (categories / sales) into the products hub tab.
+  // Design hub: template / banners are tabs inside one screen.
+  const [designTab, setDesignTab] = useState<'template' | 'banners'>('template');
+  // Redirect legacy nav targets into the matching hub tab.
   useEffect(() => {
     if (currentView === 'categories') { setProductsTab('categories'); setCurrentView('products'); }
     else if (currentView === 'sales') { setProductsTab('sales'); setCurrentView('products'); }
+    else if (currentView === 'banners') { setDesignTab('banners'); setCurrentView('design'); }
   }, [currentView]);
 
   // Handle sale updates
@@ -529,15 +532,6 @@ const Dashboard = () => {
         );
       case 'orders':
         return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} />;
-      case 'banners':
-        return (
-          <DashboardBanners 
-            banners={banners} 
-            onBannersChange={handleBannersChange} 
-            businessId={business?.id} 
-            onNavigateToSubscription={() => setCurrentView('subscription')}
-          />
-        );
       case 'campaigns':
         return (
           <DashboardCampaigns 
@@ -591,11 +585,45 @@ const Dashboard = () => {
       case 'ad-budget':
         return <DashboardAdBudget businessId={business?.id} />;
       case 'design':
+      case 'banners':
         return (
-          <DashboardDesign 
-            businessId={business?.id} 
-            currentTemplateId={business?.template_id}
-          />
+          <div className="space-y-4">
+            {/* Design hub: template + banners in one place */}
+            <div className="flex gap-1 border-b border-border overflow-x-auto">
+              {([
+                { id: 'template', label: 'תבנית ועיצוב' },
+                { id: 'banners', label: 'באנרים' },
+              ] as const).map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setDesignTab(t.id)}
+                  className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${
+                    designTab === t.id
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {designTab === 'template' && (
+              <DashboardDesign
+                businessId={business?.id}
+                currentTemplateId={business?.template_id}
+              />
+            )}
+
+            {designTab === 'banners' && (
+              <DashboardBanners
+                banners={banners}
+                onBannersChange={handleBannersChange}
+                businessId={business?.id}
+                onNavigateToSubscription={() => setCurrentView('subscription')}
+              />
+            )}
+          </div>
         );
       case 'settings':
         return (
