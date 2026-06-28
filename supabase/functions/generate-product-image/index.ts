@@ -6,6 +6,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Fast path: the Lovable AI gateway with Google's gemini image model
+// ("nano-banana"). It is SYNCHRONOUS - the image comes back in the response as a
+// base64 data URL, no task queue / polling. Typically ~5s vs ~70s on the old
+// reseller. Also supports image-to-image EDITING (pass the current image +
+// instruction). If the gateway fails we fall back to the old nano-banana flow so
+// generation never hard-breaks.
+const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const GATEWAY_IMAGE_MODEL = "google/gemini-2.5-flash-image";
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -13,16 +22,16 @@ serve(async (req) => {
 
   try {
     const NANO_API_KEY = Deno.env.get("NANO_BANANA_API_KEY");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!NANO_API_KEY) {
-      throw new Error("NANO_BANANA_API_KEY is not configured");
-    }
-
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error("Supabase configuration missing");
+    }
+    if (!LOVABLE_API_KEY && !NANO_API_KEY) {
+      throw new Error("No image generation provider configured");
     }
 
     // Require an authenticated user - this endpoint calls a paid image API.
@@ -44,24 +53,24 @@ serve(async (req) => {
       );
     }
 
-    const { productName, productDescription, businessCategory, brandStyle, primaryColor, businessId, customPrompt } = await req.json();
+    const {
+      productName, productDescription, businessCategory, brandStyle, primaryColor,
+      businessId, customPrompt,
+      // Edit mode: supply the current image + a change instruction.
+      baseImageUrl, editInstruction,
+    } = await req.json();
+
+    const isEdit = !!(baseImageUrl && editInstruction && String(editInstruction).trim());
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // If a businessId is supplied, the caller must own that business.
     if (businessId) {
       const { data: profile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
+        .from("profiles").select("id").eq("user_id", user.id).maybeSingle();
       const { data: ownedBusiness } = profile
-        ? await supabase
-            .from("businesses")
-            .select("id")
-            .eq("id", businessId)
-            .eq("owner_id", profile.id)
-            .maybeSingle()
+        ? await supabase.from("businesses").select("id")
+            .eq("id", businessId).eq("owner_id", profile.id).maybeSingle()
         : { data: null };
       if (!ownedBusiness) {
         return new Response(
@@ -75,20 +84,22 @@ serve(async (req) => {
     let isReligiousAudience = false;
     if (businessId) {
       const { data: business } = await supabase
-        .from('businesses')
-        .select('is_religious_audience')
-        .eq('id', businessId)
-        .single();
-      
+        .from("businesses").select("is_religious_audience").eq("id", businessId).single();
       isReligiousAudience = business?.is_religious_audience || false;
     }
 
-    // Build a context-aware prompt for the product image
     const categoryContext = businessCategory ? `for a ${businessCategory} business` : "";
-    const styleContext = brandStyle ? `in a ${brandStyle} style` : "";
-    const colorContext = primaryColor ? `with ${primaryColor} as accent color hints` : "";
-    
-    let prompt = `Commercial e-commerce product photography ${categoryContext}.
+
+    // Build the prompt. In edit mode the instruction leads; otherwise it's a
+    // full product-photo brief.
+    let prompt: string;
+    if (isEdit) {
+      prompt = `Edit this product photo as instructed, keeping it a clean, commercial,
+catalog-ready e-commerce product photo (single product, neutral background, no text/logos/watermarks).
+
+EDIT INSTRUCTION: ${String(editInstruction).trim()}`;
+    } else {
+      prompt = `Commercial e-commerce product photography ${categoryContext}.
 
 Product: ${productName}
 ${productDescription ? `Description: ${productDescription}` : ""}
@@ -112,158 +123,156 @@ STRICTLY FORBIDDEN (image is invalid if present):
 - NO multiple products or props
 
 Generate a clean, professional e-commerce product photo suitable for an online catalog.`;
-
-    // Add custom prompt if provided
-    if (customPrompt && customPrompt.trim()) {
-      prompt += `\n\nADDITIONAL REQUIREMENTS: ${customPrompt.trim()}`;
+      if (customPrompt && customPrompt.trim()) {
+        prompt += `\n\nADDITIONAL REQUIREMENTS: ${customPrompt.trim()}`;
+      }
     }
-
-    // Add religious audience restrictions if applicable
     if (isReligiousAudience) {
       prompt += `\n\nIMPORTANT: The image is intended for a Haredi (ultra-Orthodox Jewish) audience. Do not generate women, immodest clothing, revealing images, or suggestive content. Use only modest and appropriate visuals such as landscapes, products, buildings, men in modest attire, or neutral graphic elements.`;
     }
 
-    console.log("Generating product image with Nano Banana for:", productName);
-
-    // Call Nano Banana (text-to-image), with ONE automatic retry on a transient
-    // failure (API error / timeout) so a single hiccup doesn't fail generation.
-    // Per-attempt budget bounded (35 x 1.5s ~= 52s) so two attempts fit the limit.
-    const generateOnce = async (): Promise<string> => {
-      const formData = new FormData();
-      formData.append("prompt", prompt);
-      formData.append("model", "nano-banana-2");
-      formData.append("mode", "text-to-image");
-      formData.append("aspectRatio", "1:1");
-      formData.append("imageSize", "1K");
-      formData.append("outputFormat", "png");
-
-      const response = await fetch("https://nanobananapro.cloud/api/v1/image/nano-banana", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${NANO_API_KEY}` },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Nano Banana product API error:", response.status, errorText);
-        if (response.status === 401 || response.status === 402) {
-          throw Object.assign(
-            new Error(response.status === 401
-              ? "שגיאת אימות Nano Banana - בדוק את ה-API Key"
-              : "אין מספיק קרדיטים במנוע התמונות."),
-            { noRetry: true },
-          );
-        }
-        throw new Error(`Nano Banana product API error: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log("Nano Banana product raw response:", JSON.stringify(data));
-      if (typeof data.code !== "undefined" && data.code !== 0) {
-        throw new Error(`Nano Banana product error code=${data.code}, message=${data.message || "unknown"}`);
-      }
-      const taskId = data?.data?.id;
-      if (!taskId) {
-        throw new Error(`Nano Banana product did not return task ID. Raw response: ${JSON.stringify(data)}`);
-      }
-
-      const maxAttempts = 35;
-      const delayMs = 1500;
-      let lastStatus: string | undefined;
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const res = await fetch("https://nanobananapro.cloud/api/v1/image/nano-banana/result", {
+    // ── Fast synchronous path: Lovable gateway (gemini image) ──
+    // Returns a base64 data URL (or null on any failure, so we can fall back).
+    const generateViaGateway = async (): Promise<string | null> => {
+      if (!LOVABLE_API_KEY) return null;
+      try {
+        const content: unknown = isEdit
+          ? [
+              { type: "text", text: prompt },
+              { type: "image_url", image_url: { url: baseImageUrl } },
+            ]
+          : prompt;
+        const resp = await fetch(GATEWAY_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${NANO_API_KEY}` },
-          body: JSON.stringify({ taskId }),
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: GATEWAY_IMAGE_MODEL,
+            messages: [{ role: "user", content }],
+            modalities: ["image", "text"],
+          }),
         });
-        if (!res.ok) {
-          const text = await res.text();
-          console.error("Nano Banana product result error:", res.status, text);
-          throw new Error(`Nano Banana product result failed: ${res.status} - ${text}`);
+        if (!resp.ok) {
+          console.error("Gateway image error:", resp.status, await resp.text());
+          return null;
         }
-        const json = await res.json();
-        const status = json?.data?.status as string | undefined;
-        const results = json?.data?.results;
-        lastStatus = status;
-        console.log("Nano Banana product poll:", { attempt, status, hasResults: !!results?.length });
-        if (status === "succeeded" && results && results.length > 0 && results[0].url) {
-          return results[0].url as string;
-        }
-        if (status === "failed") {
-          throw new Error(json?.data?.failure_reason || json?.data?.error || "Nano Banana product generation failed");
-        }
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        const data = await resp.json();
+        const url = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        return typeof url === "string" && url.startsWith("data:") ? url : null;
+      } catch (e) {
+        console.error("Gateway image exception:", e);
+        return null;
       }
-      throw new Error(`Nano Banana product generation timed out. Last known status: ${lastStatus ?? "unknown"}`);
     };
 
-    let imageDataUrl: string | null = null;
-    let genError: any = null;
-    for (let tryNum = 1; tryNum <= 2; tryNum++) {
+    // ── Fallback: old reseller nano-banana (async + polling). Text-to-image
+    // only; for an edit we just regenerate from the instruction. ──
+    const generateViaNano = async (): Promise<string | null> => {
+      if (!NANO_API_KEY) return null;
+      const generateOnce = async (): Promise<string> => {
+        const formData = new FormData();
+        formData.append("prompt", prompt);
+        formData.append("model", "nano-banana-2");
+        formData.append("mode", "text-to-image");
+        formData.append("aspectRatio", "1:1");
+        formData.append("imageSize", "1K");
+        formData.append("outputFormat", "png");
+        const response = await fetch("https://nanobananapro.cloud/api/v1/image/nano-banana", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${NANO_API_KEY}` },
+          body: formData,
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          if (response.status === 401 || response.status === 402) {
+            throw Object.assign(
+              new Error(response.status === 401
+                ? "שגיאת אימות מנוע התמונות"
+                : "אין מספיק קרדיטים במנוע התמונות."),
+              { noRetry: true },
+            );
+          }
+          throw new Error(`Nano Banana error: ${response.status} - ${errorText}`);
+        }
+        const data = await response.json();
+        if (typeof data.code !== "undefined" && data.code !== 0) {
+          throw new Error(`Nano Banana error code=${data.code}, message=${data.message || "unknown"}`);
+        }
+        const taskId = data?.data?.id;
+        if (!taskId) throw new Error("Nano Banana did not return a task ID");
+        const maxAttempts = 35, delayMs = 1500;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          const res = await fetch("https://nanobananapro.cloud/api/v1/image/nano-banana/result", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${NANO_API_KEY}` },
+            body: JSON.stringify({ taskId }),
+          });
+          if (!res.ok) throw new Error(`Nano Banana result failed: ${res.status}`);
+          const json = await res.json();
+          const status = json?.data?.status as string | undefined;
+          const results = json?.data?.results;
+          if (status === "succeeded" && results?.length && results[0].url) return results[0].url;
+          if (status === "failed") throw new Error(json?.data?.failure_reason || "generation failed");
+          await new Promise((r) => setTimeout(r, delayMs));
+        }
+        throw new Error("Nano Banana generation timed out");
+      };
       try {
-        imageDataUrl = await generateOnce();
-        if (tryNum > 1) console.log("Nano Banana product succeeded on retry");
-        break;
+        return await generateOnce();
       } catch (e: any) {
-        genError = e;
-        if (e?.noRetry || tryNum === 2) break;
-        console.warn(`Nano Banana product attempt ${tryNum} failed, retrying:`, e?.message || e);
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        if (e?.noRetry) throw e;
+        try { return await generateOnce(); } catch { return null; }
       }
+    };
+
+    // Gateway first (fast), then fall back.
+    let imageSrc = await generateViaGateway();
+    if (!imageSrc) {
+      console.warn("Gateway image unavailable, falling back to nano-banana");
+      imageSrc = await generateViaNano();
     }
-    if (!imageDataUrl) {
-      throw genError ?? new Error("Nano Banana product generation failed");
+    if (!imageSrc) {
+      throw new Error("יצירת התמונה נכשלה. נסו שוב בעוד רגע.");
     }
 
-    // Download the image from Nano Banana
-    const imageResponse = await fetch(imageDataUrl);
-    const imageBlob = await imageResponse.blob();
-    const bytes = new Uint8Array(await imageBlob.arrayBuffer());
-    const imageType = "png";
-    
-    // Upload to Supabase storage (using supabase client from line 29)
-    
-    // Generate unique filename
+    // Normalise to bytes: data URL (gateway) -> decode base64; https URL (nano) -> fetch.
+    let bytes: Uint8Array;
+    if (imageSrc.startsWith("data:")) {
+      const base64 = imageSrc.split(",")[1] ?? "";
+      bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    } else {
+      const imageResponse = await fetch(imageSrc);
+      bytes = new Uint8Array(await imageResponse.arrayBuffer());
+    }
+
     const timestamp = Date.now();
     const randomId = Math.random().toString(36).substring(2, 8);
-    const fileName = `products/${timestamp}-${randomId}.${imageType}`;
-    
-    // Upload to storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('business-assets')
-      .upload(fileName, bytes, {
-        contentType: `image/${imageType}`,
-        upsert: false
-      });
-    
+    const fileName = `products/${timestamp}-${randomId}.png`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("business-assets")
+      .upload(fileName, bytes, { contentType: "image/png", upsert: false });
     if (uploadError) {
       console.error("Storage upload error:", uploadError);
       throw new Error("Failed to save image: " + uploadError.message);
     }
-    
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from('business-assets')
-      .getPublicUrl(fileName);
-    
-    const publicUrl = urlData.publicUrl;
-    console.log("Image uploaded successfully:", publicUrl);
+
+    const { data: urlData } = supabase.storage.from("business-assets").getPublicUrl(fileName);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        imageUrl: publicUrl,
-        message: "Product image generated and saved successfully" 
+      JSON.stringify({
+        success: true,
+        imageUrl: urlData.publicUrl,
+        message: "Product image generated and saved successfully",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-
   } catch (error) {
     console.error("Error generating product image:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Unknown error occurred" 
-      }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

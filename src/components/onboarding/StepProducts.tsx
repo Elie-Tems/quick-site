@@ -4,7 +4,7 @@ import { OnboardingData, ProductCategory } from "@/pages/Onboarding";
 import {
   Plus, Trash2, Package, FileSpreadsheet, Upload, X, Download,
   AlertCircle, Sparkles, Loader2, LayoutGrid, List, FolderOpen,
-  Mic, MicOff, Link2, FileText,
+  Mic, MicOff, Link2, FileText, Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -76,6 +76,8 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   const [generatingProductId, setGeneratingProductId] = useState<string | null>(null);
   const [isGeneratingAllImages, setIsGeneratingAllImages] = useState(false);
   const [generatingProgress, setGeneratingProgress] = useState({ current: 0, total: 0 });
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [editPrompt, setEditPrompt] = useState("");
 
   // Categories
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -384,28 +386,58 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     setIsGeneratingAllImages(true);
     setGeneratingProgress({ current: 0, total: withoutImages.length });
     const updatedProducts = [...data.products];
-    let successCount = 0;
-    for (let i = 0; i < withoutImages.length; i++) {
-      const product = withoutImages[i];
-      setGeneratingProgress({ current: i + 1, total: withoutImages.length });
-      setGeneratingProductId(product.id);
-      try {
-        const { data: result, error } = await supabase.functions.invoke("generate-product-image", {
-          body: { productName: product.name, productDescription: product.description, businessCategory: data.businessCategory },
-        });
-        if (!error && result?.imageUrl) {
-          const idx = updatedProducts.findIndex(p => p.id === product.id);
-          if (idx !== -1) updatedProducts[idx] = { ...updatedProducts[idx], imageUrl: result.imageUrl };
-          successCount++;
-        }
-      } catch { /* continue */ }
-      if (i < withoutImages.length - 1) await new Promise(r => setTimeout(r, 800));
-    }
+    let done = 0, successCount = 0;
+    // Generate several at once instead of one-by-one (was N x ~slow sequentially).
+    const CONCURRENCY = 4;
+    const queue = [...withoutImages];
+    const worker = async () => {
+      while (queue.length) {
+        const product = queue.shift()!;
+        try {
+          const { data: result, error } = await supabase.functions.invoke("generate-product-image", {
+            body: { productName: product.name, productDescription: product.description, businessCategory: data.businessCategory },
+          });
+          if (!error && result?.imageUrl) {
+            const idx = updatedProducts.findIndex(p => p.id === product.id);
+            if (idx !== -1) updatedProducts[idx] = { ...updatedProducts[idx], imageUrl: result.imageUrl };
+            successCount++;
+          }
+        } catch { /* continue */ }
+        done++;
+        setGeneratingProgress({ current: done, total: withoutImages.length });
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, withoutImages.length) }, worker));
     updateData({ products: updatedProducts });
     setIsGeneratingAllImages(false);
     setGeneratingProductId(null);
     setGeneratingProgress({ current: 0, total: 0 });
     toast.success(`נוצרו ${successCount} תמונות`);
+  };
+
+  // Edit an existing AI image in place (img2img): user describes the change.
+  const handleEditImage = async (productId: string, instruction: string) => {
+    const product = data.products.find(p => p.id === productId);
+    if (!product?.imageUrl || !instruction.trim()) return;
+    setGeneratingProductId(productId);
+    try {
+      const { data: result, error } = await supabase.functions.invoke("generate-product-image", {
+        body: {
+          productName: product.name, productDescription: product.description, businessCategory: data.businessCategory,
+          baseImageUrl: product.imageUrl, editInstruction: instruction.trim(),
+        },
+      });
+      if (error) throw error;
+      if (result?.imageUrl) {
+        updateData({ products: data.products.map(p => p.id === productId ? { ...p, imageUrl: result.imageUrl } : p) });
+        toast.success("התמונה עודכנה");
+        setEditingProductId(null);
+        setEditPrompt("");
+      } else {
+        toast.error("עריכת התמונה נכשלה");
+      }
+    } catch { toast.error("שגיאה בעריכת התמונה"); }
+    finally { setGeneratingProductId(null); }
   };
 
   // ── Category handlers ──────────────────────────────────────────────────────
@@ -451,33 +483,66 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   // ── Product list item ──────────────────────────────────────────────────────
 
   const ProductItem = ({ product }: { product: (typeof data.products)[0] }) => (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
-      <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden relative group">
-        {generatingProductId === product.id ? (
-          <Loader2 className="w-4 h-4 text-primary animate-spin" />
-        ) : product.imageUrl ? (
-          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-        ) : (
-          <>
-            <Package className="w-5 h-5 text-muted-foreground" />
-            <button
-              onClick={() => handleGenerateImageForProduct(product.id)}
-              className="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
-              title="צור תמונה עם AI"
-            >
-              <Sparkles className="w-4 h-4 text-white" />
-            </button>
-          </>
-        )}
+    <div className="rounded-xl bg-card border border-border">
+      <div className="flex items-center gap-3 p-3">
+        <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden relative group">
+          {generatingProductId === product.id ? (
+            <Loader2 className="w-4 h-4 text-primary animate-spin" />
+          ) : product.imageUrl ? (
+            <>
+              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+              {/* Hover to edit the existing image (img2img) instead of only regenerating. */}
+              <button
+                onClick={() => { setEditingProductId(editingProductId === product.id ? null : product.id); setEditPrompt(""); }}
+                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
+                title="ערוך תמונה"
+              >
+                <Pencil className="w-4 h-4 text-white" />
+              </button>
+            </>
+          ) : (
+            <>
+              <Package className="w-5 h-5 text-muted-foreground" />
+              <button
+                onClick={() => handleGenerateImageForProduct(product.id)}
+                className="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
+                title="צור תמונה עם AI"
+              >
+                <Sparkles className="w-4 h-4 text-white" />
+              </button>
+            </>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{product.name}</p>
+          {product.description && <p className="text-xs text-muted-foreground truncate">{product.description}</p>}
+        </div>
+        <span className="text-sm font-semibold shrink-0">₪{product.price}</span>
+        <button onClick={() => handleRemoveProduct(product.id)} className="p-1.5 hover:bg-destructive/10 rounded-lg transition-colors shrink-0">
+          <Trash2 className="w-3.5 h-3.5 text-destructive" />
+        </button>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{product.name}</p>
-        {product.description && <p className="text-xs text-muted-foreground truncate">{product.description}</p>}
-      </div>
-      <span className="text-sm font-semibold shrink-0">₪{product.price}</span>
-      <button onClick={() => handleRemoveProduct(product.id)} className="p-1.5 hover:bg-destructive/10 rounded-lg transition-colors shrink-0">
-        <Trash2 className="w-3.5 h-3.5 text-destructive" />
-      </button>
+      {/* Inline image-edit panel */}
+      {editingProductId === product.id && product.imageUrl && (
+        <div className="px-3 pb-3 flex items-center gap-2">
+          <input
+            value={editPrompt}
+            onChange={e => setEditPrompt(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") handleEditImage(product.id, editPrompt); }}
+            placeholder="מה לשנות? לדוגמה: רקע לבן, תאורה חמה יותר"
+            className="flex-1 h-9 rounded-lg border border-border bg-background px-3 text-xs"
+            dir="rtl"
+          />
+          <button
+            onClick={() => handleEditImage(product.id, editPrompt)}
+            disabled={!editPrompt.trim() || generatingProductId === product.id}
+            className="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium disabled:opacity-50 flex items-center gap-1 shrink-0"
+          >
+            {generatingProductId === product.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+            החל
+          </button>
+        </div>
+      )}
     </div>
   );
 
