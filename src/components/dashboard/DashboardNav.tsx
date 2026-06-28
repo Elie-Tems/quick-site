@@ -17,7 +17,8 @@ interface DashboardNavProps {
 }
 
 // Sidebar groups (desktop shows these as section headers). Order here = display order.
-const NAV_GROUPS = ["ניהול", "שיווק ותצוגה", "תפעול", "הגדרות"] as const;
+// Redesigned IA: 6 focused groups instead of the old sprawling list.
+const NAV_GROUPS = ["בית", "החנות שלי", "ניהול מכירות", "שיווק", "הרחבות", "הגדרות"] as const;
 type NavGroup = (typeof NAV_GROUPS)[number];
 
 const navItems: {
@@ -28,40 +29,45 @@ const navItems: {
   premium?: boolean;
   group: NavGroup;
 }[] = [
-  // ניהול / יום־יום
-  { id: "home", label: "דשבורד", icon: LayoutDashboard, group: "ניהול" },
-  { id: "upgrades", label: "שדרוגים לעסק", shortLabel: "שדרוגים", icon: Crown, group: "ניהול" },
-  { id: "orders", label: "הזמנות", icon: ShoppingCart, group: "ניהול" },
-  { id: "products", label: "מוצרים", icon: Package, group: "ניהול" },
-  { id: "categories", label: "קטגוריות", icon: FolderOpen, group: "ניהול" },
-  { id: "sales", label: "מבצעים ומובילים", shortLabel: "מבצעים", icon: Star, group: "ניהול" },
+  // בית
+  { id: "home", label: "סקירה", icon: LayoutDashboard, group: "בית" },
 
-  // שיווק ותצוגה
-  { id: "ad-budget", label: "תקציב פרסום", shortLabel: "פרסום", icon: Target, group: "שיווק ותצוגה" },
-  { id: "tracking", label: "תגי שיווק ומעקב", shortLabel: "תגי מעקב", icon: BarChart3, group: "שיווק ותצוגה" },
-  { id: "reviews", label: "ביקורות Google", shortLabel: "ביקורות", icon: Star, group: "שיווק ותצוגה" },
-  { id: "traffic", label: "מקורות הגעה", shortLabel: "מקורות", icon: Radar, group: "שיווק ותצוגה" },
-  { id: "insights", label: "תובנות", icon: Lightbulb, group: "שיווק ותצוגה" },
-  { id: "banners", label: "באנרים", icon: Image, group: "שיווק ותצוגה" },
-  { id: "campaigns", label: "קמפיינים", icon: Megaphone, group: "שיווק ותצוגה" },
-  { id: "coupons", label: "קופונים", icon: Ticket, group: "שיווק ותצוגה" },
-  { id: "ai-images", label: "תמונות AI", icon: Sparkles, premium: true, group: "שיווק ותצוגה" },
-  { id: "ai-generated-images", label: "גלריית AI", shortLabel: "נוצרו", icon: Image, premium: true, group: "שיווק ותצוגה" },
-  { id: "preview", label: "תצוגה מקדימה", shortLabel: "תצוגה", icon: Eye, group: "שיווק ותצוגה" },
+  // החנות שלי - כל מה שבונה את תוכן ומראה החנות
+  { id: "products", label: "מוצרים", icon: Package, group: "החנות שלי" },
+  { id: "categories", label: "קטגוריות", icon: FolderOpen, group: "החנות שלי" },
+  { id: "sales", label: "מבצעים ומובילים", shortLabel: "מבצעים", icon: Star, group: "החנות שלי" },
+  { id: "design", label: "עיצוב", icon: Palette, group: "החנות שלי" },
+  { id: "banners", label: "באנרים", icon: Image, group: "החנות שלי" },
+  { id: "ai-images", label: "תמונות AI", icon: Sparkles, premium: true, group: "החנות שלי" },
+  { id: "ai-generated-images", label: "גלריית AI", shortLabel: "גלריה", icon: Image, premium: true, group: "החנות שלי" },
+  { id: "preview", label: "תצוגה מקדימה", shortLabel: "תצוגה", icon: Eye, group: "החנות שלי" },
 
-  // תפעול
-  { id: "shipping", label: "משלוחים", icon: Truck, group: "תפעול" },
-  { id: "payments", label: "סליקה", icon: CreditCard, group: "תפעול" },
-  { id: "domains", label: "דומיין", icon: Globe, group: "תפעול" },
-  { id: "whatsapp", label: "וואטסאפ", icon: MessageCircle, group: "תפעול" },
-  { id: "email", label: "מייל עסקי", icon: AtSign, group: "תפעול" },
+  // ניהול מכירות
+  { id: "orders", label: "הזמנות", icon: ShoppingCart, group: "ניהול מכירות" },
+  { id: "coupons", label: "קופונים", icon: Ticket, group: "ניהול מכירות" },
+  { id: "shipping", label: "משלוחים", icon: Truck, group: "ניהול מכירות" },
+  { id: "payments", label: "סליקה", icon: CreditCard, group: "ניהול מכירות" },
+
+  // שיווק
+  { id: "campaigns", label: "קמפיינים", icon: Megaphone, group: "שיווק" },
+  { id: "tracking", label: "תגי שיווק ומעקב", shortLabel: "תגי מעקב", icon: BarChart3, group: "שיווק" },
+  { id: "reviews", label: "ביקורות Google", shortLabel: "ביקורות", icon: Star, group: "שיווק" },
+  { id: "traffic", label: "מקורות הגעה", shortLabel: "מקורות", icon: Radar, group: "שיווק" },
+  { id: "insights", label: "תובנות", icon: Lightbulb, group: "שיווק" },
+  { id: "ad-budget", label: "תקציב פרסום", shortLabel: "פרסום", icon: Target, group: "שיווק" },
+
+  // הרחבות
+  { id: "domains", label: "דומיין", icon: Globe, group: "הרחבות" },
+  { id: "whatsapp", label: "וואטסאפ", icon: MessageCircle, group: "הרחבות" },
+  { id: "email", label: "מייל עסקי", icon: AtSign, group: "הרחבות" },
+  { id: "upgrades", label: "כל ההרחבות", shortLabel: "שדרוגים", icon: Crown, group: "הרחבות" },
 
   // הגדרות
-  { id: "settings", label: "הגדרות", icon: Settings, group: "הגדרות" },
-  { id: "legal", label: "מסמכים משפטיים", shortLabel: "משפטי", icon: ScrollText, group: "הגדרות" },
-  { id: "about", label: "אודות", icon: Info, group: "הגדרות" },
-  { id: "usage", label: "שימוש ו-AI", icon: Gauge, group: "הגדרות" },
+  { id: "settings", label: "פרטי העסק", shortLabel: "הגדרות", icon: Settings, group: "הגדרות" },
   { id: "subscription", label: "התוכנית שלי", icon: Crown, group: "הגדרות" },
+  { id: "usage", label: "שימוש ו-AI", icon: Gauge, group: "הגדרות" },
+  { id: "about", label: "אודות", icon: Info, group: "הגדרות" },
+  { id: "legal", label: "מסמכים משפטיים", shortLabel: "משפטי", icon: ScrollText, group: "הגדרות" },
 ];
 
 const DashboardNav = ({
@@ -71,15 +77,21 @@ const DashboardNav = ({
   canUseCoupons = true,
   canUseAIImages = true,
 }: DashboardNavProps) => {
-  const itemsToRender = navItems.filter((item) => {
-    if (item.id === "campaigns" && !canUseCampaigns) return false;
-    if (item.id === "coupons" && !canUseCoupons) return false;
-    if (item.id === "ai-images" && !canUseAIImages) return false;
-    // WhatsApp is built but stays hidden until the flag is flipped post-approval.
-    if (item.id === "whatsapp" && !whatsappEnabled()) return false;
-    if (item.id === "email" && !emailEnabled()) return false;
-    return true;
-  });
+  // WhatsApp + Email are built but not live yet: show them as "בקרוב" (clearly
+  // upcoming) instead of hiding them, so they read as a roadmap, not as missing.
+  const itemsToRender = navItems
+    .map((item) => ({
+      ...item,
+      comingSoon:
+        (item.id === "whatsapp" && !whatsappEnabled()) ||
+        (item.id === "email" && !emailEnabled()),
+    }))
+    .filter((item) => {
+      if (item.id === "campaigns" && !canUseCampaigns) return false;
+      if (item.id === "coupons" && !canUseCoupons) return false;
+      if (item.id === "ai-images" && !canUseAIImages) return false;
+      return true;
+    });
 
   const activeGroup = navItems.find((i) => i.id === currentView)?.group;
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
@@ -97,15 +109,21 @@ const DashboardNav = ({
           return (
             <button
               key={item.id}
-              onClick={() => onViewChange(item.id)}
+              onClick={() => !item.comingSoon && onViewChange(item.id)}
+              disabled={item.comingSoon}
               className={cn(
-                "flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors relative",
-                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                "flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors relative shrink-0",
+                item.comingSoon
+                  ? "text-muted-foreground/50"
+                  : isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
               <Icon className="h-5 w-5" />
-              <span className="text-xs">{item.shortLabel || item.label}</span>
-              {item.premium && (
+              <span className="text-xs whitespace-nowrap">{item.shortLabel || item.label}</span>
+              {item.comingSoon && (
+                <span className="absolute -top-1 -right-1 px-1 py-px text-[8px] font-bold bg-muted text-muted-foreground rounded">בקרוב</span>
+              )}
+              {item.premium && !item.comingSoon && (
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
               )}
             </button>
@@ -130,6 +148,19 @@ const DashboardNav = ({
               {open && groupItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentView === item.id;
+                if (item.comingSoon) {
+                  return (
+                    <div
+                      key={item.id}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground/50 cursor-default select-none"
+                      title="המודול הזה יהיה זמין בקרוב"
+                    >
+                      <Icon className="h-5 w-5 flex-shrink-0" />
+                      <span>{item.label}</span>
+                      <span className="mr-auto px-1.5 py-0.5 text-[10px] font-bold bg-muted text-muted-foreground rounded">בקרוב</span>
+                    </div>
+                  );
+                }
                 return (
                   <button
                     key={item.id}
