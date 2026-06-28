@@ -141,7 +141,13 @@ const MiniProductGrid = ({ products, primaryColor }: { products: TemplateStyle["
     {products.map((p, i) => (
       <div key={i} className="relative overflow-hidden rounded-sm bg-[#1a1a1a]">
         <div className="aspect-square overflow-hidden">
-          <img src={p.img} alt="" className="w-full h-full object-cover" />
+          {p.img ? (
+            <img src={p.img} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-[#262626]">
+              <ShoppingBag className="w-2 h-2 text-white/25" />
+            </div>
+          )}
         </div>
         <div className="px-0.5 py-0.5">
           <div className="text-[4.5px] font-medium truncate text-white/80">{p.name}</div>
@@ -223,7 +229,13 @@ const BigProductGrid = ({ products, primaryColor }: { products: TemplateStyle["p
     {products.map((p, i) => (
       <div key={i} className="relative overflow-hidden rounded-lg bg-[#1a1a1a]">
         <div className="aspect-square overflow-hidden">
-          <img src={p.img} alt="" className="w-full h-full object-cover" />
+          {p.img ? (
+            <img src={p.img} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-[#262626]">
+              <ShoppingBag className="w-6 h-6 text-white/25" />
+            </div>
+          )}
           {p.sale && (
             <div className="absolute top-1 right-1 px-1 py-0.5 text-[9px] font-bold text-white rounded bg-red-600">מבצע</div>
           )}
@@ -321,8 +333,11 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
   const colorFileRef = useRef<HTMLInputElement>(null);
   const bannerFileRef = useRef<HTMLInputElement>(null);
 
-  const userProducts = data.products.filter(p => p.imageUrl).slice(0, 3).map(p => ({
-    img: p.imageUrl!, name: p.name || "מוצר", price: `₪${p.price}`,
+  // Show the user's OWN products in the preview even before they have images
+  // (a placeholder fills in for a missing image). Only fall back to the template
+  // demo products when the user has none at all.
+  const userProducts = data.products.slice(0, 3).map(p => ({
+    img: p.imageUrl || "", name: p.name || "מוצר", price: `₪${p.price}`,
   }));
 
   const selectedTemplate = templateStyles.find(t => t.id === data.storeTemplate) || templateStyles[0];

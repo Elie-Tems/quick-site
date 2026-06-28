@@ -14,6 +14,7 @@ Deno.serve(async (req) => {
     if (!openaiKey) throw new Error("Missing OPENAI_API_KEY");
 
     let sourceText = text as string;
+    const imageMarkers = new Set<string>(); // absolute image URLs seen on the page
 
     if (url && !text) {
       let res: Response;
@@ -42,12 +43,30 @@ Deno.serve(async (req) => {
         );
       }
       const html = await res.text();
-      sourceText = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+      const pageUrl = url as string;
+      const toAbs = (src: string): string | null => {
+        try { return new URL(src, pageUrl).href; } catch { return null; }
+      };
+      // Replace each <img> with an inline [IMG:absolute-url] marker BEFORE
+      // stripping tags, so the image sits next to the product it belongs to and
+      // GPT can associate them. Skip data URIs, logos/icons/sprites/svg.
+      const withImgMarkers = html
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+        .replace(/<img\b[^>]*>/gi, (tag) => {
+          const m = tag.match(/\b(?:data-src|data-original|data-lazy-src|data-lazy|src)\s*=\s*["']([^"']+)["']/i);
+          if (!m) return " ";
+          const abs = toAbs(m[1]);
+          if (!abs || abs.startsWith("data:")) return " ";
+          if (/sprite|logo|icon|favicon|placeholder|blank|spacer|loading|1x1|\.svg(\?|$)/i.test(abs)) return " ";
+          imageMarkers.add(abs);
+          return ` [IMG:${abs}] `;
+        });
+      sourceText = withImgMarkers
         .replace(/<[^>]+>/g, " ")
         .replace(/\s+/g, " ")
         .trim()
-        .slice(0, 8000);
+        .slice(0, 12000);
     }
 
     if (!sourceText || sourceText.trim().length < 10) {
@@ -68,7 +87,7 @@ Deno.serve(async (req) => {
           {
             role: "system",
             content:
-              'You are a product data extractor. Extract product listings from the given text. Return ONLY a JSON object with a "products" array. Each product: { "name": string (required), "price": number (required, in ILS if not specified), "description": string (optional, 1 sentence max) }. If price is unclear, omit the product. Return at most 100 products.',
+              'You are a product data extractor. Extract product listings from the given text. The text may contain image markers like [IMG:https://...] positioned right next to the product they belong to. Return ONLY a JSON object with a "products" array. Each product: { "name": string (required), "price": number (required, in ILS if not specified), "description": string (optional, 1 sentence max), "image": string (optional - copy the full https URL from the [IMG:...] marker that is nearest to / belongs to this product; omit it entirely if you are not confident). If price is unclear, omit the product. Return at most 100 products.',
           },
           {
             role: "user",
@@ -85,7 +104,13 @@ Deno.serve(async (req) => {
     if (!content) throw new Error("Empty GPT response");
 
     const parsed = JSON.parse(content);
-    const products = Array.isArray(parsed.products) ? parsed.products : [];
+    const rawProducts = Array.isArray(parsed.products) ? parsed.products : [];
+    // Only trust an image if GPT actually copied one of the URLs we saw on the
+    // page (guards against hallucinated/edited URLs).
+    const products = rawProducts.map((p: any) => {
+      const img = typeof p.image === "string" ? p.image.trim() : "";
+      return imageMarkers.has(img) ? p : { ...p, image: undefined };
+    });
 
     return new Response(JSON.stringify({ products }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

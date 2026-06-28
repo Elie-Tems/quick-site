@@ -32,6 +32,7 @@ interface ParsedProduct {
   name: string;
   price: number;
   description?: string;
+  image?: string; // absolute URL scraped from the catalog page, when available
 }
 
 type Method = "quick" | "catalog" | "voice";
@@ -352,6 +353,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       name: p.name,
       description: p.description || "",
       price: p.price,
+      imageUrl: p.image || undefined, // scraped product image, when the catalog had one
       categoryId: data.productOrganization === "categories" ? selectedCategoryId || undefined : undefined,
     }));
     updateData({ products: [...data.products, ...newProducts] });
