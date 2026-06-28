@@ -119,7 +119,7 @@ const Onboarding = () => {
     paymentConnected: false,
   });
 
-  // Flow: 1=Identity, 2=Contact, 3=Visuals, 4=Products, 5=Finish
+  // Flow: 1=Identity, 2=Contact, 3=Products, 4=Visuals, 5=Finish
   const totalSteps = 5;
 
   // Scroll to top when step changes
@@ -235,9 +235,9 @@ const Onboarding = () => {
       case 2:
         return <StepContact data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 3:
-        return <StepVisuals data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
-      case 4:
         return <StepProducts data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+      case 4:
+        return <StepVisuals data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 5:
         return <StepFinish data={data} updateData={updateData} onBack={prevStep} />;
       default:
