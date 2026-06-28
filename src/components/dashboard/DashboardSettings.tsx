@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Upload, Check, X, CreditCard, Loader2, Palette, Image, Type, Megaphone, Sparkles, RefreshCw, Store, Utensils, Coffee, Shirt, Gem, Smartphone, Dumbbell, Car, PawPrint, Flower2, BookOpen, Home, ShoppingBasket, MoreHorizontal, ImagePlus, MessageCircle, Wine, Gamepad2, Palette as PaletteIcon, Baby, Gift, Pill, Sofa, Refrigerator, Scissors, Truck, ChevronDown, ChevronUp, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
 import { BusinessCategory, businessCategoryList } from "@/lib/categoryConfig";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type { BusinessCategory };
 
@@ -123,7 +124,26 @@ const categories = businessCategoryList.map(({ id, label }) => ({
 
 const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProps) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [formData, setFormData] = useState(settings);
+  const [isResettingOnboarding, setIsResettingOnboarding] = useState(false);
+
+  const handleResetOnboarding = useCallback(async () => {
+    if (!user) return;
+    if (!window.confirm("לאפס את תהליך ה-Onboarding? בכניסה הבאה תועבר לאשף ההגדרה מחדש.")) return;
+    setIsResettingOnboarding(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ onboarding_completed_at: null, status: "registered" } as any)
+      .eq("id", user.id);
+    setIsResettingOnboarding(false);
+    if (error) {
+      toast({ title: "שגיאה", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "אופס!", description: "ה-Onboarding אופס — מרענן..." });
+      setTimeout(() => window.location.href = "/", 1200);
+    }
+  }, [user]);
   const updateBusiness = useUpdateBusiness();
   const [isSaving, setIsSaving] = useState(false);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
@@ -1438,6 +1458,23 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
           {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
           שמור הגדרות
         </Button>
+
+        {/* Dev: reset onboarding */}
+        <div className="border-t border-border pt-4 mt-2">
+          <p className="text-xs text-muted-foreground mb-2 text-right">בדיקות ופיתוח</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full text-amber-700 border-amber-300 hover:bg-amber-50"
+            onClick={handleResetOnboarding}
+            disabled={isResettingOnboarding}
+          >
+            {isResettingOnboarding && <Loader2 className="h-3.5 w-3.5 animate-spin ml-2" />}
+            <RefreshCw className="h-3.5 w-3.5 ml-2" />
+            אפס Onboarding — עבור לאשף מחדש
+          </Button>
+        </div>
       </form>
     </div>
   );
