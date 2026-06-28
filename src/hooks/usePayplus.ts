@@ -104,5 +104,8 @@ export async function startPayplusPayment(input: {
   if (error) throw new Error(error.message);
   const link = (data as any)?.payment_page_link;
   if (!link) throw new Error((data as any)?.error || "לא ניתן ליצור דף תשלום");
-  window.location.href = link; // hand off to PayPlus hosted page
+  let parsed: URL;
+  try { parsed = new URL(link); } catch { throw new Error("Invalid payment redirect URL"); }
+  if (parsed.protocol !== "https:") throw new Error("Invalid payment redirect URL: only https is allowed");
+  window.location.href = link;
 }

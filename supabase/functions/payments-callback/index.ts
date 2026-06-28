@@ -47,6 +47,12 @@ Deno.serve(async (req) => {
 
   const now = new Date().toISOString();
   if (parsed.approved) {
+    const tolerance = 0.01;
+    if (parsed.amount > 0 && Math.abs(parsed.amount - order.total_price) > tolerance) {
+      console.error(`Amount mismatch: callback=${parsed.amount} order=${order.total_price} id=${order.id}`);
+      await admin.from("orders").update({ payment_status: "amount_mismatch", updated_at: now }).eq("id", order.id);
+      return json({ error: "Amount mismatch" }, 400);
+    }
     await admin.from("orders").update({
       payment_status: "paid", paid_at: now, payment_transaction_uid: parsed.transactionUid, updated_at: now,
     }).eq("id", order.id);

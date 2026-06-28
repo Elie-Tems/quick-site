@@ -165,16 +165,10 @@ Deno.serve(async (req) => {
     (req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "");
 
   if (req.method === "GET") {
-    const url = new URL(req.url);
-    const qSecret = url.searchParams.get("secret") ?? "";
-    const businessId = url.searchParams.get("business_id") ?? "";
-    if (!safeEqual(qSecret, secret) || !businessId) {
-      return new Response(JSON.stringify({ error: "Unauthorized or missing business_id" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    return handleVerifiedRequest(supabase, businessId, url.searchParams.get("transaction_id"));
+    return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   if (req.method !== "POST") {

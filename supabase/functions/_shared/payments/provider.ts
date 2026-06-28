@@ -37,6 +37,7 @@ export interface CallbackParse {
   pageRequestUid: string | null;
   approved: boolean;
   transactionUid: string | null;
+  amount: number;
 }
 
 export interface PaymentProvider {

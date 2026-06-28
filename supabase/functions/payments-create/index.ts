@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
   const orderItems: { product_id: string; product_name: string; price_at_order: number; quantity: number }[] = [];
   for (const line of items) {
     const p = products.find((x) => x.id === line.product_id);
-    if (!p || p.active === false) continue;
+    if (!p || p.active !== true) continue;
     const qty = Math.max(1, Math.floor(Number(line.quantity) || 1));
     const unit = priceOf(p);
     subtotal += unit * qty;

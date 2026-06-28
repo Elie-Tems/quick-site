@@ -48,67 +48,37 @@ export const useOrderItems = (orderId: string | undefined) => {
   });
 };
 
-const ORDER_WEBHOOK_URL = import.meta.env.VITE_ORDER_WEBHOOK_URL || '';
-
-// Create order with items (for storefront checkout)
+// Create order with items (for storefront COD checkout)
+// Prices are recomputed server-side by the orders-create Edge Function —
+// the client supplies only product IDs and quantities, never prices.
 export const useCreateOrder = () => {
   return useMutation({
-    mutationFn: async ({ 
-      order, 
+    mutationFn: async ({
+      order,
       items,
-      businessName,
-      businessEmail,
-      businessPhone,
-    }: { 
-      order: OrderInsert; 
-      items: Omit<OrderItemInsert, 'order_id'>[];
-      businessName?: string;
-      businessEmail?: string | null;
-      businessPhone?: string | null;
+    }: {
+      order: Pick<OrderInsert, 'business_id' | 'customer_name' | 'customer_phone' | 'customer_email' | 'notes' | 'delivery_method' | 'delivery_address' | 'coupon_id'>;
+      items: { product_id: string; quantity: number }[];
     }) => {
-      // Create the order first
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert(order)
-        .select()
-        .single();
-      
-      if (orderError) throw orderError;
-      
-      // Then create order items
-      const orderItems = items.map(item => ({
-        ...item,
-        order_id: orderData.id,
-      }));
-      
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-      
-      if (itemsError) throw itemsError;
-      
-      // Send to Make.com webhook (fire-and-forget; don't fail order if webhook fails)
-      if (ORDER_WEBHOOK_URL) {
-        const itemsWithTotal = orderItems.map((item) => ({
-          ...item,
-          line_total: item.price_at_order * item.quantity,
-        }));
-        const totalItems = orderItems.reduce((sum, item) => sum + item.quantity, 0);
-        fetch(ORDER_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            order: orderData,
-            items: itemsWithTotal,
-            businessName: businessName ?? null,
-            businessEmail: businessEmail ?? null,
-            businessPhone: businessPhone ?? null,
-            totalItems,
-          }),
-        }).catch((err) => console.warn('Order webhook failed:', err));
-      }
-      
-      return orderData;
+      const { data, error } = await supabase.functions.invoke('orders-create', {
+        body: {
+          businessId: order.business_id,
+          items,
+          customer: {
+            fullName: order.customer_name ?? '',
+            phone: order.customer_phone ?? '',
+            email: order.customer_email ?? '',
+          },
+          notes: order.notes ?? undefined,
+          deliveryMethod: order.delivery_method ?? undefined,
+          deliveryAddress: order.delivery_address ?? undefined,
+          couponId: order.coupon_id ?? undefined,
+        },
+      });
+
+      if (error) throw new Error(error.message);
+      if (!data?.ok) throw new Error(data?.error || 'שגיאה ביצירת ההזמנה');
+      return data;
     },
     onSuccess: () => {
       toast.success('ההזמנה נשלחה בהצלחה!');

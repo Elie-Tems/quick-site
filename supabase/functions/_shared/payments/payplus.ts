@@ -53,6 +53,7 @@ export const payplus: PaymentProvider = {
         t.payment_page_request_uid || t.page_request_uid || payload?.page_request_uid || null,
       approved: statusCode === "000" || t.status === "approved",
       transactionUid: t.uid || t.transaction_uid || null,
+      amount: Number(t.amount ?? payload?.amount ?? 0),
     };
   },
 
