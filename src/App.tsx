@@ -13,19 +13,19 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import AccessibilityWidget from "@/components/accessibility/AccessibilityWidget";
 import CookieConsent from "@/components/CookieConsent";
 import FloatingHelpButton from "@/components/FloatingHelpButton";
-// Kept eager: first-paint-critical pages (landing, storefront, auth entry).
+// Kept eager: only the apex landing page (the cold-load entry from Google).
 import Index from "./pages/Index";
-import Register from "./pages/Register";
-import Login from "./pages/Login";
-import AuthCallback from "./pages/AuthCallback";
-import StoreFront from "./pages/StoreFront";
-import NotFound from "./pages/NotFound";
 import { useResolvedTenant } from "@/hooks/useResolvedTenant";
 import ShabbatGate from "@/components/ShabbatGate";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { captureUtm } from "@/lib/utmCapture";
 // Lazy-loaded: heavy or non-first-paint pages get their own chunk, loaded on
 // demand. This keeps the initial bundle small so navigation feels snappy.
+const StoreFront = lazy(() => import("./pages/StoreFront"));
+const Register = lazy(() => import("./pages/Register"));
+const Login = lazy(() => import("./pages/Login"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const StoreAboutPage = lazy(() => import("./pages/StoreAboutPage"));

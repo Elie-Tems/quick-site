@@ -1,19 +1,20 @@
-import Header from "@/components/Header";
-import HeroSection from "@/components/HeroSection";
-import TemplateShowcaseSection from "@/components/TemplateShowcaseSection";
-import HowItWorksSection from "@/components/HowItWorksSection";
-import WhoIsThisForSection from "@/components/WhoIsThisForSection";
-import BenefitsSection from "@/components/BenefitsSection";
-import PricingSection from "@/components/PricingSection";
-import FinalCTASection from "@/components/FinalCTASection";
-import Footer from "@/components/Footer";
-import SEOHead from "@/components/SEOHead";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import Header from "@/components/Header";
+import HeroSection from "@/components/HeroSection";
+import SEOHead from "@/components/SEOHead";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import DomainSearch from "@/components/domains/DomainSearch";
+
+// Below-the-fold sections are lazy-loaded so the first paint (hero) ships with
+// the smallest possible bundle - critical for cold visits from Google on mobile.
+const TemplateShowcaseSection = lazy(() => import("@/components/TemplateShowcaseSection"));
+const HowItWorksSection = lazy(() => import("@/components/HowItWorksSection"));
+const WhoIsThisForSection = lazy(() => import("@/components/WhoIsThisForSection"));
+const BenefitsSection = lazy(() => import("@/components/BenefitsSection"));
+const Footer = lazy(() => import("@/components/Footer"));
+const DomainSearch = lazy(() => import("@/components/domains/DomainSearch"));
 
 // Repeated conversion CTA placed between sections.
 const CtaBand = ({ title }: { title: string }) => (
@@ -94,26 +95,29 @@ const Index = () => {
       <SEOHead />
       <Header />
       <main>
+        {/* Above the fold - eager for instant paint */}
         <HeroSection />
-        <TemplateShowcaseSection />
-        <HowItWorksSection />
-        <section className="py-14 px-4 bg-muted/30">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">תנו לעסק כתובת משלו 🌐</h2>
-            <p className="text-muted-foreground mb-6">דומיין מקצועי משלכם (כמו yourname.co.il). בדקו אם הוא פנוי - ותפסו אותו לפני שמישהו אחר.</p>
-            <div className="text-right">
-              <DomainSearch onBuy={() => navigate("/register")} />
+
+        {/* Below the fold - lazy. A small placeholder keeps layout stable. */}
+        <Suspense fallback={<div className="min-h-[40vh]" />}>
+          <TemplateShowcaseSection />
+          <HowItWorksSection />
+          <section className="py-14 px-4 bg-muted/30">
+            <div className="max-w-2xl mx-auto text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">תנו לעסק כתובת משלו 🌐</h2>
+              <p className="text-muted-foreground mb-6">דומיין מקצועי משלכם (כמו yourname.co.il). בדקו אם הוא פנוי - ותפסו אותו לפני שמישהו אחר.</p>
+              <div className="text-right">
+                <DomainSearch onBuy={() => navigate("/register")} />
+              </div>
             </div>
-          </div>
-        </section>
-        <CtaBand title="מוכנים? האתר שלכם באוויר תוך 5 דקות" />
-        <WhoIsThisForSection />
-        <BenefitsSection />
-        <CtaBand title="כל מה שצריך כדי להתחיל למכור אונליין" />
-        {/* <PricingSection />
-        <FinalCTASection /> */}
+          </section>
+          <CtaBand title="מוכנים? האתר שלכם באוויר תוך 5 דקות" />
+          <WhoIsThisForSection />
+          <BenefitsSection />
+          <CtaBand title="כל מה שצריך כדי להתחיל למכור אונליין" />
+          <Footer />
+        </Suspense>
       </main>
-      <Footer />
     </div>
   );
 };

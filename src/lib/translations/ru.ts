@@ -9,7 +9,7 @@ const ru: Record<string, string> = {
   'hero.title1': 'Сайт продаж',
   'hero.title2': 'За 5 минут',
   'hero.subtitle': 'Siango создаст вам красиво оформленный интернет-магазин за несколько минут',
-  'hero.price': '₪69/месяц',
+  'hero.price': '₪69/месяц + НДС',
   'hero.noCommitment': 'Без обязательств!',
   'hero.cta': 'Начать сейчас',
   'hero.noTech': 'Без технических знаний',

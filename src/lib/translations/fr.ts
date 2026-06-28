@@ -9,7 +9,7 @@ const fr: Record<string, string> = {
   'hero.title1': 'Site de vente',
   'hero.title2': 'En 5 minutes',
   'hero.subtitle': 'Siango crée pour vous une boutique en ligne magnifiquement conçue en quelques minutes',
-  'hero.price': '69₪/mois',
+  'hero.price': '69₪/mois + TVA',
   'hero.noCommitment': 'Sans engagement !',
   'hero.cta': 'Commencer maintenant',
   'hero.noTech': 'Sans connaissances techniques',
