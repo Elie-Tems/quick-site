@@ -668,6 +668,7 @@ const Dashboard = () => {
           businessName={settings.name}
           siteUrl={business?.slug ? `/store/${business.slug}` : "/store"}
           merchantLogoUrl={(business as any)?.logo_url || undefined}
+          onNavigate={setCurrentView}
         />
         
         <div className="flex">
