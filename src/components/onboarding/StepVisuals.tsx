@@ -518,8 +518,8 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium">תמונת גיבור (באנר)</p>
-            <p className="text-xs text-muted-foreground">התמונה הגדולה בראש האתר — אופציונלי</p>
+            <p className="text-sm font-medium">תמונה ראשית (באנר)</p>
+            <p className="text-xs text-muted-foreground">התמונה הגדולה בראש האתר - אופציונלי</p>
           </div>
           {bannerPreview && (
             <button onClick={clearBanner} className="text-muted-foreground hover:text-foreground transition-colors">
