@@ -51,42 +51,44 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  // סקירה
+  // ראשי
   { id: "overview",       label: "סקירה כללית",    icon: LayoutDashboard, group: "ראשי" },
   { id: "activity",       label: "פעילות חיה",      icon: Zap,             group: "ראשי" },
-  // ניהול לקוחות
-  { id: "customers",      label: "לקוחות",          icon: Users,           group: "לקוחות" },
-  { id: "businesses",     label: "חנויות",           icon: Building2,       group: "לקוחות" },
-  // מכירות
-  { id: "orders",         label: "הזמנות",           icon: ShoppingCart,    group: "מכירות" },
-  { id: "payments",       label: "תשלומים",          icon: CreditCard,      group: "מכירות" },
-  { id: "referrals",      label: "הפניות",           icon: Gift,            group: "מכירות" },
-  { id: "partners",       label: "רווחי שותפים",     icon: Handshake,       group: "מכירות" },
-  { id: "marketing",      label: "פרסום ושיווק",     icon: Megaphone,       group: "מכירות" },
-  { id: "whatsapp",       label: "וואטסאפ",           icon: MessageCircle,   group: "מכירות" },
-  { id: "whatsapp-bot",   label: "הבוט שלנו",         icon: MessageCircle,   group: "מכירות" },
-  { id: "domains",        label: "דומיינים",          icon: Globe,           group: "מכירות" },
-  { id: "email-pricing",  label: "מייל עסקי",         icon: AtSign,          group: "מכירות" },
-  { id: "unsubscribes",   label: "רשימת הסרות",      icon: MailX,           group: "הגדרות" },
-  { id: "coupons",        label: "קופוני מנוי",      icon: Ticket,          group: "מכירות" },
-  { id: "cancellations",  label: "ביטולים",          icon: XCircle,         group: "מכירות" },
-  // אנליטיקס
-  { id: "mrr",            label: "MRR / ARR",        icon: TrendingUp,      group: "אנליטיקס" },
-  { id: "funnel",         label: "Funnel",            icon: GitMerge,        group: "אנליטיקס" },
-  { id: "churn",          label: "נטישה",             icon: BarChart3,       group: "אנליטיקס" },
-  { id: "cohort",         label: "Cohort Retention", icon: Users2,          group: "אנליטיקס" },
-  { id: "analytics",      label: "צפיות",             icon: BarChart3,       group: "אנליטיקס" },
-  { id: "marketplace",    label: "Marketplace",       icon: Globe,           group: "אנליטיקס" },
-  // Intelligence
-  { id: "top",            label: "Top Performers",   icon: Trophy,          group: "Intelligence" },
-  { id: "dormant",        label: "רדומים",            icon: Moon,            group: "Intelligence" },
-  { id: "categories",     label: "קטגוריות",          icon: PieChart,        group: "Intelligence" },
-  { id: "payment-errors", label: "שגיאות תשלום",    icon: AlertCircle,     group: "Intelligence" },
+  // לקוחות וחנויות
+  { id: "customers",      label: "לקוחות",          icon: Users,           group: "לקוחות וחנויות" },
+  { id: "businesses",     label: "חנויות",           icon: Building2,       group: "לקוחות וחנויות" },
+  // הזמנות ותשלומים
+  { id: "orders",         label: "הזמנות",           icon: ShoppingCart,    group: "הזמנות ותשלומים" },
+  { id: "payments",       label: "תשלומים",          icon: CreditCard,      group: "הזמנות ותשלומים" },
+  { id: "cancellations",  label: "ביטולים",          icon: XCircle,         group: "הזמנות ותשלומים" },
+  { id: "referrals",      label: "הפניות",           icon: Gift,            group: "הזמנות ותשלומים" },
+  { id: "payment-errors", label: "שגיאות תשלום",    icon: AlertCircle,     group: "הזמנות ותשלומים" },
+  // תמחור ושותפים
+  { id: "domains",        label: "דומיינים",          icon: Globe,           group: "תמחור ושותפים" },
+  { id: "email-pricing",  label: "מייל עסקי",         icon: AtSign,          group: "תמחור ושותפים" },
+  { id: "coupons",        label: "קופוני מנוי",      icon: Ticket,          group: "תמחור ושותפים" },
+  { id: "partners",       label: "רווחי שותפים",     icon: Handshake,       group: "תמחור ושותפים" },
+  { id: "marketing",      label: "פרסום ושיווק",     icon: Megaphone,       group: "תמחור ושותפים" },
+  // תקשורת ודיוור
+  { id: "whatsapp",       label: "וואטסאפ",           icon: MessageCircle,   group: "תקשורת ודיוור" },
+  { id: "whatsapp-bot",   label: "הבוט שלנו",         icon: MessageCircle,   group: "תקשורת ודיוור" },
+  { id: "unsubscribes",   label: "רשימת הסרות",      icon: MailX,           group: "תקשורת ודיוור" },
+  // הכנסות
+  { id: "mrr",            label: "MRR / ARR",        icon: TrendingUp,      group: "הכנסות" },
+  { id: "funnel",         label: "Funnel",            icon: GitMerge,        group: "הכנסות" },
+  { id: "churn",          label: "נטישה",             icon: BarChart3,       group: "הכנסות" },
+  { id: "cohort",         label: "Cohort Retention", icon: Users2,          group: "הכנסות" },
+  // תובנות ושוק
+  { id: "analytics",      label: "צפיות",             icon: BarChart3,       group: "תובנות ושוק" },
+  { id: "marketplace",    label: "Marketplace",       icon: Globe,           group: "תובנות ושוק" },
+  { id: "top",            label: "Top Performers",   icon: Trophy,          group: "תובנות ושוק" },
+  { id: "dormant",        label: "רדומים",            icon: Moon,            group: "תובנות ושוק" },
+  { id: "categories",     label: "קטגוריות",          icon: PieChart,        group: "תובנות ושוק" },
   // הגדרות
   { id: "settings",       label: "הגדרות",            icon: Settings,        group: "הגדרות" },
 ];
 
-const GROUPS = ["ראשי", "לקוחות", "מכירות", "אנליטיקס", "Intelligence", "הגדרות"];
+const GROUPS = ["ראשי", "לקוחות וחנויות", "הזמנות ותשלומים", "תמחור ושותפים", "תקשורת ודיוור", "הכנסות", "תובנות ושוק", "הגדרות"];
 
 const VIEW_TITLES: Record<AdminView, string> = {
   overview: "סקירה כללית", customers: "ניהול לקוחות", businesses: "חנויות",
