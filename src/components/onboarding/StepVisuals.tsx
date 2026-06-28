@@ -432,13 +432,10 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
 
       <StepNavigation
         onNext={onNext}
-        onSaveAndContinue={onNext}
         onBack={onBack}
         nextLabel="הבא"
-        saveLabel="שמור והמשך"
         nextDisabled={!data.storeTemplate}
-        saveDisabled={!data.storeTemplate}
-        showPreview={false}
+        showPreview={true}
         showSave={false}
       />
     </div>

@@ -149,13 +149,10 @@ const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
 
       <StepNavigation
         onNext={onNext}
-        onSaveAndContinue={onNext}
         onBack={onBack}
         nextLabel="הבא"
-        saveLabel="שמור והמשך"
         nextDisabled={!isValid}
-        saveDisabled={!isValid}
-        showPreview={false}
+        showPreview={true}
         showSave={false}
       />
     </div>
