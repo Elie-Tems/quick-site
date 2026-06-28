@@ -559,7 +559,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
               />
             </div>
             <Input
-              placeholder="תיאור קצר — גודל, חומר, צבע... (אופציונלי)"
+              placeholder="תיאור קצר — גודל, חומר, צבע..."
               value={quickDesc}
               onChange={e => setQuickDesc(e.target.value)}
               onKeyDown={handleQuickKeyDown}
@@ -786,15 +786,23 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         </div>
       )}
 
-      {/* Navigation */}
-      <StepNavigation
-        onNext={onNext}
-        onBack={onBack}
-        nextLabel={data.products.length > 0 ? "הבא" : "דלג בינתיים"}
-        nextDisabled={false}
-        showPreview={true}
-        showSave={false}
-      />
+      {/* Sticky bottom navigation */}
+      <div className="sticky bottom-0 bg-background/95 backdrop-blur border-t border-border py-3 flex items-center justify-between gap-3 -mx-4 px-4 mt-4">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 px-5 h-11 rounded-xl border border-border text-sm hover:bg-muted transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          חזרה
+        </button>
+        <button
+          onClick={onNext}
+          className="flex items-center gap-2 px-6 h-11 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+        >
+          {data.products.length > 0 ? "המשך" : "דלג בינתיים"}
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+      </div>
     </div>
   );
 };
