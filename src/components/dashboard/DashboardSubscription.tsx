@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { format, differenceInDays, isPast } from "date-fns";
 import { he } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
+import DashboardInvoices from "@/components/dashboard/DashboardInvoices";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import ReferralBox from "./ReferralBox";
 import { useMyBusiness } from "@/hooks/useBusiness";
@@ -492,6 +493,9 @@ const DashboardSubscription = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Invoices from iCount */}
+      <DashboardInvoices />
 
       {/* Referral Stats Card */}
       <div className="grid gap-6 md:grid-cols-2">
