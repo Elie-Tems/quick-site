@@ -33,9 +33,8 @@ const navItems: {
   { id: "home", label: "סקירה", icon: LayoutDashboard, group: "בית" },
 
   // החנות שלי - כל מה שבונה את תוכן ומראה החנות
+  // (קטגוריות + מבצעים הם עכשיו טאבים בתוך "מוצרים")
   { id: "products", label: "מוצרים", icon: Package, group: "החנות שלי" },
-  { id: "categories", label: "קטגוריות", icon: FolderOpen, group: "החנות שלי" },
-  { id: "sales", label: "מבצעים ומובילים", shortLabel: "מבצעים", icon: Star, group: "החנות שלי" },
   { id: "design", label: "עיצוב", icon: Palette, group: "החנות שלי" },
   { id: "banners", label: "באנרים", icon: Image, group: "החנות שלי" },
   { id: "ai-images", label: "תמונות AI", icon: Sparkles, premium: true, group: "החנות שלי" },
