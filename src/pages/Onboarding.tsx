@@ -5,14 +5,11 @@ import { ArrowRight, Eye } from "lucide-react";
 import logoDarkBg from "@/assets/logo-dark-bg.png";
 import { Button } from "@/components/ui/button";
 import OnboardingProgress from "@/components/onboarding/OnboardingProgress";
-import StepTemplate from "@/components/onboarding/StepTemplate";
-import StepCategory from "@/components/onboarding/StepCategory";
-import StepBannerUpload from "@/components/onboarding/StepBannerUpload";
-import StepBusinessDetails from "@/components/onboarding/StepBusinessDetails";
-import StepOrderType from "@/components/onboarding/StepOrderType";
+import StepIdentity from "@/components/onboarding/StepIdentity";
+import StepContact from "@/components/onboarding/StepContact";
+import StepVisuals from "@/components/onboarding/StepVisuals";
 import StepProducts from "@/components/onboarding/StepProducts";
-import StepPayments from "@/components/onboarding/StepPayments";
-import StepPublish from "@/components/onboarding/StepPublish";
+import StepFinish from "@/components/onboarding/StepFinish";
 import OnboardingComplete from "@/components/onboarding/OnboardingComplete";
 import { StoreTemplateId } from "@/lib/storeTemplates";
 import { BusinessCategory } from "@/lib/categoryConfig";
@@ -122,9 +119,8 @@ const Onboarding = () => {
     paymentConnected: false,
   });
 
-  // Flow: 1=Template+Color, 2=Category, 3=Banner, 4=BusinessDetails, 5=OrderType, 6=Products, 7=Payments, 8=Publish
-  // If orders-only, skip payments (step 7)
-  const totalSteps = data.orderType === "orders-payments" ? 8 : 7;
+  // Flow: 1=Identity, 2=Contact, 3=Visuals, 4=Products, 5=Finish
+  const totalSteps = 5;
 
   // Scroll to top when step changes
   useEffect(() => {
@@ -185,8 +181,8 @@ const Onboarding = () => {
       setData(prev => ({ ...prev, ...loadedData }));
       setDataLoaded(true);
       
-      // Start from last step (publish) in preview mode
-      setCurrentStep(8);
+      // Start from last step (finish) in preview mode
+      setCurrentStep(5);
     } else if (!businessLoading && !existingBusiness) {
       setDataLoaded(true);
     }
@@ -215,10 +211,7 @@ const Onboarding = () => {
   };
 
   const nextStep = () => {
-    // Skip payments step if orders-only (step 7)
-    if (currentStep === 6 && data.orderType === "orders-only") {
-      setCurrentStep(8); // Skip to publish
-    } else if (currentStep === 8) {
+    if (currentStep === 5) {
       setIsComplete(true);
     } else {
       setCurrentStep(prev => prev + 1);
@@ -226,23 +219,10 @@ const Onboarding = () => {
   };
 
   const prevStep = () => {
-    // Handle back from publish when skipping payments
-    if (currentStep === 8 && data.orderType === "orders-only") {
-      setCurrentStep(6); // Go back to products
-    } else {
-      setCurrentStep(prev => Math.max(1, prev - 1));
-    }
+    setCurrentStep(prev => Math.max(1, prev - 1));
   };
 
-  const getDisplayStep = () => {
-    if (data.orderType === "orders-only" && currentStep === 8) {
-      return 7;
-    }
-    if (data.orderType === "orders-only" && currentStep > 6) {
-      return currentStep - 1;
-    }
-    return currentStep;
-  };
+  const getDisplayStep = () => currentStep;
 
   if (isComplete) {
     return <OnboardingComplete data={data} />;
@@ -251,21 +231,15 @@ const Onboarding = () => {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <StepCategory data={data} updateData={updateData} onNext={nextStep} onBack={() => navigate(-1)} />;
+        return <StepIdentity data={data} updateData={updateData} onNext={nextStep} onBack={() => navigate(-1)} />;
       case 2:
-        return <StepBusinessDetails data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+        return <StepContact data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 3:
-        return <StepBannerUpload data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+        return <StepVisuals data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 4:
-        return <StepOrderType data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
-      case 5:
         return <StepProducts data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
-      case 6:
-        return <StepTemplate data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
-      case 7:
-        return <StepPayments data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
-      case 8:
-        return <StepPublish data={data} onNext={nextStep} onBack={prevStep} onGoToStep={setCurrentStep} onUpdateData={updateData} isPreviewMode={isPreviewMode} existingBusinessId={existingBusiness?.id} />;
+      case 5:
+        return <StepFinish data={data} updateData={updateData} onBack={prevStep} />;
       default:
         return null;
     }
