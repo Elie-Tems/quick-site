@@ -664,9 +664,10 @@ const Dashboard = () => {
     <ThemeProvider>
       <SEOHead title="לוח ניהול | סיאנגו" noindex={true} />
       <div className="min-h-screen bg-muted/30">
-        <DashboardHeader 
-          businessName={settings.name} 
-          siteUrl={business?.slug ? `/store/${business.slug}` : "/store"} 
+        <DashboardHeader
+          businessName={settings.name}
+          siteUrl={business?.slug ? `/store/${business.slug}` : "/store"}
+          merchantLogoUrl={(business as any)?.logo_url || undefined}
         />
         
         <div className="flex">
