@@ -89,10 +89,21 @@ Deno.serve(async (req) => {
         (!coupon.end_date || new Date(coupon.end_date) >= now) &&
         (!coupon.min_order_amount || subtotal >= Number(coupon.min_order_amount)) &&
         (coupon.max_uses == null || Number(coupon.current_uses) < Number(coupon.max_uses))) {
-      couponId = coupon.id;
-      discount = coupon.discount_type === "percent"
-        ? Math.round(subtotal * (Number(coupon.discount_value) / 100))
-        : Number(coupon.discount_value);
+      // Atomically claim one use (compare-and-set on current_uses): if another
+      // request already consumed the last use, this matches 0 rows and we reject
+      // the coupon - prevents infinite reuse of a max_uses coupon.
+      const { data: claimed } = await admin.from("coupons")
+        .update({ current_uses: Number(coupon.current_uses) + 1 })
+        .eq("id", coupon.id)
+        .eq("current_uses", Number(coupon.current_uses))
+        .select("id");
+      if (claimed && claimed.length) {
+        couponId = coupon.id;
+        discount = coupon.discount_type === "percent"
+          ? Math.round(subtotal * (Number(coupon.discount_value) / 100))
+          : Number(coupon.discount_value);
+        discount = Math.min(discount, subtotal); // never discount below 0
+      }
     }
   }
 

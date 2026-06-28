@@ -59,3 +59,14 @@ verify_jwt = false
 # refresh button (user JWT); both send a valid JWT.
 [functions.domain-balance-check]
 verify_jwt = true
+
+# icount-invoices + google-reviews are called by the logged-in merchant only.
+[functions.icount-invoices]
+verify_jwt = true
+
+[functions.google-reviews]
+verify_jwt = true
+
+# daily-digest is triggered by pg_cron with the x-cron-secret header (no JWT).
+[functions.daily-digest]
+verify_jwt = false
