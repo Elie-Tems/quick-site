@@ -28,6 +28,15 @@ verify_jwt = true
 [functions.expire-subscriptions]
 verify_jwt = false
 
+# orders-create is the COD/no-payment checkout, called from the PUBLIC storefront
+# by anonymous end-customers (prices are recomputed server-side).
+[functions.orders-create]
+verify_jwt = false
+
+# sitemap is fetched by search-engine crawlers - no auth.
+[functions.sitemap]
+verify_jwt = false
+
 # Unified payment functions (dispatch to a provider adapter by business.payment_provider).
 # payments-create is called from the PUBLIC storefront by anonymous end-customers.
 [functions.payments-create]
