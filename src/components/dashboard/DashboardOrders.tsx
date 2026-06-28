@@ -25,6 +25,8 @@ export interface Order {
 interface DashboardOrdersProps {
   orders: Order[];
   onOrdersChange: (orders: Order[]) => void;
+  /** Persist a status change to the DB (parent maps UI status -> DB + saves). */
+  onStatusChange?: (orderId: string, status: Order['status']) => void;
 }
 
 const statusConfig: Record<Order['status'], { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -34,7 +36,7 @@ const statusConfig: Record<Order['status'], { label: string; variant: 'default' 
   cancelled: { label: 'בוטלה', variant: 'destructive' },
 };
 
-const DashboardOrders = ({ orders, onOrdersChange }: DashboardOrdersProps) => {
+const DashboardOrders = ({ orders, onOrdersChange, onStatusChange }: DashboardOrdersProps) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const formatPrice = (price: number) => {
@@ -56,12 +58,13 @@ const DashboardOrders = ({ orders, onOrdersChange }: DashboardOrdersProps) => {
   };
 
   const handleStatusChange = (orderId: string, newStatus: Order['status']) => {
-    onOrdersChange(orders.map(o => 
+    onOrdersChange(orders.map(o =>
       o.id === orderId ? { ...o, status: newStatus } : o
     ));
     if (selectedOrder?.id === orderId) {
       setSelectedOrder({ ...selectedOrder, status: newStatus });
     }
+    onStatusChange?.(orderId, newStatus); // persist to DB
   };
 
   // Order Details View

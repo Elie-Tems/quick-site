@@ -36,7 +36,7 @@ import DashboardAdBudget from "@/components/dashboard/DashboardAdBudget";
 import UnpublishedBanner from "@/components/dashboard/UnpublishedBanner";
 import { useMyBusiness, useProfile } from "@/hooks/useBusiness";
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
-import { useOrders } from "@/hooks/useOrders";
+import { useOrders, useUpdateOrder } from "@/hooks/useOrders";
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner } from "@/hooks/useBanners";
 import { useProductCategories } from "@/hooks/useProductCategories";
 import { useAuth } from "@/contexts/AuthContext";
@@ -74,6 +74,16 @@ const Dashboard = () => {
   const { data: dbProducts, isLoading: productsLoading } = useProducts(business?.id);
   const { categories: productCategories } = useProductCategories(business?.id);
   const { data: dbOrders, isLoading: ordersLoading } = useOrders(business?.id);
+  const updateOrder = useUpdateOrder();
+  // Persist an order status change. Maps the UI status back to the DB status
+  // (inverse of the load mapping below) so it actually saves.
+  const handleOrderStatusChange = (orderId: string, uiStatus: Order['status']) => {
+    const dbStatus =
+      uiStatus === 'received' ? 'pending'
+      : uiStatus === 'pending_payment' ? 'confirmed'
+      : uiStatus; // completed / cancelled map 1:1
+    updateOrder.mutate({ id: orderId, status: dbStatus });
+  };
   const { data: dbBanners, isLoading: bannersLoading } = useBanners(business?.id);
   
   // Product mutations - MUST be called before any returns
@@ -518,7 +528,7 @@ const Dashboard = () => {
           </div>
         );
       case 'orders':
-        return <DashboardOrders orders={orders} onOrdersChange={setOrders} />;
+        return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} />;
       case 'banners':
         return (
           <DashboardBanners 
