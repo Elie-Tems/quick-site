@@ -1,0 +1,41 @@
+name: Deploy Supabase Edge Functions
+
+# Auto-deploys all Supabase edge functions on every push to main, so deploys no
+# longer need a personal access token pasted into a chat / terminal. The ONLY
+# secret to add in GitHub (Settings -> Secrets and variables -> Actions) is:
+#   SUPABASE_ACCESS_TOKEN  - a Supabase access token (Account -> Access Tokens).
+#
+# Function-level secrets (API keys, webhook secrets) live in the Supabase
+# dashboard, NOT here - this only ships the function CODE. verify_jwt settings
+# come from supabase/config.toml, which the CLI reads automatically.
+#
+# NOTE: database migrations are intentionally NOT run here yet. Several were
+# applied via the Management API rather than `supabase db push`, so the remote
+# migration history must be reconciled before CI can own `db push` safely.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/functions/**"
+      - "supabase/config.toml"
+      - ".github/workflows/supabase-functions.yml"
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: ytqgeoviokgxxwalieev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy all edge functions
+        run: supabase functions deploy --project-ref "$PROJECT_REF"
