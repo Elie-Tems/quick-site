@@ -130,7 +130,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   const parseExcelFile = async (file: File) => {
     try {
       const buffer = await file.arrayBuffer();
-      const workbook = XLSX.read(buffer, { type: "array" });
+      const workbook = XLSX.read(buffer, { type: "array", codepage: 65001 });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
 
@@ -223,7 +223,8 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     setPdfParsed([]);
     try {
       const pdfjsLib = await import("pdfjs-dist");
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+      const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -788,13 +789,10 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       {/* Navigation */}
       <StepNavigation
         onNext={onNext}
-        onSaveAndContinue={onNext}
         onBack={onBack}
         nextLabel={data.products.length > 0 ? "הבא" : "דלג בינתיים"}
-        saveLabel="שמור והמשך"
         nextDisabled={false}
-        saveDisabled={false}
-        showPreview={false}
+        showPreview={true}
         showSave={false}
       />
     </div>
