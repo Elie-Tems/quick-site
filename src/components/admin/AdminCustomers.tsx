@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import {
   Search, ExternalLink, Mail, Phone, Globe,
   CheckCircle2, XCircle, Clock, ShoppingBag,
-  ChevronDown, ChevronUp, Eye,
+  ChevronDown, ChevronUp, Eye, RotateCcw,
 } from "lucide-react";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
+import { toast } from "sonner";
 
 interface CustomerRow {
   id: string;
@@ -54,7 +55,7 @@ function StatusBadge({ published }: { published: boolean | null }) {
   );
 }
 
-function CustomerCard({ c }: { c: CustomerRow }) {
+function CustomerCard({ c, onResetOnboarding }: { c: CustomerRow; onResetOnboarding: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const b = c.business;
 
@@ -175,6 +176,14 @@ function CustomerCard({ c }: { c: CustomerRow }) {
                   </a>
                 </Button>
               )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs gap-1 text-amber-700 border-amber-300 hover:bg-amber-50"
+                onClick={() => onResetOnboarding(c.id)}
+              >
+                <RotateCcw className="h-3.5 w-3.5" /> אפס onboarding
+              </Button>
             </div>
             {b?.orders_count !== undefined && (
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -190,6 +199,21 @@ function CustomerCard({ c }: { c: CustomerRow }) {
 
 const AdminCustomers = () => {
   const [search, setSearch] = useState("");
+  const queryClient = useQueryClient();
+
+  const handleResetOnboarding = async (profileId: string) => {
+    if (!window.confirm("לאפס את ה-onboarding למשתמש זה? הוא יועבר לאשף בכניסה הבאה.")) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ onboarding_completed_at: null, status: "registered" } as any)
+      .eq("id", profileId);
+    if (error) {
+      toast.error("שגיאה באיפוס: " + error.message);
+    } else {
+      toast.success("ה-onboarding אופס — המשתמש יועבר לאשף בכניסה הבאה");
+      queryClient.invalidateQueries({ queryKey: ["admin-customers"] });
+    }
+  };
 
   const { data: customers, isLoading } = useQuery({
     queryKey: ["admin-customers"],
@@ -271,7 +295,7 @@ const AdminCustomers = () => {
           <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr_auto] gap-4 px-4 text-xs font-semibold text-muted-foreground uppercase">
             <span>לקוח</span><span>חנות</span><span>סטטוס</span><span>תוכנית</span><span>תאריך</span><span></span>
           </div>
-          {filtered.map(c => <CustomerCard key={c.id} c={c} />)}
+          {filtered.map(c => <CustomerCard key={c.id} c={c} onResetOnboarding={handleResetOnboarding} />)}
         </div>
       )}
     </div>

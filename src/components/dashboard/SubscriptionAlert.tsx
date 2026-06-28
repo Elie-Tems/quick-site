@@ -32,6 +32,9 @@ const SubscriptionAlert = ({ onManage }: Props) => {
   });
 
   if (!sub?.paid_until) return null;
+  // Never show overdue alerts for trial subscriptions that simply expired —
+  // only show them for accounts that were genuinely active/paying and stopped.
+  if (sub.status === "trial" || sub.status === "cancelled" || sub.status === "expired") return null;
 
   const msPerDay = 1000 * 60 * 60 * 24;
   const overdueDays = Math.floor((Date.now() - new Date(sub.paid_until).getTime()) / msPerDay);
