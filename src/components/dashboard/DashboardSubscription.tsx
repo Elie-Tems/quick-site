@@ -572,8 +572,9 @@ const DashboardSubscription = () => {
       {/* Referral Box */}
       <ReferralBox />
 
-      {/* Approval Number Card - Only show if business is not published */}
-      {business && !business.is_published && (
+      {/* Approval Number Card - only when publishing requires payment (hidden
+          while free-publish is on, where the approval-number flow is irrelevant). */}
+      {business && !business.is_published && import.meta.env.VITE_PUBLISH_SKIP_PAYMENT !== "true" && (
         <Card className="border-primary/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
