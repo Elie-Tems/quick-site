@@ -1,9 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { OnboardingData } from "@/pages/Onboarding";
-import { Phone, Mail, MapPin, Facebook, Instagram } from "lucide-react";
+import { Phone, Mail, MapPin } from "lucide-react";
 import { StepNavigation } from "./StepNavigation";
-import BusinessHoursPicker from "./BusinessHoursPicker";
 
 interface Props {
   data: OnboardingData;
@@ -70,44 +69,6 @@ const StepContact = ({ data, updateData, onNext, onBack }: Props) => {
           onChange={e => updateData({ address: e.target.value })}
           className="h-12 rounded-xl"
         />
-      </div>
-
-      {/* Business hours */}
-      <div className="space-y-2">
-        <Label className="font-medium">שעות פעילות</Label>
-        <BusinessHoursPicker
-          value={data.businessHours}
-          onChange={v => updateData({ businessHours: v })}
-        />
-      </div>
-
-      {/* Social links */}
-      <div className="space-y-2">
-        <Label className="font-medium">רשתות חברתיות</Label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="relative">
-            <Facebook className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1877F2] pointer-events-none" />
-            <Input
-              type="url"
-              placeholder="קישור לפייסבוק"
-              value={data.socialLinks?.facebook || ""}
-              onChange={e => updateData({ socialLinks: { ...data.socialLinks, facebook: e.target.value } })}
-              className="h-12 rounded-xl pr-10"
-              dir="ltr"
-            />
-          </div>
-          <div className="relative">
-            <Instagram className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#E4405F] pointer-events-none" />
-            <Input
-              type="url"
-              placeholder="קישור לאינסטגרם"
-              value={data.socialLinks?.instagram || ""}
-              onChange={e => updateData({ socialLinks: { ...data.socialLinks, instagram: e.target.value } })}
-              className="h-12 rounded-xl pr-10"
-              dir="ltr"
-            />
-          </div>
-        </div>
       </div>
 
       <StepNavigation
