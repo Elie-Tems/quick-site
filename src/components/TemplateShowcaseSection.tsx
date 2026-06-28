@@ -251,75 +251,41 @@ const TemplateShowcaseSection = () => {
                         מבצע
                       </div>
                     )}
-                    <img
-                      src={img}
-                      alt=""
-                      className={`w-full aspect-square object-cover ${template.style.imageRadius}`}
-                    />
-                    <div className={template.style.priceBg}>
-                      <div className={`text-right ${template.style.priceLabel}`}>מוצר</div>
-                      <div className={`text-right ${template.style.priceValue}`}>₪{template.prices[j]}</div>
-                    </div>
+
+                    {/* Fashion: person silhouette with product on body */}
+                    {template.id === 1 ? (
+                      <div className="relative w-full aspect-square bg-zinc-50 overflow-hidden">
+                        <svg viewBox="0 0 60 60" className="absolute inset-0 w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <ellipse cx="30" cy="9" rx="6.5" ry="7" fill="#e2ddd9"/>
+                          <path d="M18 17 Q30 13 42 17 L44 42 Q30 46 16 42 Z" fill="#d6d0cb"/>
+                          <path d="M18 17 L10 38" stroke="#d6d0cb" strokeWidth="5.5" strokeLinecap="round"/>
+                          <path d="M42 17 L50 38" stroke="#d6d0cb" strokeWidth="5.5" strokeLinecap="round"/>
+                          <path d="M23 42 L20 62 M37 42 L40 62" stroke="#d6d0cb" strokeWidth="6.5" strokeLinecap="round"/>
+                        </svg>
+                        <div className="absolute inset-[18%] top-[22%] bottom-[28%]">
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white/80 to-transparent px-1.5 pt-4 pb-1">
+                          <div className={`text-right ${template.style.priceLabel}`}>מוצר</div>
+                          <div className={`text-right ${template.style.priceValue}`}>₪{template.prices[j]}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <img
+                          src={img}
+                          alt=""
+                          className={`w-full aspect-square object-cover ${template.style.imageRadius}`}
+                        />
+                        <div className={template.style.priceBg}>
+                          <div className={`text-right ${template.style.priceLabel}`}>מוצר</div>
+                          <div className={`text-right ${template.style.priceValue}`}>₪{template.prices[j]}</div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
-
-              {/* Fashion: editorial lookbook strip with model silhouettes */}
-              {template.id === 1 && (
-                <div className="flex items-stretch border-t border-zinc-100">
-                  {[
-                    { label: "LOOK 01", h: "w-10 h-10" },
-                    { label: "LOOK 02", h: "w-10 h-10" },
-                  ].map((look, i) => (
-                    <div key={i} className={`flex-1 flex items-center gap-2 px-3 py-2 ${i === 0 ? "border-r border-zinc-100" : ""}`}>
-                      {/* Model silhouette */}
-                      <div className="w-9 h-12 bg-zinc-100 flex-shrink-0 flex items-end justify-center overflow-hidden">
-                        <svg viewBox="0 0 36 48" width="36" height="48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          {/* Head */}
-                          <ellipse cx="18" cy="8" rx="5" ry="6" fill="#c8c0b8"/>
-                          {/* Neck + torso */}
-                          <path d="M13 14 Q18 12 23 14 L25 32 Q18 35 11 32 Z" fill="#a89888"/>
-                          {/* Legs */}
-                          <path d="M14 32 L12 48 M22 32 L24 48" stroke="#a89888" strokeWidth="4" strokeLinecap="round"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <div className="text-[8px] text-zinc-400 uppercase tracking-widest">{look.label}</div>
-                        <div className="text-[9px] text-zinc-700 font-medium">מערכת לבוש</div>
-                        <div className="text-[9px] text-zinc-400">₪{i === 0 ? "329" : "249"}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Gifts: customer reviews strip with avatars */}
-              {template.id === 4 && (
-                <div className="px-3 py-2.5 bg-white border-t border-[#e8d5c8]">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[9px] text-[#b8927a] uppercase tracking-widest">ביקורות לקוחות</span>
-                    <div className="flex gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <svg key={i} width="8" height="8" viewBox="0 0 10 10" fill="#b9952f"><polygon points="5,0 6.2,3.8 10,3.8 7,6.1 8.1,10 5,7.6 1.9,10 3,6.1 0,3.8 3.8,3.8"/></svg>
-                      ))}
-                      <span className="text-[9px] text-zinc-400 mr-1">4.9</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    {[
-                      { initials: "מ.כ", color: "#9a6a72" },
-                      { initials: "ר.ל", color: "#b05470" },
-                      { initials: "ש.א", color: "#7a4a58" },
-                      { initials: "ד.מ", color: "#5a3f47" },
-                    ].map((av, i) => (
-                      <div key={i} className="w-7 h-7 rounded-full flex items-center justify-center text-[8px] font-bold text-white flex-shrink-0" style={{ backgroundColor: av.color }}>
-                        {av.initials}
-                      </div>
-                    ))}
-                    <span className="text-[9px] text-[#b8927a] mr-1">+230 מרוצים</span>
-                  </div>
-                </div>
-              )}
 
               {/* Footer */}
               <div className={`flex items-center justify-between px-4 py-3 ${template.style.footer}`}>
