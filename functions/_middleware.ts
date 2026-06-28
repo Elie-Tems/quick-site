@@ -100,6 +100,15 @@ function esc(s: string): string {
     .replace(/'/g, "&apos;");
 }
 
+// JSON-LD inside a <script> tag: escape the characters that could break out of
+// the script element (a product/business name containing </script> etc.).
+function ldJson(obj: unknown): string {
+  return JSON.stringify(obj)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+}
+
 // Matches /store/:slug and /store/:slug/about (V1 only - V2 is not a live route).
 function matchStoreRoute(pathname: string): { slug: string; isAbout: boolean } | null {
   const m = pathname.match(/^\/store\/([^/]+)(\/about)?\/?$/);
@@ -214,8 +223,8 @@ function buildHead(
     `<meta name="twitter:title" content="${esc(title)}" />`,
     `<meta name="twitter:description" content="${esc(description)}" />`,
     `<meta name="twitter:image" content="${esc(ogImage)}" />`,
-    `<script type="application/ld+json">${JSON.stringify(localBusiness)}</script>`,
-    productList ? `<script type="application/ld+json">${JSON.stringify(productList)}</script>` : "",
+    `<script type="application/ld+json">${ldJson(localBusiness)}</script>`,
+    productList ? `<script type="application/ld+json">${ldJson(productList)}</script>` : "",
   ];
 
   return metaTags.join("\n");

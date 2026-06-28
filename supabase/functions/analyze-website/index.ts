@@ -7,33 +7,62 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// SSRF guard: only allow fetching public http(s) URLs. Block internal hosts,
-// loopback, link-local and private IP ranges so this endpoint can't be used
-// to reach the cloud metadata service or internal network.
-function isSafePublicUrl(raw: string): boolean {
+// SSRF guard: only allow fetching public http(s) URLs. Blocks internal hosts,
+// loopback, link-local and private ranges so this endpoint can't reach the cloud
+// metadata service or internal network. Closes the common bypasses: integer/hex
+// IP encodings, DNS-rebinding (resolves the host and checks the REAL IPs), and
+// redirects (each hop is re-validated by safeFetch below).
+function ipIsBlocked(ipRaw: string): boolean {
+  const ip = ipRaw.replace(/^\[|\]$/g, "").toLowerCase();
+  const m = ip.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    const [a, b] = [Number(m[1]), Number(m[2])];
+    if (a === 10 || a === 127 || a === 0 || a >= 224) return true;
+    if (a === 169 && b === 254) return true;       // link-local / metadata
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+    return false;
+  }
+  // IPv6 loopback / ULA / link-local / IPv4-mapped
+  return ip === "::1" || ip.startsWith("fc") || ip.startsWith("fd") || ip.startsWith("fe80") || ip.startsWith("::ffff:");
+}
+
+async function isSafePublicUrl(raw: string): Promise<boolean> {
   let u: URL;
+  try { u = new URL(raw); } catch { return false; }
+  if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+  const host = u.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (!host) return false;
+  if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".internal") || host.endsWith(".local")) return false;
+  // Reject integer / hex / octal IP encodings (e.g. http://2130706433 = 127.0.0.1).
+  if (/^\d+$/.test(host) || /^0x/i.test(host)) return false;
+  // Literal IP -> check directly.
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.includes(":")) return !ipIsBlocked(host);
+  // Hostname -> resolve and reject if ANY resolved IP is private (anti-rebinding).
   try {
-    u = new URL(raw);
+    const ips: string[] = [];
+    for (const t of ["A", "AAAA"] as const) {
+      try { ips.push(...(await Deno.resolveDns(host, t))); } catch { /* no record of this type */ }
+    }
+    if (!ips.length) return false; // unresolvable -> don't fetch
+    return ips.every((ip) => !ipIsBlocked(ip));
   } catch {
     return false;
   }
-  if (u.protocol !== "http:" && u.protocol !== "https:") return false;
-  const host = u.hostname.toLowerCase();
-  if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".internal")) return false;
-  // Reject literal IPs in private / reserved ranges.
-  const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (ipv4) {
-    const [a, b] = [Number(ipv4[1]), Number(ipv4[2])];
-    if (a === 10) return false;
-    if (a === 127) return false;
-    if (a === 0) return false;
-    if (a === 169 && b === 254) return false; // link-local / metadata
-    if (a === 172 && b >= 16 && b <= 31) return false;
-    if (a === 192 && b === 168) return false;
-    if (a >= 224) return false; // multicast / reserved
+}
+
+// fetch that re-validates every redirect hop against the SSRF guard.
+async function safeFetch(target: string, init?: RequestInit, maxRedirects = 3): Promise<Response> {
+  let current = target;
+  for (let i = 0; i <= maxRedirects; i++) {
+    if (!(await isSafePublicUrl(current))) throw new Error("blocked or disallowed URL");
+    const res = await fetch(current, { ...init, redirect: "manual" });
+    const loc = res.status >= 300 && res.status < 400 ? res.headers.get("location") : null;
+    if (!loc) return res;
+    current = new URL(loc, current).toString();
   }
-  if (host === "[::1]" || host.startsWith("[fc") || host.startsWith("[fd") || host.startsWith("[fe80")) return false;
-  return true;
+  throw new Error("too many redirects");
 }
 
 // Default palettes baked into common frameworks (WordPress/Gutenberg + Bootstrap).
@@ -113,7 +142,7 @@ serve(async (req) => {
       );
     }
 
-    if (!isSafePublicUrl(url)) {
+    if (!(await isSafePublicUrl(url))) {
       return new Response(
         JSON.stringify({ success: false, error: "Invalid or disallowed URL" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -224,12 +253,12 @@ serve(async (req) => {
     let websiteTitle = "";
     let extractedColors: string[] = [];
     try {
-      const siteResponse = await fetch(url, {
+      const siteResponse = await safeFetch(url, {
         headers: {
           "User-Agent": "Mozilla/5.0 (compatible; SiangoBot/1.0)",
         },
       });
-      const html = await siteResponse.text();
+      const html = (await siteResponse.text()).slice(0, 2_000_000); // cap to avoid memory DoS
 
       // Also fetch external stylesheets - modern sites keep their brand colors
       // in linked CSS files, not inline in the HTML. Without this, detection
@@ -246,15 +275,14 @@ serve(async (req) => {
           const href = tag.match(/href\s*=\s*["']([^"']+)["']/i)?.[1];
           if (!href) continue;
           try {
-            const abs = new URL(href, url).toString();
-            if (isSafePublicUrl(abs)) cssUrls.push(abs);
+            cssUrls.push(new URL(href, url).toString()); // validated by safeFetch below
           } catch {
             // ignore malformed hrefs
           }
         }
         const sheets = await Promise.allSettled(
           cssUrls.map((u) =>
-            fetch(u, { headers: { "User-Agent": "Mozilla/5.0 (compatible; SiangoBot/1.0)" } })
+            safeFetch(u, { headers: { "User-Agent": "Mozilla/5.0 (compatible; SiangoBot/1.0)" } })
               .then((r) => (r.ok ? r.text() : "")),
           ),
         );
