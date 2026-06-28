@@ -22,11 +22,11 @@ const AdminDashboard = () => {
   const [mfaChecking, setMfaChecking] = useState(true);
 
   // Redirect if not authenticated
-  // useEffect(() => {
-  //   if (!authLoading && !user) {
-  //     navigate('/login');
-  //   }
-  // }, [user, authLoading, navigate]);
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login');
+    }
+  }, [user, authLoading, navigate]);
 
   // Check if MFA is enrolled and whether current session already passed MFA
   useEffect(() => {
@@ -92,9 +92,7 @@ const AdminDashboard = () => {
     setMfaLoading(false);
   };
 
-  const DEV_BYPASS = true; // TODO: remove before production
-
-  if (!DEV_BYPASS && (authLoading || adminLoading || mfaChecking)) {
+  if (authLoading || adminLoading || mfaChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -105,7 +103,7 @@ const AdminDashboard = () => {
     );
   }
 
-  if (!DEV_BYPASS && !isAdmin) {
+  if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md px-4">
@@ -121,7 +119,7 @@ const AdminDashboard = () => {
     );
   }
 
-  if (!DEV_BYPASS && mfaRequired && !mfaVerified) {
+  if (mfaRequired && !mfaVerified) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-sm px-4 w-full">
