@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, HelpCircle, Loader2, Sparkles, ArrowRight, ArrowLeft, User, RotateCcw } from "lucide-react";
+import { Send, HelpCircle, Loader2, Sparkles, ArrowRight, ArrowLeft, User, RotateCcw, Search, ChevronDown, BookOpen } from "lucide-react";
+import { KNOWLEDGE_BASE } from "@/lib/knowledgeBase";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
@@ -209,6 +210,8 @@ const HelpCenter = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [kbQuery, setKbQuery] = useState("");
+  const [openArticle, setOpenArticle] = useState<string | null>(null);
   const [addressPreference, setAddressPreference] = useState<AddressPreference>(() => {
     return (localStorage.getItem("help_address_preference") as AddressPreference) || "plural";
   });
@@ -433,6 +436,76 @@ const HelpCenter = () => {
             שאל אותי כל שאלה על המערכת ואסביר לך צעד אחר צעד
           </p>
         </motion.div>
+
+        {/* Knowledge base: searchable, categorized articles */}
+        <div className="mb-10">
+          <div className="relative mb-5 max-w-xl mx-auto">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              value={kbQuery}
+              onChange={(e) => setKbQuery(e.target.value)}
+              placeholder="חיפוש במאגר הידע..."
+              className="pr-9 h-12 bg-white text-zinc-900 border-2 border-primary/30 placeholder:text-zinc-400"
+              dir="rtl"
+            />
+          </div>
+
+          {(() => {
+            const q = kbQuery.trim().toLowerCase();
+            const renderArticle = (catId: string, ar: { id: string; q: string; a: string }) => {
+              const key = `${catId}-${ar.id}`;
+              const open = openArticle === key;
+              return (
+                <div key={key} className="border border-border/60 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setOpenArticle(open ? null : key)}
+                    className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-right hover:bg-muted/50 transition-colors"
+                    dir="rtl"
+                  >
+                    <span className="text-sm font-medium">{ar.q}</span>
+                    <ChevronDown className={`w-4 h-4 shrink-0 text-muted-foreground transition-transform ${open ? "" : "-rotate-90"}`} />
+                  </button>
+                  {open && (
+                    <div className="px-3 pb-3 prose prose-sm dark:prose-invert max-w-none text-right" dir="rtl">
+                      <ReactMarkdown>{ar.a}</ReactMarkdown>
+                    </div>
+                  )}
+                </div>
+              );
+            };
+
+            if (q) {
+              const matches = KNOWLEDGE_BASE.flatMap((cat) =>
+                cat.articles.filter((ar) => (ar.q + " " + ar.a).toLowerCase().includes(q)).map((ar) => ({ catId: cat.id, ar })),
+              );
+              if (matches.length === 0) {
+                return <p className="text-center text-sm text-muted-foreground py-6">לא נמצאו תוצאות. נסו לשאול את הבוט למטה 👇</p>;
+              }
+              return <div className="space-y-2 max-w-2xl mx-auto">{matches.map((m) => renderArticle(m.catId, m.ar))}</div>;
+            }
+
+            return (
+              <div className="grid md:grid-cols-2 gap-4">
+                {KNOWLEDGE_BASE.map((cat) => (
+                  <Card key={cat.id} className="border-border/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <BookOpen className="w-4 h-4 text-primary" />
+                        <h3 className="font-semibold text-sm">{cat.title}</h3>
+                      </div>
+                      <div className="space-y-2">{cat.articles.map((ar) => renderArticle(cat.id, ar))}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* Still need help? Ask the bot below */}
+        <div className="text-center mb-4">
+          <p className="text-sm text-muted-foreground">לא מצאתם תשובה? שאלו את העוזר החכם שלנו 👇</p>
+        </div>
 
         {/* Reset Button - Above Chat */}
         {messages.length > 0 && (
