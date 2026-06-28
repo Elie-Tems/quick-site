@@ -218,8 +218,9 @@ const MiniProductGrid = ({ products, primaryColor, bg, card, text, muted }: {
   </div>
 );
 
-const TemplatePreview = ({ template, primaryColor }: { template: TemplateStyle; primaryColor: string }) => {
+const TemplatePreview = ({ template, primaryColor, userProducts }: { template: TemplateStyle; primaryColor: string; userProducts?: TemplateStyle['products'] }) => {
   const accent = primaryColor;
+  const displayProducts = (userProducts && userProducts.length > 0) ? userProducts : template.products;
   const bg = "#0f0f0f";
   const card = "#1a1a1a";
   const text = "#ffffff";
@@ -241,7 +242,7 @@ const TemplatePreview = ({ template, primaryColor }: { template: TemplateStyle; 
             <img src={template.heroImage} alt="" className="w-full h-full object-cover" />
           </div>
         </div>
-        <MiniProductGrid products={template.products} primaryColor={accent} bg={bg} card={card} text={text} muted={muted} />
+        <MiniProductGrid products={displayProducts} primaryColor={accent} bg={bg} card={card} text={text} muted={muted} />
       </div>
     );
   }
@@ -259,7 +260,7 @@ const TemplatePreview = ({ template, primaryColor }: { template: TemplateStyle; 
             <div className="px-2 py-0.5 text-[5.5px] font-bold text-white rounded-full" style={{ background: accent }}>גלו עכשיו</div>
           </div>
         </div>
-        <MiniProductGrid products={template.products} primaryColor={accent} bg={bg} card={card} text={text} muted={muted} />
+        <MiniProductGrid products={displayProducts} primaryColor={accent} bg={bg} card={card} text={text} muted={muted} />
       </div>
     );
   }
@@ -277,7 +278,7 @@ const TemplatePreview = ({ template, primaryColor }: { template: TemplateStyle; 
           <div className="px-1.5 py-0.5 text-[5px] font-bold text-white border border-white/50 w-fit">גלו עכשיו</div>
         </div>
       </div>
-      <MiniProductGrid products={template.products} primaryColor={accent} bg={bg} card={card} text={text} muted={muted} />
+      <MiniProductGrid products={displayProducts} primaryColor={accent} bg={bg} card={card} text={text} muted={muted} />
     </div>
   );
 };
@@ -285,6 +286,15 @@ const TemplatePreview = ({ template, primaryColor }: { template: TemplateStyle; 
 const StepTemplate = ({ data, updateData, onNext, onBack }: StepTemplateProps) => {
   const selectedTemplate = data.storeTemplate;
   const primaryColor = data.extractedBranding?.primaryColor || "#7C3AED";
+
+  const userProducts: TemplateStyle['products'] = data.products
+    .filter(p => p.imageUrl)
+    .slice(0, 3)
+    .map(p => ({
+      img: p.imageUrl!,
+      name: p.name || "מוצר",
+      price: `₪${p.price}`,
+    }));
   const [hexInput, setHexInput] = useState(primaryColor);
   const [scanning, setScanning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -345,7 +355,7 @@ const StepTemplate = ({ data, updateData, onNext, onBack }: StepTemplateProps) =
               style={{ background: "#0f0f0f", border: isSelected ? "none" : "1px solid rgba(255,255,255,0.1)" }}
             >
               <div className="aspect-[4/3.5] relative overflow-hidden">
-                <TemplatePreview template={template} primaryColor={primaryColor} />
+                <TemplatePreview template={template} primaryColor={primaryColor} userProducts={userProducts} />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
                 {isSelected && (
                   <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}

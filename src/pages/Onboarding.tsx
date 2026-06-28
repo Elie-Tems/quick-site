@@ -251,17 +251,17 @@ const Onboarding = () => {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <StepTemplate data={data} updateData={updateData} onNext={nextStep} onBack={() => navigate(-1)} />;
+        return <StepCategory data={data} updateData={updateData} onNext={nextStep} onBack={() => navigate(-1)} />;
       case 2:
-        return <StepCategory data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+        return <StepBusinessDetails data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 3:
         return <StepBannerUpload data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 4:
-        return <StepBusinessDetails data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
-      case 5:
         return <StepOrderType data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
-      case 6:
+      case 5:
         return <StepProducts data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+      case 6:
+        return <StepTemplate data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 7:
         return <StepPayments data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 8:
