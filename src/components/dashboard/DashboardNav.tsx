@@ -3,7 +3,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -39,6 +39,7 @@ const navItems: {
   // שיווק ותצוגה
   { id: "ad-budget", label: "תקציב פרסום", shortLabel: "פרסום", icon: Target, group: "שיווק ותצוגה" },
   { id: "tracking", label: "תגי שיווק ומעקב", shortLabel: "תגי מעקב", icon: BarChart3, group: "שיווק ותצוגה" },
+  { id: "reviews", label: "ביקורות Google", shortLabel: "ביקורות", icon: Star, group: "שיווק ותצוגה" },
   { id: "traffic", label: "מקורות הגעה", shortLabel: "מקורות", icon: Radar, group: "שיווק ותצוגה" },
   { id: "insights", label: "תובנות", icon: Lightbulb, group: "שיווק ותצוגה" },
   { id: "banners", label: "באנרים", icon: Image, group: "שיווק ותצוגה" },

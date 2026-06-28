@@ -19,6 +19,7 @@ import StoreSEO from "@/components/storefront/StoreSEO";
 import AgeVerificationModal from "@/components/storefront/AgeVerificationModal";
 import { useStorefront } from "@/hooks/useStorefront";
 import { useStoreTracking } from "@/components/storefront/StoreTracking";
+import StoreReviews from "@/components/storefront/StoreReviews";
 import { useIsShabbatNow } from "@/hooks/useIsShabbatNow";
 import { useActiveCampaign, useCampaignBanners, useCampaignProducts } from "@/hooks/useCampaigns";
 import { Button } from "@/components/ui/button";
@@ -727,6 +728,10 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
             aboutText={business.about_text}
             businessName={business.name}
           />
+        )}
+
+        {b?.reviews_paid && (b?.reviews_show_on_store ?? true) && (
+          <StoreReviews cache={b?.google_reviews_cache} primaryColor={business.primary_color || undefined} />
         )}
       </main>
 

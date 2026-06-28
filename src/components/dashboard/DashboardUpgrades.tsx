@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Globe, MessageCircle, Mail, Sparkles, ArrowLeft, Crown, Check, BarChart3 } from "lucide-react";
+import { Globe, MessageCircle, Mail, Sparkles, ArrowLeft, Crown, Check, BarChart3, Star } from "lucide-react";
 import type { DashboardView } from "@/components/dashboard/DashboardNav";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 
@@ -31,6 +31,12 @@ const DashboardUpgrades = ({ onNavigate }: Props) => {
       title: "מייל עסקי", price: '₪19/חודש + מע"מ',
       pitch: "כתובת מייל מקצועית על הדומיין שלכם - info@your-brand.co.il. הרבה יותר אמין מ-Gmail אישי.",
       bullets: ["אמון ומקצועיות", "עובד בכל מכשיר", "תיבות לפי מחלקה"], show: emailEnabled(),
+    },
+    {
+      id: "reviews" as DashboardView, icon: Star, color: "#f59e0b",
+      title: "ביקורות Google", price: '₪14/חודש + מע"מ',
+      pitch: "יש לכם כרטיס עסק בגוגל עם ביקורות טובות? הציגו את הדירוג והביקורות בדף הבית של החנות - בונה אמון ומגדיל מכירות. רק מקלידים את שם העסק, אנחנו מוצאים אותו.",
+      bullets: ["אמון מיידי מלקוחות", "דירוג כוכבים בולט", "בלי קוד - רק שם העסק"], show: true,
     },
     {
       id: "tracking" as DashboardView, icon: BarChart3, color: "#db2777",

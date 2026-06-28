@@ -18,6 +18,7 @@ import DashboardPreview from "@/components/dashboard/DashboardPreview";
 import DashboardCategories from "@/components/dashboard/DashboardCategories";
 import DashboardDesign from "@/components/dashboard/DashboardDesign";
 import DashboardTracking from "@/components/dashboard/DashboardTracking";
+import DashboardReviews from "@/components/dashboard/DashboardReviews";
 import DashboardSubscription from "@/components/dashboard/DashboardSubscription";
 import DashboardAIImages from "@/components/dashboard/DashboardAIImages";
 import DashboardAIGeneratedImages from "@/components/dashboard/DashboardAIGeneratedImages";
@@ -527,6 +528,8 @@ const Dashboard = () => {
         return <DashboardUpgrades onNavigate={(v) => setCurrentView(v)} />;
       case 'tracking':
         return <DashboardTracking businessId={business?.id} />;
+      case 'reviews':
+        return <DashboardReviews businessId={business?.id} />;
       case 'subscription':
         return <DashboardSubscription />;
       case 'about':

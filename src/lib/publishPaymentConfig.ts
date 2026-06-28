@@ -66,6 +66,12 @@ export function getTagsPaymentUrl(): string {
 /** Price of the marketing-tags add-on (one-time, pre-VAT). */
 export const TAGS_ADDON_PRICE_ILS = 149;
 
+/** Monthly Google-reviews add-on payment page (iCount) + price (pre-VAT). */
+export function getReviewsPaymentUrl(): string {
+  return (import.meta.env.VITE_ICOUNT_REVIEWS_PAYMENT_URL || "").trim();
+}
+export const REVIEWS_ADDON_PRICE_ILS = 14;
+
 /** Get AI credit payment URL by package ID */
 export function getAICreditPaymentUrl(packageId: string): string {
   switch (packageId) {
