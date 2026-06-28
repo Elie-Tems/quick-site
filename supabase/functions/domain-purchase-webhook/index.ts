@@ -20,6 +20,14 @@ const corsHeaders = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
+// Constant-time string comparison (avoids leaking the secret via timing).
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+
 const APP_URL = () => Deno.env.get("VITE_APP_URL") || "https://siango.app";
 // Urgent admin alerts go to both founders (same list as report-error / uptime-check).
 const ALERT_RECIPIENTS = ["moti4384@gmail.com", "furmand713@gmail.com"];
@@ -57,7 +65,7 @@ Deno.serve(async (req) => {
     req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
     url.searchParams.get("secret") ??
     "";
-  if (headerSecret !== secret) return json({ error: "Unauthorized" }, 401);
+  if (!safeEqual(headerSecret, secret)) return json({ error: "Unauthorized" }, 401);
 
   // Identify the order. session_token is the reliable key (we put it in the IPN URL).
   let sessionToken = url.searchParams.get("session_token");
@@ -90,6 +98,19 @@ Deno.serve(async (req) => {
   if (order.status === "failed_funds" || order.status === "failed") {
     // A prior attempt failed; don't auto-retry charges. Acknowledge.
     return json({ ok: true, alreadyHandled: order.status });
+  }
+
+  // Verify the amount iCount reports (when present) is at least the order price,
+  // so a forged/low IPN can't trigger a paid registration that drains balance.
+  const ipnAmount = Number(
+    url.searchParams.get("sum") || url.searchParams.get("amount") ||
+    url.searchParams.get("total") || url.searchParams.get("paid") || 0,
+  );
+  if (ipnAmount > 0 && ipnAmount + 0.5 < Number(order.price_ils)) {
+    await admin.from("domain_orders").update({
+      status: "failed", error: `amount mismatch: ${ipnAmount} < ${order.price_ils}`, updated_at: new Date().toISOString(),
+    }).eq("id", order.id);
+    return json({ error: "amount mismatch" }, 400);
   }
 
   const now = new Date().toISOString();

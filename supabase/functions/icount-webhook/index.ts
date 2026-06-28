@@ -5,6 +5,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-secret",
 };
 
+// Constant-time string comparison (avoids leaking the secret via timing).
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+
 function extractBusinessId(payload: Record<string, unknown>): string | null {
   const direct = [
     "business_id",
@@ -160,7 +168,7 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const qSecret = url.searchParams.get("secret") ?? "";
     const businessId = url.searchParams.get("business_id") ?? "";
-    if (qSecret !== secret || !businessId) {
+    if (!safeEqual(qSecret, secret) || !businessId) {
       return new Response(JSON.stringify({ error: "Unauthorized or missing business_id" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -176,7 +184,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  if (headerSecret !== secret) {
+  if (!safeEqual(headerSecret, secret)) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
