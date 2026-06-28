@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
           {
             role: "system",
             content:
-              'You are a product data extractor. Extract product listings from the given text. The text may contain image markers like [IMG:https://...] positioned right next to the product they belong to. Return ONLY a JSON object with a "products" array. Each product: { "name": string (required), "price": number (required, in ILS if not specified), "description": string (optional, 1 sentence max), "image": string (optional - copy the full https URL from the [IMG:...] marker that is nearest to / belongs to this product; omit it entirely if you are not confident). If price is unclear, omit the product. Return at most 100 products.',
+              'You are a product data extractor. Extract product listings from the given text (it may be jumbled from a PDF, especially Hebrew/RTL). The text may contain image markers like [IMG:https://...] positioned right next to the product they belong to. Return ONLY a JSON object with a "products" array. Each product: { "name": string (required), "price": number (required, in ILS if not specified), "description": string (optional, 1 sentence max), "image": string (optional - copy the full https URL from the [IMG:...] marker that is nearest to / belongs to this product; omit if unsure) }. PRICE RULES: the price is a plausible retail amount, usually next to ₪ / ש"ח / "שקל" or a decimal like 12.90. DO NOT treat catalog item codes, SKUs, barcodes (long digit runs), phone numbers, years, quantities, weights, or page numbers as the price. If you cannot confidently identify a real price for a product, OMIT that product entirely rather than guessing. Return at most 100 products.',
           },
           {
             role: "user",

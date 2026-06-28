@@ -1,14 +1,19 @@
 import { useMemo, useState } from "react";
-import { Users, Search, ArrowRight, Phone, Mail, ShoppingBag, Calendar } from "lucide-react";
+import { Users, Search, ArrowRight, Phone, Mail, ShoppingBag, Calendar, Sparkles, TrendingDown, Crown, Repeat } from "lucide-react";
 import type { Order } from "@/components/dashboard/DashboardOrders";
 
-// CRM phase 1 (free tier): a customer list derived from existing orders - no new
-// tables. Groups orders by email (falling back to phone) into a customer card
-// with purchase history, total spent (LTV) and last-order date.
+// CRM (phase 1 free + phase 2 segments/opportunities). Derived entirely from
+// existing orders - no new tables. Phase 2 adds segments (VIP / dormant / repeat
+// / new) and an opportunities area. NOTE: actually *sending* a win-back message
+// needs the WhatsApp/Email modules (not live yet) - for now opportunities surface
+// WHO to reach so the merchant can act, and auto-send turns on once channels ship.
 
 interface DashboardCustomersProps {
   orders: Order[];
 }
+
+const DORMANT_DAYS = 60;
+const NEW_DAYS = 30;
 
 interface CustomerRow {
   key: string;
@@ -17,18 +22,26 @@ interface CustomerRow {
   email: string;
   orderCount: number;
   totalSpent: number;
+  firstOrder: string;
   lastOrder: string;
   orders: Order[];
+  isVip: boolean;
+  isDormant: boolean;
+  isRepeat: boolean;
+  isNew: boolean;
 }
+
+type SegmentFilter = "all" | "vip" | "dormant" | "repeat" | "new";
 
 const fmtPrice = (n: number) =>
   new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", minimumFractionDigits: 0 }).format(n);
-
 const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString("he-IL", { day: "numeric", month: "short", year: "numeric" });
+const daysAgo = (d: string) => Math.floor((Date.now() - new Date(d).getTime()) / 86400000);
 
 const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
   const [query, setQuery] = useState("");
+  const [segment, setSegment] = useState<SegmentFilter>("all");
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   const customers = useMemo<CustomerRow[]>(() => {
@@ -36,92 +49,109 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
     for (const o of orders) {
       const key = (o.customerEmail || o.customerPhone || o.customerName || "").trim().toLowerCase();
       if (!key) continue;
-      const existing = map.get(key);
-      if (existing) {
-        existing.orderCount += 1;
-        existing.totalSpent += o.total || 0;
-        existing.orders.push(o);
-        if (new Date(o.date) > new Date(existing.lastOrder)) existing.lastOrder = o.date;
-        if (!existing.phone && o.customerPhone) existing.phone = o.customerPhone;
-        if (!existing.email && o.customerEmail) existing.email = o.customerEmail;
+      const ex = map.get(key);
+      if (ex) {
+        ex.orderCount += 1;
+        ex.totalSpent += o.total || 0;
+        ex.orders.push(o);
+        if (new Date(o.date) > new Date(ex.lastOrder)) ex.lastOrder = o.date;
+        if (new Date(o.date) < new Date(ex.firstOrder)) ex.firstOrder = o.date;
+        if (!ex.phone && o.customerPhone) ex.phone = o.customerPhone;
+        if (!ex.email && o.customerEmail) ex.email = o.customerEmail;
       } else {
         map.set(key, {
-          key,
-          name: o.customerName || "לקוח",
-          phone: o.customerPhone || "",
-          email: o.customerEmail || "",
-          orderCount: 1,
-          totalSpent: o.total || 0,
-          lastOrder: o.date,
-          orders: [o],
+          key, name: o.customerName || "לקוח", phone: o.customerPhone || "", email: o.customerEmail || "",
+          orderCount: 1, totalSpent: o.total || 0, firstOrder: o.date, lastOrder: o.date, orders: [o],
+          isVip: false, isDormant: false, isRepeat: false, isNew: false,
         });
       }
     }
-    return Array.from(map.values()).sort((a, b) => b.totalSpent - a.totalSpent);
+    const rows = Array.from(map.values());
+    const avgSpend = rows.length ? rows.reduce((s, c) => s + c.totalSpent, 0) / rows.length : 0;
+    for (const c of rows) {
+      c.isVip = c.totalSpent >= Math.max(avgSpend * 1.5, 1);
+      c.isDormant = daysAgo(c.lastOrder) > DORMANT_DAYS;
+      c.isRepeat = c.orderCount > 1 && !c.isDormant;
+      c.isNew = c.orderCount === 1 && daysAgo(c.firstOrder) <= NEW_DAYS;
+    }
+    return rows.sort((a, b) => b.totalSpent - a.totalSpent);
   }, [orders]);
+
+  const counts = useMemo(() => ({
+    all: customers.length,
+    vip: customers.filter((c) => c.isVip).length,
+    dormant: customers.filter((c) => c.isDormant).length,
+    repeat: customers.filter((c) => c.isRepeat).length,
+    new: customers.filter((c) => c.isNew).length,
+  }), [customers]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return customers;
-    return customers.filter(
-      (c) => c.name.toLowerCase().includes(q) || c.phone.includes(q) || c.email.toLowerCase().includes(q),
-    );
-  }, [customers, query]);
+    return customers.filter((c) => {
+      if (segment === "vip" && !c.isVip) return false;
+      if (segment === "dormant" && !c.isDormant) return false;
+      if (segment === "repeat" && !c.isRepeat) return false;
+      if (segment === "new" && !c.isNew) return false;
+      if (q && !(c.name.toLowerCase().includes(q) || c.phone.includes(q) || c.email.toLowerCase().includes(q))) return false;
+      return true;
+    });
+  }, [customers, query, segment]);
 
   const selected = customers.find((c) => c.key === selectedKey) || null;
 
   if (selected) {
+    const tags = [
+      selected.isVip && { label: "VIP", icon: Crown },
+      selected.isDormant && { label: "רדום", icon: TrendingDown },
+      selected.isRepeat && { label: "לקוח חוזר", icon: Repeat },
+    ].filter(Boolean) as { label: string; icon: typeof Crown }[];
     return (
       <div className="space-y-4" dir="rtl">
         <button onClick={() => setSelectedKey(null)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowRight className="w-4 h-4" /> חזרה לרשימת הלקוחות
         </button>
-
         <div className="rounded-xl border border-border bg-card p-5">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center text-primary font-semibold">
-              {selected.name.charAt(0)}
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold">{selected.name}</h2>
+            <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center text-primary font-semibold">{selected.name.charAt(0)}</div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg font-semibold">{selected.name}</h2>
+                {tags.map((t) => (
+                  <span key={t.label} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary"><t.icon className="w-3 h-3" />{t.label}</span>
+                ))}
+              </div>
               <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mt-0.5">
                 {selected.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{selected.phone}</span>}
                 {selected.email && <span className="flex items-center gap-1" dir="ltr"><Mail className="w-3 h-3" />{selected.email}</span>}
               </div>
             </div>
           </div>
-
           <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="rounded-lg bg-muted/40 p-3 text-center">
-              <div className="text-xl font-semibold">{selected.orderCount}</div>
-              <div className="text-xs text-muted-foreground">הזמנות</div>
-            </div>
-            <div className="rounded-lg bg-muted/40 p-3 text-center">
-              <div className="text-xl font-semibold">{fmtPrice(selected.totalSpent)}</div>
-              <div className="text-xs text-muted-foreground">סך רכישות</div>
-            </div>
-            <div className="rounded-lg bg-muted/40 p-3 text-center">
-              <div className="text-xl font-semibold">{fmtPrice(Math.round(selected.totalSpent / selected.orderCount))}</div>
-              <div className="text-xs text-muted-foreground">ממוצע להזמנה</div>
-            </div>
+            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{selected.orderCount}</div><div className="text-xs text-muted-foreground">הזמנות</div></div>
+            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{fmtPrice(selected.totalSpent)}</div><div className="text-xs text-muted-foreground">סך רכישות</div></div>
+            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{fmtPrice(Math.round(selected.totalSpent / selected.orderCount))}</div><div className="text-xs text-muted-foreground">ממוצע להזמנה</div></div>
           </div>
-
           <h3 className="text-sm font-medium mb-2">פירוט רכישות</h3>
           <div className="flex flex-col gap-2">
-            {selected.orders
-              .slice()
-              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-              .map((o) => (
-                <div key={o.id} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
-                  <span className="flex items-center gap-2 text-muted-foreground"><Calendar className="w-3.5 h-3.5" />{fmtDate(o.date)}</span>
-                  <span className="font-medium">{fmtPrice(o.total)}</span>
-                </div>
-              ))}
+            {selected.orders.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((o) => (
+              <div key={o.id} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
+                <span className="flex items-center gap-2 text-muted-foreground"><Calendar className="w-3.5 h-3.5" />{fmtDate(o.date)}</span>
+                <span className="font-medium">{fmtPrice(o.total)}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
     );
   }
+
+  const segChips: { id: SegmentFilter; label: string }[] = [
+    { id: "all", label: `הכל (${counts.all})` },
+    { id: "vip", label: `VIP (${counts.vip})` },
+    { id: "dormant", label: `רדומים (${counts.dormant})` },
+    { id: "repeat", label: `חוזרים (${counts.repeat})` },
+    { id: "new", label: `חדשים (${counts.new})` },
+  ];
 
   return (
     <div className="space-y-4" dir="rtl">
@@ -133,14 +163,31 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
         <span className="text-sm text-muted-foreground">{customers.length} לקוחות</span>
       </div>
 
+      {/* Opportunity: dormant win-back */}
+      {counts.dormant > 0 && (
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-start gap-3">
+          <Sparkles className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">{counts.dormant} לקוחות לא קנו מעל {DORMANT_DAYS} יום</p>
+            <p className="text-xs text-muted-foreground mt-0.5">הזדמנות להחזיר אותם עם הטבה. שליחה אוטומטית תתאפשר כשמודול וואטסאפ/מייל יעלה - בינתיים אפשר לראות מי הם וליצור קשר.</p>
+          </div>
+          <button onClick={() => setSegment("dormant")} className="text-sm font-medium text-primary hover:underline shrink-0">הצג אותם</button>
+        </div>
+      )}
+
+      {/* Segment chips */}
+      <div className="flex gap-2 flex-wrap">
+        {segChips.map((s) => (
+          <button key={s.id} onClick={() => setSegment(s.id)}
+            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${segment === s.id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40"}`}>
+            {s.label}
+          </button>
+        ))}
+      </div>
+
       <div className="relative">
         <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="חיפוש לפי שם, טלפון או מייל"
-          className="w-full h-10 rounded-xl border border-border bg-background pr-9 pl-3 text-sm"
-        />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="חיפוש לפי שם, טלפון או מייל" className="w-full h-10 rounded-xl border border-border bg-background pr-9 pl-3 text-sm" />
       </div>
 
       {filtered.length === 0 ? (
@@ -151,16 +198,14 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
       ) : (
         <div className="flex flex-col gap-2">
           {filtered.map((c) => (
-            <button
-              key={c.key}
-              onClick={() => setSelectedKey(c.key)}
-              className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-right hover:border-primary/40 transition-colors"
-            >
-              <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-primary font-semibold shrink-0">
-                {c.name.charAt(0)}
-              </div>
+            <button key={c.key} onClick={() => setSelectedKey(c.key)} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-right hover:border-primary/40 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-primary font-semibold shrink-0">{c.name.charAt(0)}</div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate">{c.name}</div>
+                <div className="text-sm font-medium truncate flex items-center gap-1.5">
+                  {c.name}
+                  {c.isVip && <Crown className="w-3 h-3 text-primary shrink-0" />}
+                  {c.isDormant && <TrendingDown className="w-3 h-3 text-muted-foreground shrink-0" />}
+                </div>
                 <div className="text-xs text-muted-foreground truncate">{c.phone || c.email}</div>
               </div>
               <div className="text-left shrink-0">
