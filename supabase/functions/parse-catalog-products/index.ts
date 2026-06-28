@@ -16,10 +16,31 @@ Deno.serve(async (req) => {
     let sourceText = text as string;
 
     if (url && !text) {
-      const res = await fetch(url as string, {
-        headers: { "User-Agent": "Mozilla/5.0 (compatible; CatalogBot/1.0)" },
-        signal: AbortSignal.timeout(10000),
-      });
+      let res: Response;
+      try {
+        res = await fetch(url as string, {
+          // Real browser UA - many sites block obvious bot user-agents.
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml",
+            "Accept-Language": "he,en;q=0.9",
+          },
+          redirect: "follow",
+          signal: AbortSignal.timeout(15000),
+        });
+      } catch {
+        return new Response(
+          JSON.stringify({ error: "unreachable", products: [], message: "לא הצלחנו לגשת לאתר. נסו קובץ או הוספה ידנית." }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (!res.ok) {
+        return new Response(
+          JSON.stringify({ error: `http_${res.status}`, products: [], message: "האתר חסם את הקריאה. נסו קובץ או הוספה ידנית." }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
       const html = await res.text();
       sourceText = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")

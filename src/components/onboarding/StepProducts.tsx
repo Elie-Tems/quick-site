@@ -268,10 +268,11 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         setUrlParsed(result.products);
         toast.success(`נמצאו ${result.products.length} מוצרים`);
       } else {
-        toast.error("לא נמצאו מוצרים בקישור זה");
+        // Friendly, specific message when the site blocked us / had no products.
+        toast.error(result?.message || "לא נמצאו מוצרים בקישור זה. נסו קובץ או הוספה ידנית.");
       }
     } catch {
-      toast.error("שגיאה בסריקת הקישור");
+      toast.error("שגיאה בסריקת הקישור. נסו קובץ או הוספה ידנית.");
     } finally {
       setIsUrlScraping(false);
     }
@@ -280,6 +281,13 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   // ── Voice ──────────────────────────────────────────────────────────────────
 
   const startRecording = async () => {
+    // Recording needs a secure context + the mediaDevices API. In an embedded /
+    // in-app browser (e.g. opening the link from inside another app) it's often
+    // unavailable - guide the user to a normal browser tab instead of a vague error.
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.error("הקלטה לא נתמכת כאן. פתחו את האתר בכרטיסיית דפדפן רגילה (Chrome/Safari).");
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -294,8 +302,15 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
 
       mediaRecorder.start();
       setIsRecording(true);
-    } catch {
-      toast.error("לא ניתן לגשת למיקרופון — בדוק הרשאות");
+    } catch (err) {
+      const name = (err as Error)?.name;
+      if (name === "NotAllowedError" || name === "SecurityError") {
+        toast.error("הגישה למיקרופון נחסמה. אשרו הרשאת מיקרופון בדפדפן ונסו שוב.");
+      } else if (name === "NotFoundError" || name === "DevicesNotFoundError") {
+        toast.error("לא נמצא מיקרופון במכשיר.");
+      } else {
+        toast.error("לא ניתן לגשת למיקרופון. נסו בכרטיסיית דפדפן רגילה.");
+      }
     }
   };
 
@@ -571,11 +586,11 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 disabled={!quickName.trim() || !quickPrice.trim()}
                 className="flex items-center gap-1.5 px-4 h-9 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
               >
-                <Plus className="w-4 h-4" /> תמונה
+                <Plus className="w-4 h-4" /> הוסף מוצר
               </button>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground text-center">תמונות ניתן לצור עם AI לאחר הוספת המוצרים</p>
+          <p className="text-xs text-muted-foreground text-center">תמונות ניתן ליצור עם AI לאחר הוספת המוצרים</p>
         </div>
       )}
 
