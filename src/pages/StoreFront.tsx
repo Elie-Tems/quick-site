@@ -492,6 +492,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
             body: {
               type: "orderConfirmationCustomer",
               to: data.email,
+              businessId: business.id,
               merchant: {
                 storeName: business.name,
                 email: business.email || undefined,

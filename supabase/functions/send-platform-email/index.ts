@@ -3,6 +3,7 @@
 // (verify_jwt=true) so it can't be abused anonymously to send from our domain.
 // No-ops gracefully if RESEND_API_KEY is not configured yet.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PLATFORM_EMAILS, orderConfirmationCustomer } from "../_shared/email/platformEmails.ts";
 import { sendViaResend } from "../_shared/email/resend.ts";
 
@@ -44,7 +45,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { type, to, ctx, fromName, replyTo, merchant, order } = await req.json();
+    const { type, to, ctx, fromName, replyTo, merchant, order, businessId } = await req.json();
     if (!to) {
       return new Response(JSON.stringify({ ok: false, error: "to is required" }), {
         status: 400,
@@ -66,16 +67,43 @@ serve(async (req) => {
     let sendReplyTo = replyTo;
 
     if (type === "orderConfirmationCustomer") {
-      // Customer-facing order email: FROM the merchant, reply-to the merchant.
-      const m = merchant || {};
-      const storeName = m.storeName || "החנות";
-      const storeUrl = m.storeUrl || "https://siango.app";
+      // Customer-facing order email FROM the merchant. Derive the merchant
+      // identity from the DB (by businessId) so a caller can't spoof another
+      // store's name/email (anti-phishing). Fall back to the request only for
+      // legacy callers that don't send businessId yet.
+      let storeName = "החנות";
+      let storeEmail: string | undefined;
+      let storeUrl = "https://siango.app";
+      let brandColor: string | undefined;
+      let logoUrl: string | undefined;
+      if (businessId) {
+        const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        const { data: biz } = await admin
+          .from("businesses")
+          .select("name, email, slug, primary_color, logo_url")
+          .eq("id", businessId)
+          .maybeSingle();
+        if (biz) {
+          storeName = (biz as any).name || storeName;
+          storeEmail = (biz as any).email || undefined;
+          brandColor = (biz as any).primary_color || undefined;
+          logoUrl = (biz as any).logo_url || undefined;
+          if ((biz as any).slug) storeUrl = `https://siango.app/store/${(biz as any).slug}`;
+        }
+      } else {
+        const m = merchant || {};
+        storeName = m.storeName || storeName;
+        storeEmail = m.email;
+        storeUrl = m.storeUrl || storeUrl;
+        brandColor = m.brandColor;
+        logoUrl = m.logoUrl;
+      }
       const built = orderConfirmationCustomer(
         {
           businessName: storeName,
-          email: m.email,
-          brandColor: m.brandColor,
-          logoUrl: m.logoUrl,
+          email: storeEmail,
+          brandColor,
+          logoUrl,
           unsubscribeUrl: `${storeUrl}/unsubscribe?email=${encodeURIComponent(to)}`,
         },
         {
@@ -90,8 +118,12 @@ serve(async (req) => {
       subject = built.subject;
       html = built.html;
       sendFromName = storeName;            // shown as the sender
-      sendReplyTo = m.email || replyTo;    // replies go to the merchant
+      sendReplyTo = storeEmail || replyTo; // replies go to the merchant
     } else {
+      // Platform emails always send as Siango - never trust a client-supplied
+      // sender name / reply-to (prevents spoofing e.g. "Bank ..." from our domain).
+      sendFromName = undefined;
+      sendReplyTo = undefined;
       const builder = (PLATFORM_EMAILS as Record<string, (c: unknown) => { subject: string; html: string }>)[type];
       if (!builder) {
         return new Response(JSON.stringify({ ok: false, error: "unknown type" }), {
