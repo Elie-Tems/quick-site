@@ -516,7 +516,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       <div className="grid grid-cols-3 gap-3">
         {([
           { id: "quick" as Method, icon: Plus, title: "הוספה מהירה", desc: "שורה אחת לכל מוצר" },
-          { id: "catalog" as Method, icon: FileSpreadsheet, title: "ייבוא קטלוג", desc: "אקסל · PDF · קישור" },
+          { id: "catalog" as Method, icon: FileSpreadsheet, title: "ייבוא קובץ", desc: "אקסל · PDF · קישור" },
           { id: "voice" as Method, icon: Mic, title: "הכתבה קולית", desc: "דברו, אנחנו נרשום" },
         ] as const).map(({ id, icon: Icon, title, desc }) => (
           <button
@@ -570,7 +570,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 disabled={!quickName.trim() || !quickPrice.trim()}
                 className="flex items-center gap-1.5 px-4 h-9 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
               >
-                <Plus className="w-4 h-4" /> הוסף
+                <Plus className="w-4 h-4" /> תמונה
               </button>
             </div>
           </div>
