@@ -31,7 +31,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
-      <div ref={containerRef} className={theme === 'dark' ? 'dashboard-dark' : 'dashboard-light'} style={{ minHeight: '100vh' }}>
+      <div ref={containerRef} className={`${theme === 'dark' ? 'dashboard-dark' : 'dashboard-light'} bg-background`} style={{ minHeight: '100vh' }}>
         {children}
       </div>
     </ThemeContext.Provider>
