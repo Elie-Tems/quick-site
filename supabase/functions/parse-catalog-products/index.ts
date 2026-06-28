@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { safeFetch } from "../_shared/ssrfGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,7 +20,8 @@ Deno.serve(async (req) => {
     if (url && !text) {
       let res: Response;
       try {
-        res = await fetch(url as string, {
+        // safeFetch blocks SSRF (internal/loopback/metadata hosts) and re-checks redirects.
+        res = await safeFetch(url as string, {
           // Real browser UA - many sites block obvious bot user-agents.
           headers: {
             "User-Agent":
@@ -27,7 +29,6 @@ Deno.serve(async (req) => {
             "Accept": "text/html,application/xhtml+xml",
             "Accept-Language": "he,en;q=0.9",
           },
-          redirect: "follow",
           signal: AbortSignal.timeout(15000),
         });
       } catch {

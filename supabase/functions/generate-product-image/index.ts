@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { safeFetch } from "../_shared/ssrfGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -139,7 +140,8 @@ Generate a clean, professional e-commerce product photo suitable for an online c
       try {
         let resp: Response;
         if (isEdit) {
-          const baseResp = await fetch(baseImageUrl);
+          // safeFetch blocks SSRF via a user-supplied baseImageUrl (internal hosts).
+          const baseResp = await safeFetch(baseImageUrl, { signal: AbortSignal.timeout(15000) });
           if (!baseResp.ok) return null;
           const baseBlob = await baseResp.blob();
           const form = new FormData();

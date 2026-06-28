@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Tag, Crown, Sparkles, Megaphone, Star, FolderOpen, Info, Truck, CreditCard, Palette, ScrollText, Target, Gauge, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Crown, Sparkles, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, Gauge, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";

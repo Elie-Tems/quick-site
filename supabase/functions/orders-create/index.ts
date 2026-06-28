@@ -81,10 +81,29 @@ Deno.serve(async (req) => {
         (!coupon.end_date || new Date(coupon.end_date) >= now) &&
         (!coupon.min_order_amount || subtotal >= Number(coupon.min_order_amount)) &&
         (coupon.max_uses == null || Number(coupon.current_uses) < Number(coupon.max_uses))) {
-      couponId = coupon.id;
-      discount = coupon.discount_type === "percent"
-        ? Math.round(subtotal * (Number(coupon.discount_value) / 100))
-        : Number(coupon.discount_value);
+      // Atomically claim one use (compare-and-set) so a max_uses coupon can't be
+      // reused past its limit (mirrors payments-create). If max_uses is null we
+      // still bump the counter for reporting, but never block.
+      let claimed = true;
+      if (coupon.max_uses != null) {
+        const { data: rows } = await admin.from("coupons")
+          .update({ current_uses: Number(coupon.current_uses) + 1 })
+          .eq("id", coupon.id)
+          .eq("current_uses", Number(coupon.current_uses))
+          .select("id");
+        claimed = !!(rows && rows.length);
+      } else {
+        await admin.from("coupons")
+          .update({ current_uses: Number(coupon.current_uses) + 1 })
+          .eq("id", coupon.id);
+      }
+      if (claimed) {
+        couponId = coupon.id;
+        discount = coupon.discount_type === "percent"
+          ? Math.round(subtotal * (Number(coupon.discount_value) / 100))
+          : Number(coupon.discount_value);
+        discount = Math.min(discount, subtotal);
+      }
     }
   }
 
