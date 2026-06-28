@@ -1,57 +1,53 @@
-# Communications & marketing suite - plan (#7 internal ESP)
+# מערכת תקשורת ושיווק - תוכנית (#7 מערכת דיוור פנימית)
 
-A bulk email-marketing product (Rav-Masser-style) that is also sellable
-standalone. Built as ONE suite with WhatsApp + business-email, sharing a common
-spine, so we don't build 3 overlapping silos.
+מוצר דיוור מייל המוני (בסגנון רב-מסר) שגם נמכר בנפרד. נבנה כ**חבילה אחת** יחד עם
+ווטסאפ ומייל-עסקי, עם שדרה משותפת, כדי שלא נבנה 3 סילואים חופפים.
 
-## Provider decision (deliverability vs cost)
-| Option | Pros | Cons | Verdict |
+## בחירת ספק (deliverability מול עלות)
+| אפשרות | יתרונות | חסרונות | החלטה |
 |---|---|---|---|
-| **Resend** (current) | already integrated; good deliverability; Broadcasts + Audiences API; dedicated-IP option; we own `send.siango.app` (DKIM/SPF done) | per-email cost higher than SES at huge scale | **Start here** - least friction, strong deliverability |
-| Amazon SES | cheapest at scale (~$0.10/1k) | we manage reputation/warmup/bounce+complaint loops ourselves; more ops | move here for cost at scale (abstract the provider) |
-| Brevo / MailerSend | built-in marketing UI | we're building our own UI; less control | no |
+| **Resend** (הנוכחי) | כבר מחובר; deliverability טוב; API ל-Broadcasts + Audiences; אפשרות IP ייעודי; הדומיין `send.siango.app` שלנו (DKIM/SPF מוכן) | עלות להודעה גבוהה מ-SES בנפח ענק | **מתחילים כאן** - הכי פחות חיכוך, deliverability חזק |
+| Amazon SES | הכי זול בנפח (~$0.10 ל-1,000) | אנחנו מנהלים מוניטין/warmup/החזרות+תלונות בעצמנו; יותר תפעול | לעבור לכאן בנפח גדול (עם הפשטת הספק) |
+| Brevo / MailerSend | ממשק שיווק מובנה | אנחנו בונים ממשק משלנו; פחות שליטה | לא |
 
-**Recommendation:** build on **Resend** now behind a thin `EmailProvider`
-interface so we can swap to SES at scale without touching product code.
-Deliverability musts (most already in place): dedicated sending domain, DKIM/
-SPF/DMARC, **one-click unsubscribe (done)**, warmup for new IPs, bounce +
-complaint suppression, list hygiene.
+**המלצה:** לבנות על **Resend** עכשיו, מאחורי שכבת הפשטה דקה (`EmailProvider`),
+כדי שנוכל לעבור ל-SES בנפח בלי לגעת בקוד המוצר.
+חובות deliverability (רובן כבר קיימות): דומיין שליחה ייעודי, DKIM/SPF/DMARC,
+**הסרה בלחיצה אחת (בוצע)**, warmup ל-IP חדש, השתקת כתובות שמחזירות/מתלוננות,
+היגיינת רשימות.
 
-## Shared spine (build once, used by Email + WhatsApp)
-- **Contacts / audiences** - per merchant; consent + source recorded; reuse the
-  `email_unsubscribes` suppression list (Chok HaSpam) already built.
-- **Segmentation** - by purchase history, tags, activity ("didn't buy in 30d").
-- **Templates** - RTL email templates (reuse `_shared/email/rtlEmail.ts`) + WA
-  templates (already built).
-- **Campaigns** - one-off + scheduled + drip sequences; per-channel send.
-- **Analytics** - sent/delivered/open/click/reply + revenue attributed to real
-  orders (our edge over standalone tools - we own the store data).
+## שדרה משותפת (בונים פעם אחת, משמשת מייל + ווטסאפ)
+- **אנשי קשר / קהלים** - לכל סוחר; הסכמה + מקור נרשמים; שימוש חוזר ברשימת ההסרות
+  `email_unsubscribes` (חוק הספאם) שכבר בנויה.
+- **סגמנטציה** - לפי היסטוריית רכישה, תגיות, פעילות ("לא קנה 30 יום").
+- **תבניות** - תבניות מייל RTL (שימוש חוזר ב-`_shared/email/rtlEmail.ts`) +
+  תבניות ווטסאפ (כבר בנוי).
+- **קמפיינים** - חד-פעמי + מתוזמן + רצפי drip; שליחה פר-ערוץ.
+- **אנליטיקה** - נשלח/נמסר/נפתח/הוקלק/נענה + הכנסה שמיוחסת להזמנות אמיתיות
+  (היתרון שלנו על כלים עצמאיים - אנחנו מחזיקים את נתוני החנות).
 
-## Data model (new tables)
-`audiences`, `contacts` (audience_id, email/phone, consent, tags),
-`segments` (rule json), `campaigns` (channel, template, segment, schedule,
-status), `campaign_sends` (campaign_id, contact_id, status, opened_at, clicked_at),
-`email_templates`. RLS: owner-scoped per merchant.
+## מודל נתונים (טבלאות חדשות)
+`audiences`, `contacts` (audience_id, מייל/טלפון, הסכמה, תגיות),
+`segments` (כלל json), `campaigns` (ערוץ, תבנית, סגמנט, תזמון, סטטוס),
+`campaign_sends` (campaign_id, contact_id, סטטוס, opened_at, clicked_at),
+`email_templates`. RLS: מוגבל-בעלים לכל סוחר.
 
-## AI layer (Moti wants "very advanced")
-- Subject-line + body generation from a product/offer (LLM gateway + the
-  `israeli-email-sequences` skill for IL-tuned copy + Chok HaSpam compliance).
-- Send-time optimization (per-contact best hour from open history).
-- Auto-segmentation suggestions ("re-engage 142 lapsed buyers").
-- Voice-prompt -> campaign (reuse the WhatsApp bot voice->prompt pattern).
+## שכבת AI (מוטי רוצה "מתקדם מאוד")
+- יצירת שורת-נושא + גוף מתוך מוצר/הצעה (LLM gateway + הסקיל
+  `israeli-email-sequences` לקופי מותאם-ישראל + תאימות חוק הספאם).
+- אופטימיזציית שעת שליחה (השעה הטובה לכל נמען לפי היסטוריית פתיחות).
+- הצעות סגמנטציה אוטומטיות ("החזר 142 לקוחות רדומים").
+- פרומפט קולי -> קמפיין (שימוש חוזר בדפוס voice->prompt של בוט הווטסאפ).
 
-## Phasing
-1. **Spine + Email MVP:** audiences/contacts import (with consent checkbox - done
-   pattern), a simple campaign composer (RTL template), send via Resend, basic
-   analytics. Unsubscribe already compliant.
-2. **AI compose** (subject/body) + segmentation.
-3. **Drip sequences** + send-time optimization.
-4. **Unify WhatsApp** onto the same spine (campaigns choose channel).
-5. **Sell standalone** (pricing tier) + deliverability hardening (SES option,
-   dedicated IP, warmup).
+## פאזות
+1. **שדרה + מייל MVP:** ייבוא קהלים/אנשי-קשר (עם תיבת הסכמה - דפוס קיים), עורך
+   קמפיין פשוט (תבנית RTL), שליחה דרך Resend, אנליטיקה בסיסית. ההסרה כבר תואמת חוק.
+2. **כתיבת AI** (נושא/גוף) + סגמנטציה.
+3. **רצפי drip** + אופטימיזציית שעת שליחה.
+4. **איחוד ווטסאפ** לאותה שדרה (קמפיין בוחר ערוץ).
+5. **מכירה עצמאית** (שכבת תמחור) + הקשחת deliverability (אופציית SES, IP ייעודי, warmup).
 
-## Compliance (Israel)
-Opt-in only, provable consent (have it), one-click unsubscribe (done), sender
-identity + physical address in footer (done in rtlEmail), honor unsubscribe
-across ALL channels via the shared suppression list. Use the
-`israeli-email-sequences` skill for Amendment 40 specifics.
+## תאימות (ישראל)
+opt-in בלבד, הסכמה ניתנת-להוכחה (קיים), הסרה בלחיצה אחת (בוצע), זיהוי שולח +
+כתובת פיזית בפוטר (קיים ב-rtlEmail), כיבוד הסרה **בכל הערוצים** דרך רשימת ההסרות
+המשותפת. להשתמש בסקיל `israeli-email-sequences` לפרטי תיקון 40.

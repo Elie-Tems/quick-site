@@ -1,72 +1,66 @@
-# WhatsApp area - competitive research + upgrade ideas (2026-06-28)
+# אזור ווטסאפ - מחקר תחרותי + רעיונות לשדרוג (28/6/2026)
 
-Research scan of leading WhatsApp Business platforms (AiSensy, Wati, Interakt,
-Respond.io, Kanal, Flowcart, Infobip, DelightChat, Trengo) to decide how to
-upgrade Siango's WhatsApp area. Focus: an Israeli SMB store-builder.
+סריקת מחקר של פלטפורמות ווטסאפ-עסקי מובילות (AiSensy, Wati, Interakt,
+Respond.io, Kanal, Flowcart, Infobip, DelightChat, Trengo) כדי להחליט איך לשדרג
+את אזור הווטסאפ של סיאנגו. מיקוד: בונה-חנויות לעסקים קטנים בישראל.
 
-## What we already have
-Chat inbox · contacts (with unsubscribe filter + import-consent) · broadcasts/
-campaigns · template editor (header/body/footer/buttons) · AI service bot
-(voice-prompt -> transcription -> pro-prompt) · settings · pricing (89/mo + 190
-setup + message markup) · "order a ready number" · classic design · Chok HaSpam
-unsubscribe.
+## מה כבר יש לנו
+צ'אט אינבוקס · אנשי קשר (עם פילטר הסרות + הסכמת ייבוא) · ברודקאסטים/קמפיינים ·
+עורך תבניות (כותרת/גוף/פוטר/כפתורים) · בוט שירות AI (פרומפט קולי -> תמלול ->
+פרומפט מקצועי) · הגדרות · תמחור (89/חודש + 190 הקמה + רווח על הודעות) · "הזמנת
+מספר מוכן" · עיצוב קלאסי · הסרה תואמת חוק הספאם.
 
-## Our unfair advantage
-Standalone BSP tools (AiSensy/Wati/etc.) bolt onto a store via integrations. **We
-OWN the store, checkout, products and orders.** So data-native automations
-(abandoned cart, order/shipping updates, catalog) are far easier and better for us
-than for them. That is the differentiation to lean into.
+## היתרון הלא-הוגן שלנו
+כלים עצמאיים (AiSensy/Wati וכו') מתחברים לחנות מבחוץ. **אנחנו מחזיקים את החנות,
+הצ'קאאוט, המוצרים וההזמנות.** לכן אוטומציות מבוססות-נתונים (עגלה נטושה, עדכוני
+הזמנה/משלוח, קטלוג) הרבה יותר קלות וטובות אצלנו. זה הבידול שצריך להישען עליו.
 
 ---
 
-## Tier 1 - highest ROI (data-native commerce; build first)
-1. **Abandoned-cart recovery** - auto WhatsApp when a shopper starts checkout and
-   doesn't finish. Industry: ~98% open, 10-25% recovery (vs 5-8% email). We already
-   track `begin_checkout`. This alone can justify the whole product for a merchant.
-2. **Order + shipping automation** - auto order-confirmation and shipping/status
-   updates from real order data (transactional, allowed without opt-in).
-3. **Click-to-WhatsApp Ads (CTWA)** - help merchants run FB/IG ads that open a
-   WhatsApp chat with context (e.g. the viewed product). ~3-5x reply rate vs
-   landing pages. Ties into the new Tag Manager / ads add-on.
-4. **WhatsApp Catalog sync** - push the store's products into the WhatsApp catalog
-   so customers browse + add to cart inside the chat.
+## Tier 1 - ההחזר הגבוה ביותר (מסחר מבוסס-נתונים; לבנות ראשון)
+1. **שחזור עגלות נטושות** - ווטסאפ אוטומטי כשלקוח מתחיל צ'קאאוט ולא מסיים. בתעשייה:
+   ~98% פתיחה, 10-25% שחזור (מול 5-8% במייל). כבר עוקבים אחרי `begin_checkout`.
+   זה לבד מצדיק את כל המוצר ללקוח.
+2. **אוטומציית הזמנה + משלוח** - אישור הזמנה ועדכוני סטטוס/משלוח מנתוני הזמנה
+   אמיתיים (טרנזקציוני, מותר ללא opt-in).
+3. **Click-to-WhatsApp Ads (CTWA)** - לעזור לסוחרים להריץ מודעות פייסבוק/אינסטגרם
+   שפותחות צ'אט ווטסאפ עם הקשר (למשל המוצר שנצפה). פי 3-5 תגובות מול דף נחיתה.
+   מתחבר לתוסף Tag Manager/מודעות החדש.
+4. **סנכרון קטלוג ווטסאפ** - דחיפת מוצרי החנות לקטלוג הווטסאפ כדי שלקוחות יעיינו
+   ויוסיפו לעגלה בתוך הצ'אט.
 
-## Tier 2 - automation + engagement
-5. **Visual flow builder** (no-code if/then) - upgrade from prompt-only bot to a
-   drag-drop automation builder (keyword -> reply -> action). Table stakes now.
-6. **WhatsApp Flows** (Meta native in-chat forms) - structured forms inside the
-   chat for lead-gen / booking / order.
-7. **Segmentation + retargeting** - segment contacts (bought / viewed / tag) and
-   target broadcasts; "re-engage customers who didn't buy in 30 days".
-8. **Drip sequences** - scheduled multi-step journeys (welcome, post-purchase,
-   win-back) rather than one-off broadcasts.
+## Tier 2 - אוטומציה + מעורבות
+5. **בונה flows ויזואלי** (אם/אז ללא קוד) - שדרוג מבוט-פרומפט-בלבד לבונה אוטומציה
+   בגרירה (מילת מפתח -> תגובה -> פעולה). היום זה סטנדרט.
+6. **WhatsApp Flows** (טפסים מובנים של מטא בצ'אט) - טפסים בתוך הצ'אט ללידים/הזמנה.
+7. **סגמנטציה + ריטרגטינג** - סגמנט אנשי קשר (קנה / צפה / תגית) וברודקאסט ממוקד;
+   "החזר לקוחות שלא קנו 30 יום".
+8. **רצפי drip** - מסעות רב-שלביים מתוזמנים (ברוכים הבאים, אחרי-רכישה, win-back)
+   במקום ברודקאסט חד-פעמי.
 
-## Tier 3 - ops / scale / trust
-9. **Multi-agent shared inbox** - assignment, roles, internal notes (for merchants
-   with a team).
-10. **Quick replies / canned responses + labels** in the inbox.
-11. **Campaign analytics** - delivered / read / reply / conversion per campaign +
-    revenue attributed (we can attribute to real orders).
-12. **Green-tick (official business) verification** assistance - guided flow to get
-    the verified badge.
-13. **In-chat payments** - pay inside WhatsApp. NOTE: availability in Israel is
-    limited; verify before promising. Lower priority for IL.
+## Tier 3 - תפעול / קנה מידה / אמון
+9. **אינבוקס רב-סוכנים** - הקצאה, תפקידים, הערות פנימיות (לסוחרים עם צוות).
+10. **תשובות מהירות / canned + תוויות** באינבוקס.
+11. **אנליטיקת קמפיינים** - נמסר / נקרא / נענה / המרה לכל קמפיין + הכנסה מיוחסת
+    (אפשר לייחס להזמנות אמיתיות).
+12. **אימות "וי ירוק" (עסק רשמי)** - תהליך מודרך לקבלת התג המאומת.
+13. **תשלום בתוך הצ'אט** - תשלום בתוך ווטסאפ. הערה: הזמינות בישראל מוגבלת; לאמת
+    לפני שמבטיחים. עדיפות נמוכה לישראל.
 
-## Strategic recommendation
-Treat **WhatsApp + bulk Email (ESP) + Business Email** as ONE "communications &
-marketing suite", sharing: contacts/audiences, consent + unsubscribe (Chok
-HaSpam), segmentation, templates, and a campaign/analytics layer. Build that
-shared spine once; WhatsApp and Email become channels on top of it. Otherwise we
-build 3 overlapping silos.
+## המלצה אסטרטגית
+להתייחס ל**ווטסאפ + דיוור מייל (ESP) + מייל-עסקי** כ"חבילת תקשורת ושיווק" אחת,
+שמשתפת: אנשי קשר/קהלים, הסכמה + הסרה (חוק הספאם), סגמנטציה, תבניות, ושכבת
+קמפיינים/אנליטיקה. לבנות את השדרה המשותפת פעם אחת; ווטסאפ ומייל הופכים לערוצים
+מעליה. אחרת נבנה 3 סילואים חופפים.
 
-**Suggested first build:** abandoned-cart + order/shipping automation (Tier 1 #1-2)
-- highest revenue impact, uses data we already own, and turns WhatsApp from a
-"nice inbox" into a measurable revenue driver merchants will pay for.
+**בנייה ראשונה מומלצת:** שחזור עגלות + אוטומציית הזמנה/משלוח (Tier 1 #1-2) -
+ההשפעה הכי גדולה על הכנסה, משתמש בנתונים שכבר יש לנו, והופך את הווטסאפ מ"אינבוקס
+נחמד" למנוע הכנסה מדיד שסוחרים ישלמו עבורו.
 
-## Sources
-- AiSensy - best WhatsApp chatbot platforms 2026: https://m.aisensy.com/blog/best-whatsapp-chatbot-platform/
-- Respond.io - best WhatsApp API providers: https://respond.io/blog/best-whatsapp-api-providers
-- Kanal - BSPs compared: https://getkanal.com/blog/whatsapp-business-api-providers-compared
-- Neuwark - WhatsApp cart recovery playbook: https://neuwark.com/blog/whatsapp-cart-recovery-playbook
-- Flowcart - WhatsApp checkout & cart flows: https://www.flowcart.ai/blog/whatsapp-checkout-cart-flows
-- Go4whatsup - WhatsApp commerce 2026 guide: https://www.go4whatsup.com/guides/whatsapp-commerce/
+## מקורות
+- AiSensy - פלטפורמות בוט ווטסאפ 2026: https://m.aisensy.com/blog/best-whatsapp-chatbot-platform/
+- Respond.io - ספקי API ווטסאפ: https://respond.io/blog/best-whatsapp-api-providers
+- Kanal - השוואת BSP: https://getkanal.com/blog/whatsapp-business-api-providers-compared
+- Neuwark - playbook שחזור עגלות: https://neuwark.com/blog/whatsapp-cart-recovery-playbook
+- Flowcart - צ'קאאוט ועגלות בווטסאפ: https://www.flowcart.ai/blog/whatsapp-checkout-cart-flows
+- Go4whatsup - מדריך מסחר ווטסאפ 2026: https://www.go4whatsup.com/guides/whatsapp-commerce/
