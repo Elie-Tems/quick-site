@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { hasMarketingConsent, COOKIE_CONSENT_EVENT } from "@/components/CookieConsent";
 
 /**
  * Injects the MERCHANT's own marketing/tracking tags into their published
@@ -28,8 +29,18 @@ const clean = (v?: string | null) => (v || "").trim();
  * thank-you) without re-injecting on every switch.
  */
 export const useStoreTracking = (config: StoreTrackingConfig) => {
+  // Re-evaluate when the visitor changes their cookie choice.
+  const [consentTick, setConsentTick] = useState(0);
+  useEffect(() => {
+    const onConsent = () => setConsentTick((t) => t + 1);
+    window.addEventListener(COOKIE_CONSENT_EVENT, onConsent);
+    return () => window.removeEventListener(COOKIE_CONSENT_EVENT, onConsent);
+  }, []);
+
   useEffect(() => {
     if (!config?.paid) return;
+    // Don't load analytics/marketing pixels until the visitor consents (cookie law).
+    if (!hasMarketingConsent()) return;
 
     const added: Node[] = [];
     const inline = (js: string, id: string) => {
@@ -147,6 +158,7 @@ export const useStoreTracking = (config: StoreTrackingConfig) => {
     config.googleAds,
     config.tiktokPixel,
     config.customHead,
+    consentTick,
   ]);
 };
 
