@@ -180,7 +180,11 @@ Deno.serve(async (req) => {
     });
   }
 
-  const paid = session.payment_verified_at != null;
+  // Free-publish escape hatch: while paid publishing (iCount) is not wired up,
+  // ALLOW_UNVERIFIED_PUBLISH=true lets sites publish without a verified payment.
+  // Set it back to false (or remove it) to re-enable paid publishing.
+  const allowUnverified = Deno.env.get("ALLOW_UNVERIFIED_PUBLISH") === "true";
+  const paid = session.payment_verified_at != null || allowUnverified;
 
   if (!paid) {
     return new Response(

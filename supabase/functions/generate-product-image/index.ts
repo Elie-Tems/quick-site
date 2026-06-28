@@ -6,14 +6,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Fast path: the Lovable AI gateway with Google's gemini image model
-// ("nano-banana"). It is SYNCHRONOUS - the image comes back in the response as a
-// base64 data URL, no task queue / polling. Typically ~5s vs ~70s on the old
-// reseller. Also supports image-to-image EDITING (pass the current image +
-// instruction). If the gateway fails we fall back to the old nano-banana flow so
-// generation never hard-breaks.
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const GATEWAY_IMAGE_MODEL = "google/gemini-2.5-flash-image";
+// Primary path: OpenAI gpt-image-1. SYNCHRONOUS - the image comes back in the
+// response as base64, no task queue / polling (vs ~70s on the old reseller).
+// Also supports EDITING (img2img) via the /images/edits endpoint: pass the
+// current image + a change instruction. If OpenAI fails we fall back to the old
+// nano-banana flow so generation never hard-breaks.
+const OPENAI_IMAGE_MODEL = "gpt-image-1";
+const OPENAI_IMAGE_QUALITY = "medium"; // low | medium | high - balance speed/quality
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -22,7 +21,7 @@ serve(async (req) => {
 
   try {
     const NANO_API_KEY = Deno.env.get("NANO_BANANA_API_KEY");
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -30,7 +29,7 @@ serve(async (req) => {
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error("Supabase configuration missing");
     }
-    if (!LOVABLE_API_KEY && !NANO_API_KEY) {
+    if (!OPENAI_API_KEY && !NANO_API_KEY) {
       throw new Error("No image generation provider configured");
     }
 
@@ -131,38 +130,51 @@ Generate a clean, professional e-commerce product photo suitable for an online c
       prompt += `\n\nIMPORTANT: The image is intended for a Haredi (ultra-Orthodox Jewish) audience. Do not generate women, immodest clothing, revealing images, or suggestive content. Use only modest and appropriate visuals such as landscapes, products, buildings, men in modest attire, or neutral graphic elements.`;
     }
 
-    // ── Fast synchronous path: Lovable gateway (gemini image) ──
+    // ── Primary synchronous path: OpenAI gpt-image-1 ──
     // Returns a base64 data URL (or null on any failure, so we can fall back).
-    const generateViaGateway = async (): Promise<string | null> => {
-      if (!LOVABLE_API_KEY) return null;
+    // Generation -> /images/generations; edit (img2img) -> /images/edits with
+    // the current image attached.
+    const generateViaOpenAI = async (): Promise<string | null> => {
+      if (!OPENAI_API_KEY) return null;
       try {
-        const content: unknown = isEdit
-          ? [
-              { type: "text", text: prompt },
-              { type: "image_url", image_url: { url: baseImageUrl } },
-            ]
-          : prompt;
-        const resp = await fetch(GATEWAY_URL, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: GATEWAY_IMAGE_MODEL,
-            messages: [{ role: "user", content }],
-            modalities: ["image", "text"],
-          }),
-        });
+        let resp: Response;
+        if (isEdit) {
+          const baseResp = await fetch(baseImageUrl);
+          if (!baseResp.ok) return null;
+          const baseBlob = await baseResp.blob();
+          const form = new FormData();
+          form.append("model", OPENAI_IMAGE_MODEL);
+          form.append("prompt", prompt);
+          form.append("size", "1024x1024");
+          form.append("quality", OPENAI_IMAGE_QUALITY);
+          form.append("image", new File([baseBlob], "base.png", { type: baseBlob.type || "image/png" }));
+          resp = await fetch("https://api.openai.com/v1/images/edits", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${OPENAI_API_KEY}` },
+            body: form,
+          });
+        } else {
+          resp = await fetch("https://api.openai.com/v1/images/generations", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: OPENAI_IMAGE_MODEL,
+              prompt,
+              size: "1024x1024",
+              quality: OPENAI_IMAGE_QUALITY,
+              n: 1,
+            }),
+          });
+        }
         if (!resp.ok) {
-          console.error("Gateway image error:", resp.status, await resp.text());
+          console.error("OpenAI image error:", resp.status, await resp.text());
           return null;
         }
         const data = await resp.json();
-        const url = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-        return typeof url === "string" && url.startsWith("data:") ? url : null;
+        const b64 = data?.data?.[0]?.b64_json;
+        return typeof b64 === "string" && b64.length > 0 ? `data:image/png;base64,${b64}` : null;
       } catch (e) {
-        console.error("Gateway image exception:", e);
+        console.error("OpenAI image exception:", e);
         return null;
       }
     };
@@ -228,9 +240,9 @@ Generate a clean, professional e-commerce product photo suitable for an online c
     };
 
     // Gateway first (fast), then fall back.
-    let imageSrc = await generateViaGateway();
+    let imageSrc = await generateViaOpenAI();
     if (!imageSrc) {
-      console.warn("Gateway image unavailable, falling back to nano-banana");
+      console.warn("OpenAI image unavailable, falling back to nano-banana");
       imageSrc = await generateViaNano();
     }
     if (!imageSrc) {

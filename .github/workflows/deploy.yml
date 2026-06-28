@@ -36,6 +36,10 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cWdlb3Zpb2tneHh3YWxpZWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzMTA0NjYsImV4cCI6MjA4Njg4NjQ2Nn0.jeSSSbTP3CbKVjlzqlYavwoGqooLW7bLV9JQTY9RhD8
           VITE_WEBSITE_URL: siango.app
           VITE_ORDER_WEBHOOK_URL: https://hook.eu2.make.com/09a6csp2wh8vgncyi5q88mcd9brwzdnu
+          # Free publishing while iCount paid-checkout is not wired up yet.
+          # Pair with ALLOW_UNVERIFIED_PUBLISH=true on the finalize-publish function.
+          # Set both back to false to re-enable paid publishing.
+          VITE_PUBLISH_SKIP_PAYMENT: "true"
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
