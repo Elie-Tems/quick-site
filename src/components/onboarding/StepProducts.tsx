@@ -68,6 +68,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   // Voice
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [micHelp, setMicHelp] = useState<null | "blocked" | "unsupported">(null);
   const [voiceTranscript, setVoiceTranscript] = useState("");
   const [voiceParsed, setVoiceParsed] = useState<ParsedProduct[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -285,14 +286,14 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
 
   const startRecording = async () => {
     // Recording needs a secure context + the mediaDevices API. In an embedded /
-    // in-app browser (e.g. opening the link from inside another app) it's often
-    // unavailable - guide the user to a normal browser tab instead of a vague error.
+    // in-app browser it's often unavailable - guide to a normal browser tab.
     if (!navigator.mediaDevices?.getUserMedia) {
-      toast.error("הקלטה לא נתמכת כאן. פתחו את האתר בכרטיסיית דפדפן רגילה (Chrome/Safari).");
+      setMicHelp("unsupported");
       return;
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setMicHelp(null);
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
@@ -307,12 +308,11 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       setIsRecording(true);
     } catch (err) {
       const name = (err as Error)?.name;
-      if (name === "NotAllowedError" || name === "SecurityError") {
-        toast.error("הגישה למיקרופון נחסמה. אשרו הרשאת מיקרופון בדפדפן ונסו שוב.");
-      } else if (name === "NotFoundError" || name === "DevicesNotFoundError") {
+      if (name === "NotFoundError" || name === "DevicesNotFoundError") {
         toast.error("לא נמצא מיקרופון במכשיר.");
       } else {
-        toast.error("לא ניתן לגשת למיקרופון. נסו בכרטיסיית דפדפן רגילה.");
+        // Permission blocked/denied (or unknown) -> open the on-screen help window.
+        setMicHelp("blocked");
       }
     }
   };
@@ -554,6 +554,51 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
 
   return (
     <div className="space-y-6" dir="rtl">
+      {/* Microphone permission window - opens whenever access is missing/blocked */}
+      {micHelp && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          dir="rtl"
+          onClick={() => setMicHelp(null)}
+        >
+          <div className="bg-card rounded-2xl border border-border max-w-sm w-full p-5 space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center">
+                  <Mic className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="text-base font-semibold">גישה למיקרופון</h3>
+              </div>
+              <button onClick={() => setMicHelp(null)} className="p-1 hover:bg-muted rounded-lg" aria-label="סגור">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {micHelp === "unsupported" ? (
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                הדפדפן הנוכחי לא מאפשר הקלטה (למשל דפדפן מוטמע בתוך אפליקציה). פתחו את הקישור בכרטיסיית דפדפן רגילה (Chrome / Safari) ונסו שוב.
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  כדי להקליט מוצרים בקול צריך לאשר גישה למיקרופון. לחצו "אפשר מיקרופון" ואשרו את הבקשה שתופיע בדפדפן.
+                </p>
+                <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground leading-relaxed">
+                  <p className="font-medium text-foreground mb-1">אם לא הופיעה בקשה או שהגישה נחסמה:</p>
+                  לחצו על סמל ה-🔒 משמאל לכתובת האתר ← <span className="font-medium">מיקרופון</span> ← <span className="font-medium">אפשר</span> ← רעננו את העמוד.
+                </div>
+                <button
+                  onClick={() => { setMicHelp(null); startRecording(); }}
+                  className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+                >
+                  <Mic className="w-4 h-4" /> אפשר מיקרופון ונסה שוב
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center">
         <h1 className="text-2xl font-medium text-foreground mb-1">המוצרים שלך</h1>
