@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { providerLogo } from "@/lib/partnerLinks";
 import { getTemplate } from "@/lib/storeTemplates";
 import { getCategoryConfig } from "@/lib/categoryConfig";
 import { getPublishFeeIls } from "@/lib/publishPaymentConfig";
@@ -168,8 +169,8 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
               data.paymentProvider === "payplus" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"
             }`}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-                <CreditCard className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 rounded-lg bg-white border border-border flex items-center justify-center shrink-0 overflow-hidden">
+                <img src={providerLogo("payplus.co.il")} alt="PayPlus" className="w-6 h-6" loading="lazy" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
@@ -192,8 +193,17 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
           <div className="rounded-lg border border-border p-3">
             <p className="text-xs font-medium text-muted-foreground mb-2">ספקים נוספים - בקרוב:</p>
             <div className="flex flex-wrap gap-2">
-              {["משולם / Grow", "קארדקום", "iCount", "Tranzila", "PayPal"].map((name) => (
-                <span key={name} className="text-xs px-2.5 py-1 rounded-full bg-muted text-muted-foreground">{name}</span>
+              {[
+                { name: "משולם / Grow", domain: "meshulam.co.il" },
+                { name: "קארדקום", domain: "cardcom.co.il" },
+                { name: "iCount", domain: "icount.co.il" },
+                { name: "Tranzila", domain: "tranzila.com" },
+                { name: "PayPal", domain: "paypal.com" },
+              ].map((p) => (
+                <span key={p.name} className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+                  <img src={providerLogo(p.domain)} alt={p.name} className="w-4 h-4 rounded-sm" loading="lazy" />
+                  {p.name}
+                </span>
               ))}
             </div>
             <p className="text-xs text-muted-foreground mt-2">

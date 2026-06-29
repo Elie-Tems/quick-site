@@ -1,6 +1,7 @@
 import { OnboardingData } from "@/pages/Onboarding";
-import { Check, CreditCard, Info } from "lucide-react";
+import { Check, Info } from "lucide-react";
 import { StepNavigation } from "./StepNavigation";
+import { providerLogo } from "@/lib/partnerLinks";
 
 interface StepPaymentsProps {
   data: OnboardingData;
@@ -10,7 +11,13 @@ interface StepPaymentsProps {
 }
 
 // PayPlus is the only live provider; others are listed as "coming soon".
-const comingSoon = ["משולם / Grow", "קארדקום", "iCount", "Tranzila", "PayPal"];
+const comingSoon = [
+  { name: "משולם / Grow", domain: "meshulam.co.il" },
+  { name: "קארדקום", domain: "cardcom.co.il" },
+  { name: "iCount", domain: "icount.co.il" },
+  { name: "Tranzila", domain: "tranzila.com" },
+  { name: "PayPal", domain: "paypal.com" },
+];
 
 const StepPayments = ({ data, updateData, onNext, onBack }: StepPaymentsProps) => {
   const selected = data.paymentProvider === "payplus";
@@ -39,8 +46,8 @@ const StepPayments = ({ data, updateData, onNext, onBack }: StepPaymentsProps) =
         }`}
       >
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-            <CreditCard className="w-6 h-6 text-primary" />
+          <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shrink-0 border border-border overflow-hidden">
+            <img src={providerLogo("payplus.co.il")} alt="PayPlus" className="w-7 h-7" loading="lazy" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
@@ -72,9 +79,10 @@ const StepPayments = ({ data, updateData, onNext, onBack }: StepPaymentsProps) =
       <div className="p-4 rounded-xl border border-border bg-card">
         <p className="text-xs font-medium text-muted-foreground mb-2">ספקים נוספים - בקרוב:</p>
         <div className="flex flex-wrap gap-2">
-          {comingSoon.map((name) => (
-            <span key={name} className="text-xs px-2.5 py-1 rounded-full bg-surface-1 text-muted-foreground">
-              {name}
+          {comingSoon.map((p) => (
+            <span key={p.name} className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-surface-1 text-muted-foreground">
+              <img src={providerLogo(p.domain)} alt={p.name} className="w-4 h-4 rounded-sm" loading="lazy" />
+              {p.name}
             </span>
           ))}
         </div>
