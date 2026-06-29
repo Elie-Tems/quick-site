@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowRight, Send, Clock, Users, UserMinus, Filter, Plus, X, Mail, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 // Campaign send settings (build-only v1): sender identity, subject, audience
@@ -14,6 +15,8 @@ const SEGMENTS = ["כל אנשי הקשר", "VIP", "רדומים 60 יום", "נ
 const CONDITION_VERBS = ["לא פתחו", "פתחו", "לא הקליקו", "הקליקו"];
 
 const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
+  const { user } = useAuth();
+  const [scheduledAt, setScheduledAt] = useState("");
   const [include, setInclude] = useState<string[]>(["כל אנשי הקשר"]);
   const [exclude, setExclude] = useState<string[]>([]);
   const [conditions, setConditions] = useState<{ verb: string; ref: string }[]>([]);
@@ -39,14 +42,26 @@ const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
 
   const sendReal = async () => {
     if (!subject.trim()) { toast.error("נא למלא שורת נושא"); return; }
+    if (when === "schedule" && !scheduledAt) { toast.error("נא לבחור מועד"); return; }
     if (!confirm(when === "now" ? "לשלוח עכשיו לכל אנשי הקשר הפעילים?" : "לתזמן את השליחה?")) return;
     setSending(true);
     try {
-      const { data, error } = await supabase.functions.invoke("email-campaign-send", { body: { campaign: campaignPayload() } });
-      if (error || !data?.ok) throw new Error(data?.error || error?.message);
-      toast.success(`נשלח ל-${data.sent ?? 0} אנשי קשר`);
+      if (when === "schedule") {
+        // Persist a scheduled campaign; the email-scheduled-run cron sends it at its time.
+        if (!user) throw new Error("נדרשת התחברות");
+        const { error } = await supabase.from("mkt_campaigns").insert({
+          owner_id: user.id, name: subject, subject, from_name: fromName, reply_to: replyTo || null,
+          blocks, status: "scheduled", scheduled_at: new Date(scheduledAt).toISOString(),
+        });
+        if (error) throw error;
+        toast.success("הדיוור תוזמן ✓");
+      } else {
+        const { data, error } = await supabase.functions.invoke("email-campaign-send", { body: { campaign: campaignPayload() } });
+        if (error || !data?.ok) throw new Error(data?.error || error?.message);
+        toast.success(`נשלח ל-${data.sent ?? 0} אנשי קשר`);
+      }
       onBack?.();
-    } catch (e: any) { toast.error("השליחה נכשלה: " + (e?.message || "")); }
+    } catch (e: any) { toast.error("הפעולה נכשלה: " + (e?.message || "")); }
     finally { setSending(false); }
   };
 
@@ -125,7 +140,7 @@ const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
           <button onClick={() => setWhen("now")} className={`flex-1 h-10 rounded-lg border text-sm ${when === "now" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>שלח עכשיו</button>
           <button onClick={() => setWhen("schedule")} className={`flex-1 h-10 rounded-lg border text-sm ${when === "schedule" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>תזמן למועד</button>
         </div>
-        {when === "schedule" && <input type="datetime-local" className="inp" />}
+        {when === "schedule" && <input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} className="inp" />}
       </div>
 
       <div className="flex items-center justify-between gap-3">
