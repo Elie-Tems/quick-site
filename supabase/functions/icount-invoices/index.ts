@@ -82,17 +82,12 @@ Deno.serve(async (req) => {
     return json({ ok: true, configured: false, clientFound: false, docs: [] });
   }
 
-  // The caller's candidate emails (business email first, then the login email).
+  // Look up the merchant's invoices by their VERIFIED login email only. We must
+  // NOT use businesses.email here: it's a merchant-editable field, so a merchant
+  // could set it to a victim's address and read that victim's iCount documents
+  // (IDOR). The verified auth email is the one tied to their real identity.
   const admin = createClient(supabaseUrl, serviceKey);
-  const { data: biz } = await admin
-    .from("businesses")
-    .select("id, name, email")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  const emails = [...new Set(
-    [(biz as any)?.email, user.email].filter(Boolean).map((e) => String(e).trim().toLowerCase()),
-  )];
+  const emails = user.email ? [String(user.email).trim().toLowerCase()] : [];
   if (!emails.length) return json({ ok: true, configured: true, clientFound: false, docs: [] });
 
   // Look up the client's documents by email (iCount resolves email -> client).

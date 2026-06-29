@@ -5,7 +5,7 @@ import { sendViaResend } from "../_shared/email/resend.ts";
 // hardcoded to admins, so it can't be abused to spam others. Trivial token guard.
 
 const ADMINS = ["moti4384@gmail.com", "furmand713@gmail.com"];
-const TOKEN = "siango-newsletter-2026";
+// Trigger token comes from the NEWSLETTER_TOKEN secret - never hardcode it in git.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -110,7 +110,8 @@ const NEWSLETTER_HTML = `<!DOCTYPE html>
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const url = new URL(req.url);
-  if (url.searchParams.get("token") !== TOKEN) {
+  const expectedToken = Deno.env.get("NEWSLETTER_TOKEN");
+  if (!expectedToken || url.searchParams.get("token") !== expectedToken) {
     return new Response(JSON.stringify({ error: "forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
   const result = await sendViaResend({

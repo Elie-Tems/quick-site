@@ -66,7 +66,14 @@ export const payplus: PaymentProvider = {
     const sent = headers.get("hash") || "";
     const a = await hmacBase64(c.secret_key, rawBody);
     const b = await hmacBase64(c.secret_key, JSON.stringify(payload));
-    return sent === a || sent === b;
+    // Constant-time compare (avoid leaking the expected HMAC via timing).
+    const safeEqual = (x: string, y: string): boolean => {
+      if (x.length !== y.length) return false;
+      let r = 0;
+      for (let i = 0; i < x.length; i++) r |= x.charCodeAt(i) ^ y.charCodeAt(i);
+      return r === 0;
+    };
+    return safeEqual(sent, a) || safeEqual(sent, b);
   },
 
   async verifyCredentials(c, env): Promise<{ ok: boolean; error?: string }> {

@@ -46,6 +46,25 @@ Deno.serve(async (req) => {
     .single();
   if (!business) return json({ error: "Business not found" }, 404);
 
+  // Order-spam guard (this endpoint is public). Cap rapid repeat orders from the
+  // same email and overall burst per store in a short window. Best-effort, on top
+  // of the server-authoritative pricing below.
+  const windowStart = new Date(Date.now() - 60_000).toISOString();
+  const { count: sameEmailCount } = await admin
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", businessId)
+    .eq("customer_email", customer.email)
+    .gte("created_at", windowStart);
+  if ((sameEmailCount ?? 0) >= 3) return json({ error: "rate_limited" }, 429);
+
+  const { count: storeBurst } = await admin
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", businessId)
+    .gte("created_at", windowStart);
+  if ((storeBurst ?? 0) >= 30) return json({ error: "rate_limited" }, 429);
+
   // Re-fetch canonical prices from DB — never trust client-supplied prices
   const { data: products } = await admin
     .from("products")

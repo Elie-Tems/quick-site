@@ -14,8 +14,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 serve(async (req) => {
   try {
+    // Fail closed: this is invoked only by the scheduled cron, which sends the
+    // shared x-cron-secret header. Without a configured + matching secret, reject
+    // (previously an unset secret skipped the check entirely -> anyone could POST).
     const cronSecret = Deno.env.get("CRON_SECRET");
-    if (cronSecret && req.headers.get("x-cron-secret") !== cronSecret) {
+    if (!cronSecret || req.headers.get("x-cron-secret") !== cronSecret) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 

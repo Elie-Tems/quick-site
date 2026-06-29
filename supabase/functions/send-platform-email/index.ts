@@ -12,6 +12,20 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Read the Supabase role claim from the bearer JWT (anon / authenticated /
+// service_role). Used to keep anonymous callers from triggering platform
+// lifecycle emails to arbitrary inboxes.
+function jwtRole(authHeader: string | null): string {
+  try {
+    const tok = (authHeader || "").replace(/^Bearer\s+/i, "");
+    const part = tok.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(atob(part));
+    return payload.role || "anon";
+  } catch {
+    return "anon";
+  }
+}
+
 // Marketing/nudge emails (suppressed if the recipient unsubscribed from Siango).
 // Transactional emails (receipts, freeze/deletion, order, domain alerts) are
 // service messages and always send, as permitted under Chok HaSpam.
@@ -50,6 +64,35 @@ serve(async (req) => {
       return new Response(JSON.stringify({ ok: false, error: "to is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Anti-spam gate. The only legitimately-anonymous email is the customer order
+    // confirmation, and it must correspond to a REAL, recent order (so this
+    // endpoint can't be used to blast arbitrary inboxes). All other (platform
+    // lifecycle) emails require an authenticated / service-role caller.
+    const role = jwtRole(req.headers.get("Authorization"));
+    if (type === "orderConfirmationCustomer") {
+      if (!businessId) {
+        return new Response(JSON.stringify({ ok: false, error: "businessId required" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const admin0 = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      const { count } = await admin0
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("business_id", businessId)
+        .eq("customer_email", to)
+        .gte("created_at", new Date(Date.now() - 30 * 60_000).toISOString());
+      if (!count) {
+        return new Response(JSON.stringify({ ok: false, error: "no recent matching order" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else if (role === "anon") {
+      return new Response(JSON.stringify({ ok: false, error: "forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

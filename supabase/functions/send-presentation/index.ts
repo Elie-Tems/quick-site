@@ -3,7 +3,7 @@
 // Recipients hardcoded to admins; trivial token guard.
 
 const ADMINS = ["moti4384@gmail.com", "furmand713@gmail.com"];
-const TOKEN = "siango-newsletter-2026";
+// Trigger token comes from the NEWSLETTER_TOKEN secret - never hardcode it in git.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -60,7 +60,8 @@ function toBase64(str: string): string {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const url = new URL(req.url);
-  if (url.searchParams.get("token") !== TOKEN) {
+  const expectedToken = Deno.env.get("NEWSLETTER_TOKEN");
+  if (!expectedToken || url.searchParams.get("token") !== expectedToken) {
     return new Response(JSON.stringify({ error: "forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
   const apiKey = Deno.env.get("RESEND_API_KEY");

@@ -29,7 +29,7 @@ function renderEmail(blocks: any[], merge: Record<string, string>, footer: strin
 
 Deno.serve(async (req) => {
   const cronSecret = Deno.env.get("CRON_SECRET");
-  if (cronSecret && req.headers.get("x-cron-secret") !== cronSecret) {
+  if (!cronSecret || req.headers.get("x-cron-secret") !== cronSecret) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
