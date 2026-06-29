@@ -468,6 +468,9 @@ const HelpCenter = () => {
                   {open && (
                     <div className="px-3 pb-3 prose prose-sm dark:prose-invert max-w-none text-right" dir="rtl">
                       <ReactMarkdown>{ar.a}</ReactMarkdown>
+                      {ar.image && (
+                        <img src={ar.image} alt={ar.q} className="mt-2 rounded-lg border border-border w-full" loading="lazy" />
+                      )}
                     </div>
                   )}
                 </div>

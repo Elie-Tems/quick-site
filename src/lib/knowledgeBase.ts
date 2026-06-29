@@ -8,6 +8,7 @@ export interface KbArticle {
   id: string;
   q: string;
   a: string; // markdown
+  image?: string; // optional screenshot URL shown under the answer
 }
 
 export interface KbCategory {

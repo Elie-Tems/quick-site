@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { LogIn, LogOut, LayoutDashboard } from "lucide-react";
+import { LogIn, LogOut, LayoutDashboard, HelpCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import logoDarkBg from "@/assets/logo-dark-bg.png";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -50,6 +50,17 @@ const Header = () => {
 
           {/* Navigation Actions */}
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-white/80 hover:text-white hover:bg-white/10 rounded-full px-3 text-xs sm:text-sm"
+              asChild
+            >
+              <Link to="/help" className="flex items-center gap-1.5">
+                <HelpCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">מרכז ידע</span>
+              </Link>
+            </Button>
             <LanguageSwitcher />
             {user ? (
               <>
