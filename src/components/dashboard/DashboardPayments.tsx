@@ -3,7 +3,7 @@ import PayplusConnectForm from "@/components/payments/PayplusConnectForm";
 import PaymentsQuickStart from "@/components/payments/PaymentsQuickStart";
 import PaymentApprovalKit from "@/components/payments/PaymentApprovalKit";
 import type { BusinessSettings } from "@/components/dashboard/DashboardSettings";
-import { PARTNER_LINKS } from "@/lib/partnerLinks";
+import { PARTNER_LINKS, providerLogo } from "@/lib/partnerLinks";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardPaymentsProps {
@@ -48,7 +48,10 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
             <Star className="h-3 w-3" /> מומלץ
           </span>
         </div>
-        <p className="text-lg font-bold text-foreground">PayPlus</p>
+        <div className="flex items-center gap-2">
+          <img src={providerLogo("payplus.co.il")} alt="PayPlus" className="h-6 w-6 rounded" loading="lazy" />
+          <p className="text-lg font-bold text-foreground">PayPlus</p>
+        </div>
         <p className="text-sm text-muted-foreground mb-4">מעטפת מלאה - סליקה · דף תשלום · חשבוניות. חיבור מהיר.</p>
         {settings.id ? (
           <PayplusConnectForm businessId={settings.id} />
@@ -65,6 +68,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           {PARTNER_LINKS.map((p) => (
             <div key={p.id} className={`rounded-xl border bg-card p-4 flex flex-col ${p.highlight ? "border-primary ring-1 ring-primary/30" : "border-border"}`}>
               <div className="flex items-center gap-1.5">
+                <img src={providerLogo(p.domain)} alt={p.name} className="h-5 w-5 rounded" loading="lazy" />
                 <p className="font-bold text-foreground">{p.name}</p>
                 {p.highlight && <span className="text-[10px] font-bold text-primary bg-primary/10 rounded-full px-1.5 py-0.5">מומלץ</span>}
               </div>
