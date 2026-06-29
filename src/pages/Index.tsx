@@ -102,15 +102,6 @@ const Index = () => {
         <Suspense fallback={<div className="min-h-[40vh]" />}>
           <TemplateShowcaseSection />
           <HowItWorksSection />
-          <section className="py-14 px-4 bg-muted/30">
-            <div className="max-w-2xl mx-auto text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">תנו לעסק כתובת משלו 🌐</h2>
-              <p className="text-muted-foreground mb-6">דומיין מקצועי משלכם (כמו yourname.co.il). בדקו אם הוא פנוי - ותפסו אותו לפני שמישהו אחר.</p>
-              <div className="text-right">
-                <DomainSearch onBuy={() => navigate("/register")} />
-              </div>
-            </div>
-          </section>
           <CtaBand title="מוכנים? האתר שלכם באוויר תוך 5 דקות" />
           <WhoIsThisForSection />
           <BenefitsSection />

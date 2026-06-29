@@ -363,7 +363,7 @@ const HowItWorksSection = () => {
             איך זה עובד?
           </h2>
           <p className="text-xl text-muted-foreground">
-            שלושה צעדים פשוטים והאתר שלכם באוויר
+            כמה צעדים פשוטים והאתר שלכם באוויר
           </p>
         </motion.div>
         
@@ -380,14 +380,6 @@ const HowItWorksSection = () => {
             >
               {/* Header: centered number badge, then icon + title, then description */}
               <div className="mb-8 flex flex-col items-center text-center max-w-2xl mx-auto">
-                {/* Step number badge - centered on top */}
-                <div
-                  className="w-12 h-12 rounded-2xl glass-card border border-primary/40 flex items-center justify-center mb-4"
-                  style={{ boxShadow: '0 0 30px hsl(var(--primary) / 0.3)' }}
-                >
-                  <span className="text-lg font-bold neon-text">{step.number}</span>
-                </div>
-
                 <div className="flex items-center justify-center gap-3 mb-2">
                   <div
                     className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/30 shrink-0"

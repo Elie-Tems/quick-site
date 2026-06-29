@@ -83,6 +83,7 @@ const HeroSection = () => {
                 <div className="relative">
                   <p className="text-2xl md:text-3xl font-bold text-foreground">
                     {t('hero.price')}
+                    <span className="text-xs font-normal text-muted-foreground mr-1">{t('hero.vatNote')}</span>
                   </p>
                   <p className="text-lg md:text-xl font-bold neon-text">
                     {t('hero.noCommitment')}
