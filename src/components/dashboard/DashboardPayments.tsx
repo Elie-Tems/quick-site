@@ -3,7 +3,7 @@ import PayplusConnectForm from "@/components/payments/PayplusConnectForm";
 import PaymentsQuickStart from "@/components/payments/PaymentsQuickStart";
 import PaymentApprovalKit from "@/components/payments/PaymentApprovalKit";
 import type { BusinessSettings } from "@/components/dashboard/DashboardSettings";
-import { PARTNER_LINKS, PAYPLUS_AFFILIATE_URL } from "@/lib/partnerLinks";
+import { PARTNER_LINKS } from "@/lib/partnerLinks";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardPaymentsProps {
@@ -54,15 +54,6 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           <PayplusConnectForm businessId={settings.id} />
         ) : (
           <p className="text-sm text-muted-foreground">יש לשמור את פרטי העסק לפני חיבור סליקה.</p>
-        )}
-        {PAYPLUS_AFFILIATE_URL && (
-          <button
-            type="button"
-            onClick={() => goToPartner("payplus", PAYPLUS_AFFILIATE_URL)}
-            className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-          >
-            אין לכם עדיין חשבון PayPlus? פתחו דרכנו <ExternalLink className="h-3.5 w-3.5" />
-          </button>
         )}
       </div>
 

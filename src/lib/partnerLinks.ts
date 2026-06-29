@@ -33,9 +33,6 @@ export const PARTNER_LINKS: PartnerLink[] = [
   },
 ];
 
-// PayPlus is the primary in-app checkout (merchants connect their own account in
-// the PayPlus card). For a merchant who does NOT have a PayPlus account yet, this
-// is our affiliate signup link so a new account is attributed to us. Set the URL
-// once PayPlus provides it; the "open a new PayPlus account" link in the payments
-// screen shows only when it's set, and a click is logged to partner_referrals.
-export const PAYPLUS_AFFILIATE_URL: string | null = null;
+// NOTE: the PayPlus affiliate signup link already lives in usePayplus.ts
+// (PAYPLUS_SIGNUP_URL = aff.pays.plus/...) and is embedded as step 1 of the
+// PayPlus connect flow (PayplusConnectForm). No separate slot needed here.
