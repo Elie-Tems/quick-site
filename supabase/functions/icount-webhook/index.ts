@@ -13,6 +13,28 @@ function safeEqual(a: string, b: string): boolean {
   return r === 0;
 }
 
+// Pull the paid amount (ILS) out of an iCount notification. iCount payloads vary,
+// so we probe the common field names and recurse into a nested data/body object.
+function extractPaidAmount(payload: Record<string, unknown>): number | null {
+  const keys = [
+    "sum", "total", "totalsum", "total_sum", "doctotal", "doc_total",
+    "grand_total", "amount", "paymentsum", "payment_sum", "paid", "price",
+  ];
+  for (const k of keys) {
+    const v = payload[k];
+    if (typeof v === "number" && isFinite(v)) return v;
+    if (typeof v === "string" && v.trim() !== "") {
+      const n = parseFloat(v.replace(/[^\d.]/g, ""));
+      if (isFinite(n) && n > 0) return n;
+    }
+  }
+  const nested = payload["data"] ?? payload["body"];
+  if (nested && typeof nested === "object" && nested !== null) {
+    return extractPaidAmount(nested as Record<string, unknown>);
+  }
+  return null;
+}
+
 function extractBusinessId(payload: Record<string, unknown>): string | null {
   const direct = [
     "business_id",
@@ -37,11 +59,12 @@ function extractBusinessId(payload: Record<string, unknown>): string | null {
 async function handleVerifiedRequestByToken(
   supabase: ReturnType<typeof createClient>,
   sessionToken: string,
-  externalId: string | null
+  externalId: string | null,
+  paidAmount: number | null
 ) {
   const { data: session, error: findErr } = await supabase
     .from("publish_checkout_sessions")
-    .select("id, business_id, status")
+    .select("id, business_id, status, amount_ils")
     .eq("session_token", sessionToken)
     .maybeSingle();
 
@@ -51,6 +74,30 @@ async function handleVerifiedRequestByToken(
       status: 404,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+  }
+
+  // Amount verification: the payment must cover the session's expected fee.
+  // Without this, anyone who learns the webhook secret could mark a session
+  // "paid" (and auto-publish) for free, or for an arbitrary underpaid amount.
+  // Fail closed: if the payload carries no parseable amount we reject too, so a
+  // mismatch surfaces during iCount integration testing rather than silently
+  // letting unverified payments through. A small rounding tolerance is allowed.
+  const expected = typeof session.amount_ils === "number" ? session.amount_ils : null;
+  if (expected != null && expected > 0) {
+    if (paidAmount == null) {
+      console.error(`icount-webhook: no parseable amount in payload (expected ${expected})`);
+      return new Response(JSON.stringify({ error: "amount_unverifiable" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (paidAmount + 0.5 < expected) {
+      console.error(`icount-webhook: amount mismatch - paid ${paidAmount}, expected ${expected}`);
+      return new Response(JSON.stringify({ error: "amount_mismatch" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
   }
 
   // If already paid, just acknowledge (idempotent)
@@ -118,7 +165,8 @@ async function handleVerifiedRequestByToken(
 async function handleVerifiedRequest(
   supabase: ReturnType<typeof createClient>,
   businessId: string,
-  externalId: string | null
+  externalId: string | null,
+  paidAmount: number | null
 ) {
   // Find the latest pending session for this business
   const { data: sessions, error: findErr } = await supabase
@@ -139,7 +187,7 @@ async function handleVerifiedRequest(
     });
   }
 
-  return handleVerifiedRequestByToken(supabase, sessionToken, externalId);
+  return handleVerifiedRequestByToken(supabase, sessionToken, externalId, paidAmount);
 }
 
 Deno.serve(async (req) => {
@@ -278,5 +326,7 @@ Deno.serve(async (req) => {
     (typeof payload["id"] === "string" && payload["id"]) ||
     null;
 
-  return handleVerifiedRequestByToken(supabase, sessionToken, externalId);
+  const paidAmount = extractPaidAmount(payload);
+
+  return handleVerifiedRequestByToken(supabase, sessionToken, externalId, paidAmount);
 });
