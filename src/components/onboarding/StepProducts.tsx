@@ -4,7 +4,7 @@ import { OnboardingData, ProductCategory } from "@/pages/Onboarding";
 import {
   Plus, Trash2, Package, FileSpreadsheet, Upload, X, Download,
   AlertCircle, Sparkles, Loader2, LayoutGrid, List, FolderOpen,
-  Mic, MicOff, Link2, FileText, Pencil,
+  Mic, MicOff, Link2, FileText, Pencil, ImagePlus, Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -46,6 +46,9 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   const [quickName, setQuickName] = useState("");
   const [quickPrice, setQuickPrice] = useState("");
   const [quickDesc, setQuickDesc] = useState("");
+  const [quickImageUrl, setQuickImageUrl] = useState<string | null>(null);
+  const [generatingQuickImage, setGeneratingQuickImage] = useState(false);
+  const quickImageRef = useRef<HTMLInputElement>(null);
 
   // Excel
   const [excelFile, setExcelFile] = useState<File | null>(null);
@@ -109,12 +112,35 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         name: quickName.trim(),
         description: quickDesc.trim(),
         price: parseFloat(quickPrice),
+        imageUrl: quickImageUrl || undefined,
         categoryId,
       }],
     });
     setQuickName("");
     setQuickPrice("");
     setQuickDesc("");
+    setQuickImageUrl(null);
+  };
+
+  const handleQuickImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setQuickImageUrl(url);
+    if (quickImageRef.current) quickImageRef.current.value = "";
+  };
+
+  const handleGenerateQuickImage = async () => {
+    if (!quickName.trim()) return;
+    setGeneratingQuickImage(true);
+    try {
+      const { data: result, error } = await supabase.functions.invoke("generate-product-image", {
+        body: { productName: quickName.trim(), productDescription: quickDesc.trim(), businessCategory: data.businessCategory },
+      });
+      if (!error && result?.imageUrl) setQuickImageUrl(result.imageUrl);
+      else toast.error("שגיאה ביצירת תמונה");
+    } catch { toast.error("שגיאה ביצירת תמונה"); }
+    finally { setGeneratingQuickImage(false); }
   };
 
   const handleQuickKeyDown = (e: React.KeyboardEvent) => {
@@ -667,42 +693,90 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       {activeMethod === "quick" && (
         <div className="space-y-3">
           <div className="p-4 rounded-xl border border-border bg-card space-y-3">
-            <div className="grid grid-cols-[1fr_90px] gap-2">
-              <Input
-                placeholder="שם המוצר *"
-                value={quickName}
-                onChange={e => setQuickName(e.target.value)}
-                onKeyDown={handleQuickKeyDown}
-                className="h-10 rounded-xl"
-              />
-              <Input
-                placeholder="₪ מחיר"
-                type="number"
-                value={quickPrice}
-                onChange={e => setQuickPrice(e.target.value)}
-                onKeyDown={handleQuickKeyDown}
-                className="h-10 rounded-xl"
-                dir="ltr"
-              />
+            <div className="flex gap-3">
+              {/* Image picker */}
+              <div className="shrink-0">
+                <input ref={quickImageRef} type="file" accept="image/*" className="hidden" onChange={handleQuickImageFile} />
+                <div
+                  onClick={() => !quickImageUrl && quickImageRef.current?.click()}
+                  className="w-[72px] h-[72px] rounded-xl border border-dashed border-border overflow-hidden relative group cursor-pointer hover:border-primary/50 transition-colors bg-muted/30"
+                >
+                  {quickImageUrl ? (
+                    <>
+                      <img src={quickImageUrl} alt="" className="w-full h-full object-cover" />
+                      <button
+                        onClick={e => { e.stopPropagation(); setQuickImageUrl(null); }}
+                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3 text-white" />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-muted-foreground">
+                      <ImagePlus className="w-5 h-5" />
+                      <span className="text-[10px]">תמונה</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Name + price + desc */}
+              <div className="flex-1 space-y-2">
+                <div className="grid grid-cols-[1fr_90px] gap-2">
+                  <Input
+                    placeholder="שם המוצר *"
+                    value={quickName}
+                    onChange={e => setQuickName(e.target.value)}
+                    onKeyDown={handleQuickKeyDown}
+                    className="h-10 rounded-xl"
+                  />
+                  <Input
+                    placeholder="₪ מחיר"
+                    type="number"
+                    value={quickPrice}
+                    onChange={e => setQuickPrice(e.target.value)}
+                    onKeyDown={handleQuickKeyDown}
+                    className="h-10 rounded-xl"
+                    dir="ltr"
+                  />
+                </div>
+                <Input
+                  placeholder="תיאור קצר — גודל, חומר, צבע..."
+                  value={quickDesc}
+                  onChange={e => setQuickDesc(e.target.value)}
+                  onKeyDown={handleQuickKeyDown}
+                  className="h-10 rounded-xl"
+                />
+              </div>
             </div>
-            <Input
-              placeholder="תיאור קצר — גודל, חומר, צבע..."
-              value={quickDesc}
-              onChange={e => setQuickDesc(e.target.value)}
-              onKeyDown={handleQuickKeyDown}
-              className="h-10 rounded-xl"
-            />
-            <div className="flex justify-end">
+
+            {/* Image actions + add button */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => quickImageRef.current?.click()}
+                className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                העלה תמונה
+              </button>
+              <button
+                onClick={handleGenerateQuickImage}
+                disabled={!quickName.trim() || generatingQuickImage}
+                className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-primary/30 text-xs text-primary hover:bg-primary/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {generatingQuickImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+                {generatingQuickImage ? "יוצר..." : "צור עם AI"}
+              </button>
+              <div className="flex-1" />
               <button
                 onClick={handleQuickAdd}
                 disabled={!quickName.trim() || !quickPrice.trim()}
-                className="flex items-center gap-1.5 px-4 h-9 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+                className="flex items-center gap-1.5 px-4 h-8 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
               >
                 <Plus className="w-4 h-4" /> הוסף מוצר
               </button>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground text-center">תמונות ניתן ליצור עם AI לאחר הוספת המוצרים</p>
         </div>
       )}
 
