@@ -18,6 +18,7 @@ const DashboardEmailContacts = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
   const [consent, setConsent] = useState(false);
 
   const load = async () => {
@@ -33,19 +34,22 @@ const DashboardEmailContacts = () => {
     if (!email.trim()) { toast.error("נא להזין מייל"); return; }
     if (!consent) { toast.error("חובה לאשר שיש הסכמה לדיוור (חוק הספאם)"); return; }
     setBusy(true);
+    const tags = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
     const { error } = await supabase.from("mkt_contacts").insert({
       owner_id: user.id, email: email.trim().toLowerCase(), name: name.trim() || null,
-      status: "active", source: "manual", consent_at: new Date().toISOString(),
+      status: "active", source: "manual", consent_at: new Date().toISOString(), tags,
     });
     setBusy(false);
     if (error) { toast.error(error.message.includes("duplicate") ? "המייל כבר קיים" : "שגיאה בהוספה"); return; }
     toast.success("נוסף איש קשר");
-    setEmail(""); setName(""); setShowAdd(false); load();
+    setEmail(""); setName(""); setTagsInput(""); setShowAdd(false); load();
   };
 
   const importCsv = async (file: File) => {
     if (!user) { toast.error("נדרשת התחברות"); return; }
     if (!confirm("בייבוא אתה מאשר שיש לך הסכמה לדיוור מכל הנמענים (חוק הספאם). להמשיך?")) return;
+    const tag = (prompt("תגית לקבוצה הזו (אופציונלי, לסינון בשליחה):") || "").trim();
+    const tags = tag ? [tag] : [];
     setBusy(true);
     try {
       const text = await file.text();
@@ -57,7 +61,7 @@ const DashboardEmailContacts = () => {
         const em = cols.find((c) => /@/.test(c));
         if (!em || /^email$/i.test(em)) continue; // skip header / no-email
         const nm = cols.find((c) => c && !/@/.test(c)) || null;
-        toInsert.push({ owner_id: user.id, email: em.toLowerCase(), name: nm, status: "active", source: "import", consent_at: now });
+        toInsert.push({ owner_id: user.id, email: em.toLowerCase(), name: nm, status: "active", source: "import", consent_at: now, tags });
       }
       if (!toInsert.length) { toast.error("לא נמצאו כתובות מייל בקובץ"); return; }
       // upsert to skip duplicates (unique owner_id,email)
@@ -88,6 +92,7 @@ const DashboardEmailContacts = () => {
             <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="מייל" dir="ltr" className="h-9 rounded-lg border border-border bg-background px-3 text-sm" />
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="שם (אופציונלי)" className="h-9 rounded-lg border border-border bg-background px-3 text-sm" />
           </div>
+          <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="תגיות לסינון (מופרדות בפסיק, אופציונלי)" className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm" />
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="accent-primary" />
             <ShieldCheck className="w-3.5 h-3.5" /> יש לי הסכמה מאיש הקשר לקבל דיוור (חוק הספאם)

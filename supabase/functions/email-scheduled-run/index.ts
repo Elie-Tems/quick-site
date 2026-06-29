@@ -46,8 +46,13 @@ Deno.serve(async (req) => {
   let processed = 0, totalSent = 0;
   for (const c of due) {
     await admin.from("mkt_campaigns").update({ status: "sending" }).eq("id", c.id);
-    const { data: contacts } = await admin.from("mkt_contacts")
-      .select("id, email, name").eq("owner_id", c.owner_id).eq("status", "active").not("email", "is", null);
+    const incTags: string[] = Array.isArray(c.conditions?.includeTags) ? c.conditions.includeTags : [];
+    const excTags: string[] = Array.isArray(c.conditions?.excludeTags) ? c.conditions.excludeTags : [];
+    let cq = admin.from("mkt_contacts")
+      .select("id, email, name, tags").eq("owner_id", c.owner_id).eq("status", "active").not("email", "is", null);
+    if (incTags.length) cq = cq.overlaps("tags", incTags);
+    let { data: contacts } = await cq;
+    if (excTags.length) contacts = (contacts || []).filter((ct: any) => !(ct.tags || []).some((t: string) => excTags.includes(t)));
     let sent = 0;
     for (const ct of contacts || []) {
       if (!ct.email || blocked.has(String(ct.email).toLowerCase())) continue;

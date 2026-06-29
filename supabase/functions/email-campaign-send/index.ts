@@ -102,10 +102,18 @@ Deno.serve(async (req) => {
     return json({ ok: res.ok, mode: "test", error: res.error });
   }
 
-  // Real send to all active, non-unsubscribed contacts of this owner.
-  const { data: contacts } = await admin.from("mkt_contacts")
-    .select("id, email, name").eq("owner_id", user.id).eq("status", "active").not("email", "is", null);
-  if (!contacts?.length) return json({ ok: true, sent: 0, note: "no active contacts" });
+  // Audience targeting by tags (segments). includeTags: send only to contacts
+  // having at least one of these tags (empty = all active). excludeTags: never
+  // send to contacts having any of these (filtered in JS).
+  const includeTags: string[] = Array.isArray(campaign.includeTags) ? campaign.includeTags : [];
+  const excludeTags: string[] = Array.isArray(campaign.excludeTags) ? campaign.excludeTags : [];
+
+  let q = admin.from("mkt_contacts")
+    .select("id, email, name, tags").eq("owner_id", user.id).eq("status", "active").not("email", "is", null);
+  if (includeTags.length) q = q.overlaps("tags", includeTags);
+  let { data: contacts } = await q;
+  contacts = (contacts || []).filter((c: any) => !excludeTags.length || !(c.tags || []).some((t: string) => excludeTags.includes(t)));
+  if (!contacts?.length) return json({ ok: true, sent: 0, note: "no matching contacts" });
 
   // Suppress globally-unsubscribed addresses (shared list).
   const { data: unsub } = await admin.from("email_unsubscribes").select("email");

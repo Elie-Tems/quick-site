@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowRight, Send, Clock, Users, UserMinus, Filter, Plus, X, Mail, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,8 +17,16 @@ const CONDITION_VERBS = ["לא פתחו", "פתחו", "לא הקליקו", "הק
 const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
   const { user } = useAuth();
   const [scheduledAt, setScheduledAt] = useState("");
-  const [include, setInclude] = useState<string[]>(["כל אנשי הקשר"]);
+  const [tags, setTags] = useState<string[]>([]);          // real distinct tags
+  const [include, setInclude] = useState<string[]>([]);    // empty = all active
   const [exclude, setExclude] = useState<string[]>([]);
+  useEffect(() => {
+    supabase.from("mkt_contacts").select("tags").limit(1000).then(({ data }) => {
+      const set = new Set<string>();
+      (data || []).forEach((r: any) => (r.tags || []).forEach((t: string) => t && set.add(t)));
+      setTags(Array.from(set));
+    });
+  }, []);
   const [conditions, setConditions] = useState<{ verb: string; ref: string }[]>([]);
   const [when, setWhen] = useState<"now" | "schedule">("now");
   const [fromName, setFromName] = useState("החנות שלי");
@@ -26,7 +34,7 @@ const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
   const [subject, setSubject] = useState("");
   const [sending, setSending] = useState(false);
 
-  const campaignPayload = () => ({ blocks, subject, from_name: fromName, reply_to: replyTo || undefined });
+  const campaignPayload = () => ({ blocks, subject, from_name: fromName, reply_to: replyTo || undefined, includeTags: include, excludeTags: exclude });
 
   const sendTest = async () => {
     const to = prompt("שליחת מבחן לכתובת:");
@@ -52,6 +60,7 @@ const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
         const { error } = await supabase.from("mkt_campaigns").insert({
           owner_id: user.id, name: subject, subject, from_name: fromName, reply_to: replyTo || null,
           blocks, status: "scheduled", scheduled_at: new Date(scheduledAt).toISOString(),
+          conditions: { includeTags: include, excludeTags: exclude },
         });
         if (error) throw error;
         toast.success("הדיוור תוזמן ✓");
@@ -86,27 +95,33 @@ const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
         <Field label="טקסט תצוגה מקדימה (preview)"><input placeholder="השורה שמופיעה ליד הנושא בתיבת הדואר" className="inp" /></Field>
       </div>
 
-      {/* Audience */}
+      {/* Audience - by real contact tags */}
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
         <p className="text-sm font-medium flex items-center gap-2"><Users className="w-4 h-4 text-primary" /> קהל יעד</p>
-        <div>
-          <div className="text-xs text-muted-foreground mb-1.5">שלח אל</div>
-          <div className="flex flex-wrap gap-2">
-            {SEGMENTS.map((s) => (
-              <button key={s} onClick={() => toggle(include, setInclude, s)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${include.includes(s) ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40"}`}>{s}</button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <div className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1"><UserMinus className="w-3.5 h-3.5" /> החרג (לא ישלח אליהם)</div>
-          <div className="flex flex-wrap gap-2">
-            {SEGMENTS.map((s) => (
-              <button key={s} onClick={() => toggle(exclude, setExclude, s)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${exclude.includes(s) ? "border-destructive bg-destructive/10 text-destructive" : "border-border text-muted-foreground hover:border-destructive/40"}`}>{s}</button>
-            ))}
-          </div>
-        </div>
+        {tags.length === 0 ? (
+          <p className="text-xs text-muted-foreground">אין עדיין תגיות. כל הדיוור יישלח ל<b>כל אנשי הקשר הפעילים</b>. כדי לסנן - הוסיפו תגיות לאנשי הקשר (בטאב "קהלים").</p>
+        ) : (
+          <>
+            <div>
+              <div className="text-xs text-muted-foreground mb-1.5">שלח אל {include.length === 0 && <span>(ריק = כל אנשי הקשר)</span>}</div>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((s) => (
+                  <button key={s} onClick={() => toggle(include, setInclude, s)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${include.includes(s) ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40"}`}>{s}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1"><UserMinus className="w-3.5 h-3.5" /> החרג (לא ישלח אליהם)</div>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((s) => (
+                  <button key={s} onClick={() => toggle(exclude, setExclude, s)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${exclude.includes(s) ? "border-destructive bg-destructive/10 text-destructive" : "border-border text-muted-foreground hover:border-destructive/40"}`}>{s}</button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Conditions */}
