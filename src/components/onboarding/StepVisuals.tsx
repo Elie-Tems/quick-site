@@ -158,12 +158,12 @@ const MiniProductGrid = ({ products, primaryColor }: { products: TemplateStyle["
   </div>
 );
 
-const MiniTemplatePreview = ({ template, primaryColor, userProducts }: {
-  template: TemplateStyle; primaryColor: string; userProducts: TemplateStyle["products"];
+const MiniTemplatePreview = ({ template, primaryColor, userProducts, businessName }: {
+  template: TemplateStyle; primaryColor: string; userProducts: TemplateStyle["products"]; businessName: string;
 }) => {
   const display = userProducts.length > 0 ? userProducts : template.products;
-  // Use the user's first product image as hero so the mini preview feels relevant
   const heroImg = userProducts.find(p => p.img)?.img || template.heroImage;
+  const label = businessName || "החנות שלי";
   const bg = "#0f0f0f";
 
   if (template.heroLayout === "split") return (
@@ -172,11 +172,11 @@ const MiniTemplatePreview = ({ template, primaryColor, userProducts }: {
         <div className="w-2 h-2 rounded flex items-center justify-center mr-1" style={{ background: primaryColor }}>
           <ShoppingBag className="w-1 h-1 text-white" />
         </div>
-        <span className="text-[5px] font-bold text-white">החנות</span>
+        <span className="text-[5px] font-bold text-white truncate">{label}</span>
       </div>
       <div className="flex flex-row overflow-hidden" style={{ height: '45px' }}>
         <div className="w-[45%] flex flex-col justify-center px-1.5 shrink-0" style={{ background: primaryColor }}>
-          <span className="text-[5px] font-black text-white leading-tight">הקולקציה<br/>החדשה</span>
+          <span className="text-[5px] font-black text-white leading-tight truncate">{label}</span>
         </div>
         <div className="flex-1 relative overflow-hidden">
           <img src={heroImg} alt="" className="w-full h-full object-cover" />
@@ -192,12 +192,12 @@ const MiniTemplatePreview = ({ template, primaryColor, userProducts }: {
         <div className="w-2 h-2 rounded flex items-center justify-center mr-1" style={{ background: primaryColor }}>
           <ShoppingBag className="w-1 h-1 text-white" />
         </div>
-        <span className="text-[5px] font-bold text-white">החנות</span>
+        <span className="text-[5px] font-bold text-white truncate">{label}</span>
       </div>
       <div className="relative overflow-hidden shrink-0" style={{ height: '40px' }}>
-        <img src={template.heroImage} alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
-          <span className="text-[6px] font-black text-white">הקולקציה החדשה</span>
+        <img src={heroImg} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-black/55 flex items-center justify-center px-1">
+          <span className="text-[6px] font-black text-white text-center truncate">{label}</span>
         </div>
       </div>
       <MiniProductGrid products={display} primaryColor={primaryColor} />
@@ -210,13 +210,13 @@ const MiniTemplatePreview = ({ template, primaryColor, userProducts }: {
         <div className="w-2 h-2 rounded flex items-center justify-center mr-1" style={{ background: primaryColor }}>
           <ShoppingBag className="w-1 h-1 text-white" />
         </div>
-        <span className="text-[5px] font-bold text-white">החנות</span>
+        <span className="text-[5px] font-bold text-white truncate">{label}</span>
       </div>
       <div className="relative overflow-hidden shrink-0" style={{ height: '45px' }}>
-        <img src={template.heroImage} alt="" className="w-full h-full object-cover" />
+        <img src={heroImg} alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 100%)" }} />
-        <div className="absolute bottom-1 right-1.5">
-          <span className="text-[5px] font-black text-white leading-tight block">הקולקציה החדשה</span>
+        <div className="absolute bottom-1 right-1.5 left-1.5">
+          <span className="text-[5px] font-black text-white leading-tight block truncate">{label}</span>
         </div>
       </div>
       <MiniProductGrid products={display} primaryColor={primaryColor} />
@@ -280,8 +280,7 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
       <Nav />
       <div className="flex flex-row overflow-hidden" style={{ height: '150px' }}>
         <div className="w-[42%] flex flex-col justify-center px-4 py-3 shrink-0" style={{ background: primaryColor }}>
-          <span className="text-[10px] uppercase tracking-widest text-white/70 mb-1">חדש</span>
-          <span className="text-xl font-black text-white leading-tight mb-2">הקולקציה<br/>החדשה</span>
+          <span className="text-xl font-black text-white leading-tight mb-2">{name}</span>
           <div className="px-2.5 py-1 text-xs font-bold text-white w-fit bg-black/25 rounded">קנו עכשיו</div>
         </div>
         <div className="flex-1 relative overflow-hidden">
@@ -299,8 +298,7 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
         <img src={hero} alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/55" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <span className="text-[11px] uppercase tracking-widest mb-1 opacity-75" style={{ color: primaryColor }}>ברוכים הבאים</span>
-          <span className="text-xl font-black text-white leading-tight mb-2">הקולקציה החדשה</span>
+          <span className="text-xl font-black text-white leading-tight mb-2">{name}</span>
           <div className="px-3 py-1 text-xs font-bold text-white rounded-full" style={{ background: primaryColor }}>גלו עכשיו</div>
         </div>
       </div>
@@ -315,8 +313,7 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
         <img src={hero} alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(0,0,0,.8) 0%,rgba(0,0,0,.2) 60%,transparent 100%)" }} />
         <div className="absolute bottom-3 right-4 text-right">
-          <span className="text-[11px] uppercase tracking-widest block mb-0.5 opacity-75" style={{ color: primaryColor }}>חדש</span>
-          <span className="text-2xl font-black text-white leading-tight block">הקולקציה<br/>החדשה</span>
+          <span className="text-2xl font-black text-white leading-tight block">{name}</span>
         </div>
       </div>
       <BigProductGrid products={display} primaryColor={primaryColor} />
@@ -463,7 +460,7 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
                 style={{ background: "#0f0f0f", border: isSelected ? "none" : "1px solid rgba(255,255,255,0.1)" }}
               >
                 <div className="aspect-[4/3.5] relative overflow-hidden">
-                  <MiniTemplatePreview template={template} primaryColor={primaryColor} userProducts={userProducts} />
+                  <MiniTemplatePreview template={template} primaryColor={primaryColor} userProducts={userProducts} businessName={data.businessName} />
                   {isSelected && (
                     <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center shadow">
                       <Check className="w-2.5 h-2.5 text-white" />
