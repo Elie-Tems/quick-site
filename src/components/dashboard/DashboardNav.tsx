@@ -51,9 +51,7 @@ const navItems: {
   { id: "campaigns", label: "קמפיינים", icon: Megaphone, group: "שיווק" },
   { id: "tracking", label: "תגי שיווק ומעקב", shortLabel: "תגי מעקב", icon: BarChart3, group: "שיווק" },
   { id: "reviews", label: "ביקורות Google", shortLabel: "ביקורות", icon: Star, group: "שיווק" },
-  { id: "traffic", label: "מקורות הגעה", shortLabel: "מקורות", icon: Radar, group: "שיווק" },
-  { id: "insights", label: "תובנות", icon: Lightbulb, group: "שיווק" },
-  { id: "ad-budget", label: "תקציב פרסום", shortLabel: "פרסום", icon: Target, group: "שיווק" },
+  { id: "insights", label: "אנליטיקה", icon: BarChart3, group: "שיווק" },
 
   // הרחבות
   { id: "domains", label: "דומיין", icon: Globe, group: "הרחבות" },

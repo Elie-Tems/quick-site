@@ -114,11 +114,15 @@ const Dashboard = () => {
   const [productsTab, setProductsTab] = useState<'list' | 'categories' | 'sales'>('list');
   // Design hub: template / banners are tabs inside one screen.
   const [designTab, setDesignTab] = useState<'template' | 'banners'>('template');
+  // Analytics hub: insights / traffic / ad-budget are tabs inside one screen.
+  const [analyticsTab, setAnalyticsTab] = useState<'insights' | 'traffic' | 'ad-budget'>('insights');
   // Redirect legacy nav targets into the matching hub tab.
   useEffect(() => {
     if (currentView === 'categories') { setProductsTab('categories'); setCurrentView('products'); }
     else if (currentView === 'sales') { setProductsTab('sales'); setCurrentView('products'); }
     else if (currentView === 'banners') { setDesignTab('banners'); setCurrentView('design'); }
+    else if (currentView === 'traffic') { setAnalyticsTab('traffic'); setCurrentView('insights'); }
+    else if (currentView === 'ad-budget') { setAnalyticsTab('ad-budget'); setCurrentView('insights'); }
   }, [currentView]);
 
   // Handle sale updates
@@ -555,10 +559,33 @@ const Dashboard = () => {
         return <DashboardAIGeneratedImages />;
       case 'usage':
         return <DashboardUsage businessId={business?.id} />;
-      case 'traffic':
-        return <DashboardTrafficSources businessId={business?.id} />;
       case 'insights':
-        return <DashboardInsights businessId={business?.id} />;
+      case 'traffic':
+      case 'ad-budget':
+        return (
+          <div className="space-y-4">
+            <div className="flex gap-1 border-b border-border overflow-x-auto">
+              {([
+                { id: 'insights', label: 'תובנות' },
+                { id: 'traffic', label: 'מקורות הגעה' },
+                { id: 'ad-budget', label: 'תקציב פרסום' },
+              ] as const).map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setAnalyticsTab(t.id)}
+                  className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${
+                    analyticsTab === t.id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            {analyticsTab === 'insights' && <DashboardInsights businessId={business?.id} />}
+            {analyticsTab === 'traffic' && <DashboardTrafficSources businessId={business?.id} />}
+            {analyticsTab === 'ad-budget' && <DashboardAdBudget businessId={business?.id} />}
+          </div>
+        );
       case 'domains':
         return <DashboardDomains businessId={business?.id} />;
       case 'whatsapp':
@@ -585,8 +612,6 @@ const Dashboard = () => {
         );
       case 'legal':
         return <DashboardLegal business={business as any} />;
-      case 'ad-budget':
-        return <DashboardAdBudget businessId={business?.id} />;
       case 'design':
       case 'banners':
         return (
