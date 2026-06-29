@@ -6,6 +6,7 @@ import {
 import DashboardEmailEditor from "@/components/dashboard/DashboardEmailEditor";
 import DashboardEmailSend from "@/components/dashboard/DashboardEmailSend";
 import { supabase } from "@/integrations/supabase/client";
+import DashboardEmailContacts from "@/components/dashboard/DashboardEmailContacts";
 
 // Email-marketing module (ESP) - BUILD-ONLY preview. Not wired to a backend yet;
 // shows the full UX with sample data so Moti can review and we can pick a sending
@@ -134,9 +135,10 @@ const DashboardEmailMarketing = () => {
       )}
 
       {tab === "audiences" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">קהלים וסגמנטים</p>
+        <div className="space-y-5">
+          <DashboardEmailContacts />
+          <div className="flex items-center justify-between pt-2 border-t border-border">
+            <p className="text-sm font-medium">סגמנטים</p>
             <button className="flex items-center gap-1.5 text-sm bg-primary/10 text-primary rounded-lg px-3 py-1.5"><Plus className="w-4 h-4" /> סגמנט חדש</button>
           </div>
           {SAMPLE_SEGMENTS.map((s) => (
