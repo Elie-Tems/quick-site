@@ -7,6 +7,7 @@ import DashboardEmailEditor from "@/components/dashboard/DashboardEmailEditor";
 import DashboardEmailSend from "@/components/dashboard/DashboardEmailSend";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardEmailContacts from "@/components/dashboard/DashboardEmailContacts";
+import { EMAIL_TEMPLATES, type TemplateBlock } from "@/lib/emailTemplates";
 
 // Email-marketing module (ESP) - BUILD-ONLY preview. Not wired to a backend yet;
 // shows the full UX with sample data so Moti can review and we can pick a sending
@@ -57,6 +58,9 @@ const DashboardEmailMarketing = () => {
   const [tab, setTab] = useState<Tab>("overview");
   const [screen, setScreen] = useState<"main" | "edit" | "send">("main");
   const [draftBlocks, setDraftBlocks] = useState<any[]>([]);
+  const [editorSeed, setEditorSeed] = useState<TemplateBlock[] | undefined>(undefined);
+  // Open the editor, optionally seeded from a chosen template (undefined = blank/default).
+  const openEditor = (seed?: TemplateBlock[]) => { setEditorSeed(seed); setScreen("edit"); };
   // Real automations (opt-in) loaded from the backend when signed in; falls back
   // to the standard list (read-only) in the public preview.
   const [autos, setAutos] = useState<{ type: string; label: string; desc: string; enabled: boolean }[]>(
@@ -96,7 +100,7 @@ const DashboardEmailMarketing = () => {
   const fmtNum = (n?: number) => (n == null ? "—" : n.toLocaleString());
 
   if (screen === "edit") {
-    return <div dir="rtl"><DashboardEmailEditor onBack={() => setScreen("main")} onContinue={(b) => { setDraftBlocks(b); setScreen("send"); }} /></div>;
+    return <div dir="rtl"><DashboardEmailEditor initialBlocks={editorSeed} onBack={() => setScreen("main")} onContinue={(b) => { setDraftBlocks(b); setScreen("send"); }} /></div>;
   }
   if (screen === "send") {
     return <div dir="rtl"><DashboardEmailSend onBack={() => setScreen("edit")} blocks={draftBlocks} /></div>;
@@ -118,7 +122,7 @@ const DashboardEmailMarketing = () => {
           <h2 className="text-lg font-semibold flex items-center gap-2"><Mail className="w-5 h-5 text-primary" /> דיוור ושיווק במייל</h2>
           <p className="text-sm text-muted-foreground">שליחת ניוזלטרים, מבצעים ואוטומציות ללקוחות - מסונכרן עם ה-CRM</p>
         </div>
-        <button onClick={() => setScreen("edit")} className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground rounded-lg px-4 py-2 font-medium shrink-0">
+        <button onClick={() => openEditor()} className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground rounded-lg px-4 py-2 font-medium shrink-0">
           <Plus className="w-4 h-4" /> צור דיוור חדש
         </button>
       </div>
@@ -180,7 +184,7 @@ const DashboardEmailMarketing = () => {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">קמפיינים</p>
-            <button className="flex items-center gap-1.5 text-sm bg-primary/10 text-primary rounded-lg px-3 py-1.5"><Plus className="w-4 h-4" /> קמפיין חדש</button>
+            <button onClick={() => openEditor()} className="flex items-center gap-1.5 text-sm bg-primary/10 text-primary rounded-lg px-3 py-1.5"><Plus className="w-4 h-4" /> קמפיין חדש</button>
           </div>
           {SAMPLE_CAMPAIGNS.map((c) => (
             <div key={c.name} className="rounded-xl border border-border bg-card p-3">
@@ -201,18 +205,30 @@ const DashboardEmailMarketing = () => {
       {tab === "templates" && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">תבניות מייל (RTL בעברית)</p>
-            <button onClick={() => setScreen("edit")} className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground rounded-lg px-3 py-1.5"><Plus className="w-4 h-4" /> צור דיוור חדש</button>
+            <p className="text-sm font-medium">תבניות מייל מוכנות (RTL)</p>
+            <button onClick={() => openEditor()} className="flex items-center gap-1.5 text-sm border border-border text-foreground rounded-lg px-3 py-1.5 hover:border-primary/40"><Plus className="w-4 h-4" /> קנבס ריק</button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {["ניוזלטר", "מבצע / הנחה", "מוצר חדש", "ברכת הצטרפות", "החזרת לקוח", "קנבס ריק"].map((t) => (
-              <button key={t} onClick={() => setScreen("edit")} className="rounded-xl border border-border bg-card p-3 aspect-[4/3] flex flex-col items-center justify-center gap-2 hover:border-primary/40 transition-colors">
-                <LayoutTemplate className="w-6 h-6 text-muted-foreground" />
-                <span className="text-xs font-medium">{t}</span>
+            {EMAIL_TEMPLATES.map((t) => (
+              <button key={t.id} onClick={() => openEditor(t.blocks)} className="rounded-xl border border-border bg-card overflow-hidden text-right hover:border-primary/40 transition-colors">
+                <div className="p-2 bg-[#eef0f2]">
+                  <div className="bg-white rounded overflow-hidden">
+                    <div style={{ background: t.accent }} className="h-5" />
+                    <div className="p-2 space-y-1.5">
+                      <div className="h-1.5 bg-black/10 rounded w-3/4" />
+                      <div className="h-1.5 bg-black/10 rounded w-1/2" />
+                      <div style={{ background: t.accent }} className="h-3 w-14 rounded mx-auto mt-1.5" />
+                    </div>
+                  </div>
+                </div>
+                <div className="px-2.5 py-2">
+                  <div className="text-xs font-medium truncate">{t.name}</div>
+                  <div className="text-[10px] text-muted-foreground">{t.category}</div>
+                </div>
               </button>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">עורך גרירה-ושחרור, שדות התאמה אישית (שם, מוצר אחרון), וכתיבת נושא/גוף ב-AI.</p>
+          <p className="text-xs text-muted-foreground">בוחרים תבנית, והיא נטענת לעורך לעריכה חופשית - טקסט, תמונות, מוצרים וצבעים.</p>
         </div>
       )}
 

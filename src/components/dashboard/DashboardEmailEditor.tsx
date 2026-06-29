@@ -3,6 +3,7 @@ import {
   Type, SquareIcon, Image as ImageIcon, LayoutPanelTop, Minus, MoveVertical,
   Columns2, ShoppingBag, ArrowUp, ArrowDown, Copy, Trash2, ArrowRight, Eye, Save,
 } from "lucide-react";
+import type { TemplateBlock } from "@/lib/emailTemplates";
 
 // Block-based email/newsletter editor (build-only v1). Self-contained: blocks live
 // in local state, render to a live email canvas, and can be added / selected /
@@ -38,14 +39,20 @@ const DEFAULTS: Record<BlockType, Record<string, any>> = {
 let counter = 0;
 const newId = () => `b${++counter}_${Math.random().toString(36).slice(2, 6)}`;
 
-interface Props { onBack?: () => void; onContinue?: (blocks: Block[]) => void; }
+interface Props { onBack?: () => void; onContinue?: (blocks: Block[]) => void; initialBlocks?: TemplateBlock[]; }
 
-const DashboardEmailEditor = ({ onBack, onContinue }: Props) => {
-  const [blocks, setBlocks] = useState<Block[]>([
-    { id: newId(), type: "banner", props: { ...DEFAULTS.banner, title: "מבצע סוף עונה" } },
-    { id: newId(), type: "text", props: { ...DEFAULTS.text, text: "שלום {{שם}}! ריכזנו עבורך את המבצעים השבוע." } },
-    { id: newId(), type: "button", props: { ...DEFAULTS.button, text: "לקנייה עכשיו" } },
-  ]);
+const DEFAULT_SEED: TemplateBlock[] = [
+  { type: "banner", props: { ...DEFAULTS.banner, title: "מבצע סוף עונה" } },
+  { type: "text", props: { ...DEFAULTS.text, text: "שלום {{שם}}! ריכזנו עבורך את המבצעים השבוע." } },
+  { type: "button", props: { ...DEFAULTS.button, text: "לקנייה עכשיו" } },
+];
+
+const DashboardEmailEditor = ({ onBack, onContinue, initialBlocks }: Props) => {
+  const [blocks, setBlocks] = useState<Block[]>(() =>
+    (initialBlocks && initialBlocks.length ? initialBlocks : DEFAULT_SEED).map((b) => ({
+      id: newId(), type: b.type as BlockType, props: { ...b.props },
+    })),
+  );
   const [selected, setSelected] = useState<string | null>(null);
 
   const add = (type: BlockType) => {
