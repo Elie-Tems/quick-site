@@ -33,9 +33,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Skip cleanly (success, no failure email) until the token secret is added.
+      - name: Check for deploy token
+        id: token
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "SUPABASE_ACCESS_TOKEN not set - skipping auto-deploy. Add it in repo Settings -> Secrets to enable."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: supabase/setup-cli@v1
+        if: steps.token.outputs.enabled == 'true'
         with:
           version: latest
 
       - name: Deploy all edge functions
+        if: steps.token.outputs.enabled == 'true'
         run: supabase functions deploy --project-ref "$PROJECT_REF"
