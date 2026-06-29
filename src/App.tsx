@@ -39,6 +39,7 @@ const AllTemplates = lazy(() => import("./pages/AllTemplates"));
 const Contact = lazy(() => import("./pages/Contact"));
 const PublishPayment = lazy(() => import("./pages/PublishPayment"));
 const EmailMarketingPreview = lazy(() => import("./pages/EmailMarketingPreview"));
+const Presentation = lazy(() => import("./pages/Presentation"));
 const AICreditPayment = lazy(() => import("./pages/AICreditPayment"));
 const PreviewPayments = lazy(() => import("./pages/PreviewPayments"));
 const PreviewEmails = lazy(() => import("./pages/PreviewEmails"));
@@ -122,6 +123,7 @@ const App = () => {
                   <Route path="/onboarding/complete" element={<OnboardingCompleteGate />} />
                   <Route path="/publish-payment" element={<PublishPayment />} />
                   <Route path="/email-marketing-preview" element={<EmailMarketingPreview />} />
+                  <Route path="/presentation" element={<Presentation />} />
                   <Route path="/thank-you" element={<ThankYou />} />
                   <Route path="/ai-credits-payment" element={<AICreditPayment />} />
                   <Route path="/preview/payments" element={<PreviewPayments />} />
