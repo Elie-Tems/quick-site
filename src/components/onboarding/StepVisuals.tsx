@@ -162,6 +162,8 @@ const MiniTemplatePreview = ({ template, primaryColor, userProducts }: {
   template: TemplateStyle; primaryColor: string; userProducts: TemplateStyle["products"];
 }) => {
   const display = userProducts.length > 0 ? userProducts : template.products;
+  // Use the user's first product image as hero so the mini preview feels relevant
+  const heroImg = userProducts.find(p => p.img)?.img || template.heroImage;
   const bg = "#0f0f0f";
 
   if (template.heroLayout === "split") return (
@@ -177,7 +179,7 @@ const MiniTemplatePreview = ({ template, primaryColor, userProducts }: {
           <span className="text-[5px] font-black text-white leading-tight">הקולקציה<br/>החדשה</span>
         </div>
         <div className="flex-1 relative overflow-hidden">
-          <img src={template.heroImage} alt="" className="w-full h-full object-cover" />
+          <img src={heroImg} alt="" className="w-full h-full object-cover" />
         </div>
       </div>
       <MiniProductGrid products={display} primaryColor={primaryColor} />
@@ -424,7 +426,26 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
         <p className="text-sm text-muted-foreground">לחצו על תבנית או צבע — הפריוויו מתעדכן מיד</p>
       </div>
 
-      {/* Template selector — small thumbnails row */}
+      {/* Big live preview — first */}
+      <div className="rounded-xl overflow-hidden border border-white/10 shadow-xl" style={{ background: "#0f0f0f" }}>
+        <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/10 bg-[#1a1a1a]">
+          <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+          <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+          <span className="text-[10px] text-white/30 mr-2 font-mono">תצוגה מקדימה — האתר שלך</span>
+        </div>
+        <div style={{ minHeight: '380px' }}>
+          <BigTemplatePreview
+            template={selectedTemplate}
+            primaryColor={primaryColor}
+            userProducts={userProducts}
+            bannerImage={bannerPreview}
+            businessName={data.businessName}
+          />
+        </div>
+      </div>
+
+      {/* Template selector — thumbnails below preview */}
       <div>
         <p className="text-sm font-medium text-foreground mb-2">בחרו תבנית</p>
         <div className="grid grid-cols-4 gap-2">
@@ -455,26 +476,6 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
               </button>
             );
           })}
-        </div>
-      </div>
-
-      {/* Big live preview */}
-      <div className="rounded-xl overflow-hidden border border-white/10 shadow-xl" style={{ background: "#0f0f0f" }}>
-        {/* Browser chrome bar */}
-        <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/10 bg-[#1a1a1a]">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-          <span className="text-[10px] text-white/30 mr-2 font-mono">תצוגה מקדימה — האתר שלך</span>
-        </div>
-        <div style={{ minHeight: '380px' }}>
-          <BigTemplatePreview
-            template={selectedTemplate}
-            primaryColor={primaryColor}
-            userProducts={userProducts}
-            bannerImage={bannerPreview}
-            businessName={data.businessName}
-          />
         </div>
       </div>
 
