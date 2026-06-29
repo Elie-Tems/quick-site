@@ -92,7 +92,7 @@ const templateStyles: TemplateStyle[] = [
     audience: "general", heroLayout: "full-image",
     heroImage: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80",
     products: [
-      { img: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&q=80", name: "שמלה", price: "₪849" },
+      { img: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&q=80", name: "שמלה", price: "₪849" },
       { img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80", name: "נעליים", price: "₪649", sale: true },
       { img: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=80", name: "תיק", price: "₪1,299" },
     ],

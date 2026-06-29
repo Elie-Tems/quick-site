@@ -1,0 +1,46 @@
+name: Daily merge to main
+
+on:
+  schedule:
+    - cron: '0 1 * * *'   # 04:00 Israel time (UTC+3)
+  workflow_dispatch:        # אפשר גם להריץ ידנית מ-GitHub
+
+permissions:
+  contents: write
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge moti → main
+        run: |
+          git checkout main
+          git pull origin main
+          if git merge origin/moti --no-ff -m "chore: daily merge from moti [$(date +'%Y-%m-%d')]"; then
+            echo "✅ moti merged"
+          else
+            echo "⚠️ Conflict in moti — skipping, manual merge required"
+            git merge --abort
+          fi
+
+      - name: Merge daniel → main
+        run: |
+          if git merge origin/daniel --no-ff -m "chore: daily merge from daniel [$(date +'%Y-%m-%d')]"; then
+            echo "✅ daniel merged"
+          else
+            echo "⚠️ Conflict in daniel — skipping, manual merge required"
+            git merge --abort
+          fi
+
+      - name: Push to main
+        run: git push origin main
