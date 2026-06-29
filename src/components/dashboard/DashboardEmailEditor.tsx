@@ -38,9 +38,9 @@ const DEFAULTS: Record<BlockType, Record<string, any>> = {
 let counter = 0;
 const newId = () => `b${++counter}_${Math.random().toString(36).slice(2, 6)}`;
 
-interface Props { onBack?: () => void; }
+interface Props { onBack?: () => void; onContinue?: () => void; }
 
-const DashboardEmailEditor = ({ onBack }: Props) => {
+const DashboardEmailEditor = ({ onBack, onContinue }: Props) => {
   const [blocks, setBlocks] = useState<Block[]>([
     { id: newId(), type: "banner", props: { ...DEFAULTS.banner, title: "מבצע סוף עונה" } },
     { id: newId(), type: "text", props: { ...DEFAULTS.text, text: "שלום {{שם}}! ריכזנו עבורך את המבצעים השבוע." } },
@@ -102,7 +102,8 @@ const DashboardEmailEditor = ({ onBack }: Props) => {
         </button>
         <div className="flex gap-2">
           <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5"><Eye className="w-4 h-4" /> תצוגה</button>
-          <button className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground rounded-lg px-3 py-1.5"><Save className="w-4 h-4" /> שמירה</button>
+          <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5"><Save className="w-4 h-4" /> שמירה</button>
+          <button onClick={onContinue} className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground rounded-lg px-3 py-1.5">המשך לשליחה</button>
         </div>
       </div>
 

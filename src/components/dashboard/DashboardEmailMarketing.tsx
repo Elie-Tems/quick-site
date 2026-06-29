@@ -4,6 +4,7 @@ import {
   CheckCircle2, MousePointerClick, TrendingUp, Tag,
 } from "lucide-react";
 import DashboardEmailEditor from "@/components/dashboard/DashboardEmailEditor";
+import DashboardEmailSend from "@/components/dashboard/DashboardEmailSend";
 
 // Email-marketing module (ESP) - BUILD-ONLY preview. Not wired to a backend yet;
 // shows the full UX with sample data so Moti can review and we can pick a sending
@@ -52,14 +53,13 @@ const Stat = ({ label, value, icon: Icon }: { label: string; value: string; icon
 
 const DashboardEmailMarketing = () => {
   const [tab, setTab] = useState<Tab>("overview");
-  const [editing, setEditing] = useState(false);
+  const [screen, setScreen] = useState<"main" | "edit" | "send">("main");
 
-  if (editing) {
-    return (
-      <div dir="rtl">
-        <DashboardEmailEditor onBack={() => setEditing(false)} />
-      </div>
-    );
+  if (screen === "edit") {
+    return <div dir="rtl"><DashboardEmailEditor onBack={() => setScreen("main")} onContinue={() => setScreen("send")} /></div>;
+  }
+  if (screen === "send") {
+    return <div dir="rtl"><DashboardEmailSend onBack={() => setScreen("edit")} /></div>;
   }
 
   return (
@@ -156,11 +156,11 @@ const DashboardEmailMarketing = () => {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">תבניות מייל (RTL בעברית)</p>
-            <button onClick={() => setEditing(true)} className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground rounded-lg px-3 py-1.5"><Plus className="w-4 h-4" /> צור דיוור חדש</button>
+            <button onClick={() => setScreen("edit")} className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground rounded-lg px-3 py-1.5"><Plus className="w-4 h-4" /> צור דיוור חדש</button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {["ניוזלטר", "מבצע / הנחה", "מוצר חדש", "ברכת הצטרפות", "החזרת לקוח", "קנבס ריק"].map((t) => (
-              <button key={t} onClick={() => setEditing(true)} className="rounded-xl border border-border bg-card p-3 aspect-[4/3] flex flex-col items-center justify-center gap-2 hover:border-primary/40 transition-colors">
+              <button key={t} onClick={() => setScreen("edit")} className="rounded-xl border border-border bg-card p-3 aspect-[4/3] flex flex-col items-center justify-center gap-2 hover:border-primary/40 transition-colors">
                 <LayoutTemplate className="w-6 h-6 text-muted-foreground" />
                 <span className="text-xs font-medium">{t}</span>
               </button>
