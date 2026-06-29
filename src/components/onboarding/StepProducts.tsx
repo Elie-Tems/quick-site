@@ -209,8 +209,8 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       const imageIdx = idx(["תמונה", "image", "url", "קישור"]);
       const catIdx = idx(["קטגוריה", "category"]);
 
-      if (nameIdx === -1 || priceIdx === -1) {
-        setParseError("הקובץ חייב להכיל עמודות: שם מוצר ומחיר");
+      if (nameIdx === -1) {
+        setParseError("הקובץ חייב להכיל עמודת שם מוצר");
         return;
       }
 
@@ -218,21 +218,22 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i];
         const name = row[nameIdx];
-        const price = row[priceIdx];
-        if (!name || price == null) continue;
-        const parsedPrice = typeof price === "number" ? price : parseFloat(String(price).replace(/[^\d.]/g, ""));
-        if (isNaN(parsedPrice)) continue;
+        if (!name) continue;
+        const rawPrice = priceIdx !== -1 ? row[priceIdx] : undefined;
+        const parsedPrice = rawPrice != null
+          ? (typeof rawPrice === "number" ? rawPrice : parseFloat(String(rawPrice).replace(/[^\d.]/g, "")))
+          : 0;
         products.push({
           name: String(name).trim(),
           description: descIdx !== -1 ? String(row[descIdx] || "").trim() : "",
-          price: parsedPrice,
+          price: isNaN(parsedPrice) ? 0 : parsedPrice,
           sku: skuIdx !== -1 ? String(row[skuIdx] || "").trim() : undefined,
           imageUrl: imageIdx !== -1 ? String(row[imageIdx] || "").trim() : undefined,
           categoryName: catIdx !== -1 ? String(row[catIdx] || "").trim() : undefined,
         });
       }
 
-      if (products.length === 0) { setParseError("לא נמצאו מוצרים תקינים בקובץ"); return; }
+      if (products.length === 0) { setParseError("לא נמצאו מוצרים בקובץ"); return; }
       setParsedProducts(products);
       toast.success(`נמצאו ${products.length} מוצרים בקובץ`);
     } catch {
@@ -807,6 +808,11 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         <div className="rounded-xl border border-border bg-card p-4 space-y-3">
           <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcelFileChange} className="hidden" />
 
+          {/* Template download — always visible at top */}
+          <button onClick={handleDownloadTemplate} className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+            <Download className="w-3.5 h-3.5" /> הורד תבנית אקסל מוכנה
+          </button>
+
           {!excelFile ? (
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -836,10 +842,6 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             </div>
           )}
 
-          <button onClick={handleDownloadTemplate} className="flex items-center gap-1.5 text-xs text-primary hover:underline">
-            <Download className="w-3.5 h-3.5" /> הורד תבנית אקסל מוכנה
-          </button>
-
           {parsedProducts.length > 0 && (
             <>
               {data.productOrganization === "categories" && data.productCategories.length > 0 && (
@@ -862,8 +864,8 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             </>
           )}
 
-          <div className="text-xs text-muted-foreground bg-muted/30 rounded-xl p-3 leading-relaxed">
-            עמודות: <strong>שם מוצר, תיאור מוצר, מחיר</strong>
+          <div className="text-xs text-muted-foreground">
+            עמודות: שם מוצר (חובה) · תיאור · מחיר
           </div>
         </div>
       )}
