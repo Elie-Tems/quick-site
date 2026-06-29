@@ -252,6 +252,14 @@ const PublishPayment = () => {
         }, 1500);
         return;
       }
+      if (data?.legalNotApproved) {
+        toast({
+          title: "צריך לאשר את המסמכים המשפטיים",
+          description: "כנסו ל'מסמכים משפטיים' בדשבורד, אשרו את התקנון ומדיניות הפרטיות, ואז פרסמו.",
+          variant: "destructive",
+        });
+        return;
+      }
       if (data?.pendingPayment) {
         toast({
           title: "ממתינים לאישור תשלום",

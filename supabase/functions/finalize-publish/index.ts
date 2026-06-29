@@ -202,9 +202,23 @@ Deno.serve(async (req) => {
   // Get business details for webhook
   const { data: business } = await admin
     .from("businesses")
-    .select("slug, name")
+    .select("slug, name, legal_approved_at")
     .eq("id", session.business_id)
     .single();
+
+  // Legal gate: the terms + privacy policy must be explicitly approved by the
+  // merchant before the store can go live. This does NOT block building the site
+  // (editing/saving stays open) - only the final publish step.
+  if (!business?.legal_approved_at) {
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        legalNotApproved: true,
+        message: "צריך לאשר את המסמכים המשפטיים (תקנון ומדיניות פרטיות) לפני פרסום האתר.",
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
 
   const { error: pubErr } = await admin
     .from("businesses")

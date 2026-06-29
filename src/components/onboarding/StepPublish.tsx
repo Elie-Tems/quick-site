@@ -184,6 +184,14 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
         const { data: fin, error: finErr } = await supabase.functions.invoke("finalize-publish", {
           body: { sessionToken: token },
         });
+        if (fin?.legalNotApproved) {
+          toast({
+            title: "האתר נבנה! 🎉",
+            description: "נשאר רק לאשר את המסמכים המשפטיים (תקנון ומדיניות פרטיות) בדשבורד כדי לפרסם.",
+          });
+          navigate("/dashboard");
+          return;
+        }
         if (finErr || !fin?.ok) {
           toast({
             title: "דילוג תשלום (פיתוח)",

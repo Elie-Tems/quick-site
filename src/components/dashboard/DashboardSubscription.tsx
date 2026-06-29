@@ -242,6 +242,11 @@ const DashboardSubscription = () => {
         return;
       }
 
+      if (data?.legalNotApproved) {
+        toast.error(data.message || "צריך לאשר את המסמכים המשפטיים (תקנון ומדיניות פרטיות) לפני פרסום. עברו ל'מסמכים משפטיים' ואשרו.");
+        return;
+      }
+
       if (data?.error) {
         throw new Error(data.error);
       }
