@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,6 +81,14 @@ serve(async (req) => {
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Cost-abuse guard: cap paid image generations per user.
+    if (!(await consumeRateLimit(supabase, `genimg:${user.id}`, 40, 3600))) {
+      return new Response(
+        JSON.stringify({ success: false, error: "rate_limited", message: "יותר מדי בקשות תמונה כרגע. נסו שוב בעוד שעה." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // If a businessId is supplied, the caller must own that business.
     // businesses.owner_id references profiles.id (not auth.uid), so resolve

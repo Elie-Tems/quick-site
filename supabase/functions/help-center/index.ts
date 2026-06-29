@@ -1,9 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const clientIp = (req: Request) =>
+  req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+  req.headers.get("cf-connecting-ip") || "ip";
 
 const SYSTEM_PROMPT = `אתה עוזר ידידותי של Siango - פלטפורמה ליצירת אתרי מכירות מהירים ומקצועיים.
 התפקיד שלך הוא לעזור למשתמשים לא-טכנולוגיים להבין איך להשתמש במערכת.
@@ -214,9 +220,15 @@ serve(async (req) => {
   }
 
   try {
+    // Cost-abuse guard (LLM chat): cap help-bot messages per IP.
+    const rl = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    if (!(await consumeRateLimit(rl, `helpbot:${clientIp(req)}`, 40, 3600))) {
+      return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const { messages, addressPreference = "plural" } = await req.json();
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-    
+
     if (!OPENAI_API_KEY) {
       throw new Error("OPENAI_API_KEY is not configured");
     }

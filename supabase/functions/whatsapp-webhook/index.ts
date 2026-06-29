@@ -23,6 +23,30 @@ async function parseForm(req: Request): Promise<Record<string, string>> {
   return out;
 }
 
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+
+// Verify the request actually came from Twilio (per their X-Twilio-Signature
+// spec: base64(HMAC-SHA1(authToken, fullUrl + each sorted POST key+value))).
+// Without this, anyone could forge inbound messages, create products, or burn
+// AI-reply credits. Enforced only when TWILIO_AUTH_TOKEN is configured.
+async function validTwilioSignature(req: Request, params: Record<string, string>, authToken: string): Promise<boolean> {
+  const sig = req.headers.get("x-twilio-signature");
+  if (!sig) return false;
+  let data = req.url;
+  for (const k of Object.keys(params).sort()) data += k + params[k];
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(authToken), { name: "HMAC", hash: "SHA-1" }, false, ["sign"],
+  );
+  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
+  const expected = btoa(String.fromCharCode(...new Uint8Array(mac)));
+  return safeEqual(sig, expected);
+}
+
 /** Best-effort caption parse: "<name> | <price> | <description>" OR detect a price
  *  number and treat the rest as the name. Returns name/price/description. */
 function parseCaption(caption: string): { name: string; price: number | null; description: string | null } {
@@ -74,6 +98,13 @@ Deno.serve(async (req) => {
   const admin = createClient(url, service);
 
   const form = await parseForm(req);
+
+  // Reject forged requests. Enforced when the Twilio auth token is configured.
+  const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+  if (twilioAuthToken && !(await validTwilioSignature(req, form, twilioAuthToken))) {
+    return new Response("forbidden", { status: 403, headers: corsHeaders });
+  }
+
   const siangoBot = Deno.env.get("TWILIO_WHATSAPP_FROM"); // the Siango company-bot number
 
   try {

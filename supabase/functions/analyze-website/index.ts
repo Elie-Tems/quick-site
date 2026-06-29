@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -134,6 +135,18 @@ serve(async (req) => {
         JSON.stringify({ success: false, error: "Invalid session" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Cost-abuse guard (fetch + LLM): cap analyses per user.
+    const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (SERVICE_ROLE_KEY) {
+      const rl = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+      if (!(await consumeRateLimit(rl, `analyzeweb:${user.id}`, 30, 3600))) {
+        return new Response(
+          JSON.stringify({ success: false, error: "rate_limited", message: "יותר מדי בקשות ניתוח. נסו שוב בעוד שעה." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     const { url } = await req.json();

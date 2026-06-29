@@ -1,7 +1,7 @@
 # Security headers for all pages (served by Cloudflare Pages).
-# CSP is intentionally omitted for now - a strict policy needs per-domain
-# allow-listing (Supabase, GA/GTM, Google Fonts, PayPlus/iCount iframes) and
-# is easy to get wrong; add it as report-only first before enforcing.
+# CSP is shipped as Report-Only first (logs violations to the console, blocks
+# nothing) so we can watch for legitimate domains we missed before enforcing.
+# To enforce: rename the header to Content-Security-Policy and drop -Report-Only.
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Content-Type-Options: nosniff
@@ -9,3 +9,4 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(self), camera=(self), payment=(self)
   X-XSS-Protection: 0
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://api.openai.com; frame-src 'self' https://*.payplus.co.il https://*.icount.co.il; object-src 'none'; base-uri 'self'; form-action 'self'

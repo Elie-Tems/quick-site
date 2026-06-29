@@ -1,14 +1,26 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const clientIp = (req: Request) =>
+  req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+  req.headers.get("cf-connecting-ip") || "ip";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    // Cost-abuse guard (Whisper + GPT): cap transcriptions per IP.
+    const rl = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    if (!(await consumeRateLimit(rl, `transcribe:${clientIp(req)}`, 30, 3600))) {
+      return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const { audio, mimeType } = await req.json();
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
     if (!openaiKey) throw new Error("Missing OPENAI_API_KEY");
