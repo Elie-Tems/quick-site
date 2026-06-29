@@ -126,6 +126,18 @@ Deno.serve(async (req) => {
   if (includeTags.length) q = q.overlaps("tags", includeTags);
   let { data: contacts } = await q;
   contacts = (contacts || []).filter((c: any) => !excludeTags.length || !(c.tags || []).some((t: string) => excludeTags.includes(t)));
+
+  // Engagement conditions: [{ verb, campaignId }] - keep/drop by who opened/clicked
+  // a past campaign. verb starting with "לא" negates (didn't open/click).
+  const conditions = Array.isArray(campaign.conditions) ? campaign.conditions : [];
+  for (const cond of conditions) {
+    if (!cond?.campaignId) continue;
+    const evType = String(cond.verb || "").includes("הקליק") ? "clicked" : "opened";
+    const { data: evs } = await admin.from("mkt_campaign_events").select("contact_id").eq("campaign_id", cond.campaignId).eq("type", evType);
+    const ids = new Set((evs || []).map((e: any) => e.contact_id));
+    const negate = String(cond.verb || "").trim().startsWith("לא");
+    contacts = contacts.filter((c: any) => (negate ? !ids.has(c.id) : ids.has(c.id)));
+  }
   if (!contacts?.length) return json({ ok: true, sent: 0, note: "no matching contacts" });
 
   // Suppress globally-unsubscribed addresses (shared list).

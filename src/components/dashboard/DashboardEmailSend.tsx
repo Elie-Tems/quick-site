@@ -20,12 +20,15 @@ const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
   const [tags, setTags] = useState<string[]>([]);          // real distinct tags
   const [include, setInclude] = useState<string[]>([]);    // empty = all active
   const [exclude, setExclude] = useState<string[]>([]);
+  const [pastCampaigns, setPastCampaigns] = useState<{ id: string; subject: string | null }[]>([]);
   useEffect(() => {
     supabase.from("mkt_contacts").select("tags").limit(1000).then(({ data }) => {
       const set = new Set<string>();
       (data || []).forEach((r: any) => (r.tags || []).forEach((t: string) => t && set.add(t)));
       setTags(Array.from(set));
     });
+    supabase.from("mkt_campaigns").select("id, subject").eq("status", "sent").order("sent_at", { ascending: false }).limit(20)
+      .then(({ data }) => setPastCampaigns((data as any) || []));
   }, []);
   const [conditions, setConditions] = useState<{ verb: string; ref: string }[]>([]);
   const [when, setWhen] = useState<"now" | "schedule">("now");
@@ -34,7 +37,11 @@ const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
   const [subject, setSubject] = useState("");
   const [sending, setSending] = useState(false);
 
-  const campaignPayload = () => ({ blocks, subject, from_name: fromName, reply_to: replyTo || undefined, includeTags: include, excludeTags: exclude });
+  const campaignPayload = () => ({
+    blocks, subject, from_name: fromName, reply_to: replyTo || undefined,
+    includeTags: include, excludeTags: exclude,
+    conditions: conditions.filter((c) => c.ref).map((c) => ({ verb: c.verb, campaignId: c.ref })),
+  });
 
   const sendTest = async () => {
     const to = prompt("שליחת מבחן לכתובת:");
@@ -128,19 +135,23 @@ const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium flex items-center gap-2"><Filter className="w-4 h-4 text-primary" /> תנאים (לפי מעורבות)</p>
-          <button onClick={() => setConditions((c) => [...c, { verb: "לא פתחו", ref: "הקמפיין הקודם" }])} className="flex items-center gap-1 text-xs text-primary"><Plus className="w-3.5 h-3.5" /> תנאי</button>
+          <button onClick={() => setConditions((c) => [...c, { verb: "לא פתחו", ref: pastCampaigns[0]?.id || "" }])} disabled={!pastCampaigns.length} className="flex items-center gap-1 text-xs text-primary disabled:opacity-40"><Plus className="w-3.5 h-3.5" /> תנאי</button>
         </div>
-        {conditions.length === 0 ? (
-          <p className="text-xs text-muted-foreground">למשל: שלח רק למי ש<b>לא פתח</b> את הקמפיין הקודם. הוסיפו תנאי כדי למקד.</p>
+        {!pastCampaigns.length ? (
+          <p className="text-xs text-muted-foreground">תנאי מעורבות (למשל "שלח רק למי שלא פתח את הקמפיין X") יהיו זמינים אחרי שיישלח קמפיין ראשון עם מעקב.</p>
+        ) : conditions.length === 0 ? (
+          <p className="text-xs text-muted-foreground">למשל: שלח רק למי ש<b>לא פתח</b> קמפיין קודם. הוסיפו תנאי כדי למקד לפי מעורבות.</p>
         ) : (
           <div className="space-y-2">
             {conditions.map((c, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">שלח רק למי ש-</span>
+                <span className="text-xs text-muted-foreground shrink-0">שלח רק למי ש-</span>
                 <select value={c.verb} onChange={(e) => setConditions((arr) => arr.map((x, j) => j === i ? { ...x, verb: e.target.value } : x))} className="inp h-8 w-auto text-xs">
                   {CONDITION_VERBS.map((v) => <option key={v}>{v}</option>)}
                 </select>
-                <input value={c.ref} onChange={(e) => setConditions((arr) => arr.map((x, j) => j === i ? { ...x, ref: e.target.value } : x))} className="inp h-8 flex-1 text-xs" />
+                <select value={c.ref} onChange={(e) => setConditions((arr) => arr.map((x, j) => j === i ? { ...x, ref: e.target.value } : x))} className="inp h-8 flex-1 text-xs">
+                  {pastCampaigns.map((pc) => <option key={pc.id} value={pc.id}>{pc.subject || "קמפיין"}</option>)}
+                </select>
                 <button onClick={() => setConditions((arr) => arr.filter((_, j) => j !== i))}><X className="w-4 h-4 text-muted-foreground" /></button>
               </div>
             ))}

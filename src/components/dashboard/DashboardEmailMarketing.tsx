@@ -74,6 +74,27 @@ const DashboardEmailMarketing = () => {
     await supabase.functions.invoke("email-automations", { body: { type, enabled } });
   };
 
+  // Real stats from the backbone (contacts + tracked events). Null until loaded.
+  const [stats, setStats] = useState<{ contacts: number; sent: number; openRate: number; clickRate: number } | null>(null);
+  useEffect(() => {
+    (async () => {
+      const { count: contacts } = await supabase.from("mkt_contacts").select("id", { count: "exact", head: true });
+      const { data: ev } = await supabase.from("mkt_campaign_events").select("type, contact_id").limit(10000);
+      if (ev) {
+        const sent = ev.filter((e: any) => e.type === "sent").length;
+        const opened = new Set(ev.filter((e: any) => e.type === "opened").map((e: any) => e.contact_id)).size;
+        const clicked = new Set(ev.filter((e: any) => e.type === "clicked").map((e: any) => e.contact_id)).size;
+        setStats({
+          contacts: contacts ?? 0, sent,
+          openRate: sent ? Math.round((opened / sent) * 100) : 0,
+          clickRate: sent ? Math.round((clicked / sent) * 100) : 0,
+        });
+      }
+    })().catch(() => {});
+  }, []);
+  const fmtPct = (n?: number) => (n == null ? "—" : `${n}%`);
+  const fmtNum = (n?: number) => (n == null ? "—" : n.toLocaleString());
+
   if (screen === "edit") {
     return <div dir="rtl"><DashboardEmailEditor onBack={() => setScreen("main")} onContinue={(b) => { setDraftBlocks(b); setScreen("send"); }} /></div>;
   }
@@ -115,10 +136,10 @@ const DashboardEmailMarketing = () => {
       {tab === "overview" && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="אנשי קשר" value="1,240" icon={Users} />
-            <Stat label="נשלחו החודש" value="1,240" icon={Send} />
-            <Stat label="שיעור פתיחה" value="38%" icon={Mail} />
-            <Stat label="שיעור הקלקה" value="9%" icon={MousePointerClick} />
+            <Stat label="אנשי קשר" value={fmtNum(stats?.contacts)} icon={Users} />
+            <Stat label="נשלחו" value={fmtNum(stats?.sent)} icon={Send} />
+            <Stat label="שיעור פתיחה" value={fmtPct(stats?.openRate)} icon={Mail} />
+            <Stat label="שיעור הקלקה" value={fmtPct(stats?.clickRate)} icon={MousePointerClick} />
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-sm font-medium mb-3">קמפיינים אחרונים</p>
@@ -221,15 +242,15 @@ const DashboardEmailMarketing = () => {
       {tab === "analytics" && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="נשלחו" value="1,240" icon={Send} />
-            <Stat label="נמסרו" value="98.5%" icon={CheckCircle2} />
-            <Stat label="נפתחו" value="38%" icon={Mail} />
-            <Stat label="הוקלקו" value="9%" icon={MousePointerClick} />
+            <Stat label="נשלחו" value={fmtNum(stats?.sent)} icon={Send} />
+            <Stat label="אנשי קשר" value={fmtNum(stats?.contacts)} icon={Users} />
+            <Stat label="נפתחו" value={fmtPct(stats?.openRate)} icon={Mail} />
+            <Stat label="הוקלקו" value={fmtPct(stats?.clickRate)} icon={MousePointerClick} />
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-sm font-medium mb-1">הכנסה מיוחסת</p>
-            <p className="text-2xl font-semibold">₪12,400</p>
-            <p className="text-xs text-muted-foreground mt-0.5">מההזמנות שהגיעו מקמפיינים (היתרון שלנו - אנחנו מחזיקים את נתוני החנות).</p>
+            <p className="text-2xl font-semibold text-muted-foreground">בקרוב</p>
+            <p className="text-xs text-muted-foreground mt-0.5">ייחוס הכנסה מהזמנות שהגיעו מקמפיינים (היתרון שלנו - אנחנו מחזיקים את נתוני החנות). יתחבר בשלב הבא.</p>
           </div>
         </div>
       )}
