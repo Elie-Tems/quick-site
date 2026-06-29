@@ -162,7 +162,10 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
       {/* ── Payment provider (only if orders-payments) ─ */}
       {!ordersOnly && (
         <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-          <p className="text-sm font-medium">ספק סליקה</p>
+          <div>
+            <p className="text-sm font-medium">ספק סליקה</p>
+            <p className="text-xs text-muted-foreground">הספק שגובה את התשלומים מהלקוחות שלכם. כרגע PayPlus - ספקים נוספים בקרוב.</p>
+          </div>
           <button
             onClick={() => updateData({ paymentProvider: "payplus", paymentConnected: false })}
             className={`w-full p-4 rounded-xl border-2 text-right transition-all ${
