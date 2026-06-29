@@ -58,7 +58,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   // Voice
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [micHelp, setMicHelp] = useState<null | "blocked" | "unsupported">(null);
+  const [micHelp, setMicHelp] = useState<null | "blocked" | "denied" | "unsupported">(null);
   const [voiceTranscript, setVoiceTranscript] = useState("");
   const [voiceParsed, setVoiceParsed] = useState<ParsedProduct[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -281,12 +281,20 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   // ── Voice ──────────────────────────────────────────────────────────────────
 
   const startRecording = async () => {
-    // Recording needs a secure context + the mediaDevices API. In an embedded /
-    // in-app browser it's often unavailable - guide to a normal browser tab.
     if (!navigator.mediaDevices?.getUserMedia) {
       setMicHelp("unsupported");
       return;
     }
+    // Check existing permission state before requesting — avoids the loop where
+    // a previously-denied permission makes getUserMedia fail silently.
+    try {
+      const perm = await navigator.permissions.query({ name: "microphone" as PermissionName });
+      if (perm.state === "denied") {
+        setMicHelp("denied");
+        return;
+      }
+    } catch { /* browser may not support permissions API — proceed normally */ }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setMicHelp(null);
@@ -306,8 +314,9 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       const name = (err as Error)?.name;
       if (name === "NotFoundError" || name === "DevicesNotFoundError") {
         toast.error("לא נמצא מיקרופון במכשיר.");
+      } else if (name === "NotAllowedError") {
+        setMicHelp("denied");
       } else {
-        // Permission blocked/denied (or unknown) -> open the on-screen help window.
         setMicHelp("blocked");
       }
     }
@@ -576,15 +585,28 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
               <p className="text-sm text-muted-foreground leading-relaxed">
                 הדפדפן הנוכחי לא מאפשר הקלטה (למשל דפדפן מוטמע בתוך אפליקציה). פתחו את הקישור בכרטיסיית דפדפן רגילה (Chrome / Safari) ונסו שוב.
               </p>
+            ) : micHelp === "denied" ? (
+              <>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  הגישה למיקרופון נחסמה בהגדרות הדפדפן. צריך לאפשר ידנית:
+                </p>
+                <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground leading-relaxed space-y-1">
+                  <p>1. לחצו על סמל 🔒 משמאל לכתובת האתר בדפדפן</p>
+                  <p>2. מצאו <span className="font-medium text-foreground">מיקרופון</span> ושנו ל-<span className="font-medium text-foreground">אפשר</span></p>
+                  <p>3. רעננו את הדף (F5)</p>
+                </div>
+                <button
+                  onClick={() => setMicHelp(null)}
+                  className="w-full h-10 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors"
+                >
+                  סגור
+                </button>
+              </>
             ) : (
               <>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   כדי להקליט מוצרים בקול צריך לאשר גישה למיקרופון. לחצו "אפשר מיקרופון" ואשרו את הבקשה שתופיע בדפדפן.
                 </p>
-                <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground leading-relaxed">
-                  <p className="font-medium text-foreground mb-1">אם לא הופיעה בקשה או שהגישה נחסמה:</p>
-                  לחצו על סמל ה-🔒 משמאל לכתובת האתר ← <span className="font-medium">מיקרופון</span> ← <span className="font-medium">אפשר</span> ← רעננו את העמוד.
-                </div>
                 <button
                   onClick={() => { setMicHelp(null); startRecording(); }}
                   className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
