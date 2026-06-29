@@ -160,10 +160,9 @@ const HeroSection = () => {
                       className="flex items-center justify-between mb-3"
                     >
                       <img 
-                        src="/logo-dark-bg.png" 
-                        alt="Siango" 
+                        src="/logo-dark-bg.png"
+                        alt="Siango"
                         className="h-5 w-auto"
-                        style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))' }}
                       />
                       <div className="text-[10px] font-bold text-foreground">{t('hero.management')}</div>
                       <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-primary/50">
@@ -264,7 +263,7 @@ const HeroSection = () => {
                 animate={{ y: [-10, 10, -10], rotate: [0, 5, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                 className={`absolute -top-8 ${dir === 'rtl' ? '-right-8' : '-left-8'} w-16 h-16 rounded-2xl glass-card border border-primary/30 flex items-center justify-center`}
-                style={{ boxShadow: '0 0 40px hsl(var(--primary) / 0.2)' }}
+                style={{ boxShadow: 'none' }}
               >
                 <Sparkles className="w-6 h-6 text-primary" />
               </motion.div>

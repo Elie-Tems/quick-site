@@ -130,7 +130,7 @@ const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
 
       {/* Logo — optional */}
       <div className="space-y-2">
-        <Label className="font-medium">לוגו <span className="text-muted-foreground font-normal">(אופציונלי)</span></Label>
+        <Label className="font-medium">לוגו</Label>
         <label className="flex items-center gap-4 p-4 rounded-xl border border-dashed border-border hover:border-primary/50 cursor-pointer transition-colors">
           {logoPreview ? (
             <img src={logoPreview} alt="logo" className="w-16 h-16 object-contain rounded-lg" />

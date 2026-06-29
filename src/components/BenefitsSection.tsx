@@ -117,13 +117,13 @@ const BenefitsSection = () => {
               <div className="relative p-8 md:p-10 min-h-[280px] flex flex-col justify-end">
                 {/* Stat badge - top right with stronger background */}
                 <div className="absolute top-6 left-6 bg-black/80 backdrop-blur-xl px-4 py-2 rounded-xl border border-white/10">
-                  <div className="text-lg font-bold neon-text" style={{ textShadow: '0 0 20px hsl(var(--primary) / 0.8)' }}>{benefit.stat}</div>
+                  <div className="text-lg font-bold neon-text" style={{ textShadow: 'none' }}>{benefit.stat}</div>
                   <div className="text-xs text-foreground/80">{t(benefit.statLabelKey)}</div>
                 </div>
                 
                 {/* Icon */}
                 <div className="w-14 h-14 rounded-2xl bg-primary/20 backdrop-blur-sm flex items-center justify-center mb-4 border border-primary/30"
-                     style={{ boxShadow: '0 0 20px hsl(var(--primary) / 0.3)' }}>
+                     style={{ boxShadow: 'none' }}>
                   <benefit.icon className="w-7 h-7 text-primary" strokeWidth={1.5} />
                 </div>
                 
