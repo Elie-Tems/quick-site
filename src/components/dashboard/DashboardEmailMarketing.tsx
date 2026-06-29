@@ -206,9 +206,13 @@ const DashboardEmailMarketing = () => {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">תבניות מייל מוכנות (RTL)</p>
-            <button onClick={() => openEditor()} className="flex items-center gap-1.5 text-sm border border-border text-foreground rounded-lg px-3 py-1.5 hover:border-primary/40"><Plus className="w-4 h-4" /> קנבס ריק</button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <button onClick={() => openEditor([])} className="rounded-xl border-2 border-dashed border-border bg-card flex flex-col items-center justify-center gap-2 min-h-[150px] hover:border-primary/50 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"><Plus className="w-5 h-5 text-primary" /></div>
+              <div className="text-xs font-medium">קנבס ריק</div>
+              <div className="text-[10px] text-muted-foreground">בנייה מאפס</div>
+            </button>
             {EMAIL_TEMPLATES.map((t) => (
               <button key={t.id} onClick={() => openEditor(t.blocks)} className="rounded-xl border border-border bg-card overflow-hidden text-right hover:border-primary/40 transition-colors">
                 <div className="p-2 bg-[#eef0f2]">

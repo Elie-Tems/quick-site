@@ -54,7 +54,8 @@ const DEFAULT_SEED: TemplateBlock[] = [
 
 const DashboardEmailEditor = ({ onBack, onContinue, initialBlocks }: Props) => {
   const [blocks, setBlocks] = useState<Block[]>(() =>
-    (initialBlocks && initialBlocks.length ? initialBlocks : DEFAULT_SEED).map((b) => ({
+    // undefined seed -> default starter; an explicit [] -> truly blank canvas.
+    (initialBlocks !== undefined ? initialBlocks : DEFAULT_SEED).map((b) => ({
       id: newId(), type: b.type as BlockType, props: { ...b.props },
     })),
   );
@@ -202,6 +203,11 @@ const DashboardEmailEditor = ({ onBack, onContinue, initialBlocks }: Props) => {
                 </div>
               </div>
             ))}
+            {blocks.length === 0 && (
+              <div style={{ padding: "44px 16px", textAlign: "center", color: "#9ca3af", fontSize: 13 }}>
+                גררו בלוקים מהסרגל לכאן כדי להתחיל לבנות
+              </div>
+            )}
             <DropZone idx={blocks.length} />
             {/* Locked compliance footer */}
             <div style={{ background: "#f6f7f8", padding: "12px 16px", textAlign: "center" }}>
