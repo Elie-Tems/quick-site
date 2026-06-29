@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Mail, Users, Send, LayoutTemplate, Zap, BarChart3, Plus, Clock, Sparkles,
   CheckCircle2, MousePointerClick, TrendingUp, Tag,
 } from "lucide-react";
 import DashboardEmailEditor from "@/components/dashboard/DashboardEmailEditor";
 import DashboardEmailSend from "@/components/dashboard/DashboardEmailSend";
+import { supabase } from "@/integrations/supabase/client";
 
 // Email-marketing module (ESP) - BUILD-ONLY preview. Not wired to a backend yet;
 // shows the full UX with sample data so Moti can review and we can pick a sending
@@ -55,6 +56,22 @@ const DashboardEmailMarketing = () => {
   const [tab, setTab] = useState<Tab>("overview");
   const [screen, setScreen] = useState<"main" | "edit" | "send">("main");
   const [draftBlocks, setDraftBlocks] = useState<any[]>([]);
+  // Real automations (opt-in) loaded from the backend when signed in; falls back
+  // to the standard list (read-only) in the public preview.
+  const [autos, setAutos] = useState<{ type: string; label: string; desc: string; enabled: boolean }[]>(
+    SAMPLE_AUTOMATIONS.map((a, i) => ({ type: `s${i}`, label: a.name, desc: a.desc, enabled: a.on })),
+  );
+  const [autosLive, setAutosLive] = useState(false);
+  useEffect(() => {
+    supabase.functions.invoke("email-automations", { method: "GET" as any })
+      .then(({ data }) => { if (data?.automations) { setAutos(data.automations); setAutosLive(true); } })
+      .catch(() => {});
+  }, []);
+  const toggleAuto = async (type: string, enabled: boolean) => {
+    if (!autosLive) return;
+    setAutos((prev) => prev.map((a) => (a.type === type ? { ...a, enabled } : a)));
+    await supabase.functions.invoke("email-automations", { body: { type, enabled } });
+  };
 
   if (screen === "edit") {
     return <div dir="rtl"><DashboardEmailEditor onBack={() => setScreen("main")} onContinue={(b) => { setDraftBlocks(b); setScreen("send"); }} /></div>;
@@ -179,16 +196,20 @@ const DashboardEmailMarketing = () => {
       {tab === "automations" && (
         <div className="space-y-3">
           <p className="text-sm font-medium">אוטומציות מחזור-חיים</p>
-          {SAMPLE_AUTOMATIONS.map((a) => (
-            <div key={a.name} className="flex items-center justify-between rounded-xl border border-border bg-card p-3">
+          {autos.map((a) => (
+            <div key={a.type} className="flex items-center justify-between rounded-xl border border-border bg-card p-3">
               <div className="flex items-center gap-3">
-                <Zap className={`w-4 h-4 ${a.on ? "text-primary" : "text-muted-foreground"}`} />
+                <Zap className={`w-4 h-4 ${a.enabled ? "text-primary" : "text-muted-foreground"}`} />
                 <div>
-                  <div className="text-sm font-medium">{a.name}</div>
+                  <div className="text-sm font-medium">{a.label}</div>
                   <div className="text-xs text-muted-foreground">{a.desc}</div>
                 </div>
               </div>
-              <span className={`text-xs px-2.5 py-1 rounded-full ${a.on ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{a.on ? "פעיל" : "כבוי"}</span>
+              <button
+                onClick={() => toggleAuto(a.type, !a.enabled)}
+                disabled={!autosLive}
+                className={`text-xs px-2.5 py-1 rounded-full transition-colors disabled:opacity-60 ${a.enabled ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+              >{a.enabled ? "פעיל" : "כבוי"}</button>
             </div>
           ))}
           <p className="text-xs text-muted-foreground">כל אוטומציה מופעלת באישור בעל החנות בלבד, ומכבדת הסרה.</p>
