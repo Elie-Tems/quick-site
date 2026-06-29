@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState, useMemo, useEffect } from "react";
+import { toast } from "sonner";
 import type { StoreTemplate } from "@/lib/storeTemplates";
 import ProductDetailModal from "./ProductDetailModal";
 
@@ -103,6 +104,13 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
     onAddToCart(product);
     setAddedProductId(product.id);
     setTimeout(() => setAddedProductId(null), 1500);
+    toast.success(`${product.name} נוסף לסל`);
+  };
+
+  // From the product modal: add, then close so the shopper sees it landed in the cart.
+  const handleAddToCartFromModal = (product: Product) => {
+    handleAddToCart(product);
+    handleCloseModal();
   };
 
   const handleProductClick = (product: Product) => {
@@ -459,7 +467,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
         product={selectedProduct}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onAddToCart={handleAddToCart}
+        onAddToCart={handleAddToCartFromModal}
         isFavorite={selectedProduct ? likedSet.has(selectedProduct.id) : false}
         onToggleFavorite={onToggleFavorite}
       />

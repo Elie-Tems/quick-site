@@ -1,5 +1,4 @@
 import { Phone, Mail } from "lucide-react";
-import logoLightBg from "@/assets/logo-light-bg1.png";
 
 interface StoreFooterProps {
   businessName: string;
@@ -84,7 +83,7 @@ const StoreFooter = ({ businessName, phone, email, storeSlug }: StoreFooterProps
             className="group inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-foreground/[0.03] px-4 py-2 hover:bg-foreground/[0.06] transition-colors"
           >
             <span className="text-[11px] font-medium tracking-wide text-muted-foreground">נבנה באהבה ע״י</span>
-            <img src={logoLightBg} alt="Siango" className="h-5 w-auto opacity-90 group-hover:opacity-100 transition-opacity" />
+            <span className="text-[13px] font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">siango</span>
           </a>
         </div>
 

@@ -79,3 +79,34 @@ verify_jwt = true
 # daily-digest is triggered by pg_cron with the x-cron-secret header (no JWT).
 [functions.daily-digest]
 verify_jwt = false
+
+# ── Email marketing ──────────────────────────────────────────────────────────
+# email-subscribe is the PUBLIC storefront newsletter signup (anonymous visitor).
+[functions.email-subscribe]
+verify_jwt = false
+
+# email-track-open is the 1x1 pixel hit from the recipient's email client (public).
+[functions.email-track-open]
+verify_jwt = false
+
+# email-track-click is the redirect hit from a link in a sent email (public).
+[functions.email-track-click]
+verify_jwt = false
+
+# email-track-cart is called from the PUBLIC storefront (abandoned-cart capture).
+[functions.email-track-cart]
+verify_jwt = false
+
+# email-scheduled-run + email-abandoned-run are invoked by pg_cron (no user JWT).
+[functions.email-scheduled-run]
+verify_jwt = false
+
+[functions.email-abandoned-run]
+verify_jwt = false
+
+# email-campaign-send + email-automations are called by the logged-in merchant.
+[functions.email-campaign-send]
+verify_jwt = true
+
+[functions.email-automations]
+verify_jwt = true

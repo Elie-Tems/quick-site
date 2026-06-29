@@ -60,18 +60,23 @@ const StoreHeader = ({
     onScrollToProducts?.();
   };
 
+  // Real categories the merchant actually created (skip any literally named "הכל"
+  // so it doesn't collide with the synthetic "all" tab below).
+  const realCategories =
+    onSelectCategory ? storeCategories.filter((c) => c.name?.trim() !== "הכל") : [];
+
+  // Only show the category nav when there's something to filter BY. With no real
+  // categories a lone "הכל" tab is just noise, so we show nothing.
   const categories =
-    storeCategories.length > 0 && onSelectCategory
+    realCategories.length > 0
       ? [
-          { id: null as string | null, name: "הכל", action: () => { onSelectCategory(null); scrollToProducts(); } },
-          ...storeCategories.map((c) => ({
+          { id: null as string | null, name: "הכל", action: () => { onSelectCategory!(null); scrollToProducts(); } },
+          ...realCategories.map((c) => ({
             id: c.id as string | null,
             name: c.name,
-            action: () => { onSelectCategory(c.id); scrollToProducts(); },
+            action: () => { onSelectCategory!(c.id); scrollToProducts(); },
           })),
         ]
-      : onSelectCategory
-      ? [{ id: null as string | null, name: "הכל", action: () => { onSelectCategory(null); scrollToProducts(); } }]
       : [];
 
   const LogoContent = () =>
