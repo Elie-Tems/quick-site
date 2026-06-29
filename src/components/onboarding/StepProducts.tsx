@@ -4,7 +4,7 @@ import { OnboardingData, ProductCategory } from "@/pages/Onboarding";
 import {
   Plus, Trash2, Package, FileSpreadsheet, Upload, X, Download,
   AlertCircle, Sparkles, Loader2, LayoutGrid, List, FolderOpen,
-  Mic, MicOff, Link2, FileText, Pencil, ImagePlus, Wand2,
+  Mic, MicOff, Pencil, ImagePlus, Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -36,11 +36,9 @@ interface ParsedProduct {
 }
 
 type Method = "quick" | "catalog" | "voice";
-type CatalogTab = "xlsx" | "pdf" | "url";
 
 const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) => {
   const [activeMethod, setActiveMethod] = useState<Method>("quick");
-  const [catalogTab, setCatalogTab] = useState<CatalogTab>("xlsx");
 
   // Quick add
   const [quickName, setQuickName] = useState("");
@@ -57,17 +55,6 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   const [defaultCategoryForExcel, setDefaultCategoryForExcel] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // PDF
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [pdfParsed, setPdfParsed] = useState<ParsedProduct[]>([]);
-  const [isPdfParsing, setIsPdfParsing] = useState(false);
-  const pdfInputRef = useRef<HTMLInputElement>(null);
-
-  // URL
-  const [catalogUrl, setCatalogUrl] = useState("");
-  const [urlParsed, setUrlParsed] = useState<ParsedProduct[]>([]);
-  const [isUrlScraping, setIsUrlScraping] = useState(false);
-
   // Voice
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -83,6 +70,9 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   const [generatingProgress, setGeneratingProgress] = useState({ current: 0, total: 0 });
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [editPrompt, setEditPrompt] = useState("");
+
+  // Image lightbox
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   // Categories
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -122,12 +112,55 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     setQuickImageUrl(null);
   };
 
-  const handleQuickImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File, maxBytes = 4 * 1024 * 1024): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = ev => {
+        img.onload = () => {
+          // Cap long edge at 1800px to avoid huge canvases while keeping quality
+          const MAX_PX = 1800;
+          let { width, height } = img;
+          if (width > MAX_PX || height > MAX_PX) {
+            const ratio = Math.min(MAX_PX / width, MAX_PX / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+          // Try quality 0.92 first, then step down until under maxBytes
+          let quality = 0.92;
+          let dataUrl = canvas.toDataURL("image/jpeg", quality);
+          while (dataUrl.length * 0.75 > maxBytes && quality > 0.5) {
+            quality -= 0.1;
+            dataUrl = canvas.toDataURL("image/jpeg", quality);
+          }
+          resolve(dataUrl);
+        };
+        img.onerror = reject;
+        img.src = ev.target!.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const handleQuickImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    setQuickImageUrl(url);
     if (quickImageRef.current) quickImageRef.current.value = "";
+    if (file.size > 5 * 1024 * 1024) {
+      toast.info("מכווץ תמונה...");
+      try {
+        const compressed = await compressImage(file);
+        setQuickImageUrl(compressed);
+      } catch {
+        toast.error("שגיאה בכיווץ התמונה");
+      }
+    } else {
+      setQuickImageUrl(URL.createObjectURL(file));
+    }
   };
 
   const handleGenerateQuickImage = async () => {
@@ -234,78 +267,15 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
 
   const handleDownloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
-      ['שם מוצר', 'מק"ט', 'תיאור', 'מחיר', 'קישור לתמונה', 'קטגוריה'],
-      ['מוצר לדוגמה 1', 'SKU001', 'תיאור קצר של המוצר', '99', 'https://example.com/img1.jpg', 'קטגוריה 1'],
-      ['מוצר לדוגמה 2', 'SKU002', 'תיאור קצר נוסף', '149', 'https://example.com/img2.jpg', 'קטגוריה 2'],
+      ['שם מוצר', 'תיאור מוצר', 'מחיר'],
+      ['זר פרחים קיץ', 'זר צבעוני עם חמניות ולבנדר', '150'],
+      ['עציץ בונסאי', 'עציץ בונסאי קטן מתאים לשולחן', '220'],
     ]);
-    ws["!cols"] = [{ wch: 25 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 40 }, { wch: 20 }];
+    ws["!cols"] = [{ wch: 30 }, { wch: 40 }, { wch: 12 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "מוצרים");
     XLSX.writeFile(wb, 'תבנית_מוצרים.xlsx');
     toast.success("התבנית הורדה בהצלחה");
-  };
-
-  // ── PDF ────────────────────────────────────────────────────────────────────
-
-  const handlePdfUpload = async (file: File) => {
-    setPdfFile(file);
-    setIsPdfParsing(true);
-    setPdfParsed([]);
-    try {
-      const pdfjsLib = await import("pdfjs-dist");
-      const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
-      pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-
-      let fullText = "";
-      for (let i = 1; i <= Math.min(pdf.numPages, 15); i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        fullText += content.items.map((item: any) => item.str).join(" ") + "\n";
-      }
-
-      const { data: result, error } = await supabase.functions.invoke("parse-catalog-products", {
-        body: { text: fullText.slice(0, 6000) },
-      });
-      if (error) throw error;
-      if (result?.products?.length) {
-        setPdfParsed(result.products);
-        toast.success(`נמצאו ${result.products.length} מוצרים בקטלוג`);
-      } else {
-        toast.error("לא נמצאו מוצרים בקטלוג זה");
-      }
-    } catch {
-      toast.error("שגיאה בפענוח הקטלוג");
-    } finally {
-      setIsPdfParsing(false);
-    }
-  };
-
-  // ── URL ────────────────────────────────────────────────────────────────────
-
-  const handleUrlScrape = async () => {
-    if (!catalogUrl.trim()) return;
-    setIsUrlScraping(true);
-    setUrlParsed([]);
-    try {
-      const { data: result, error } = await supabase.functions.invoke("parse-catalog-products", {
-        body: { url: catalogUrl.trim() },
-      });
-      if (error) throw error;
-      if (result?.products?.length) {
-        setUrlParsed(result.products);
-        toast.success(`נמצאו ${result.products.length} מוצרים`);
-      } else {
-        // Friendly, specific message when the site blocked us / had no products.
-        toast.error(result?.message || "לא נמצאו מוצרים בקישור זה. נסו קובץ או הוספה ידנית.");
-      }
-    } catch {
-      toast.error("שגיאה בסריקת הקישור. נסו קובץ או הוספה ידנית.");
-    } finally {
-      setIsUrlScraping(false);
-    }
   };
 
   // ── Voice ──────────────────────────────────────────────────────────────────
@@ -373,20 +343,18 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
 
   // ── Import parsed (shared for pdf/url/voice) ───────────────────────────────
 
-  const importParsed = (products: ParsedProduct[], label: string) => {
+  const importParsed = (products: ParsedProduct[]) => {
     const newProducts = products.map((p, i) => ({
       id: `${Date.now()}-${i}`,
       name: p.name,
       description: p.description || "",
       price: p.price,
-      imageUrl: p.image || undefined, // scraped product image, when the catalog had one
+      imageUrl: p.image || undefined,
       categoryId: data.productOrganization === "categories" ? selectedCategoryId || undefined : undefined,
     }));
     updateData({ products: [...data.products, ...newProducts] });
     toast.success(`יובאו ${newProducts.length} מוצרים`);
-    if (label === "pdf") { setPdfFile(null); setPdfParsed([]); }
-    if (label === "url") { setCatalogUrl(""); setUrlParsed([]); }
-    if (label === "voice") { setVoiceTranscript(""); setVoiceParsed([]); }
+    setVoiceTranscript(""); setVoiceParsed([]);
   };
 
   // ── AI images ──────────────────────────────────────────────────────────────
@@ -513,13 +481,17 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   const ProductItem = ({ product }: { product: (typeof data.products)[0] }) => (
     <div className="rounded-xl bg-card border border-border">
       <div className="flex items-center gap-3 p-3">
-        <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden relative group">
+        <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden relative group">
           {generatingProductId === product.id ? (
             <Loader2 className="w-4 h-4 text-primary animate-spin" />
           ) : product.imageUrl ? (
             <>
-              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-              {/* Hover to edit the existing image (img2img) instead of only regenerating. */}
+              <img
+                src={product.imageUrl}
+                alt={product.name}
+                className="w-full h-full object-cover cursor-zoom-in"
+                onClick={() => setLightboxUrl(product.imageUrl!)}
+              />
               <button
                 onClick={() => { setEditingProductId(editingProductId === product.id ? null : product.id); setEditPrompt(""); }}
                 className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
@@ -622,6 +594,27 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
               </>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Lightbox */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <img
+            src={lightboxUrl}
+            alt=""
+            className="max-w-full max-h-full rounded-xl object-contain shadow-2xl"
+            style={{ maxWidth: "90vw", maxHeight: "85vh" }}
+          />
+          <button
+            onClick={() => setLightboxUrl(null)}
+            className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
       )}
 
@@ -780,145 +773,69 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         </div>
       )}
 
-      {/* ── Catalog pane ── */}
+      {/* ── Catalog pane (Excel only) ── */}
       {activeMethod === "catalog" && (
-        <div className="rounded-xl border border-border bg-card p-4 space-y-4">
-          {/* Sub-tabs */}
-          <div className="flex gap-2">
-            {([
-              { id: "xlsx" as CatalogTab, label: "אקסל / CSV" },
-              { id: "pdf" as CatalogTab, label: "קטלוג PDF" },
-              { id: "url" as CatalogTab, label: "קישור לאתר" },
-            ]).map(({ id, label }) => (
-              <button
-                key={id}
-                onClick={() => setCatalogTab(id)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${catalogTab === id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/30"}`}
-              >
-                {label}
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+          <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcelFileChange} className="hidden" />
+
+          {!excelFile ? (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full p-6 rounded-xl border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-center"
+            >
+              <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm font-medium">גררו קובץ אקסל לכאן או לחצו לבחירה</p>
+              <p className="text-xs text-muted-foreground mt-1">.xlsx · .csv · עד 500 מוצרים</p>
+            </button>
+          ) : (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border">
+              <FileSpreadsheet className="w-7 h-7 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{excelFile.name}</p>
+                <p className="text-xs text-muted-foreground">{(excelFile.size / 1024).toFixed(1)} KB</p>
+              </div>
+              <button onClick={() => { setExcelFile(null); setParsedProducts([]); setParseError(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="p-1.5 hover:bg-muted rounded-lg">
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
-            ))}
+            </div>
+          )}
+
+          {parseError && (
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/30">
+              <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+              <p className="text-xs text-destructive">{parseError}</p>
+            </div>
+          )}
+
+          <button onClick={handleDownloadTemplate} className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+            <Download className="w-3.5 h-3.5" /> הורד תבנית אקסל מוכנה
+          </button>
+
+          {parsedProducts.length > 0 && (
+            <>
+              {data.productOrganization === "categories" && data.productCategories.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">קטגוריה ברירת מחדל (אופציונלי)</p>
+                  <select
+                    value={defaultCategoryForExcel || ""}
+                    onChange={e => setDefaultCategoryForExcel(e.target.value || null)}
+                    className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm text-foreground"
+                  >
+                    <option value="">ללא קטגוריה</option>
+                    {data.productCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+              )}
+              <PreviewTable
+                products={parsedProducts.map(p => ({ name: p.name, price: p.price, description: p.description }))}
+                onImport={handleImportExcel}
+              />
+            </>
+          )}
+
+          <div className="text-xs text-muted-foreground bg-muted/30 rounded-xl p-3 leading-relaxed">
+            עמודות: <strong>שם מוצר, תיאור מוצר, מחיר</strong>
           </div>
-
-          {/* Excel */}
-          {catalogTab === "xlsx" && (
-            <div className="space-y-3">
-              <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcelFileChange} className="hidden" />
-              {!excelFile ? (
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full p-6 rounded-xl border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-center"
-                >
-                  <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm font-medium">גררו קובץ לכאן או לחצו לבחירה</p>
-                  <p className="text-xs text-muted-foreground mt-1">.xlsx · .csv · עד 500 מוצרים</p>
-                </button>
-              ) : (
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border">
-                  <FileSpreadsheet className="w-7 h-7 text-primary shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{excelFile.name}</p>
-                    <p className="text-xs text-muted-foreground">{(excelFile.size / 1024).toFixed(1)} KB</p>
-                  </div>
-                  <button onClick={() => { setExcelFile(null); setParsedProducts([]); setParseError(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="p-1.5 hover:bg-muted rounded-lg">
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                </div>
-              )}
-
-              {parseError && (
-                <div className="flex items-start gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/30">
-                  <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-                  <p className="text-xs text-destructive">{parseError}</p>
-                </div>
-              )}
-
-              <button onClick={handleDownloadTemplate} className="flex items-center gap-1.5 text-xs text-primary hover:underline">
-                <Download className="w-3.5 h-3.5" /> הורידו תבנית מוכנה
-              </button>
-
-              {parsedProducts.length > 0 && (
-                <>
-                  {data.productOrganization === "categories" && data.productCategories.length > 0 && (
-                    <div className="space-y-1.5">
-                      <p className="text-xs text-muted-foreground">קטגוריה ברירת מחדל (אופציונלי)</p>
-                      <select
-                        value={defaultCategoryForExcel || ""}
-                        onChange={e => setDefaultCategoryForExcel(e.target.value || null)}
-                        className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm text-foreground"
-                      >
-                        <option value="">ללא קטגוריה</option>
-                        {data.productCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      </select>
-                    </div>
-                  )}
-                  <PreviewTable
-                    products={parsedProducts.map(p => ({ name: p.name, price: p.price, description: p.description }))}
-                    onImport={handleImportExcel}
-                  />
-                </>
-              )}
-
-              <div className="text-xs text-muted-foreground bg-muted/30 rounded-xl p-3 leading-relaxed">
-                עמודות חובה: <strong>שם, מחיר</strong> — אופציונלי: תיאור, קטגוריה, מק"ט, קישור תמונה
-              </div>
-            </div>
-          )}
-
-          {/* PDF */}
-          {catalogTab === "pdf" && (
-            <div className="space-y-3">
-              <input ref={pdfInputRef} type="file" accept=".pdf" onChange={e => { const f = e.target.files?.[0]; if (f) handlePdfUpload(f); }} className="hidden" />
-              {!pdfFile ? (
-                <button
-                  onClick={() => pdfInputRef.current?.click()}
-                  className="w-full p-6 rounded-xl border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-center"
-                >
-                  <FileText className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm font-medium">העלו קטלוג PDF</p>
-                  <p className="text-xs text-muted-foreground mt-1">נחלץ שמות ומחירים אוטומטית עם AI</p>
-                </button>
-              ) : (
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border">
-                  <FileText className="w-7 h-7 text-primary shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{pdfFile.name}</p>
-                    {isPdfParsing && <p className="text-xs text-primary flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> מעבד עם AI...</p>}
-                  </div>
-                  {!isPdfParsing && <button onClick={() => { setPdfFile(null); setPdfParsed([]); if (pdfInputRef.current) pdfInputRef.current.value = ""; }} className="p-1.5 hover:bg-muted rounded-lg"><X className="w-4 h-4 text-muted-foreground" /></button>}
-                </div>
-              )}
-              {pdfParsed.length > 0 && <PreviewTable products={pdfParsed} onImport={() => importParsed(pdfParsed, "pdf")} />}
-              <p className="text-xs text-muted-foreground">הדיוק תלוי בפורמט הקטלוג — תוכלו לערוך לאחר הייבוא</p>
-            </div>
-          )}
-
-          {/* URL */}
-          {catalogTab === "url" && (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">הדביקו קישור לדף מוצרים באתר שלכם</p>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="https://..."
-                  value={catalogUrl}
-                  onChange={e => setCatalogUrl(e.target.value)}
-                  className="h-10 rounded-xl flex-1"
-                  dir="ltr"
-                  onKeyDown={e => e.key === "Enter" && handleUrlScrape()}
-                />
-                <button
-                  onClick={handleUrlScrape}
-                  disabled={isUrlScraping || !catalogUrl.trim()}
-                  className="px-4 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-40 hover:bg-primary/90 transition-colors flex items-center gap-1.5"
-                >
-                  {isUrlScraping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
-                  סרוק
-                </button>
-              </div>
-              {urlParsed.length > 0 && <PreviewTable products={urlParsed} onImport={() => importParsed(urlParsed, "url")} />}
-              <p className="text-xs text-muted-foreground">פועל על דפי מוצרים סטנדרטיים</p>
-            </div>
-          )}
         </div>
       )}
 
@@ -959,7 +876,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             </div>
           )}
 
-          {voiceParsed.length > 0 && <PreviewTable products={voiceParsed} onImport={() => importParsed(voiceParsed, "voice")} />}
+          {voiceParsed.length > 0 && <PreviewTable products={voiceParsed} onImport={() => importParsed(voiceParsed)} />}
         </div>
       )}
 
