@@ -646,20 +646,27 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         <p className="text-sm text-muted-foreground">הוסיפו מוצרים — אפשר לשלב כמה שיטות</p>
       </div>
 
-      {/* Organization toggle (secondary) */}
-      <div className="flex items-center justify-center gap-2">
-        <span className="text-xs text-muted-foreground">ארגון:</span>
+      {/* Organization toggle */}
+      <div className="grid grid-cols-2 gap-3">
         <button
           onClick={() => updateData({ productOrganization: "free" })}
-          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors ${data.productOrganization === "free" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}
+          className={`p-3 rounded-xl border-2 text-right transition-all ${data.productOrganization === "free" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}
         >
-          <List className="w-3 h-3" /> חופשי
+          <div className="flex items-center gap-2 mb-1">
+            <List className={`w-4 h-4 ${data.productOrganization === "free" ? "text-primary" : "text-muted-foreground"}`} />
+            <span className={`text-sm font-medium ${data.productOrganization === "free" ? "text-primary" : "text-foreground"}`}>רשימה חופשית</span>
+          </div>
+          <p className="text-xs text-muted-foreground">כל המוצרים במקום אחד</p>
         </button>
         <button
           onClick={() => updateData({ productOrganization: "categories" })}
-          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors ${data.productOrganization === "categories" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}
+          className={`p-3 rounded-xl border-2 text-right transition-all ${data.productOrganization === "categories" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}
         >
-          <LayoutGrid className="w-3 h-3" /> לפי קטגוריות
+          <div className="flex items-center gap-2 mb-1">
+            <LayoutGrid className={`w-4 h-4 ${data.productOrganization === "categories" ? "text-primary" : "text-muted-foreground"}`} />
+            <span className={`text-sm font-medium ${data.productOrganization === "categories" ? "text-primary" : "text-foreground"}`}>לפי קטגוריות</span>
+          </div>
+          <p className="text-xs text-muted-foreground">חולצות, מכנסיים, נעליים...</p>
         </button>
       </div>
 

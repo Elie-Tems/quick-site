@@ -20,10 +20,7 @@ interface ProductCategoryManagerProps {
 }
 
 const EXAMPLE_CATEGORIES = [
-  { industry: "מוצרי חשמל", examples: ["מקררים", "מכונות כביסה", "מזגנים", "טלוויזיות"] },
-  { industry: "מסעדה", examples: ["מנות ראשונות", "עיקריות", "קינוחים", "משקאות"] },
   { industry: "חנות בגדים", examples: ["חולצות", "מכנסיים", "שמלות", "אביזרים"] },
-  { industry: "מאפייה", examples: ["לחמים", "עוגות", "מאפים מתוקים", "כריכים"] },
 ];
 
 const ProductCategoryManager = ({
@@ -88,23 +85,17 @@ const ProductCategoryManager = ({
         {/* All products option */}
         <button
           onClick={() => onSelectCategory(null)}
-          className={`w-full p-3 rounded-lg border-2 transition-all flex items-center gap-3 text-right ${
+          className={`w-full px-3 py-2 rounded-lg border transition-all flex items-center gap-2 text-right ${
             selectedCategoryId === null
-              ? "border-primary bg-primary/5"
-              : "border-border hover:border-primary/30"
+              ? "border-primary bg-primary/5 text-primary"
+              : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
           }`}
         >
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-            selectedCategoryId === null ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-          }`}>
-            <FolderOpen className="w-5 h-5" />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-foreground">כל המוצרים</p>
-            <p className="text-xs text-muted-foreground">
-              {Object.values(productsCountByCategory).reduce((a, b) => a + b, 0)} מוצרים
-            </p>
-          </div>
+          <FolderOpen className="w-4 h-4 shrink-0" />
+          <span className="text-sm font-medium flex-1">כל המוצרים</span>
+          <span className="text-xs opacity-60">
+            {Object.values(productsCountByCategory).reduce((a, b) => a + b, 0)}
+          </span>
         </button>
 
         {/* Category items */}
@@ -146,21 +137,11 @@ const ProductCategoryManager = ({
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => onSelectCategory(category.id)}
-                  className="flex-1 flex items-center gap-3 text-right"
+                  className="flex-1 flex items-center gap-2 text-right"
                 >
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                    selectedCategoryId === category.id 
-                      ? "bg-primary text-primary-foreground" 
-                      : "bg-muted text-muted-foreground"
-                  }`}>
-                    <FolderOpen className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground truncate">{category.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {productsCountByCategory[category.id] || 0} מוצרים
-                    </p>
-                  </div>
+                  <FolderOpen className={`w-4 h-4 shrink-0 ${selectedCategoryId === category.id ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className="text-sm font-medium flex-1 truncate text-foreground">{category.name}</span>
+                  <span className="text-xs text-muted-foreground shrink-0">{productsCountByCategory[category.id] || 0}</span>
                 </button>
                 <div className="flex items-center gap-1 shrink-0">
                   <button
