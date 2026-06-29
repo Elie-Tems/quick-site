@@ -15,6 +15,7 @@ import StoreThankYou from "@/components/storefront/StoreThankYou";
 import StoreCartPage from "@/components/storefront/StoreCartPage";
 import StoreFavorites from "@/components/storefront/StoreFavorites";
 import StoreFooter from "@/components/storefront/StoreFooter";
+import NewsletterSignup from "@/components/storefront/NewsletterSignup";
 import StoreSEO from "@/components/storefront/StoreSEO";
 import AgeVerificationModal from "@/components/storefront/AgeVerificationModal";
 import { useStorefront } from "@/hooks/useStorefront";
@@ -734,6 +735,10 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         {b?.reviews_paid && (b?.reviews_show_on_store ?? true) && (
           <StoreReviews cache={b?.google_reviews_cache} primaryColor={business.primary_color || undefined} />
         )}
+
+        <div className="border-t border-black/10 mt-8 px-4">
+          <NewsletterSignup businessId={business.id} primaryColor={business.primary_color || undefined} />
+        </div>
       </main>
 
       <StoreFooter
