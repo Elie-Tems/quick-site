@@ -21,7 +21,7 @@ export const PARTNER_LINKS: PartnerLink[] = [
   {
     id: "hyp",
     name: "HYP (היפ)",
-    url: null,
+    url: "https://links.hyp.co.il/4xV3lEE",
     blurb: "פתרון סליקה מלא, אפליקציה לניהול וחשבוניות אוטומטיות. בתנאים מועדפים.",
     highlight: true,
   },
@@ -32,3 +32,10 @@ export const PARTNER_LINKS: PartnerLink[] = [
     blurb: "חשבוניות והנהלת חשבונות אוטומטית - ישירות מהמערכת.",
   },
 ];
+
+// PayPlus is the primary in-app checkout (merchants connect their own account in
+// the PayPlus card). For a merchant who does NOT have a PayPlus account yet, this
+// is our affiliate signup link so a new account is attributed to us. Set the URL
+// once PayPlus provides it; the "open a new PayPlus account" link in the payments
+// screen shows only when it's set, and a click is logged to partner_referrals.
+export const PAYPLUS_AFFILIATE_URL: string | null = null;
