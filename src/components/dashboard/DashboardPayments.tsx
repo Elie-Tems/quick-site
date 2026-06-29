@@ -41,7 +41,9 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
 
       <PaymentsQuickStart />
 
-      {/* Primary in-app sliqa: PayPlus */}
+      {/* Primary in-app sliqa: PayPlus - the merchant's actual checkout */}
+      <h2 className="text-sm font-semibold text-foreground mb-2">הסליקה שלך</h2>
+      <p className="text-xs text-muted-foreground mb-3">הספק שגובה את התשלומים מהלקוחות שלכם ישירות לחשבון שלכם.</p>
       <div className="rounded-xl border-2 border-primary bg-primary/5 p-5 mb-6">
         <div className="flex items-center gap-2 mb-1">
           <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary bg-primary/12 rounded-full px-2 py-0.5">
@@ -60,16 +62,19 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
         )}
       </div>
 
-      {/* Partner providers - open an account through us (preferred terms) */}
+      {/* Recommended partner services - we have an affiliate deal with them; opening
+          an account through us earns Siango a referral and the merchant better terms.
+          These are NOT the store checkout (that's PayPlus above). */}
       <div className="mt-8">
-        <h2 className="text-sm font-semibold text-foreground mb-1">שותפי סליקה וחשבוניות</h2>
-        <p className="text-xs text-muted-foreground mb-3">פתחו חשבון דרכנו ותיהנו מתנאים מועדפים.</p>
+        <h2 className="text-sm font-semibold text-foreground mb-1">שותפים מומלצים - הטבות לעסק</h2>
+        <p className="text-xs text-muted-foreground mb-3">שירותי סליקה וחשבוניות שאנחנו עובדים איתם. פתיחת חשבון דרכנו = תנאים מועדפים. (זו לא הסליקה של החנות - אותה מחברים למעלה דרך PayPlus.)</p>
         <div className="grid gap-3 sm:grid-cols-2">
           {PARTNER_LINKS.map((p) => (
             <div key={p.id} className={`rounded-xl border bg-card p-4 flex flex-col ${p.highlight ? "border-primary ring-1 ring-primary/30" : "border-border"}`}>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <img src={providerLogo(p.domain)} alt={p.name} className="h-5 w-5 rounded" loading="lazy" />
                 <p className="font-bold text-foreground">{p.name}</p>
+                <span className="text-[10px] font-medium text-muted-foreground bg-muted rounded-full px-1.5 py-0.5">{p.category}</span>
                 {p.highlight && <span className="text-[10px] font-bold text-primary bg-primary/10 rounded-full px-1.5 py-0.5">מומלץ</span>}
               </div>
               <p className="text-xs text-muted-foreground mt-1 flex-1">{p.blurb}</p>

@@ -8,6 +8,7 @@ export interface PartnerLink {
   url: string | null; // affiliate URL; null = no self-signup link (rep contact)
   blurb: string;
   domain: string; // for the brand logo (loaded in the browser at runtime)
+  category: "סליקה" | "חשבוניות"; // what the service actually is (iCount is NOT sliqa)
   highlight?: boolean; // preferred partner (shown first / emphasized)
 }
 
@@ -17,6 +18,7 @@ export const PARTNER_LINKS: PartnerLink[] = [
     name: "Cardcom",
     url: null,
     domain: "cardcom.co.il",
+    category: "סליקה",
     blurb: "סליקת אשראי מתקדמת בתנאים מועדפים. נציג Cardcom ייצור איתך קשר להקמה - בלי התעסקות מצדך.",
     highlight: true,
   },
@@ -25,6 +27,7 @@ export const PARTNER_LINKS: PartnerLink[] = [
     name: "HYP (היפ)",
     url: "https://links.hyp.co.il/4xV3lEE",
     domain: "hyp.co.il",
+    category: "סליקה",
     blurb: "פתרון סליקה מלא, אפליקציה לניהול וחשבוניות אוטומטיות. בתנאים מועדפים.",
     highlight: true,
   },
@@ -33,6 +36,7 @@ export const PARTNER_LINKS: PartnerLink[] = [
     name: "iCount",
     url: "https://www.icount.co.il/r?aff=471310",
     domain: "icount.co.il",
+    category: "חשבוניות",
     blurb: "חשבוניות והנהלת חשבונות אוטומטית - ישירות מהמערכת.",
   },
 ];
