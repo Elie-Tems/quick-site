@@ -57,7 +57,13 @@ Deno.serve(async (req) => {
     for (const ct of contacts || []) {
       if (!ct.email || blocked.has(String(ct.email).toLowerCase())) continue;
       const footer = `<tr><td style="background:#f6f7f8;padding:14px 16px;text-align:center"><div style="font-size:11px;color:#888"><b>פרסומת</b> · ${esc(c.from_name || "")} · ${esc(c.reply_to || "")}</div><div style="font-size:11px;margin-top:3px"><a href="${siteUrl}/unsubscribe?email=${encodeURIComponent(ct.email)}" style="color:#0E9F6E">להסרה מרשימת התפוצה</a></div></td></tr>`;
-      const html = renderEmail(c.blocks || [], { "שם": ct.name || "", "שם_העסק": c.from_name || "" }, footer);
+      let html = renderEmail(c.blocks || [], { "שם": ct.name || "", "שם_העסק": c.from_name || "" }, footer);
+      // tracking: wrap links + open pixel
+      html = html.replace(/href="(https?:\/\/[^"]+)"/g, (m, url) =>
+        (url.includes("/unsubscribe") || url.includes("/email-track-")) ? m
+          : `href="${siteUrl}/functions/v1/email-track-click?c=${c.id}&e=${ct.id}&u=${encodeURIComponent(url)}"`);
+      html = html.replace("</table></td></tr></table></body>",
+        `<tr><td><img src="${siteUrl}/functions/v1/email-track-open?c=${c.id}&e=${ct.id}" width="1" height="1" style="display:block;border:0" alt=""/></td></tr></table></td></tr></table></body>`);
       const res = await sendViaResend({ to: ct.email, subject: c.subject || "(ללא נושא)", html, fromName: c.from_name || "סיאנגו", replyTo: c.reply_to || undefined });
       if (res.ok) { sent++; await admin.from("mkt_campaign_events").insert({ campaign_id: c.id, contact_id: ct.id, type: "sent" }); }
     }

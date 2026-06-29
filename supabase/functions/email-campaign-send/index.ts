@@ -90,10 +90,23 @@ Deno.serve(async (req) => {
   const subject = campaign.subject || "(ללא נושא)";
   const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
 
-  const buildHtml = (contact: { name?: string; email: string }) => {
+  // Wrap links through the click tracker + add an open pixel (skips the
+  // unsubscribe link). campaignId/contactId enable per-recipient analytics.
+  const addTracking = (html: string, cid: string | null, eid?: string) => {
+    if (!cid) return html;
+    const wrapped = html.replace(/href="(https?:\/\/[^"]+)"/g, (m, url) =>
+      (url.includes("/unsubscribe") || url.includes("/email-track-")) ? m
+        : `href="${siteUrl}/functions/v1/email-track-click?c=${cid}&e=${eid || ""}&u=${encodeURIComponent(url)}"`);
+    const pixel = `<tr><td><img src="${siteUrl}/functions/v1/email-track-open?c=${cid}&e=${eid || ""}" width="1" height="1" style="display:block;border:0" alt=""/></td></tr>`;
+    return wrapped.replace("</table></td></tr></table></body>", pixel + "</table></td></tr></table></body>");
+  };
+
+  let campaignId: string | null = campaign.id ?? null;
+  const buildHtml = (contact: { id?: string; name?: string; email: string }) => {
     const unsubUrl = `${siteUrl}/unsubscribe?email=${encodeURIComponent(contact.email)}`;
     const footer = complianceFooter(fromName, campaign.reply_to || "office@siango.app", unsubUrl);
-    return renderEmail(campaign.blocks || [], { "שם": contact.name || "", "שם_העסק": fromName }, footer);
+    const base = renderEmail(campaign.blocks || [], { "שם": contact.name || "", "שם_העסק": fromName }, footer);
+    return addTracking(base, campaignId, contact.id);
   };
 
   // Test send.
@@ -119,15 +132,24 @@ Deno.serve(async (req) => {
   const { data: unsub } = await admin.from("email_unsubscribes").select("email");
   const blocked = new Set((unsub || []).map((u: any) => String(u.email).toLowerCase()));
 
+  // Persist the campaign so events can reference it (needed for open/click tracking).
+  if (!campaignId) {
+    const { data: created } = await admin.from("mkt_campaigns").insert({
+      owner_id: user.id, name: subject, subject, from_name: fromName, reply_to: campaign.reply_to || null,
+      blocks: campaign.blocks || [], status: "sending", sent_at: new Date().toISOString(),
+    }).select("id").single();
+    campaignId = created?.id ?? null;
+  }
+
   let sent = 0;
   for (const c of contacts) {
     if (!c.email || blocked.has(String(c.email).toLowerCase())) continue;
     const res = await sendViaResend({ to: c.email, subject, html: buildHtml(c), fromName });
     if (res.ok) {
       sent++;
-      await admin.from("mkt_campaign_events").insert({ campaign_id: campaign.id ?? null, contact_id: c.id, type: "sent" });
+      if (campaignId) await admin.from("mkt_campaign_events").insert({ campaign_id: campaignId, contact_id: c.id, type: "sent" });
     }
   }
-  if (campaign.id) await admin.from("mkt_campaigns").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", campaign.id);
+  if (campaignId) await admin.from("mkt_campaigns").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", campaignId);
   return json({ ok: true, sent });
 });
