@@ -3,6 +3,7 @@ import {
   Mail, Users, Send, LayoutTemplate, Zap, BarChart3, Plus, Clock, Sparkles,
   CheckCircle2, MousePointerClick, TrendingUp, Tag,
 } from "lucide-react";
+import DashboardEmailEditor from "@/components/dashboard/DashboardEmailEditor";
 
 // Email-marketing module (ESP) - BUILD-ONLY preview. Not wired to a backend yet;
 // shows the full UX with sample data so Moti can review and we can pick a sending
@@ -51,6 +52,15 @@ const Stat = ({ label, value, icon: Icon }: { label: string; value: string; icon
 
 const DashboardEmailMarketing = () => {
   const [tab, setTab] = useState<Tab>("overview");
+  const [editing, setEditing] = useState(false);
+
+  if (editing) {
+    return (
+      <div dir="rtl">
+        <DashboardEmailEditor onBack={() => setEditing(false)} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5" dir="rtl">
@@ -144,13 +154,16 @@ const DashboardEmailMarketing = () => {
 
       {tab === "templates" && (
         <div className="space-y-3">
-          <p className="text-sm font-medium">תבניות מייל (RTL בעברית)</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">תבניות מייל (RTL בעברית)</p>
+            <button onClick={() => setEditing(true)} className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground rounded-lg px-3 py-1.5"><Plus className="w-4 h-4" /> צור דיוור חדש</button>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {["ניוזלטר", "מבצע / הנחה", "מוצר חדש", "ברכת הצטרפות", "החזרת לקוח", "ריק"].map((t) => (
-              <div key={t} className="rounded-xl border border-border bg-card p-3 aspect-[4/3] flex flex-col items-center justify-center gap-2 hover:border-primary/40 transition-colors cursor-pointer">
+            {["ניוזלטר", "מבצע / הנחה", "מוצר חדש", "ברכת הצטרפות", "החזרת לקוח", "קנבס ריק"].map((t) => (
+              <button key={t} onClick={() => setEditing(true)} className="rounded-xl border border-border bg-card p-3 aspect-[4/3] flex flex-col items-center justify-center gap-2 hover:border-primary/40 transition-colors">
                 <LayoutTemplate className="w-6 h-6 text-muted-foreground" />
                 <span className="text-xs font-medium">{t}</span>
-              </div>
+              </button>
             ))}
           </div>
           <p className="text-xs text-muted-foreground">עורך גרירה-ושחרור, שדות התאמה אישית (שם, מוצר אחרון), וכתיבת נושא/גוף ב-AI.</p>
