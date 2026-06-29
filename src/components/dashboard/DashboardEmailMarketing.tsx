@@ -54,12 +54,13 @@ const Stat = ({ label, value, icon: Icon }: { label: string; value: string; icon
 const DashboardEmailMarketing = () => {
   const [tab, setTab] = useState<Tab>("overview");
   const [screen, setScreen] = useState<"main" | "edit" | "send">("main");
+  const [draftBlocks, setDraftBlocks] = useState<any[]>([]);
 
   if (screen === "edit") {
-    return <div dir="rtl"><DashboardEmailEditor onBack={() => setScreen("main")} onContinue={() => setScreen("send")} /></div>;
+    return <div dir="rtl"><DashboardEmailEditor onBack={() => setScreen("main")} onContinue={(b) => { setDraftBlocks(b); setScreen("send"); }} /></div>;
   }
   if (screen === "send") {
-    return <div dir="rtl"><DashboardEmailSend onBack={() => setScreen("edit")} /></div>;
+    return <div dir="rtl"><DashboardEmailSend onBack={() => setScreen("edit")} blocks={draftBlocks} /></div>;
   }
 
   return (

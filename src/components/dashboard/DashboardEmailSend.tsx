@@ -1,21 +1,54 @@
 import { useState } from "react";
-import { ArrowRight, Send, Clock, Users, UserMinus, Filter, Plus, X, Mail } from "lucide-react";
+import { ArrowRight, Send, Clock, Users, UserMinus, Filter, Plus, X, Mail, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 // Campaign send settings (build-only v1): sender identity, subject, audience
 // include/exclude, engagement conditions, and scheduling. Local state only;
 // real send wires up with the shared backbone + Resend. Designed channel-agnostic
 // and NOT coupled to a store, so the same engine can be sold standalone.
 
-interface Props { onBack?: () => void; }
+interface Props { onBack?: () => void; blocks?: any[]; }
 
 const SEGMENTS = ["כל אנשי הקשר", "VIP", "רדומים 60 יום", "נרשמו לניוזלטר", "קנו החודש"];
 const CONDITION_VERBS = ["לא פתחו", "פתחו", "לא הקליקו", "הקליקו"];
 
-const DashboardEmailSend = ({ onBack }: Props) => {
+const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
   const [include, setInclude] = useState<string[]>(["כל אנשי הקשר"]);
   const [exclude, setExclude] = useState<string[]>([]);
   const [conditions, setConditions] = useState<{ verb: string; ref: string }[]>([]);
   const [when, setWhen] = useState<"now" | "schedule">("now");
+  const [fromName, setFromName] = useState("החנות שלי");
+  const [replyTo, setReplyTo] = useState("");
+  const [subject, setSubject] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const campaignPayload = () => ({ blocks, subject, from_name: fromName, reply_to: replyTo || undefined });
+
+  const sendTest = async () => {
+    const to = prompt("שליחת מבחן לכתובת:");
+    if (!to) return;
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("email-campaign-send", { body: { campaign: campaignPayload(), testTo: to } });
+      if (error || !data?.ok) throw new Error(data?.error || error?.message);
+      toast.success(`נשלח מייל בדיקה ל-${to}`);
+    } catch (e: any) { toast.error("שליחת המבחן נכשלה: " + (e?.message || "")); }
+    finally { setSending(false); }
+  };
+
+  const sendReal = async () => {
+    if (!subject.trim()) { toast.error("נא למלא שורת נושא"); return; }
+    if (!confirm(when === "now" ? "לשלוח עכשיו לכל אנשי הקשר הפעילים?" : "לתזמן את השליחה?")) return;
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("email-campaign-send", { body: { campaign: campaignPayload() } });
+      if (error || !data?.ok) throw new Error(data?.error || error?.message);
+      toast.success(`נשלח ל-${data.sent ?? 0} אנשי קשר`);
+      onBack?.();
+    } catch (e: any) { toast.error("השליחה נכשלה: " + (e?.message || "")); }
+    finally { setSending(false); }
+  };
 
   const toggle = (arr: string[], set: (v: string[]) => void, v: string) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
@@ -31,10 +64,10 @@ const DashboardEmailSend = ({ onBack }: Props) => {
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
         <p className="text-sm font-medium flex items-center gap-2"><Mail className="w-4 h-4 text-primary" /> שולח ונושא</p>
         <div className="grid sm:grid-cols-2 gap-3">
-          <Field label="שם השולח"><input defaultValue="החנות שלי" className="inp" /></Field>
-          <Field label="מייל למענה (Reply-To)"><input defaultValue="office@my-store.co.il" dir="ltr" className="inp" /></Field>
+          <Field label="שם השולח"><input value={fromName} onChange={(e) => setFromName(e.target.value)} className="inp" /></Field>
+          <Field label="מייל למענה (Reply-To)"><input value={replyTo} onChange={(e) => setReplyTo(e.target.value)} placeholder="office@my-store.co.il" dir="ltr" className="inp" /></Field>
         </div>
-        <Field label="שורת נושא"><input placeholder="מבצע סוף עונה - עד 50% הנחה" className="inp" /></Field>
+        <Field label="שורת נושא"><input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="מבצע סוף עונה - עד 50% הנחה" className="inp" /></Field>
         <Field label="טקסט תצוגה מקדימה (preview)"><input placeholder="השורה שמופיעה ליד הנושא בתיבת הדואר" className="inp" /></Field>
       </div>
 
@@ -96,9 +129,9 @@ const DashboardEmailSend = ({ onBack }: Props) => {
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <button className="text-sm text-primary">שליחת מבחן אליי</button>
-        <button className="flex items-center gap-2 bg-primary text-primary-foreground rounded-xl px-6 h-11 text-sm font-medium">
-          {when === "now" ? <><Send className="w-4 h-4" /> שלח עכשיו</> : <><Clock className="w-4 h-4" /> תזמן שליחה</>}
+        <button onClick={sendTest} disabled={sending} className="text-sm text-primary disabled:opacity-50">שליחת מבחן</button>
+        <button onClick={sendReal} disabled={sending} className="flex items-center gap-2 bg-primary text-primary-foreground rounded-xl px-6 h-11 text-sm font-medium disabled:opacity-60">
+          {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : when === "now" ? <><Send className="w-4 h-4" /> שלח עכשיו</> : <><Clock className="w-4 h-4" /> תזמן שליחה</>}
         </button>
       </div>
 
