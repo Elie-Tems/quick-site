@@ -545,6 +545,16 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
           deliveryFee={(business as any).delivery_fee ?? null}
           onSubmit={handleSubmitOrder}
           onBack={() => setViewState('shopping')}
+          onIdentify={(email, name) => {
+            // Abandoned-cart capture: record the cart when a valid email is entered.
+            supabase.functions.invoke("email-track-cart", {
+              body: {
+                businessId: business.id, email, name,
+                items: cartItems.map((it) => ({ name: it.name, quantity: it.quantity, price: it.price })),
+                total: cartItems.reduce((s, it) => s + it.price * it.quantity, 0),
+              },
+            }).catch(() => {});
+          }}
         />
       </>
     );

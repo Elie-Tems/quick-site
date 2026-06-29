@@ -29,9 +29,11 @@ interface StoreCheckoutProps {
   businessName?: string;
   onSubmit: (data: CheckoutData, couponId?: string, total?: number) => Promise<void>;
   onBack: () => void;
+  /** Called when a valid email is entered (for abandoned-cart capture). */
+  onIdentify?: (email: string, name: string) => void;
 }
 
-const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, deliveryMode, deliveryFee, onSubmit, onBack }: StoreCheckoutProps) => {
+const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, deliveryMode, deliveryFee, onSubmit, onBack, onIdentify }: StoreCheckoutProps) => {
   const [formData, setFormData] = useState<CheckoutData>({
     fullName: '', phone: '', email: '', notes: '', deliveryAddress: '',
   });
@@ -181,7 +183,7 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
               ] as any[]).map(({ id, label, type, placeholder, autoComplete, dir, ref }) => (
                 <div key={id}>
                   <label htmlFor={id} className={lbl}>{label} *</label>
-                  <Input id={id} ref={ref} type={type} dir={dir} value={(formData as any)[id]} onChange={(e) => handleChange(id as keyof CheckoutData, e.target.value)} placeholder={placeholder} autoComplete={autoComplete} className={fieldCls((errors as any)[id])} aria-invalid={!!(errors as any)[id]} required />
+                  <Input id={id} ref={ref} type={type} dir={dir} value={(formData as any)[id]} onChange={(e) => handleChange(id as keyof CheckoutData, e.target.value)} onBlur={() => { if (id === "email" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) onIdentify?.(formData.email.trim(), formData.fullName.trim()); }} placeholder={placeholder} autoComplete={autoComplete} className={fieldCls((errors as any)[id])} aria-invalid={!!(errors as any)[id]} required />
                   {(errors as any)[id] && <p className="text-xs text-destructive mt-1" role="alert">{(errors as any)[id]}</p>}
                 </div>
               ))}
