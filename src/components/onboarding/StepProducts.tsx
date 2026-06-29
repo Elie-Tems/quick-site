@@ -282,42 +282,44 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   // ── Voice ──────────────────────────────────────────────────────────────────
 
   const startRecording = async () => {
+    // mediaDevices is unavailable on non-HTTPS origins (except localhost)
     if (!navigator.mediaDevices?.getUserMedia) {
       setMicHelp("unsupported");
       return;
     }
-    // Check existing permission state before requesting — avoids the loop where
-    // a previously-denied permission makes getUserMedia fail silently.
+
+    // Check existing permission before requesting to avoid a silent-fail loop
     try {
       const perm = await navigator.permissions.query({ name: "microphone" as PermissionName });
-      if (perm.state === "denied") {
-        setMicHelp("denied");
-        return;
-      }
-    } catch { /* browser may not support permissions API — proceed normally */ }
+      if (perm.state === "denied") { setMicHelp("denied"); return; }
+    } catch { /* permissions API not supported — proceed */ }
+
+    toast.info("מבקש גישה למיקרופון...", { duration: 2000 });
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setMicHelp(null);
+      toast.dismiss();
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-
       mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach(t => t.stop());
         await transcribeAudio(new Blob(audioChunksRef.current, { type: "audio/webm" }));
       };
-
       mediaRecorder.start();
       setIsRecording(true);
     } catch (err) {
+      toast.dismiss();
       const name = (err as Error)?.name;
       if (name === "NotFoundError" || name === "DevicesNotFoundError") {
-        toast.error("לא נמצא מיקרופון במכשיר.");
-      } else if (name === "NotAllowedError") {
+        toast.error("לא נמצא מיקרופון במכשיר");
+      } else if (name === "NotAllowedError" || name === "PermissionDeniedError" || name === "SecurityError") {
         setMicHelp("denied");
       } else {
+        // Unknown error — show it so user can report
+        toast.error(`שגיאת מיקרופון: ${name || "לא ידוע"}`);
         setMicHelp("blocked");
       }
     }
