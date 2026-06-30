@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, Send, Clock, Users, UserMinus, Filter, Plus, X, Mail, Loader2 } from "lucide-react";
+import { ArrowRight, Send, Clock, Users, UserMinus, Filter, Plus, X, Mail, Loader2, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -36,6 +36,7 @@ const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
   const [replyTo, setReplyTo] = useState("");
   const [subject, setSubject] = useState("");
   const [sending, setSending] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const campaignPayload = () => ({
     blocks, subject, from_name: fromName, reply_to: replyTo || undefined,
@@ -118,8 +119,25 @@ const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
                 ))}
               </div>
             </div>
-            <div>
-              <div className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1"><UserMinus className="w-3.5 h-3.5" /> החרג (לא ישלח אליהם)</div>
+          </>
+        )}
+      </div>
+
+      {/* Advanced options - kept tucked away so the default flow stays clean. */}
+      <button
+        onClick={() => setShowAdvanced((v) => !v)}
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ChevronDown className={`w-4 h-4 transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
+        אפשרויות מתקדמות {showAdvanced ? "" : "(החרגות · תנאי מעורבות · תזמון)"}
+      </button>
+
+      {showAdvanced && (
+        <>
+          {tags.length > 0 && (
+            <div className="rounded-xl border border-border bg-card p-4 space-y-2">
+              <p className="text-sm font-medium flex items-center gap-2"><UserMinus className="w-4 h-4 text-primary" /> החרגת קבוצות</p>
+              <div className="text-xs text-muted-foreground mb-1.5">לא ישלח לבעלי התגיות הבאות</div>
               <div className="flex flex-wrap gap-2">
                 {tags.map((s) => (
                   <button key={s} onClick={() => toggle(exclude, setExclude, s)}
@@ -127,9 +145,7 @@ const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
                 ))}
               </div>
             </div>
-          </>
-        )}
-      </div>
+          )}
 
       {/* Conditions */}
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
@@ -168,6 +184,8 @@ const DashboardEmailSend = ({ onBack, blocks = [] }: Props) => {
         </div>
         {when === "schedule" && <input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} className="inp" />}
       </div>
+        </>
+      )}
 
       <div className="flex items-center justify-between gap-3">
         <button onClick={sendTest} disabled={sending} className="text-sm text-primary disabled:opacity-50">שליחת מבחן</button>
