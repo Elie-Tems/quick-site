@@ -259,7 +259,7 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
   businessName: string;
 }) => {
   const display = userProducts.length > 0 ? userProducts : template.products;
-  const hero = bannerImage || template.heroImage;
+  const hero = bannerImage || userProducts.find(p => p.img)?.img || template.heroImage;
   const bg = "#0f0f0f";
   const name = businessName || "החנות שלי";
 
