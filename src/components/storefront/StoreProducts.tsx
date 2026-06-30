@@ -43,13 +43,15 @@ interface StoreProductsProps {
   productGrid?: StoreTemplate['productGrid'];
 }
 
-type SortOption = "default" | "price_asc" | "price_desc";
+type SortOption = "default" | "price_asc" | "price_desc" | "name_asc" | "name_desc";
 type FilterOption = "all" | "sale" | "new" | "hot";
 
 const SORT_LABELS: Record<SortOption, string> = {
   default: "ברירת מחדל",
   price_asc: "מחיר: נמוך לגבוה",
   price_desc: "מחיר: גבוה לנמוך",
+  name_asc: "שם: א-ב",
+  name_desc: "שם: ת-א",
 };
 
 const FILTER_LABELS: Record<FilterOption, string> = {
@@ -82,6 +84,8 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
     else if (filterBy === "hot") list = list.filter(p => p.isHot);
     if (sortBy === "price_asc") list = [...list].sort((a, b) => a.price - b.price);
     else if (sortBy === "price_desc") list = [...list].sort((a, b) => b.price - a.price);
+    else if (sortBy === "name_asc") list = [...list].sort((a, b) => a.name.localeCompare(b.name, "he"));
+    else if (sortBy === "name_desc") list = [...list].sort((a, b) => b.name.localeCompare(a.name, "he"));
     return list;
   }, [regularProducts, filterBy, sortBy]);
 
