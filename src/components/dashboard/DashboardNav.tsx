@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, Settings, Eye, Ticket, Crown, Sparkles, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, Gauge, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
@@ -36,13 +36,13 @@ const navItems: {
   // (קטגוריות + מבצעים הם עכשיו טאבים בתוך "מוצרים")
   { id: "products", label: "מוצרים", icon: Package, group: "החנות שלי" },
   { id: "design", label: "עיצוב", icon: Palette, group: "החנות שלי" },
-  { id: "ai-images", label: "תמונות AI", icon: Sparkles, premium: true, group: "החנות שלי" },
+  { id: "ai-images", label: "תמונות AI", icon: ImagePlus, premium: true, group: "החנות שלי" },
   { id: "ai-generated-images", label: "גלריית AI", shortLabel: "גלריה", icon: Image, premium: true, group: "החנות שלי" },
   { id: "preview", label: "תצוגה מקדימה", shortLabel: "תצוגה", icon: Eye, group: "החנות שלי" },
 
   // ניהול מכירות
   { id: "orders", label: "הזמנות", icon: ShoppingCart, group: "ניהול מכירות" },
-  { id: "customers", label: "לקוחות", icon: Users, group: "ניהול מכירות" },
+  { id: "customers", label: "לקוחות / CRM", shortLabel: "לקוחות", icon: Users, premium: true, group: "ניהול מכירות" },
   { id: "coupons", label: "קופונים", icon: Ticket, group: "ניהול מכירות" },
   { id: "shipping", label: "משלוחים", icon: Truck, group: "ניהול מכירות" },
   { id: "payments", label: "סליקה", icon: CreditCard, group: "ניהול מכירות" },
@@ -62,7 +62,6 @@ const navItems: {
   // הגדרות
   { id: "settings", label: "פרטי העסק", shortLabel: "הגדרות", icon: Settings, group: "הגדרות" },
   { id: "subscription", label: "התוכנית שלי", icon: Crown, group: "הגדרות" },
-  { id: "usage", label: "שימוש ו-AI", icon: Gauge, group: "הגדרות" },
   { id: "about", label: "אודות", icon: Info, group: "הגדרות" },
   { id: "legal", label: "מסמכים משפטיים", shortLabel: "משפטי", icon: ScrollText, group: "הגדרות" },
 ];

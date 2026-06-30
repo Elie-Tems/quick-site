@@ -606,7 +606,12 @@ const Dashboard = () => {
       case 'reviews':
         return <DashboardReviews businessId={business?.id} />;
       case 'subscription':
-        return <DashboardSubscription />;
+        return (
+          <div className="space-y-6">
+            <DashboardSubscription />
+            <DashboardUsage businessId={business?.id} />
+          </div>
+        );
       case 'about':
         return <DashboardAboutPage businessId={business?.id} />;
       case 'shipping':

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Upload, Image as ImageIcon, Loader2, Coins, Check, ChevronRight, Gift, Download, Shirt, Package, Wand2 } from "lucide-react";
+import { Sparkles, Upload, Image as ImageIcon, ImagePlus, Loader2, Coins, Check, ChevronRight, Gift, Download, Shirt, Package, Wand2 } from "lucide-react";
 import { useAICredits, useAIImageJobs, useGenerateStyledImage, useGrantFreeCredits } from "@/hooks/useAIImageEngine";
 import { useProducts } from "@/hooks/useProducts";
 import { useBusinessUsage } from "@/hooks/useBusinessUsage";
@@ -165,7 +165,7 @@ const DashboardAIImages = ({ businessId, onNavigateToSubscription }: DashboardAI
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" />
+            <ImagePlus className="h-6 w-6 text-primary" />
             תמונות AI
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">שדרג תמונות מוצר בלחיצה אחת</p>

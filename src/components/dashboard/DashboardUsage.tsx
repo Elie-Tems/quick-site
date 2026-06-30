@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Sparkles, Image as ImageIcon, AlertTriangle, Bot, CreditCard, Zap } from "lucide-react";
+import { Gauge, Image as ImageIcon, AlertTriangle, Bot, CreditCard, Zap } from "lucide-react";
 
 /**
  * Usage & AI — lets the merchant see how much of the paid AI (image generation)
@@ -52,7 +52,7 @@ const DashboardUsage = ({ businessId }: Props) => {
     <div className="container max-w-4xl mx-auto px-4 py-6 space-y-6" dir="rtl">
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-primary" /> שימוש ו-AI
+          <Gauge className="w-6 h-6 text-primary" /> שימוש ו-AI
         </h1>
         <p className="text-muted-foreground text-sm mt-1">מעקב אחר השימוש שלך בכלי ה-AI בתשלום.</p>
       </div>
