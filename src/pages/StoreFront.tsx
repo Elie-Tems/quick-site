@@ -6,6 +6,7 @@ import { Loader2, Store } from "lucide-react";
 import StoreHeader from "@/components/storefront/StoreHeader";
 import StoreHero from "@/components/storefront/StoreHero";
 import StoreBanners from "@/components/storefront/StoreBanners";
+import StorePromoPopup from "@/components/storefront/StorePromoPopup";
 import StoreProducts from "@/components/storefront/StoreProducts";
 import StoreAbout from "@/components/storefront/StoreAbout";
 import FloatingCart, { type CartItem } from "@/components/storefront/FloatingCart";
@@ -725,6 +726,18 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
 
         {storeBanners.length > 0 && (
           <StoreBanners banners={storeBanners} />
+        )}
+
+        {activeCampaign?.popup_enabled && (activeCampaign.popup_title || activeCampaign.popup_text) && (
+          <StorePromoPopup
+            campaignId={activeCampaign.id}
+            title={activeCampaign.popup_title}
+            text={activeCampaign.popup_text}
+            ctaText={activeCampaign.popup_cta_text}
+            ctaUrl={activeCampaign.popup_cta_url}
+            couponCode={activeCampaign.popup_coupon_code}
+            accent={business.primary_color || undefined}
+          />
         )}
 
         <StoreProducts

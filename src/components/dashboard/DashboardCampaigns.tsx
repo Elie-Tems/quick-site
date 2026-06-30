@@ -52,6 +52,12 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
     end_date: '',
     display_mode: 'replace' as 'replace' | 'add' | 'prioritize',
     is_active: false,
+    popup_enabled: false,
+    popup_title: '',
+    popup_text: '',
+    popup_cta_text: '',
+    popup_cta_url: '',
+    popup_coupon_code: '',
   });
 
   const resetForm = () => {
@@ -62,6 +68,12 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
       end_date: '',
       display_mode: 'replace',
       is_active: false,
+      popup_enabled: false,
+      popup_title: '',
+      popup_text: '',
+      popup_cta_text: '',
+      popup_cta_url: '',
+      popup_coupon_code: '',
     });
     setEditingCampaign(null);
     setIsFormOpen(false);
@@ -81,6 +93,12 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
       end_date: campaign.end_date ? campaign.end_date.split('T')[0] : '',
       display_mode: campaign.display_mode,
       is_active: campaign.is_active,
+      popup_enabled: campaign.popup_enabled || false,
+      popup_title: campaign.popup_title || '',
+      popup_text: campaign.popup_text || '',
+      popup_cta_text: campaign.popup_cta_text || '',
+      popup_cta_url: campaign.popup_cta_url || '',
+      popup_coupon_code: campaign.popup_coupon_code || '',
     });
     setEditingCampaign(campaign);
     setIsFormOpen(true);
@@ -104,6 +122,12 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
         end_date: formData.end_date ? new Date(formData.end_date).toISOString() : null,
         display_mode: formData.display_mode,
         is_active: formData.is_active,
+        popup_enabled: formData.popup_enabled,
+        popup_title: formData.popup_title || null,
+        popup_text: formData.popup_text || null,
+        popup_cta_text: formData.popup_cta_text || null,
+        popup_cta_url: formData.popup_cta_url || null,
+        popup_coupon_code: formData.popup_coupon_code || null,
       };
 
       if (editingCampaign) {
@@ -523,6 +547,12 @@ interface CampaignFormData {
   end_date: string;
   display_mode: 'replace' | 'add' | 'prioritize';
   is_active: boolean;
+  popup_enabled: boolean;
+  popup_title: string;
+  popup_text: string;
+  popup_cta_text: string;
+  popup_cta_url: string;
+  popup_coupon_code: string;
 }
 
 interface CampaignDetailsFormProps {
@@ -660,6 +690,59 @@ const CampaignDetailsForm = ({ formData, setFormData, onSubmit, onCancel, isEdit
           checked={formData.is_active}
           onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
         />
+      </div>
+
+      {/* Promotional popup - shows once per visitor session while the campaign is active */}
+      <div className="rounded-lg border p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="popup_enabled" className="cursor-pointer">
+            <div className="font-medium">חלון מבצע קופץ (פופאפ) בחנות</div>
+            <div className="text-sm text-muted-foreground font-normal">מוצג פעם אחת לכל מבקר, אחרי כמה שניות בחנות</div>
+          </Label>
+          <Switch
+            id="popup_enabled"
+            checked={formData.popup_enabled}
+            onCheckedChange={(checked) => setFormData({ ...formData, popup_enabled: checked })}
+          />
+        </div>
+
+        {formData.popup_enabled && (
+          <div className="space-y-3 pt-1">
+            <div>
+              <Label>כותרת</Label>
+              <Input value={formData.popup_title} maxLength={60}
+                onChange={(e) => setFormData({ ...formData, popup_title: e.target.value })}
+                placeholder="מבצע השקה! 15% הנחה" />
+            </div>
+            <div>
+              <Label>טקסט</Label>
+              <Textarea value={formData.popup_text} maxLength={200} rows={2}
+                onChange={(e) => setFormData({ ...formData, popup_text: e.target.value })}
+                placeholder="רק השבוע - 15% הנחה על כל החנות. הזדרזו!" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>קוד קופון (לא חובה)</Label>
+                <Input value={formData.popup_coupon_code} maxLength={30}
+                  onChange={(e) => setFormData({ ...formData, popup_coupon_code: e.target.value })}
+                  placeholder="WELCOME15" />
+              </div>
+              <div>
+                <Label>טקסט כפתור (לא חובה)</Label>
+                <Input value={formData.popup_cta_text} maxLength={30}
+                  onChange={(e) => setFormData({ ...formData, popup_cta_text: e.target.value })}
+                  placeholder="קנו עכשיו" />
+              </div>
+            </div>
+            <div>
+              <Label>קישור לכפתור (לא חובה)</Label>
+              <Input value={formData.popup_cta_url} dir="ltr"
+                onChange={(e) => setFormData({ ...formData, popup_cta_url: e.target.value })}
+                placeholder="#products" />
+            </div>
+            <p className="text-xs text-muted-foreground">הפופאפ מופיע רק כשהקמפיין פעיל. הזינו לפחות כותרת או טקסט.</p>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-3 pt-4">

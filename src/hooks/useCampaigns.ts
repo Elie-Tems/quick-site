@@ -10,6 +10,12 @@ export interface Campaign {
   end_date: string | null;
   is_active: boolean;
   display_mode: 'replace' | 'add' | 'prioritize';
+  popup_enabled: boolean;
+  popup_title: string | null;
+  popup_text: string | null;
+  popup_cta_text: string | null;
+  popup_cta_url: string | null;
+  popup_coupon_code: string | null;
   created_at: string;
   updated_at: string;
 }
