@@ -28,6 +28,11 @@ verify_jwt = true
 [functions.expire-subscriptions]
 verify_jwt = false
 
+# send-presentation is an admin-triggered one-off (guarded by its own token), called
+# without a JWT.
+[functions.send-presentation]
+verify_jwt = false
+
 # orders-create is the COD/no-payment checkout, called from the PUBLIC storefront
 # by anonymous end-customers (prices are recomputed server-side).
 [functions.orders-create]
