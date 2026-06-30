@@ -36,6 +36,7 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 const AllTemplates = lazy(() => import("./pages/AllTemplates"));
+const TemplateConcepts = lazy(() => import("./pages/TemplateConcepts"));
 const Contact = lazy(() => import("./pages/Contact"));
 const PublishPayment = lazy(() => import("./pages/PublishPayment"));
 const EmailMarketingPreview = lazy(() => import("./pages/EmailMarketingPreview"));
@@ -146,6 +147,7 @@ const App = () => {
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/help" element={<HelpCenter />} />
                   <Route path="/templates" element={<AllTemplates />} />
+                  <Route path="/template-concepts" element={<TemplateConcepts />} />
                   <Route path="/contact" element={<Contact />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
