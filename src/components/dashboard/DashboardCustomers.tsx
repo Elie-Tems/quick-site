@@ -54,9 +54,13 @@ interface CustomerRow {
   isRepeat: boolean;
   isNew: boolean;
   status: LifecycleStatus;
+  /** Avg days between this customer's orders (>=2 orders only) */
+  avgIntervalDays?: number;
+  /** True when the customer is in their typical re-order window and worth a nudge */
+  dueForReorder?: boolean;
 }
 
-type SegmentFilter = "all" | "vip" | "at_risk" | "dormant" | "repeat" | "new";
+type SegmentFilter = "all" | "vip" | "reorder" | "at_risk" | "dormant" | "repeat" | "new";
 
 const fmtPrice = (n: number) =>
   new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", minimumFractionDigits: 0 }).format(n);
@@ -74,11 +78,22 @@ const buildDemoCustomers = (): CustomerRow[] => {
     isVip: boolean, orders: Order[]): CustomerRow => {
     const totalSpent = orders.reduce((s, o) => s + o.total, 0);
     const sorted = [...orders].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const lastOrder = sorted[sorted.length - 1].date;
+    let avgIntervalDays: number | undefined;
+    let dueForReorder = false;
+    if (sorted.length >= 2) {
+      let sum = 0;
+      for (let i = 1; i < sorted.length; i++) sum += (new Date(sorted[i].date).getTime() - new Date(sorted[i - 1].date).getTime()) / 86400000;
+      const avg = sum / (sorted.length - 1);
+      avgIntervalDays = Math.round(avg);
+      const recency = daysAgo(lastOrder);
+      dueForReorder = avg > 0 && recency >= avg * 0.9 && recency <= avg * 2.5;
+    }
     return {
       key, name, phone, email, orderCount: orders.length, totalSpent,
-      firstOrder: sorted[0].date, lastOrder: sorted[sorted.length - 1].date, orders,
+      firstOrder: sorted[0].date, lastOrder, orders,
       isVip, isDormant: status === "dormant", isRepeat: orders.length > 1 && status !== "dormant",
-      isNew: status === "new", status,
+      isNew: status === "new", status, avgIntervalDays, dueForReorder,
     };
   };
   return [
@@ -92,6 +107,9 @@ const buildDemoCustomers = (): CustomerRow[] => {
       [ord("d4a", 4, 220)]),
     mk("demo-5", "יוסי מזרחי", "058-1112233", "yossi@example.com", "dormant", false,
       [ord("d5a", 96, 380)]),
+    // Steady ~26-day cadence, last bought 28 days ago -> due for reorder.
+    mk("demo-6", "רונית בר", "050-7778899", "ronit@example.com", "active", false,
+      [ord("d6a", 80, 240), ord("d6b", 50, 300), ord("d6c", 28, 260)]),
   ];
 };
 
@@ -170,6 +188,16 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
         : recency > AT_RISK_DAYS ? "at_risk"
         : (c.orderCount === 1 && daysAgo(c.firstOrder) <= NEW_DAYS) ? "new"
         : "active";
+      // Repeat-purchase rhythm: from a customer's own cadence, are they due to reorder?
+      if (c.orderCount >= 2) {
+        const dates = c.orders.map((o) => new Date(o.date).getTime()).sort((a, b) => a - b);
+        let sum = 0;
+        for (let i = 1; i < dates.length; i++) sum += (dates[i] - dates[i - 1]) / 86400000;
+        const avg = sum / (dates.length - 1);
+        c.avgIntervalDays = Math.round(avg);
+        // Prime nudge window: from ~90% of their usual gap up to 2.5x it (after that they've churned).
+        c.dueForReorder = avg > 0 && recency >= avg * 0.9 && recency <= avg * 2.5;
+      }
     }
     return rows.sort((a, b) => b.totalSpent - a.totalSpent);
   }, [orders]);
@@ -184,6 +212,7 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
   const counts = useMemo(() => ({
     all: customers.length,
     vip: customers.filter((c) => c.isVip).length,
+    reorder: customers.filter((c) => c.dueForReorder).length,
     at_risk: customers.filter((c) => c.status === "at_risk").length,
     dormant: customers.filter((c) => c.isDormant).length,
     repeat: customers.filter((c) => c.isRepeat).length,
@@ -194,6 +223,7 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
     const q = query.trim().toLowerCase();
     return customers.filter((c) => {
       if (segment === "vip" && !c.isVip) return false;
+      if (segment === "reorder" && !c.dueForReorder) return false;
       if (segment === "at_risk" && c.status !== "at_risk") return false;
       if (segment === "dormant" && !c.isDormant) return false;
       if (segment === "repeat" && !c.isRepeat) return false;
@@ -208,7 +238,8 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
   if (selected) {
     const tags = [
       selected.isVip && { label: "VIP", icon: Crown },
-      selected.isRepeat && { label: "לקוח חוזר", icon: Repeat },
+      selected.dueForReorder && { label: "מוכן לקנייה חוזרת", icon: Repeat },
+      selected.isRepeat && !selected.dueForReorder && { label: "לקוח חוזר", icon: Repeat },
     ].filter(Boolean) as { label: string; icon: typeof Crown }[];
     const st = STATUS_META[selected.status];
     const recencyDays = daysAgo(selected.lastOrder);
@@ -324,6 +355,7 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
   const segChips: { id: SegmentFilter; label: string }[] = [
     { id: "all", label: `הכל (${counts.all})` },
     { id: "vip", label: `VIP (${counts.vip})` },
+    { id: "reorder", label: `מוכנים לקנייה חוזרת (${counts.reorder})` },
     { id: "at_risk", label: `בסיכון (${counts.at_risk})` },
     { id: "dormant", label: `רדומים (${counts.dormant})` },
     { id: "repeat", label: `חוזרים (${counts.repeat})` },
@@ -371,6 +403,18 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
           <div className="text-2xl font-semibold">{counts.at_risk + counts.dormant}</div>
         </div>
       </div>
+
+      {/* Opportunity: reorder - customers in their natural repeat-purchase window */}
+      {counts.reorder > 0 && (
+        <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 flex items-start gap-3">
+          <Repeat className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">{counts.reorder} לקוחות מוכנים לקנייה חוזרת</p>
+            <p className="text-xs text-muted-foreground mt-0.5">לפי קצב הקנייה האישי שלהם, הגיע הזמן שהם יזמינו שוב. תזכורת קטנה (וואטסאפ/מייל) בדיוק עכשיו ממירה מצוין. אתם בוחרים אם לפנות.</p>
+          </div>
+          <button onClick={() => setSegment("reorder")} className="text-sm font-medium text-primary hover:underline shrink-0">הצג אותם</button>
+        </div>
+      )}
 
       {/* Opportunity: at-risk - catch them BEFORE they go dormant (better timing) */}
       {counts.at_risk > 0 && (
