@@ -325,3 +325,5 @@ serve(async (req) => {
 });
 
 // redeploy retry af2a3d5
+
+// edge auto-deploy verified working 2026-07-01
