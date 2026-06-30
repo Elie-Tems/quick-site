@@ -1,5 +1,6 @@
 // COD order creation. Recomputes prices server-side from the DB so the client
 // can never submit a manipulated price. Mirrors the price logic in payments-create.
+// (deploy trigger: GitHub Actions auto-deploy enabled 2026-06-30)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendViaResend } from "../_shared/email/resend.ts";
