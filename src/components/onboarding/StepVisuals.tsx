@@ -158,11 +158,11 @@ const MiniProductGrid = ({ products, primaryColor }: { products: TemplateStyle["
   </div>
 );
 
-const MiniTemplatePreview = ({ template, primaryColor, userProducts, businessName }: {
-  template: TemplateStyle; primaryColor: string; userProducts: TemplateStyle["products"]; businessName: string;
+const MiniTemplatePreview = ({ template, primaryColor, userProducts, businessName, bannerImage }: {
+  template: TemplateStyle; primaryColor: string; userProducts: TemplateStyle["products"]; businessName: string; bannerImage: string | null;
 }) => {
   const display = userProducts.length > 0 ? userProducts : template.products;
-  const heroImg = template.heroImage;
+  const heroImg = bannerImage || template.heroImage;
   const label = businessName || "החנות שלי";
   const bg = "#0f0f0f";
 
@@ -497,7 +497,7 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
                 style={{ background: "#0f0f0f", border: isSelected ? "none" : "1px solid rgba(255,255,255,0.1)" }}
               >
                 <div className="aspect-[4/3.5] relative overflow-hidden">
-                  <MiniTemplatePreview template={template} primaryColor={primaryColor} userProducts={userProducts} businessName={data.businessName} />
+                  <MiniTemplatePreview template={template} primaryColor={primaryColor} userProducts={userProducts} businessName={data.businessName} bannerImage={bannerPreview} />
                   {isSelected && (
                     <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center shadow">
                       <Check className="w-2.5 h-2.5 text-white" />
