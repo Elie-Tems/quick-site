@@ -70,14 +70,14 @@ Deno.serve(async (req) => {
   // Re-fetch canonical prices from DB — never trust client-supplied prices
   const { data: products } = await admin
     .from("products")
-    .select("id, name, price, sale_price, is_on_sale, active")
+    .select("id, name, price, sale_price, is_on_sale, active, cost_price")
     .eq("business_id", businessId)
     .in("id", items.map((i) => i.product_id));
   if (!products?.length) return json({ error: "Products not found" }, 400);
 
   const priceOf = (p: any) => (p.is_on_sale && p.sale_price != null ? Number(p.sale_price) : Number(p.price));
   let subtotal = 0;
-  const orderItems: { product_id: string; product_name: string; price_at_order: number; quantity: number }[] = [];
+  const orderItems: { product_id: string; product_name: string; price_at_order: number; quantity: number; cost_at_order: number | null }[] = [];
 
   for (const line of items) {
     const p = products.find((x) => x.id === line.product_id);
@@ -85,7 +85,9 @@ Deno.serve(async (req) => {
     const qty = Math.max(1, Math.floor(Number(line.quantity) || 1));
     const unit = priceOf(p);
     subtotal += unit * qty;
-    orderItems.push({ product_id: p.id, product_name: p.name, price_at_order: unit, quantity: qty });
+    // Snapshot the cost so historical profit stays accurate if cost changes later.
+    const cost = (p as any).cost_price != null ? Number((p as any).cost_price) : null;
+    orderItems.push({ product_id: p.id, product_name: p.name, price_at_order: unit, quantity: qty, cost_at_order: cost });
   }
   if (!orderItems.length) return json({ error: "No valid items" }, 400);
 

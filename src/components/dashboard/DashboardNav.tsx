@@ -1,9 +1,9 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -43,6 +43,7 @@ const navItems: {
   // ניהול מכירות
   { id: "orders", label: "הזמנות", icon: ShoppingCart, group: "ניהול מכירות" },
   { id: "customers", label: "לקוחות / CRM", shortLabel: "לקוחות", icon: Users, premium: true, group: "ניהול מכירות" },
+  { id: "profitability", label: "רווחיות וספקים", shortLabel: "רווחיות", icon: TrendingUp, premium: true, group: "ניהול מכירות" },
   { id: "coupons", label: "קופונים", icon: Ticket, group: "ניהול מכירות" },
   { id: "shipping", label: "משלוחים", icon: Truck, group: "ניהול מכירות" },
   { id: "payments", label: "סליקה", icon: CreditCard, group: "ניהול מכירות" },

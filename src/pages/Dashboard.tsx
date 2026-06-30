@@ -9,6 +9,7 @@ import DashboardHome from "@/components/dashboard/DashboardHome";
 import DashboardProducts, { type Product } from "@/components/dashboard/DashboardProducts";
 import DashboardOrders, { type Order } from "@/components/dashboard/DashboardOrders";
 import DashboardCustomers from "@/components/dashboard/DashboardCustomers";
+import DashboardProfitability from "@/components/dashboard/DashboardProfitability";
 import DashboardBanners, { type Banner } from "@/components/dashboard/DashboardBanners";
 import DashboardCoupons from "@/components/dashboard/DashboardCoupons";
 import DashboardSales from "@/components/dashboard/DashboardSales";
@@ -546,6 +547,8 @@ const Dashboard = () => {
         return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} />;
       case 'customers':
         return <DashboardCustomers orders={orders} businessId={business?.id} />;
+      case 'profitability':
+        return <DashboardProfitability businessId={business?.id} />;
       case 'campaigns':
         return (
           <DashboardCampaigns 
