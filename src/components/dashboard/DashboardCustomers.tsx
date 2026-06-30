@@ -44,7 +44,7 @@ interface CustomerRow {
   status: LifecycleStatus;
 }
 
-type SegmentFilter = "all" | "vip" | "dormant" | "repeat" | "new";
+type SegmentFilter = "all" | "vip" | "at_risk" | "dormant" | "repeat" | "new";
 
 const fmtPrice = (n: number) =>
   new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", minimumFractionDigits: 0 }).format(n);
@@ -98,6 +98,7 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
   const counts = useMemo(() => ({
     all: customers.length,
     vip: customers.filter((c) => c.isVip).length,
+    at_risk: customers.filter((c) => c.status === "at_risk").length,
     dormant: customers.filter((c) => c.isDormant).length,
     repeat: customers.filter((c) => c.isRepeat).length,
     new: customers.filter((c) => c.isNew).length,
@@ -107,6 +108,7 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
     const q = query.trim().toLowerCase();
     return customers.filter((c) => {
       if (segment === "vip" && !c.isVip) return false;
+      if (segment === "at_risk" && c.status !== "at_risk") return false;
       if (segment === "dormant" && !c.isDormant) return false;
       if (segment === "repeat" && !c.isRepeat) return false;
       if (segment === "new" && !c.isNew) return false;
@@ -181,6 +183,7 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
   const segChips: { id: SegmentFilter; label: string }[] = [
     { id: "all", label: `הכל (${counts.all})` },
     { id: "vip", label: `VIP (${counts.vip})` },
+    { id: "at_risk", label: `בסיכון (${counts.at_risk})` },
     { id: "dormant", label: `רדומים (${counts.dormant})` },
     { id: "repeat", label: `חוזרים (${counts.repeat})` },
     { id: "new", label: `חדשים (${counts.new})` },
@@ -195,6 +198,18 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
         </div>
         <span className="text-sm text-muted-foreground">{customers.length} לקוחות</span>
       </div>
+
+      {/* Opportunity: at-risk - catch them BEFORE they go dormant (better timing) */}
+      {counts.at_risk > 0 && (
+        <div className="rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 flex items-start gap-3">
+          <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">{counts.at_risk} לקוחות מתחילים להתרחק ({AT_RISK_DAYS}-{DORMANT_DAYS} יום)</p>
+            <p className="text-xs text-muted-foreground mt-0.5">הרגע הכי טוב להחזיר אותם - לפני שהם הופכים לרדומים. הצעה קטנה עכשיו שווה הרבה.</p>
+          </div>
+          <button onClick={() => setSegment("at_risk")} className="text-sm font-medium text-amber-600 hover:underline shrink-0">הצג אותם</button>
+        </div>
+      )}
 
       {/* Opportunity: dormant win-back */}
       {counts.dormant > 0 && (
