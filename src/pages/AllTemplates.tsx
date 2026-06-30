@@ -249,7 +249,7 @@ const AllTemplates = () => {
         {/* Bottom CTA */}
         <section className="py-16 px-4 border-t border-border text-center">
           <h2 className="text-2xl font-bold text-foreground mb-3">מוכנים להתחיל?</h2>
-          <p className="text-muted-foreground mb-6">פותחים חנות תוך 5 דקות — ללא כרטיס אשראי</p>
+          <p className="text-muted-foreground mb-6">פותחים חנות תוך 5 דקות</p>
           <button
             onClick={() => navigate("/register")}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
