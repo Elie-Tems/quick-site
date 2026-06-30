@@ -1,6 +1,8 @@
-import { useMemo, useState } from "react";
-import { Users, Search, ArrowRight, Phone, Mail, ShoppingBag, Calendar, Sparkles, Crown, Repeat, Eye } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { Users, Search, ArrowRight, Phone, Mail, ShoppingBag, Calendar, Sparkles, Crown, Repeat, Eye, Download, MessageCircle, Gift, Copy, X, Plus } from "lucide-react";
 import type { Order } from "@/components/dashboard/DashboardOrders";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 // CRM (phase 1 free + phase 2 segments/opportunities). Derived entirely from
 // existing orders - no new tables. Phase 2 adds segments (VIP / dormant / repeat
@@ -10,7 +12,15 @@ import type { Order } from "@/components/dashboard/DashboardOrders";
 
 interface DashboardCustomersProps {
   orders: Order[];
+  businessId?: string;
 }
+
+// Quick contact helpers.
+const telLink = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;
+const waLink = (phone: string, text?: string) => {
+  const n = phone.replace(/\D/g, "").replace(/^0/, "972");
+  return `https://wa.me/${n}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
+};
 
 const DORMANT_DAYS = 60;
 const AT_RISK_DAYS = 30;
@@ -83,10 +93,46 @@ const buildDemoCustomers = (): CustomerRow[] => {
   ];
 };
 
-const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
+const DashboardCustomers = ({ orders, businessId }: DashboardCustomersProps) => {
   const [query, setQuery] = useState("");
   const [segment, setSegment] = useState<SegmentFilter>("all");
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+  // Manual CRM annotations (tags + notes) per customer, persisted to customer_crm.
+  const [crm, setCrm] = useState<Record<string, { tags: string[]; notes: string }>>({});
+  const [tagDraft, setTagDraft] = useState("");
+  useEffect(() => {
+    if (!businessId) return;
+    supabase.from("customer_crm").select("customer_key, tags, notes").eq("business_id", businessId)
+      .then(({ data }) => {
+        const m: Record<string, { tags: string[]; notes: string }> = {};
+        (data || []).forEach((r: any) => { m[r.customer_key] = { tags: r.tags || [], notes: r.notes || "" }; });
+        setCrm(m);
+      });
+  }, [businessId]);
+  const saveCrm = async (key: string, patch: { tags?: string[]; notes?: string }) => {
+    const next = { tags: crm[key]?.tags || [], notes: crm[key]?.notes || "", ...patch };
+    setCrm((p) => ({ ...p, [key]: next }));
+    if (!businessId) return;
+    const { error } = await supabase.from("customer_crm").upsert({
+      business_id: businessId, customer_key: key, tags: next.tags, notes: next.notes, updated_at: new Date().toISOString(),
+    }, { onConflict: "business_id,customer_key" });
+    if (error) toast.error("שמירה נכשלה");
+  };
+
+  const exportCsv = (rows: CustomerRow[]) => {
+    const head = ["שם", "טלפון", "מייל", "הזמנות", "סך רכישות", "סטטוס", "תגיות"];
+    const lines = [head, ...rows.map((c) => [
+      c.name, c.phone, c.email, String(c.orderCount), String(Math.round(c.totalSpent)),
+      STATUS_META[c.status].label, (crm[c.key]?.tags || []).join("; "),
+    ])];
+    const csv = "﻿" + lines.map((r) => r.map((f) => `"${(f || "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    a.download = "לקוחות-siango.csv";
+    a.click();
+    toast.success("הקובץ יוצא");
+  };
 
   const realCustomers = useMemo<CustomerRow[]>(() => {
     const map = new Map<string, CustomerRow>();
@@ -164,6 +210,13 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
     ].filter(Boolean) as { label: string; icon: typeof Crown }[];
     const st = STATUS_META[selected.status];
     const recencyDays = daysAgo(selected.lastOrder);
+    const cc = crm[selected.key] || { tags: [], notes: "" };
+    const offerText = `היי ${selected.name}! יש לנו הטבה מיוחדת בשבילך 🎁`;
+    const addTag = () => {
+      const t = tagDraft.trim();
+      if (!t || cc.tags.includes(t)) { setTagDraft(""); return; }
+      saveCrm(selected.key, { tags: [...cc.tags, t] }); setTagDraft("");
+    };
     return (
       <div className="space-y-4" dir="rtl">
         <button onClick={() => setSelectedKey(null)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
@@ -194,6 +247,54 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
             <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{fmtPrice(Math.round(selected.totalSpent / selected.orderCount))}</div><div className="text-xs text-muted-foreground">ממוצע להזמנה</div></div>
             <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{recencyDays === 0 ? "היום" : `${recencyDays} ימ׳`}</div><div className="text-xs text-muted-foreground">מההזמנה האחרונה</div></div>
           </div>
+          {/* Quick actions */}
+          <div className="flex flex-wrap gap-2 mb-5">
+            {selected.phone && (
+              <>
+                <a href={waLink(selected.phone, offerText)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm rounded-lg bg-primary text-primary-foreground px-3 py-2 hover:bg-primary/90 transition-colors">
+                  <Gift className="w-4 h-4" /> שלח הטבה בוואטסאפ
+                </a>
+                <a href={waLink(selected.phone)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-2 hover:bg-muted transition-colors">
+                  <MessageCircle className="w-4 h-4" /> וואטסאפ
+                </a>
+                <a href={telLink(selected.phone)} className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-2 hover:bg-muted transition-colors">
+                  <Phone className="w-4 h-4" /> התקשר
+                </a>
+              </>
+            )}
+            {selected.email && (
+              <a href={`mailto:${selected.email}`} className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-2 hover:bg-muted transition-colors">
+                <Mail className="w-4 h-4" /> מייל
+              </a>
+            )}
+            <button onClick={() => { navigator.clipboard?.writeText(`${selected.name} · ${selected.phone} · ${selected.email}`); toast.success("הפרטים הועתקו"); }}
+              className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-2 hover:bg-muted transition-colors">
+              <Copy className="w-4 h-4" /> העתק פרטים
+            </button>
+          </div>
+
+          {/* Tags */}
+          <h3 className="text-sm font-medium mb-2">תגיות</h3>
+          <div className="flex flex-wrap items-center gap-2 mb-5">
+            {cc.tags.map((t) => (
+              <span key={t} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+                {t}
+                <button onClick={() => saveCrm(selected.key, { tags: cc.tags.filter((x) => x !== t) })} aria-label="הסר תגית"><X className="w-3 h-3" /></button>
+              </span>
+            ))}
+            <div className="inline-flex items-center gap-1">
+              <input value={tagDraft} onChange={(e) => setTagDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTag()}
+                placeholder="הוסף תגית (סיטונאי, נאמן...)" className="h-8 w-44 rounded-lg border border-border bg-background px-2.5 text-xs" />
+              <button onClick={addTag} className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-border text-primary hover:bg-muted"><Plus className="w-4 h-4" /></button>
+            </div>
+          </div>
+
+          {/* Notes */}
+          <h3 className="text-sm font-medium mb-2">הערות פנימיות</h3>
+          <textarea key={selected.key} defaultValue={cc.notes} onBlur={(e) => { if (e.target.value !== cc.notes) saveCrm(selected.key, { notes: e.target.value }); }}
+            placeholder="הערות על הלקוח - העדפות, שיחות, כל מה שחשוב לזכור. נשמר אוטומטית." rows={3}
+            className="w-full rounded-lg border border-border bg-background p-3 text-sm mb-5 resize-y" />
+
           <h3 className="text-sm font-medium mb-3">ציר זמן רכישות</h3>
           <div className="relative pr-4">
             <div className="absolute right-[5px] top-1 bottom-1 w-px bg-border" />
@@ -234,7 +335,12 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
           <h2 className="text-lg font-semibold flex items-center gap-2"><Users className="w-5 h-5 text-primary" /> לקוחות</h2>
           <p className="text-sm text-muted-foreground">נבנה אוטומטית מההזמנות שלך</p>
         </div>
-        <span className="text-sm text-muted-foreground">{customers.length} לקוחות</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">{customers.length} לקוחות</span>
+          <button onClick={() => exportCsv(filtered)} className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-1.5 hover:bg-muted transition-colors">
+            <Download className="w-4 h-4" /> ייצוא לאקסל
+          </button>
+        </div>
       </div>
 
       {isDemo && (

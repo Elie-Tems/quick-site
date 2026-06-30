@@ -545,7 +545,7 @@ const Dashboard = () => {
       case 'orders':
         return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} />;
       case 'customers':
-        return <DashboardCustomers orders={orders} />;
+        return <DashboardCustomers orders={orders} businessId={business?.id} />;
       case 'campaigns':
         return (
           <DashboardCampaigns 
