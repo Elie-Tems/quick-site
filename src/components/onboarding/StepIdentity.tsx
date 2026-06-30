@@ -154,6 +154,7 @@ const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
         nextDisabled={!isValid}
         showPreview={true}
         showSave={false}
+        reassurance="אלו רק הפרטים הבסיסיים - תמיד אפשר לערוך ולהרחיב הכל אחר כך מלוח הניהול שלכם."
       />
     </div>
   );

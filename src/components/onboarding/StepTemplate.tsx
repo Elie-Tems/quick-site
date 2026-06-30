@@ -446,6 +446,7 @@ const StepTemplate = ({ data, updateData, onNext, onBack }: StepTemplateProps) =
         saveDisabled={!selectedTemplate}
         showPreview={true}
         showSave={true}
+        reassurance="לא מתחייבים - את התבנית, הצבעים והעיצוב אפשר להחליף ולכוונן בכל רגע מלוח הניהול."
       />
     </div>
   );

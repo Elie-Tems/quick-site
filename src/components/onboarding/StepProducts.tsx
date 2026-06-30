@@ -937,8 +937,13 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         </div>
       )}
 
+      <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground text-center mt-4">
+        <Sparkles className="w-3.5 h-3.5 text-primary/60 shrink-0" />
+        לא חייבים להוסיף הכל עכשיו - אפשר להוסיף, לערוך ולסדר מוצרים בכל רגע מלוח הניהול.
+      </p>
+
       {/* Sticky bottom navigation */}
-      <div className="sticky bottom-0 bg-background/95 backdrop-blur border-t border-border py-3 flex items-center justify-between gap-3 -mx-4 px-4 mt-4">
+      <div className="sticky bottom-0 bg-background/95 backdrop-blur border-t border-border py-3 flex items-center justify-between gap-3 -mx-4 px-4 mt-3">
         <button
           onClick={onBack}
           className="flex items-center gap-2 px-5 h-11 rounded-xl border border-border text-sm hover:bg-muted transition-colors"

@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Save, Eye } from "lucide-react";
+import { ArrowLeft, ArrowRight, Save, Eye, Sparkles } from "lucide-react";
 import { ReactNode } from "react";
 
 interface StepNavigationProps {
+  /** Optional reassuring line shown above the buttons (e.g. "you can change this later"). */
+  reassurance?: ReactNode;
   onNext?: () => void;
   onBack?: () => void;
   onSaveAndContinue?: () => void;
@@ -32,9 +34,17 @@ export const StepNavigation = ({
   showSave = true,
   showPreview = true,
   isLoading = false,
+  reassurance,
 }: StepNavigationProps) => {
   return (
-    <div className="flex items-center justify-between gap-3 pt-6 mt-6 border-t border-border">
+    <>
+    {reassurance && (
+      <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-6 text-center">
+        <Sparkles className="w-3.5 h-3.5 text-primary/60 shrink-0" />
+        {reassurance}
+      </p>
+    )}
+    <div className={`flex items-center justify-between gap-3 ${reassurance ? "pt-4 mt-3" : "pt-6 mt-6"} border-t border-border`}>
       {/* Back button */}
       {showBack && onBack ? (
         <Button
@@ -84,5 +94,6 @@ export const StepNavigation = ({
         )}
       </div>
     </div>
+    </>
   );
 };
