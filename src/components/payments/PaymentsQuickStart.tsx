@@ -8,7 +8,7 @@ const PATHS = [
     n: "1",
     title: "כבר יש לי סליקה וחשבוניות",
     line: "עובדים עם ספק קיים - רק צריך לחבר אותו לאתר.",
-    providers: "PayPlus · משולם · קארדקום · Tranzila",
+    providers: "PayPlus · משולם · קארדקום · Tranzila · PayPal",
   },
   {
     n: "2",
@@ -29,6 +29,7 @@ const MATRIX: { name: string; clearing: string; page: string; invoice: string }[
   { name: "משולם / Grow", clearing: "✓", page: "✓", invoice: "✓" },
   { name: "Morning", clearing: "✓*", page: "✓", invoice: "✓" },
   { name: "iCount", clearing: "✓*", page: "✓", invoice: "✓" },
+  { name: "PayPal", clearing: "✓", page: "✓", invoice: "—" },
 ];
 
 const PaymentsQuickStart = () => {
@@ -76,15 +77,15 @@ const PaymentsQuickStart = () => {
                 {MATRIX.map((m, i) => (
                   <tr key={m.name} className={i % 2 ? "bg-card" : ""}>
                     <td className="px-3 py-2 text-right text-foreground">{m.name}</td>
-                    <td className="px-3 py-2 text-center text-primary">{m.clearing}</td>
-                    <td className="px-3 py-2 text-center text-primary">{m.page}</td>
-                    <td className="px-3 py-2 text-center text-primary">{m.invoice}</td>
+                    <td className={`px-3 py-2 text-center ${m.clearing === "—" ? "text-muted-foreground" : "text-primary"}`}>{m.clearing}</td>
+                    <td className={`px-3 py-2 text-center ${m.page === "—" ? "text-muted-foreground" : "text-primary"}`}>{m.page}</td>
+                    <td className={`px-3 py-2 text-center ${m.invoice === "—" ? "text-muted-foreground" : "text-primary"}`}>{m.invoice}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="text-[11px] text-muted-foreground">* סליקה דרך מספר הספק הקיים שלכם או של המערכת.</p>
+          <p className="text-[11px] text-muted-foreground">* סליקה דרך מספר הספק הקיים שלכם או של המערכת. PayPal מתאים לתשלומים מחו"ל אך אינו מפיק חשבונית מס בישראל.</p>
         </div>
       )}
     </div>
