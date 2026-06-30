@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Users, Search, ArrowRight, Phone, Mail, ShoppingBag, Calendar, Sparkles, TrendingDown, Crown, Repeat } from "lucide-react";
+import { Users, Search, ArrowRight, Phone, Mail, ShoppingBag, Calendar, Sparkles, Crown, Repeat } from "lucide-react";
 import type { Order } from "@/components/dashboard/DashboardOrders";
 
 // CRM (phase 1 free + phase 2 segments/opportunities). Derived entirely from
@@ -13,7 +13,19 @@ interface DashboardCustomersProps {
 }
 
 const DORMANT_DAYS = 60;
+const AT_RISK_DAYS = 30;
 const NEW_DAYS = 30;
+
+// Lifecycle status from RFM signals (recency + frequency). VIP is a separate
+// value tier (a customer can be "VIP + at-risk" - the most important to act on).
+type LifecycleStatus = "new" | "active" | "at_risk" | "dormant";
+
+const STATUS_META: Record<LifecycleStatus, { label: string; dot: string; text: string }> = {
+  new: { label: "חדש", dot: "bg-sky-500", text: "text-sky-600" },
+  active: { label: "פעיל", dot: "bg-emerald-500", text: "text-emerald-600" },
+  at_risk: { label: "בסיכון", dot: "bg-amber-500", text: "text-amber-600" },
+  dormant: { label: "רדום", dot: "bg-rose-500", text: "text-rose-600" },
+};
 
 interface CustomerRow {
   key: string;
@@ -29,6 +41,7 @@ interface CustomerRow {
   isDormant: boolean;
   isRepeat: boolean;
   isNew: boolean;
+  status: LifecycleStatus;
 }
 
 type SegmentFilter = "all" | "vip" | "dormant" | "repeat" | "new";
@@ -62,7 +75,7 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
         map.set(key, {
           key, name: o.customerName || "לקוח", phone: o.customerPhone || "", email: o.customerEmail || "",
           orderCount: 1, totalSpent: o.total || 0, firstOrder: o.date, lastOrder: o.date, orders: [o],
-          isVip: false, isDormant: false, isRepeat: false, isNew: false,
+          isVip: false, isDormant: false, isRepeat: false, isNew: false, status: "active",
         });
       }
     }
@@ -73,6 +86,11 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
       c.isDormant = daysAgo(c.lastOrder) > DORMANT_DAYS;
       c.isRepeat = c.orderCount > 1 && !c.isDormant;
       c.isNew = c.orderCount === 1 && daysAgo(c.firstOrder) <= NEW_DAYS;
+      const recency = daysAgo(c.lastOrder);
+      c.status = recency > DORMANT_DAYS ? "dormant"
+        : recency > AT_RISK_DAYS ? "at_risk"
+        : (c.orderCount === 1 && daysAgo(c.firstOrder) <= NEW_DAYS) ? "new"
+        : "active";
     }
     return rows.sort((a, b) => b.totalSpent - a.totalSpent);
   }, [orders]);
@@ -102,9 +120,10 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
   if (selected) {
     const tags = [
       selected.isVip && { label: "VIP", icon: Crown },
-      selected.isDormant && { label: "רדום", icon: TrendingDown },
       selected.isRepeat && { label: "לקוח חוזר", icon: Repeat },
     ].filter(Boolean) as { label: string; icon: typeof Crown }[];
+    const st = STATUS_META[selected.status];
+    const recencyDays = daysAgo(selected.lastOrder);
     return (
       <div className="space-y-4" dir="rtl">
         <button onClick={() => setSelectedKey(null)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
@@ -116,6 +135,9 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-lg font-semibold">{selected.name}</h2>
+                <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-muted ${st.text}`}>
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${st.dot}`} />{st.label}
+                </span>
                 {tags.map((t) => (
                   <span key={t.label} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary"><t.icon className="w-3 h-3" />{t.label}</span>
                 ))}
@@ -126,19 +148,30 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
             <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{selected.orderCount}</div><div className="text-xs text-muted-foreground">הזמנות</div></div>
-            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{fmtPrice(selected.totalSpent)}</div><div className="text-xs text-muted-foreground">סך רכישות</div></div>
+            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{fmtPrice(selected.totalSpent)}</div><div className="text-xs text-muted-foreground">סך רכישות (LTV)</div></div>
             <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{fmtPrice(Math.round(selected.totalSpent / selected.orderCount))}</div><div className="text-xs text-muted-foreground">ממוצע להזמנה</div></div>
+            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{recencyDays === 0 ? "היום" : `${recencyDays} ימ׳`}</div><div className="text-xs text-muted-foreground">מההזמנה האחרונה</div></div>
           </div>
-          <h3 className="text-sm font-medium mb-2">פירוט רכישות</h3>
-          <div className="flex flex-col gap-2">
-            {selected.orders.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((o) => (
-              <div key={o.id} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
-                <span className="flex items-center gap-2 text-muted-foreground"><Calendar className="w-3.5 h-3.5" />{fmtDate(o.date)}</span>
-                <span className="font-medium">{fmtPrice(o.total)}</span>
-              </div>
-            ))}
+          <h3 className="text-sm font-medium mb-3">ציר זמן רכישות</h3>
+          <div className="relative pr-4">
+            <div className="absolute right-[5px] top-1 bottom-1 w-px bg-border" />
+            <div className="flex flex-col gap-3">
+              {selected.orders.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((o, i) => {
+                const d = daysAgo(o.date);
+                return (
+                  <div key={o.id} className="relative flex items-center justify-between gap-2">
+                    <span className={`absolute -right-4 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-background ${i === 0 ? "bg-primary" : "bg-muted-foreground/40"}`} />
+                    <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="w-3.5 h-3.5" />{fmtDate(o.date)}
+                      <span className="text-xs">· {d === 0 ? "היום" : `לפני ${d} ימים`}</span>
+                    </span>
+                    <span className="text-sm font-medium">{fmtPrice(o.total)}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -204,9 +237,12 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
                 <div className="text-sm font-medium truncate flex items-center gap-1.5">
                   {c.name}
                   {c.isVip && <Crown className="w-3 h-3 text-primary shrink-0" />}
-                  {c.isDormant && <TrendingDown className="w-3 h-3 text-muted-foreground shrink-0" />}
                 </div>
-                <div className="text-xs text-muted-foreground truncate">{c.phone || c.email}</div>
+                <div className="text-xs text-muted-foreground truncate flex items-center gap-1.5">
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_META[c.status].dot}`} />
+                  <span className={STATUS_META[c.status].text}>{STATUS_META[c.status].label}</span>
+                  <span className="truncate">· {c.phone || c.email}</span>
+                </div>
               </div>
               <div className="text-left shrink-0">
                 <div className="text-sm font-semibold">{fmtPrice(c.totalSpent)}</div>
