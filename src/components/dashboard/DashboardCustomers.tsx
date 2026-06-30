@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Users, Search, ArrowRight, Phone, Mail, ShoppingBag, Calendar, Sparkles, Crown, Repeat } from "lucide-react";
+import { Users, Search, ArrowRight, Phone, Mail, ShoppingBag, Calendar, Sparkles, Crown, Repeat, Eye } from "lucide-react";
 import type { Order } from "@/components/dashboard/DashboardOrders";
 
 // CRM (phase 1 free + phase 2 segments/opportunities). Derived entirely from
@@ -51,13 +51,44 @@ const fmtPrice = (n: number) =>
 const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString("he-IL", { day: "numeric", month: "short", year: "numeric" });
 const daysAgo = (d: string) => Math.floor((Date.now() - new Date(d).getTime()) / 86400000);
+const isoAgo = (days: number) => new Date(Date.now() - days * 86400000).toISOString();
+
+// Sample customers shown ONLY when the store has no real customers yet, so the
+// merchant sees what the CRM looks like populated. Clearly labelled as a demo.
+const buildDemoCustomers = (): CustomerRow[] => {
+  const ord = (id: string, daysBack: number, total: number): Order =>
+    ({ id, date: isoAgo(daysBack), total, customerName: "", customerPhone: "", customerEmail: "" } as unknown as Order);
+  const mk = (key: string, name: string, phone: string, email: string, status: LifecycleStatus,
+    isVip: boolean, orders: Order[]): CustomerRow => {
+    const totalSpent = orders.reduce((s, o) => s + o.total, 0);
+    const sorted = [...orders].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return {
+      key, name, phone, email, orderCount: orders.length, totalSpent,
+      firstOrder: sorted[0].date, lastOrder: sorted[sorted.length - 1].date, orders,
+      isVip, isDormant: status === "dormant", isRepeat: orders.length > 1 && status !== "dormant",
+      isNew: status === "new", status,
+    };
+  };
+  return [
+    mk("demo-1", "ישראל ישראלי", "050-1234567", "israel@example.com", "active", true,
+      [ord("d1a", 240, 690), ord("d1b", 150, 540), ord("d1c", 70, 1190), ord("d1d", 30, 820), ord("d1e", 6, 1010)]),
+    mk("demo-2", "דנה כהן", "052-7654321", "dana@example.com", "active", false,
+      [ord("d2a", 120, 320), ord("d2b", 60, 410), ord("d2c", 18, 450)]),
+    mk("demo-3", "מיכאל לוי", "054-3216549", "michael@example.com", "at_risk", false,
+      [ord("d3a", 90, 280), ord("d3b", 44, 360)]),
+    mk("demo-4", "נועה אברהם", "053-9876543", "noa@example.com", "new", false,
+      [ord("d4a", 4, 220)]),
+    mk("demo-5", "יוסי מזרחי", "058-1112233", "yossi@example.com", "dormant", false,
+      [ord("d5a", 96, 380)]),
+  ];
+};
 
 const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
   const [query, setQuery] = useState("");
   const [segment, setSegment] = useState<SegmentFilter>("all");
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
-  const customers = useMemo<CustomerRow[]>(() => {
+  const realCustomers = useMemo<CustomerRow[]>(() => {
     const map = new Map<string, CustomerRow>();
     for (const o of orders) {
       const key = (o.customerEmail || o.customerPhone || o.customerName || "").trim().toLowerCase();
@@ -94,6 +125,13 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
     }
     return rows.sort((a, b) => b.totalSpent - a.totalSpent);
   }, [orders]);
+
+  // No real customers yet -> show a labelled demo so the CRM's value is visible.
+  const isDemo = realCustomers.length === 0;
+  const customers = useMemo(() => (isDemo ? buildDemoCustomers() : realCustomers), [isDemo, realCustomers]);
+
+  const avgLtv = customers.length ? Math.round(customers.reduce((s, c) => s + c.totalSpent, 0) / customers.length) : 0;
+  const repeatPct = customers.length ? Math.round((customers.filter((c) => c.orderCount > 1).length / customers.length) * 100) : 0;
 
   const counts = useMemo(() => ({
     all: customers.length,
@@ -197,6 +235,33 @@ const DashboardCustomers = ({ orders }: DashboardCustomersProps) => {
           <p className="text-sm text-muted-foreground">נבנה אוטומטית מההזמנות שלך</p>
         </div>
         <span className="text-sm text-muted-foreground">{customers.length} לקוחות</span>
+      </div>
+
+      {isDemo && (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-3.5 flex items-center gap-2.5">
+          <Eye className="w-4 h-4 text-primary shrink-0" />
+          <p className="text-xs text-foreground">זוהי <b>תצוגת דמו</b> - כך ייראה ה-CRM שלכם עם לקוחות אמיתיים. הנתונים יתמלאו אוטומטית עם ההזמנה הראשונה.</p>
+        </div>
+      )}
+
+      {/* KPI summary - the "this is a real CRM" header */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="rounded-xl bg-card border border-border p-3.5">
+          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Users className="w-3.5 h-3.5" /> סה"כ לקוחות</div>
+          <div className="text-2xl font-semibold">{customers.length}</div>
+        </div>
+        <div className="rounded-xl bg-card border border-border p-3.5">
+          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Repeat className="w-3.5 h-3.5" /> לקוחות חוזרים</div>
+          <div className="text-2xl font-semibold">{repeatPct}%</div>
+        </div>
+        <div className="rounded-xl bg-card border border-border p-3.5">
+          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Crown className="w-3.5 h-3.5" /> ערך ממוצע (LTV)</div>
+          <div className="text-2xl font-semibold">{fmtPrice(avgLtv)}</div>
+        </div>
+        <div className="rounded-xl bg-card border border-border p-3.5">
+          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-amber-500" /> בסיכון / רדומים</div>
+          <div className="text-2xl font-semibold">{counts.at_risk + counts.dormant}</div>
+        </div>
       </div>
 
       {/* Opportunity: at-risk - catch them BEFORE they go dormant (better timing) */}
