@@ -423,7 +423,44 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
         <p className="text-sm text-muted-foreground">לחצו על תבנית או צבע — הפריוויו מתעדכן מיד</p>
       </div>
 
-      {/* Big live preview — first */}
+      {/* Banner — first, so user sets the hero image before seeing the preview */}
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">תמונה ראשית (באנר)</p>
+            <p className="text-xs text-muted-foreground">התמונה הגדולה בראש האתר - אופציונלי</p>
+          </div>
+          {bannerPreview && (
+            <button onClick={clearBanner} className="text-muted-foreground hover:text-foreground transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        {bannerPreview ? (
+          <img src={bannerPreview} alt="banner preview" className="w-full h-28 object-cover rounded-lg" />
+        ) : (
+          <div className="flex gap-2">
+            <input ref={bannerFileRef} type="file" accept="image/*" className="hidden" onChange={handleBannerFile} />
+            <button
+              onClick={() => bannerFileRef.current?.click()}
+              className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg border border-dashed border-border hover:border-primary/50 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              העלו תמונה
+            </button>
+            <button
+              onClick={generateBanner}
+              disabled={generatingBanner}
+              className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg border border-dashed border-primary/40 text-sm text-primary hover:bg-primary/5 transition-colors disabled:opacity-50"
+            >
+              {generatingBanner ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+              {generatingBanner ? "יוצר..." : "צרו עם AI"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Big live preview */}
       <div className="rounded-xl overflow-hidden border border-white/10 shadow-xl" style={{ background: "#0f0f0f" }}>
         <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/10 bg-[#1a1a1a]">
           <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
@@ -442,7 +479,7 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
         </div>
       </div>
 
-      {/* Template selector — thumbnails below preview */}
+      {/* Template selector — thumbnails */}
       <div>
         <p className="text-sm font-medium text-foreground mb-2">בחרו תבנית</p>
         <div className="grid grid-cols-4 gap-2">
@@ -525,43 +562,6 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
             {scanning ? "סורק..." : "חלץ מקובץ"}
           </button>
         </div>
-      </div>
-
-      {/* Banner */}
-      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium">תמונה ראשית (באנר)</p>
-            <p className="text-xs text-muted-foreground">התמונה הגדולה בראש האתר - אופציונלי</p>
-          </div>
-          {bannerPreview && (
-            <button onClick={clearBanner} className="text-muted-foreground hover:text-foreground transition-colors">
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-        {bannerPreview ? (
-          <img src={bannerPreview} alt="banner preview" className="w-full h-28 object-cover rounded-lg" />
-        ) : (
-          <div className="flex gap-2">
-            <input ref={bannerFileRef} type="file" accept="image/*" className="hidden" onChange={handleBannerFile} />
-            <button
-              onClick={() => bannerFileRef.current?.click()}
-              className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg border border-dashed border-border hover:border-primary/50 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Upload className="w-4 h-4" />
-              העלו תמונה
-            </button>
-            <button
-              onClick={generateBanner}
-              disabled={generatingBanner}
-              className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg border border-dashed border-primary/40 text-sm text-primary hover:bg-primary/5 transition-colors disabled:opacity-50"
-            >
-              {generatingBanner ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-              {generatingBanner ? "יוצר..." : "צרו עם AI"}
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Sticky navigation */}
