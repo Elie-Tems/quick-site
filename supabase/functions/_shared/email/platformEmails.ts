@@ -453,12 +453,15 @@ export const subscriptionCancelled = (c: PlatformCtx): BuiltEmail => ({
 
 /** 13. New order notification to the MERCHANT. */
 export const newOrderMerchant = (c: PlatformCtx): BuiltEmail => ({
-  subject: "צ'אצ'ינג! 🛍️ קיבלתם הזמנה חדשה",
+  // Lead with the money - business owners respond to the amount, not "new order".
+  subject: c.amountIls
+    ? `💰 הידד! נכנסה הזמנה על ${ils(c.amountIls)}`
+    : "💰 הידד! נכנסה הזמנה חדשה",
   html: renderEmail({
     sender: siangoSender(c),
-    previewText: "הרגע של ריקוד קטן בכיסא",
+    previewText: c.amountIls ? `${ils(c.amountIls)} בדרך אליכם` : "הרגע של ריקוד קטן בכיסא",
     bodyHtml:
-      h1("הזמנה חדשה נחתה! 🛍️🎉") +
+      h1(c.amountIls ? `${ils(c.amountIls)} בדרך אליכם! 🎉` : "הזמנה חדשה נחתה! 🎉") +
       p(`${hi(c)}מישהו בדיוק קנה אצלכם${c.amountIls ? ` בסך ${ils(c.amountIls)}` : ""} ב-${biz(c)}. זה הרגע שבו מותר לעשות ריקוד קטן בכיסא - מגיע לכם. 💃`) +
       emailHighlight("📦 כל הפרטים (מה הוזמן, פרטי הלקוח, כתובת) מחכים לכם בדשבורד.") +
       emailButton("לצפייה בהזמנה", dash(c), BRAND),

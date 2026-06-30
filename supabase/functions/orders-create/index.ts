@@ -2,6 +2,8 @@
 // can never submit a manipulated price. Mirrors the price logic in payments-create.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendViaResend } from "../_shared/email/resend.ts";
+import { newOrderMerchant } from "../_shared/email/platformEmails.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -41,7 +43,7 @@ Deno.serve(async (req) => {
 
   const { data: business } = await admin
     .from("businesses")
-    .select("id, name, delivery_fee")
+    .select("id, name, delivery_fee, email")
     .eq("id", businessId)
     .single();
   if (!business) return json({ error: "Business not found" }, 404);
@@ -152,6 +154,24 @@ Deno.serve(async (req) => {
     orderItems.map((it) => ({ ...it, order_id: order.id }))
   );
   if (itemsErr) return json({ error: "Could not save order items" }, 500);
+
+  // Notify the merchant by email - money-first subject ("הידד! נכנסה הזמנה על ₪X").
+  // Works for every order, including COD / no-payment-configured. Best-effort.
+  const merchantEmail = (business as any).email;
+  if (merchantEmail) {
+    try {
+      const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
+      const mail = newOrderMerchant({
+        businessName: business.name,
+        amountIls: totalPrice,
+        dashboardUrl: `${siteUrl}/dashboard`,
+        recipientEmail: merchantEmail,
+      });
+      await sendViaResend({ to: merchantEmail, subject: mail.subject, html: mail.html, fromName: "Siango" });
+    } catch (e) {
+      console.warn("merchant order email failed:", e);
+    }
+  }
 
   const webhookUrl = Deno.env.get("VITE_ORDER_WEBHOOK_URL");
   if (webhookUrl) {

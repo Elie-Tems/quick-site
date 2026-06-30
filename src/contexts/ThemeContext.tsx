@@ -13,10 +13,9 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     const savedTheme = localStorage.getItem('dashboard-theme') as Theme;
-    // Default to dark - the dashboard is designed dark-first and fully tested
-    // there. Light mode still has some contrast gaps (e.g. inputs in portals),
-    // so new users start in dark; the toggle still lets them switch to light.
-    return savedTheme || 'dark';
+    // Default to LIGHT (Moti's call) - feels cleaner/more familiar for merchants.
+    // The toggle still lets them switch to dark and the choice is remembered.
+    return savedTheme || 'light';
   });
   const containerRef = useRef<HTMLDivElement>(null);
 
