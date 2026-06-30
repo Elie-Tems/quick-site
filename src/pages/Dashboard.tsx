@@ -23,6 +23,7 @@ import DashboardReviews from "@/components/dashboard/DashboardReviews";
 import DashboardSubscription from "@/components/dashboard/DashboardSubscription";
 import DashboardAIImages from "@/components/dashboard/DashboardAIImages";
 import DashboardAIGeneratedImages from "@/components/dashboard/DashboardAIGeneratedImages";
+import DashboardTour, { hasSeenTour } from "@/components/dashboard/DashboardTour";
 import DashboardShipping from "@/components/dashboard/DashboardShipping";
 import DashboardPayments from "@/components/dashboard/DashboardPayments";
 import DashboardUsage from "@/components/dashboard/DashboardUsage";
@@ -427,6 +428,12 @@ const Dashboard = () => {
   // Flags for feature availability (נווט מסתמך עליהם להצגת טאבים מתקדמים)
   const hasProducts = (dbProducts?.length ?? 0) > 0;
 
+  // First-visit guided tour of the dashboard (shown once per merchant).
+  const [showTour, setShowTour] = useState(false);
+  useEffect(() => {
+    if (business?.id && !hasSeenTour()) setShowTour(true);
+  }, [business?.id]);
+
   // Show loading state
   const isLoading = authLoading || profileLoading || businessLoading;
   
@@ -688,6 +695,7 @@ const Dashboard = () => {
   return (
     <ThemeProvider>
       <SEOHead title="לוח ניהול | סיאנגו" noindex={true} />
+      {showTour && <DashboardTour onClose={() => setShowTour(false)} />}
       <div className="min-h-screen bg-muted/30">
         <DashboardHeader
           businessName={settings.name}
