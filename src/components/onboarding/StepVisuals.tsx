@@ -259,7 +259,6 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
   businessName: string;
 }) => {
   const display = userProducts.length > 0 ? userProducts : template.products;
-  const hero = bannerImage || template.heroImage;
   const bg = "#0f0f0f";
   const name = businessName || "החנות שלי";
 
@@ -275,18 +274,27 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
     </div>
   );
 
+  const HeroPlaceholder = ({ height }: { height: number }) => (
+    <div className="flex flex-col items-center justify-center gap-2 shrink-0 border-b border-white/5" style={{ height, background: "#141414" }}>
+      <Upload className="w-5 h-5 text-white/20" />
+      <span className="text-xs text-white/25">העלו תמונה למעלה לתצוגה מלאה</span>
+    </div>
+  );
+
   if (template.heroLayout === "split") return (
     <div className="w-full h-full flex flex-col overflow-hidden" style={{ background: bg }}>
       <Nav />
-      <div className="flex flex-row overflow-hidden" style={{ height: '150px' }}>
-        <div className="w-[42%] flex flex-col justify-center px-4 py-3 shrink-0" style={{ background: primaryColor }}>
-          <span className="text-xl font-black text-white leading-tight mb-2">{name}</span>
-          <div className="px-2.5 py-1 text-xs font-bold text-white w-fit bg-black/25 rounded">קנו עכשיו</div>
+      {bannerImage ? (
+        <div className="flex flex-row overflow-hidden" style={{ height: '150px' }}>
+          <div className="w-[42%] flex flex-col justify-center px-4 py-3 shrink-0" style={{ background: primaryColor }}>
+            <span className="text-xl font-black text-white leading-tight mb-2">{name}</span>
+            <div className="px-2.5 py-1 text-xs font-bold text-white w-fit bg-black/25 rounded">קנו עכשיו</div>
+          </div>
+          <div className="flex-1 relative overflow-hidden">
+            <img src={bannerImage} alt="" className="w-full h-full object-cover" />
+          </div>
         </div>
-        <div className="flex-1 relative overflow-hidden">
-          <img src={hero} alt="" className="w-full h-full object-cover" />
-        </div>
-      </div>
+      ) : <HeroPlaceholder height={150} />}
       <BigProductGrid products={display} primaryColor={primaryColor} />
     </div>
   );
@@ -294,14 +302,16 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
   if (template.heroLayout === "centered") return (
     <div className="w-full h-full flex flex-col overflow-hidden" style={{ background: bg }}>
       <Nav />
-      <div className="relative overflow-hidden shrink-0" style={{ height: '130px' }}>
-        <img src={hero} alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/55" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <span className="text-xl font-black text-white leading-tight mb-2">{name}</span>
-          <div className="px-3 py-1 text-xs font-bold text-white rounded-full" style={{ background: primaryColor }}>גלו עכשיו</div>
+      {bannerImage ? (
+        <div className="relative overflow-hidden shrink-0" style={{ height: '130px' }}>
+          <img src={bannerImage} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/55" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+            <span className="text-xl font-black text-white leading-tight mb-2">{name}</span>
+            <div className="px-3 py-1 text-xs font-bold text-white rounded-full" style={{ background: primaryColor }}>גלו עכשיו</div>
+          </div>
         </div>
-      </div>
+      ) : <HeroPlaceholder height={130} />}
       <BigProductGrid products={display} primaryColor={primaryColor} />
     </div>
   );
@@ -309,13 +319,15 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
   return (
     <div className="w-full h-full flex flex-col overflow-hidden" style={{ background: bg }}>
       <Nav />
-      <div className="relative overflow-hidden shrink-0" style={{ height: '140px' }}>
-        <img src={hero} alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(0,0,0,.8) 0%,rgba(0,0,0,.2) 60%,transparent 100%)" }} />
-        <div className="absolute bottom-3 right-4 text-right">
-          <span className="text-2xl font-black text-white leading-tight block">{name}</span>
+      {bannerImage ? (
+        <div className="relative overflow-hidden shrink-0" style={{ height: '140px' }}>
+          <img src={bannerImage} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(0,0,0,.8) 0%,rgba(0,0,0,.2) 60%,transparent 100%)" }} />
+          <div className="absolute bottom-3 right-4 text-right">
+            <span className="text-2xl font-black text-white leading-tight block">{name}</span>
+          </div>
         </div>
-      </div>
+      ) : <HeroPlaceholder height={140} />}
       <BigProductGrid products={display} primaryColor={primaryColor} />
     </div>
   );
