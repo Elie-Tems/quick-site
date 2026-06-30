@@ -449,7 +449,20 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
           )}
         </div>
         {bannerPreview ? (
-          <img src={bannerPreview} alt="banner preview" className="w-full h-28 object-cover rounded-lg" />
+          <div className="flex items-center gap-3">
+            <img src={bannerPreview} alt="banner" className="w-16 h-10 object-cover rounded-lg shrink-0 border border-white/10" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-foreground font-medium">תמונה הועלתה</p>
+              <p className="text-xs text-muted-foreground">נראית בפריוויו למטה</p>
+            </div>
+            <input ref={bannerFileRef} type="file" accept="image/*" className="hidden" onChange={handleBannerFile} />
+            <button
+              onClick={() => bannerFileRef.current?.click()}
+              className="text-xs text-primary hover:underline shrink-0"
+            >
+              החלף
+            </button>
+          </div>
         ) : (
           <div className="flex gap-2">
             <input ref={bannerFileRef} type="file" accept="image/*" className="hidden" onChange={handleBannerFile} />
