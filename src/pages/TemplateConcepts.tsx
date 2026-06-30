@@ -24,7 +24,7 @@ const TemplateConcepts = () => {
     <div dir="rtl" style={{ minHeight: "100vh", background: "#fbfbfa", color: "#111", fontFamily: "system-ui, sans-serif" }}>
       <div style={{ maxWidth: 1080, margin: "0 auto", padding: "40px 20px 80px" }}>
         <div style={{ marginBottom: 8, fontSize: 13, letterSpacing: 2, color: "#0E9F6E", fontWeight: 600 }}>SIANGO · קונספט</div>
-        <h1 style={{ fontSize: 30, fontWeight: 700, margin: "0 0 8px" }}>10 ארכיטיפים לתבניות חנות</h1>
+        <h1 style={{ fontSize: 30, fontWeight: 700, margin: "0 0 8px" }}>15 ארכיטיפים לתבניות חנות</h1>
         <p style={{ fontSize: 16, color: "#555", lineHeight: 1.6, maxWidth: 680, margin: 0 }}>
           לא וריאציות של אותו אתר - אלא עולמות עיצוב שונים מהקצה לקצה: מבנה, טיפוגרפיה, צבעוניות ומוד.
           המטרה: ששני סוחרים שיבחרו תבניות שונות יקבלו אתרים שנראים מעולמות אחרים. אלו סקיצות לדיון; הבנייה המלאה (responsive, RTL, תצוגה חיה) אחרי אישור.
@@ -123,6 +123,49 @@ const TemplateConcepts = () => {
               <div style={{ textAlign: "center", padding: "12px 0 3px", fontFamily: serif, fontSize: 17, color: "#a86b78" }}>Beauté</div>
               <div style={{ flex: 1, margin: "2px 22px", background: "#f3d9e0", borderRadius: 60 }} />
               <div style={{ display: "flex", gap: 6, padding: "10px 22px" }}><div style={sq("#f6e3e8", { height: 22, borderRadius: 50 })} /><div style={sq("#f6e3e8", { height: 22, borderRadius: 50 })} /></div>
+            </div>
+          </Card>
+
+          <Card name="11 · אוכל" vibe="חם, קולינרי, תיאבון · מסעדות">
+            <div style={{ background: "#fff7ef", display: "flex", flexDirection: "column", height: "100%" }}>
+              <div style={{ textAlign: "center", padding: "11px 0 4px", fontFamily: serif, fontSize: 16, color: "#9c3a1f" }}>המטבח שלנו</div>
+              <div style={{ flex: 1, margin: "2px 16px", background: "#e3a06f", borderRadius: 6 }} />
+              <div style={{ display: "flex", gap: 6, padding: "10px 16px" }}><div style={sq("#f1cba6", { height: 22, borderRadius: 5 })} /><div style={sq("#f1cba6", { height: 22, borderRadius: 5 })} /><div style={sq("#f1cba6", { height: 22, borderRadius: 5 })} /></div>
+            </div>
+          </Card>
+
+          <Card name="12 · ספורט" vibe="דינמי, חשמלי · כושר">
+            <div style={{ background: "#0d1b2a", display: "flex", flexDirection: "column", height: "100%" }}>
+              <div style={{ padding: 12, flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                <div style={{ fontSize: 25, fontWeight: 800, fontStyle: "italic", color: "#2cff9e", lineHeight: 0.95, letterSpacing: -1 }}>PUSH<br />HARDER</div>
+              </div>
+              <div style={{ display: "flex", gap: 6, padding: 12 }}><div style={sq("#13263a", { height: 26, borderRadius: 4 })} /><div style={sq("#2cff9e", { height: 26, borderRadius: 4 })} /><div style={sq("#13263a", { height: 26, borderRadius: 4 })} /></div>
+            </div>
+          </Card>
+
+          <Card name="13 · סקנדינבי" vibe="רגוע, בהיר, פונקציונלי · נורדי">
+            <div style={{ background: "#f4f1ea", display: "flex", flexDirection: "column", height: "100%" }}>
+              <div style={{ padding: "12px 16px 4px", fontSize: 13, color: "#6b675c", letterSpacing: 1 }}>hem.</div>
+              <div style={{ flex: 1, margin: "0 16px", background: "#ddd6c8", borderRadius: 3 }} />
+              <div style={{ display: "flex", gap: 8, padding: "10px 16px" }}><div style={sq("#e6e1d4", { height: 20, borderRadius: 3 })} /><div style={sq("#e6e1d4", { height: 20, borderRadius: 3 })} /></div>
+            </div>
+          </Card>
+
+          <Card name="14 · רטרו" vibe="צבעי 90s, צ׳אנקי, שובב · Y2K">
+            <div style={{ background: "#fdeede", display: "flex", flexDirection: "column", height: "100%" }}>
+              <div style={{ display: "flex", gap: 6, padding: 12, flex: 1 }}>
+                <div style={{ flex: 1, background: "#ff7a3d", borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 16 }}>SHOP</div>
+                <div style={{ flex: 1, background: "#1fb6a6", borderRadius: 16 }} />
+              </div>
+              <div style={{ display: "flex", gap: 6, padding: "0 12px 12px" }}><div style={sq("#ffd23f", { height: 24, borderRadius: 12 })} /><div style={sq("#c44dff", { height: 24, borderRadius: 12 })} /><div style={sq("#ff7a3d", { height: 24, borderRadius: 12 })} /></div>
+            </div>
+          </Card>
+
+          <Card name="15 · בוטני" vibe="ירוק, אורגני, רענן · אקו וצמחים">
+            <div style={{ background: "#edf3e9", display: "flex", flexDirection: "column", height: "100%" }}>
+              <div style={{ textAlign: "center", padding: "12px 0 3px", fontFamily: serif, fontSize: 16, color: "#2f5a3a" }}>טבעי</div>
+              <div style={{ flex: 1, margin: "2px 20px", background: "#9cbf95", borderRadius: "50px 8px 50px 8px" }} />
+              <div style={{ display: "flex", gap: 6, padding: "10px 20px" }}><div style={sq("#cfe0c6", { height: 22, borderRadius: 8 })} /><div style={sq("#cfe0c6", { height: 22, borderRadius: 8 })} /><div style={sq("#cfe0c6", { height: 22, borderRadius: 8 })} /></div>
             </div>
           </Card>
 
