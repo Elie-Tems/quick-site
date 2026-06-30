@@ -40,6 +40,8 @@ export interface StoreTemplate {
     hoverEffect: 'zoom' | 'lift' | 'none';
     borderStyle: 'none' | 'subtle' | 'bold';
   };
+  /** פריסת גריד המוצרים בחנות */
+  productGrid?: 'uniform-3col' | 'featured' | '2col';
   /** קטגוריות מוצרים מוצעות לתבנית - יופיעו באונבורדינג ובקטגוריות בדשבורד */
   defaultCategories?: Array<{ name: string; description?: string }>;
   /** Tailwind CSS classes for implementing this template */
@@ -80,6 +82,7 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       hoverEffect: 'lift',
       borderStyle: 'none',
     },
+    productGrid: 'uniform-3col',
     cssClasses: {
       container: "max-w-6xl mx-auto px-8 md:px-16",
       hero: "h-screen flex items-center justify-center relative overflow-hidden",
@@ -166,6 +169,7 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       hoverEffect: 'lift',
       borderStyle: 'subtle',
     },
+    productGrid: 'featured',
     cssClasses: {
       container: "max-w-5xl mx-auto px-4 md:px-8",
       hero: "min-h-[60vh] bg-[#4a7c59] flex flex-col items-center justify-center text-center px-6 py-20",
@@ -209,6 +213,7 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       hoverEffect: 'lift',
       borderStyle: 'subtle',
     },
+    productGrid: '2col',
     cssClasses: {
       container: "max-w-7xl mx-auto px-4 md:px-8",
       hero: "min-h-[65vh] bg-[#1e2433] grid md:grid-cols-2 items-center gap-8 px-8 md:px-16",
@@ -439,6 +444,7 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       hoverEffect: 'zoom',
       borderStyle: 'subtle',
     },
+    productGrid: 'uniform-3col',
     defaultCategories: [
       { name: 'תכשיטים', description: 'טבעות, עגילים ושרשראות' },
       { name: 'אביזרים', description: 'תיקים, שעונים ואביזרים' },

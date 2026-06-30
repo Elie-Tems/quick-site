@@ -40,6 +40,7 @@ interface StoreProductsProps {
   favoriteIds?: Set<string>;
   onToggleFavorite?: (productId: string) => void;
   productCardStyle?: StoreTemplate['productCardStyle'];
+  productGrid?: StoreTemplate['productGrid'];
 }
 
 type SortOption = "default" | "price_asc" | "price_desc";
@@ -58,7 +59,7 @@ const FILTER_LABELS: Record<FilterOption, string> = {
   hot: "חם",
 };
 
-const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, productCardStyle }: StoreProductsProps) => {
+const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, productCardStyle, productGrid }: StoreProductsProps) => {
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
@@ -383,27 +384,51 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
           </div>
         </div>
 
-        {/* ── PRODUCTS GRID - Mixed editorial layout ── */}
+        {/* ── PRODUCTS GRID ── */}
 
-        {/* Mobile: clean uniform 2-col grid */}
+        {/* Mobile: always 2-col uniform */}
         <div className="grid grid-cols-2 gap-3 md:hidden">
           {paginatedProducts.map((product) => (
             <ProductCard key={product.id} product={product} variant="normal" />
           ))}
         </div>
 
-        {/* Desktop: 4-col editorial grid with occasional span */}
-        <div className="hidden md:grid md:grid-cols-4 gap-4 md:gap-5 auto-rows-auto">
-          {paginatedProducts.map((product, i) => {
-            // Every 9th item is a wide 2-col card
-            const isWideCard = i % 9 === 4;
-            return (
-              <div key={product.id} className={isWideCard ? "md:col-span-2" : ""}>
-                <ProductCard product={product} variant={isWideCard ? "wide" : "normal"} />
-              </div>
-            );
-          })}
-        </div>
+        {/* Desktop: grid varies by template */}
+        {(!productGrid || productGrid === 'uniform-3col') && (
+          <div className="hidden md:grid md:grid-cols-3 gap-5 auto-rows-auto">
+            {paginatedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} variant="normal" />
+            ))}
+          </div>
+        )}
+
+        {productGrid === 'featured' && (
+          <div className="hidden md:grid md:grid-cols-3 gap-5 auto-rows-auto">
+            {paginatedProducts.map((product, i) => {
+              // First product spans 2 cols (featured hero)
+              if (i === 0) {
+                return (
+                  <div key={product.id} className="md:col-span-2 md:row-span-2">
+                    <ProductCard product={product} variant="hero" />
+                  </div>
+                );
+              }
+              return (
+                <div key={product.id}>
+                  <ProductCard product={product} variant="normal" />
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {productGrid === '2col' && (
+          <div className="hidden md:grid md:grid-cols-2 gap-6 auto-rows-auto">
+            {paginatedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} variant="wide" />
+            ))}
+          </div>
+        )}
 
         {/* Pagination Controls */}
         {totalPages > 1 && (

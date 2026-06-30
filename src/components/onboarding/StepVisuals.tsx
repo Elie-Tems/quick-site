@@ -82,6 +82,7 @@ interface TemplateStyle {
   description: string;
   heroImage: string;
   heroLayout: "full-image" | "split" | "centered";
+  productGrid: "uniform-3col" | "featured" | "2col";
   products: Array<{ img: string; name: string; price: string; sale?: boolean }>;
   audience: "general" | "religious-friendly";
 }
@@ -89,7 +90,7 @@ interface TemplateStyle {
 const templateStyles: TemplateStyle[] = [
   {
     id: "luxury-boutique", name: "בוטיק יוקרתי", description: "קלאסי, אלגנטי",
-    audience: "general", heroLayout: "full-image",
+    audience: "general", heroLayout: "full-image", productGrid: "uniform-3col",
     heroImage: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80",
     products: [
       { img: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&q=80", name: "שמלה", price: "₪849" },
@@ -99,7 +100,7 @@ const templateStyles: TemplateStyle[] = [
   },
   {
     id: "nature-organic", name: "טבעי ואורגני", description: "ירוק, רגוע, אמין",
-    audience: "religious-friendly", heroLayout: "centered",
+    audience: "religious-friendly", heroLayout: "centered", productGrid: "featured",
     heroImage: "https://images.unsplash.com/photo-1466781783364-36c955e42a7f?w=800&q=80",
     products: [
       { img: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&q=80", name: "סבון", price: "₪49" },
@@ -109,7 +110,7 @@ const templateStyles: TemplateStyle[] = [
   },
   {
     id: "tech-minimal", name: "טכנולוגי ומינימלי", description: "כהה, מדויק, מוצר בצד",
-    audience: "religious-friendly", heroLayout: "split",
+    audience: "religious-friendly", heroLayout: "split", productGrid: "2col",
     heroImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80",
     products: [
       { img: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&q=80", name: "אוזניות", price: "₪1,299" },
@@ -119,7 +120,7 @@ const templateStyles: TemplateStyle[] = [
   },
   {
     id: "royal-purple", name: "סגול מלכותי", description: "דרמטי, יוקרתי",
-    audience: "general", heroLayout: "full-image",
+    audience: "general", heroLayout: "full-image", productGrid: "uniform-3col",
     heroImage: "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=800&q=80",
     products: [
       { img: "https://images.unsplash.com/photo-1608042314453-ae338d80c427?w=400&q=80", name: "צמיד", price: "₪3,499", sale: true },
@@ -136,27 +137,77 @@ const PRESET_COLORS = [
 
 // ─── Mini thumbnail preview (for selector row) ────────────────────────────────
 
-const MiniProductGrid = ({ products, primaryColor }: { products: TemplateStyle["products"]; primaryColor: string }) => (
-  <div className="p-1 grid grid-cols-3 gap-0.5">
-    {products.map((p, i) => (
-      <div key={i} className="relative overflow-hidden rounded-sm bg-[#1a1a1a]">
-        <div className="aspect-square overflow-hidden">
-          {p.img ? (
-            <img src={p.img} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-[#262626]">
-              <ShoppingBag className="w-2 h-2 text-white/25" />
+const MiniProductGrid = ({ products, primaryColor, productGrid = "uniform-3col" }: { products: TemplateStyle["products"]; primaryColor: string; productGrid?: TemplateStyle["productGrid"] }) => {
+  if (productGrid === "featured") {
+    const [first, ...rest] = products;
+    return (
+      <div className="p-1 grid grid-cols-3 gap-0.5">
+        {first && (
+          <div className="col-span-2 relative overflow-hidden rounded-sm bg-[#1a1a1a]">
+            <div className="aspect-[4/3] overflow-hidden">
+              {first.img ? <img src={first.img} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-[#262626]"><ShoppingBag className="w-2 h-2 text-white/25" /></div>}
             </div>
-          )}
-        </div>
-        <div className="px-0.5 py-0.5">
-          <div className="text-[4.5px] font-medium truncate text-white/80">{p.name}</div>
-          <span className="text-[5.5px] font-bold" style={{ color: primaryColor }}>{p.price}</span>
+            <div className="px-0.5 py-0.5">
+              <div className="text-[4.5px] font-medium truncate text-white/80">{first.name}</div>
+              <span className="text-[5.5px] font-bold" style={{ color: primaryColor }}>{first.price}</span>
+            </div>
+          </div>
+        )}
+        <div className="flex flex-col gap-0.5">
+          {rest.map((p, i) => (
+            <div key={i} className="relative overflow-hidden rounded-sm bg-[#1a1a1a]">
+              <div className="aspect-square overflow-hidden">
+                {p.img ? <img src={p.img} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-[#262626]"><ShoppingBag className="w-2 h-2 text-white/25" /></div>}
+              </div>
+              <div className="px-0.5 py-0.5">
+                <div className="text-[4.5px] font-medium truncate text-white/80">{p.name}</div>
+                <span className="text-[5.5px] font-bold" style={{ color: primaryColor }}>{p.price}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    ))}
-  </div>
-);
+    );
+  }
+  if (productGrid === "2col") {
+    return (
+      <div className="p-1 grid grid-cols-2 gap-0.5">
+        {products.map((p, i) => (
+          <div key={i} className="relative overflow-hidden rounded-sm bg-[#1a1a1a]">
+            <div className="aspect-[4/3] overflow-hidden">
+              {p.img ? <img src={p.img} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-[#262626]"><ShoppingBag className="w-2 h-2 text-white/25" /></div>}
+            </div>
+            <div className="px-0.5 py-0.5">
+              <div className="text-[4.5px] font-medium truncate text-white/80">{p.name}</div>
+              <span className="text-[5.5px] font-bold" style={{ color: primaryColor }}>{p.price}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div className="p-1 grid grid-cols-3 gap-0.5">
+      {products.map((p, i) => (
+        <div key={i} className="relative overflow-hidden rounded-sm bg-[#1a1a1a]">
+          <div className="aspect-square overflow-hidden">
+            {p.img ? (
+              <img src={p.img} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-[#262626]">
+                <ShoppingBag className="w-2 h-2 text-white/25" />
+              </div>
+            )}
+          </div>
+          <div className="px-0.5 py-0.5">
+            <div className="text-[4.5px] font-medium truncate text-white/80">{p.name}</div>
+            <span className="text-[5.5px] font-bold" style={{ color: primaryColor }}>{p.price}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const MiniTemplatePreview = ({ template, primaryColor, userProducts, businessName, bannerImage }: {
   template: TemplateStyle; primaryColor: string; userProducts: TemplateStyle["products"]; businessName: string; bannerImage: string | null;
@@ -182,7 +233,7 @@ const MiniTemplatePreview = ({ template, primaryColor, userProducts, businessNam
           <img src={heroImg} alt="" className="w-full h-full object-cover" />
         </div>
       </div>
-      <MiniProductGrid products={display} primaryColor={primaryColor} />
+      <MiniProductGrid products={display} primaryColor={primaryColor} productGrid={template.productGrid} />
     </div>
   );
 
@@ -200,7 +251,7 @@ const MiniTemplatePreview = ({ template, primaryColor, userProducts, businessNam
           <span className="text-[6px] font-black text-white text-center truncate">{label}</span>
         </div>
       </div>
-      <MiniProductGrid products={display} primaryColor={primaryColor} />
+      <MiniProductGrid products={display} primaryColor={primaryColor} productGrid={template.productGrid} />
     </div>
   );
 
@@ -219,37 +270,51 @@ const MiniTemplatePreview = ({ template, primaryColor, userProducts, businessNam
           <span className="text-[5px] font-black text-white leading-tight block truncate">{label}</span>
         </div>
       </div>
-      <MiniProductGrid products={display} primaryColor={primaryColor} />
+      <MiniProductGrid products={display} primaryColor={primaryColor} productGrid={template.productGrid} />
     </div>
   );
 };
 
 // ─── Big live preview ─────────────────────────────────────────────────────────
 
-const BigProductGrid = ({ products, primaryColor }: { products: TemplateStyle["products"]; primaryColor: string }) => (
-  <div className="p-3 grid grid-cols-3 gap-2">
-    {products.map((p, i) => (
-      <div key={i} className="relative overflow-hidden rounded-lg bg-[#1a1a1a]">
-        <div className="aspect-square overflow-hidden">
-          {p.img ? (
-            <img src={p.img} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-[#262626]">
-              <ShoppingBag className="w-6 h-6 text-white/25" />
-            </div>
-          )}
-          {p.sale && (
-            <div className="absolute top-1 right-1 px-1 py-0.5 text-[9px] font-bold text-white rounded bg-red-600">מבצע</div>
-          )}
-        </div>
-        <div className="p-1.5">
-          <div className="text-xs font-medium truncate text-white mb-0.5">{p.name}</div>
-          <span className="text-sm font-bold" style={{ color: primaryColor }}>{p.price}</span>
+const BigProductGrid = ({ products, primaryColor, productGrid = "uniform-3col" }: { products: TemplateStyle["products"]; primaryColor: string; productGrid?: TemplateStyle["productGrid"] }) => {
+  const Card = ({ p, aspectClass }: { p: TemplateStyle["products"][0]; aspectClass: string }) => (
+    <div className="relative overflow-hidden rounded-lg bg-[#1a1a1a]">
+      <div className={`${aspectClass} overflow-hidden`}>
+        {p.img ? <img src={p.img} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-[#262626]"><ShoppingBag className="w-6 h-6 text-white/25" /></div>}
+        {p.sale && <div className="absolute top-1 right-1 px-1 py-0.5 text-[9px] font-bold text-white rounded bg-red-600">מבצע</div>}
+      </div>
+      <div className="p-1.5">
+        <div className="text-xs font-medium truncate text-white mb-0.5">{p.name}</div>
+        <span className="text-sm font-bold" style={{ color: primaryColor }}>{p.price}</span>
+      </div>
+    </div>
+  );
+
+  if (productGrid === "featured") {
+    const [first, ...rest] = products;
+    return (
+      <div className="p-3 grid grid-cols-3 gap-2">
+        {first && <div className="col-span-2"><Card p={first} aspectClass="aspect-[4/3]" /></div>}
+        <div className="flex flex-col gap-2">
+          {rest.map((p, i) => <Card key={i} p={p} aspectClass="aspect-square" />)}
         </div>
       </div>
-    ))}
-  </div>
-);
+    );
+  }
+  if (productGrid === "2col") {
+    return (
+      <div className="p-3 grid grid-cols-2 gap-2">
+        {products.map((p, i) => <Card key={i} p={p} aspectClass="aspect-[4/3]" />)}
+      </div>
+    );
+  }
+  return (
+    <div className="p-3 grid grid-cols-3 gap-2">
+      {products.map((p, i) => <Card key={i} p={p} aspectClass="aspect-square" />)}
+    </div>
+  );
+};
 
 const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage, businessName }: {
   template: TemplateStyle;
@@ -295,7 +360,7 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
           </div>
         </div>
       ) : <HeroPlaceholder height={150} />}
-      <BigProductGrid products={display} primaryColor={primaryColor} />
+      <BigProductGrid products={display} primaryColor={primaryColor} productGrid={template.productGrid} />
     </div>
   );
 
@@ -312,7 +377,7 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
           </div>
         </div>
       ) : <HeroPlaceholder height={130} />}
-      <BigProductGrid products={display} primaryColor={primaryColor} />
+      <BigProductGrid products={display} primaryColor={primaryColor} productGrid={template.productGrid} />
     </div>
   );
 
@@ -328,7 +393,7 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
           </div>
         </div>
       ) : <HeroPlaceholder height={140} />}
-      <BigProductGrid products={display} primaryColor={primaryColor} />
+      <BigProductGrid products={display} primaryColor={primaryColor} productGrid={template.productGrid} />
     </div>
   );
 };

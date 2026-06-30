@@ -733,6 +733,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
           favoriteIds={favoriteIds}
           onToggleFavorite={toggleFavorite}
           productCardStyle={template?.productCardStyle}
+          productGrid={template?.productGrid}
         />
 
         {business.about_text && (
