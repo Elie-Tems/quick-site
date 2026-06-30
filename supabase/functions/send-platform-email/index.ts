@@ -174,8 +174,19 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      // Resolve the recipient's language so localized templates render in it.
+      // Caller-provided ctx.lang wins; otherwise look it up from their account.
+      const VALID_LANGS = ["he", "en", "ar", "fr", "ru"];
+      let lang: string = (ctx && (ctx as any).lang) || "";
+      if (!VALID_LANGS.includes(lang)) {
+        try {
+          const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+          const { data } = await admin.rpc("email_preferred_lang", { p_email: to });
+          lang = typeof data === "string" && VALID_LANGS.includes(data) ? data : "he";
+        } catch { lang = "he"; }
+      }
       // Embed the recipient address so the email's unsubscribe link is one-click.
-      const b = builder({ ...(ctx || {}), recipientEmail: to });
+      const b = builder({ ...(ctx || {}), recipientEmail: to, lang });
       subject = b.subject;
       html = b.html;
     }
