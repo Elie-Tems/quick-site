@@ -13,6 +13,8 @@ import { toast } from "sonner";
 interface DashboardCustomersProps {
   orders: Order[];
   businessId?: string;
+  /** Force the labelled demo view (e.g. when the premium CRM isn't activated yet) */
+  demoMode?: boolean;
 }
 
 // Quick contact helpers.
@@ -93,7 +95,7 @@ const buildDemoCustomers = (): CustomerRow[] => {
   ];
 };
 
-const DashboardCustomers = ({ orders, businessId }: DashboardCustomersProps) => {
+const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomersProps) => {
   const [query, setQuery] = useState("");
   const [segment, setSegment] = useState<SegmentFilter>("all");
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -172,8 +174,8 @@ const DashboardCustomers = ({ orders, businessId }: DashboardCustomersProps) => 
     return rows.sort((a, b) => b.totalSpent - a.totalSpent);
   }, [orders]);
 
-  // No real customers yet -> show a labelled demo so the CRM's value is visible.
-  const isDemo = realCustomers.length === 0;
+  // No real customers yet (or premium not activated) -> labelled demo view.
+  const isDemo = demoMode || realCustomers.length === 0;
   const customers = useMemo(() => (isDemo ? buildDemoCustomers() : realCustomers), [isDemo, realCustomers]);
 
   const avgLtv = customers.length ? Math.round(customers.reduce((s, c) => s + c.totalSpent, 0) / customers.length) : 0;

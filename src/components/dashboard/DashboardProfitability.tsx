@@ -5,6 +5,8 @@ import { toast } from "sonner";
 
 interface DashboardProfitabilityProps {
   businessId?: string;
+  /** Show a labelled demo dataset (e.g. when the premium feature isn't activated) */
+  demoMode?: boolean;
 }
 
 interface ProductRow {
@@ -29,7 +31,20 @@ const fmtPrice = (n: number) =>
 
 const sellPrice = (p: ProductRow) => (p.is_on_sale && p.sale_price != null ? p.sale_price : p.price);
 
-const DashboardProfitability = ({ businessId }: DashboardProfitabilityProps) => {
+const DEMO_PRODUCTS: ProductRow[] = [
+  { id: "p1", name: "חולצת טי פרימיום", price: 120, sale_price: null, is_on_sale: false, cost_price: 45, supplier: "טקסטיל ישיר" },
+  { id: "p2", name: "כובע מצחייה", price: 79, sale_price: 59, is_on_sale: true, cost_price: 22, supplier: "טקסטיל ישיר" },
+  { id: "p3", name: "בקבוק תרמי", price: 95, sale_price: null, is_on_sale: false, cost_price: 80, supplier: "יבוא מהיר" },
+  { id: "p4", name: "תיק בד", price: 65, sale_price: null, is_on_sale: false, cost_price: 18, supplier: "אקו-בד" },
+];
+const DEMO_SOLD: SoldItem[] = [
+  { product_id: "p1", quantity: 12, price_at_order: 120, cost_at_order: 45 },
+  { product_id: "p2", quantity: 20, price_at_order: 59, cost_at_order: 22 },
+  { product_id: "p3", quantity: 8, price_at_order: 95, cost_at_order: 80 },
+  { product_id: "p4", quantity: 15, price_at_order: 65, cost_at_order: 18 },
+];
+
+const DashboardProfitability = ({ businessId, demoMode }: DashboardProfitabilityProps) => {
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [sold, setSold] = useState<SoldItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +52,13 @@ const DashboardProfitability = ({ businessId }: DashboardProfitabilityProps) => 
   const [drafts, setDrafts] = useState<Record<string, { cost: string; supplier: string }>>({});
 
   useEffect(() => {
+    if (demoMode) {
+      setProducts(DEMO_PRODUCTS);
+      setSold(DEMO_SOLD);
+      setDrafts(Object.fromEntries(DEMO_PRODUCTS.map((p) => [p.id, { cost: String(p.cost_price), supplier: p.supplier || "" }])));
+      setLoading(false);
+      return;
+    }
     if (!businessId) return;
     (async () => {
       setLoading(true);
@@ -63,7 +85,7 @@ const DashboardProfitability = ({ businessId }: DashboardProfitabilityProps) => 
       }
       setLoading(false);
     })();
-  }, [businessId]);
+  }, [businessId, demoMode]);
 
   const saveRow = async (id: string) => {
     const d = drafts[id];
@@ -122,7 +144,7 @@ const DashboardProfitability = ({ businessId }: DashboardProfitabilityProps) => 
   const lowMargin = withMargin.filter((p) => p.marginPct != null && p.marginPct < 15);
   const noCostCount = withMargin.filter((p) => !p.hasCost).length;
 
-  if (!businessId) return null;
+  if (!businessId && !demoMode) return null;
 
   return (
     <div className="space-y-4" dir="rtl">

@@ -10,6 +10,8 @@ import DashboardProducts, { type Product } from "@/components/dashboard/Dashboar
 import DashboardOrders, { type Order } from "@/components/dashboard/DashboardOrders";
 import DashboardCustomers from "@/components/dashboard/DashboardCustomers";
 import DashboardProfitability from "@/components/dashboard/DashboardProfitability";
+import PremiumOverlay from "@/components/dashboard/PremiumOverlay";
+import { useCrmEntitled } from "@/hooks/useCrmEntitled";
 import DashboardBanners, { type Banner } from "@/components/dashboard/DashboardBanners";
 import DashboardCoupons from "@/components/dashboard/DashboardCoupons";
 import DashboardSales from "@/components/dashboard/DashboardSales";
@@ -60,7 +62,8 @@ const Dashboard = () => {
   useReferralRewardNotification();
   
   const [currentView, setCurrentView] = useState<DashboardView>('home');
-  
+  const { entitled: crmEntitled } = useCrmEntitled();
+
   // Refetch business data when returning from payment
   useEffect(() => {
     const fromPayment = searchParams.get('from_payment');
@@ -546,9 +549,31 @@ const Dashboard = () => {
       case 'orders':
         return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} />;
       case 'customers':
-        return <DashboardCustomers orders={orders} businessId={business?.id} />;
+        return (
+          <PremiumOverlay
+            locked={!crmEntitled}
+            title="לקוחות / CRM"
+            description="כל הלקוחות שלכם במקום אחד - היסטוריית רכישות, סגמנטים, תגיות, הערות ופעולות מהירות."
+            bullets={["כרטיס לקוח מלא + ציר זמן", "סגמנטים: VIP / חוזרים / בסיכון", "תגיות והערות פנימיות", "שליחת הטבה בוואטסאפ + ייצוא לאקסל"]}
+            priceLabel="הפעלה ב-₪49 לחודש"
+            onUpgrade={() => setCurrentView('subscription')}
+          >
+            <DashboardCustomers orders={orders} businessId={business?.id} demoMode={!crmEntitled} />
+          </PremiumOverlay>
+        );
       case 'profitability':
-        return <DashboardProfitability businessId={business?.id} />;
+        return (
+          <PremiumOverlay
+            locked={!crmEntitled}
+            title="רווחיות וספקים"
+            description="כמה אתם באמת מרוויחים - לא רק כמה מכרתם. ניהול עלויות וספקים עם דוחות רווח."
+            bullets={["רווח ואחוז רווח לכל מוצר", "רווח גולמי מהמכירות", "התראת רווחיות נמוכה", "רווח לפי ספק"]}
+            priceLabel="כלול ב-CRM (₪49 לחודש)"
+            onUpgrade={() => setCurrentView('subscription')}
+          >
+            <DashboardProfitability businessId={business?.id} demoMode={!crmEntitled} />
+          </PremiumOverlay>
+        );
       case 'campaigns':
         return (
           <DashboardCampaigns 
