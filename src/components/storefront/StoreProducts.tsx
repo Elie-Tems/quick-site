@@ -1,4 +1,4 @@
-import { Plus, Heart, ShoppingBag, Package, Flame, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { Plus, Heart, ShoppingBag, Package, Flame, ChevronDown, SlidersHorizontal, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -65,6 +65,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -79,6 +80,12 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
 
   const displayedProducts = useMemo(() => {
     let list = regularProducts;
+    const q = searchQuery.trim().toLowerCase();
+    if (q) list = list.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      (p.description || "").toLowerCase().includes(q) ||
+      (p.brand || "").toLowerCase().includes(q) ||
+      (p.sku || "").toLowerCase().includes(q));
     if (filterBy === "sale") list = list.filter(p => p.isSale);
     else if (filterBy === "new") list = list.filter(p => p.isNew);
     else if (filterBy === "hot") list = list.filter(p => p.isHot);
@@ -87,12 +94,12 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
     else if (sortBy === "name_asc") list = [...list].sort((a, b) => a.name.localeCompare(b.name, "he"));
     else if (sortBy === "name_desc") list = [...list].sort((a, b) => b.name.localeCompare(a.name, "he"));
     return list;
-  }, [regularProducts, filterBy, sortBy]);
+  }, [regularProducts, filterBy, sortBy, searchQuery]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterBy, sortBy]);
+  }, [filterBy, sortBy, searchQuery]);
 
   // Pagination calculations
   const totalPages = Math.ceil(displayedProducts.length / itemsPerPage);
@@ -349,6 +356,23 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
 
           {/* Filter chips + sort - שורה שנייה במובייל, גלילה אופקית */}
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5 md:pb-0 md:flex-wrap md:justify-end">
+            {/* Product search */}
+            <div className="relative flex-shrink-0 order-first md:order-none w-full md:w-48">
+              <Search className="h-3.5 w-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="חיפוש מוצר..."
+                aria-label="חיפוש מוצר"
+                className="w-full h-9 rounded-md border border-foreground/15 bg-background pr-8 pl-7 text-sm focus:border-foreground/40 outline-none"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery("")} aria-label="נקה חיפוש" className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
             <div className="flex gap-1.5 flex-shrink-0">
               {(Object.keys(FILTER_LABELS) as FilterOption[]).map((key) => (
                 <button
