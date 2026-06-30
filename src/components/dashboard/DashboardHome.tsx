@@ -4,6 +4,7 @@ import type { DashboardView } from "./DashboardNav";
 import DashboardAnalytics from "./DashboardAnalytics";
 import ReferralBox from "./ReferralBox";
 import { AIImageUpsellCard } from "./AIImageUpsell";
+import PaymentsQuickStart from "@/components/payments/PaymentsQuickStart";
 
 interface DashboardHomeProps {
   stats: {
@@ -43,6 +44,9 @@ const DashboardHome = ({ stats, businessId, isPublished, hasAbout, onNavigate }:
   return (
     <div className="p-4 md:p-6 space-y-6">
       <h1 className="text-2xl font-bold text-foreground">דשבורד</h1>
+
+      {/* Payments not set up yet -> the prominent, first thing a merchant sees. */}
+      {!stats.paymentEnabled && <PaymentsQuickStart onConnect={() => onNavigate("payments")} />}
 
       {/* Launch checklist - guides a new store to go live; replaced by a success
           banner once everything is done. */}
