@@ -162,7 +162,7 @@ const MiniTemplatePreview = ({ template, primaryColor, userProducts, businessNam
   template: TemplateStyle; primaryColor: string; userProducts: TemplateStyle["products"]; businessName: string;
 }) => {
   const display = userProducts.length > 0 ? userProducts : template.products;
-  const heroImg = userProducts.find(p => p.img)?.img || template.heroImage;
+  const heroImg = template.heroImage;
   const label = businessName || "החנות שלי";
   const bg = "#0f0f0f";
 
@@ -259,7 +259,7 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
   businessName: string;
 }) => {
   const display = userProducts.length > 0 ? userProducts : template.products;
-  const hero = bannerImage || userProducts.find(p => p.img)?.img || template.heroImage;
+  const hero = bannerImage || template.heroImage;
   const bg = "#0f0f0f";
   const name = businessName || "החנות שלי";
 
