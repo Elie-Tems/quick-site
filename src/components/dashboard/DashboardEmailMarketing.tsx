@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
-  Mail, Users, Send, LayoutTemplate, Zap, BarChart3, Plus, Clock, Sparkles,
-  CheckCircle2, MousePointerClick, TrendingUp, Tag,
+  Mail, Users, Send, Zap, Plus, Clock, Sparkles,
+  MousePointerClick, Tag, ArrowRight,
 } from "lucide-react";
 import DashboardEmailEditor from "@/components/dashboard/DashboardEmailEditor";
 import DashboardEmailSend from "@/components/dashboard/DashboardEmailSend";
@@ -15,15 +15,12 @@ import { EMAIL_TEMPLATES, type TemplateBlock } from "@/lib/emailTemplates";
 // docs/communications-suite-plan.md. Channel sending is gated until a provider
 // (Resend / SES) + the shared contacts backbone go live.
 
-type Tab = "overview" | "audiences" | "campaigns" | "templates" | "automations" | "analytics";
+type Tab = "campaigns" | "automations" | "audiences";
 
 const TABS: { id: Tab; label: string; icon: typeof Mail }[] = [
-  { id: "overview", label: "סקירה", icon: BarChart3 },
-  { id: "audiences", label: "קהלים", icon: Users },
-  { id: "campaigns", label: "קמפיינים", icon: Send },
-  { id: "templates", label: "תבניות", icon: LayoutTemplate },
+  { id: "campaigns", label: "דיוורים", icon: Mail },
   { id: "automations", label: "אוטומציות", icon: Zap },
-  { id: "analytics", label: "אנליטיקה", icon: TrendingUp },
+  { id: "audiences", label: "אנשי קשר", icon: Users },
 ];
 
 const SAMPLE_SEGMENTS = [
@@ -55,12 +52,14 @@ const Stat = ({ label, value, icon: Icon }: { label: string; value: string; icon
 );
 
 const DashboardEmailMarketing = () => {
-  const [tab, setTab] = useState<Tab>("overview");
-  const [screen, setScreen] = useState<"main" | "edit" | "send">("main");
+  const [tab, setTab] = useState<Tab>("campaigns");
+  const [screen, setScreen] = useState<"main" | "gallery" | "edit" | "send">("main");
   const [draftBlocks, setDraftBlocks] = useState<any[]>([]);
   const [editorSeed, setEditorSeed] = useState<TemplateBlock[] | undefined>(undefined);
-  // Open the editor, optionally seeded from a chosen template (undefined = blank/default).
+  // Create flow: pick a template (gallery) -> editor -> send. Open the editor with
+  // a chosen template (undefined = starter blocks, [] = blank canvas).
   const openEditor = (seed?: TemplateBlock[]) => { setEditorSeed(seed); setScreen("edit"); };
+  const openGallery = () => setScreen("gallery");
   // Real automations (opt-in) loaded from the backend when signed in; falls back
   // to the standard list (read-only) in the public preview.
   const [autos, setAutos] = useState<{ type: string; label: string; desc: string; enabled: boolean }[]>(
@@ -105,6 +104,44 @@ const DashboardEmailMarketing = () => {
   if (screen === "send") {
     return <div dir="rtl"><DashboardEmailSend onBack={() => setScreen("edit")} blocks={draftBlocks} /></div>;
   }
+  if (screen === "gallery") {
+    return (
+      <div dir="rtl" className="space-y-4">
+        <div className="flex items-center justify-between">
+          <button onClick={() => setScreen("main")} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowRight className="w-4 h-4" /> חזרה
+          </button>
+          <p className="text-sm font-medium">בחרו תבנית או התחילו מאפס</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <button onClick={() => openEditor([])} className="rounded-xl border-2 border-dashed border-border bg-card flex flex-col items-center justify-center gap-2 min-h-[150px] hover:border-primary/50 transition-colors">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"><Plus className="w-5 h-5 text-primary" /></div>
+            <div className="text-xs font-medium">קנבס ריק</div>
+            <div className="text-[10px] text-muted-foreground">בנייה מאפס</div>
+          </button>
+          {EMAIL_TEMPLATES.map((t) => (
+            <button key={t.id} onClick={() => openEditor(t.blocks)} className="rounded-xl border border-border bg-card overflow-hidden text-right hover:border-primary/40 transition-colors">
+              <div className="p-2 bg-[#eef0f2]">
+                <div className="bg-white rounded overflow-hidden">
+                  <div style={{ background: t.accent }} className="h-5" />
+                  <div className="p-2 space-y-1.5">
+                    <div className="h-1.5 bg-black/10 rounded w-3/4" />
+                    <div className="h-1.5 bg-black/10 rounded w-1/2" />
+                    <div style={{ background: t.accent }} className="h-3 w-14 rounded mx-auto mt-1.5" />
+                  </div>
+                </div>
+              </div>
+              <div className="px-2.5 py-2">
+                <div className="text-xs font-medium truncate">{t.name}</div>
+                <div className="text-[10px] text-muted-foreground">{t.category}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">בוחרים תבנית, והיא נטענת לעורך לעריכה חופשית - טקסט, תמונות, מוצרים וצבעים.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5" dir="rtl">
@@ -122,7 +159,7 @@ const DashboardEmailMarketing = () => {
           <h2 className="text-lg font-semibold flex items-center gap-2"><Mail className="w-5 h-5 text-primary" /> דיוור ושיווק במייל</h2>
           <p className="text-sm text-muted-foreground">שליחת ניוזלטרים, מבצעים ואוטומציות ללקוחות - מסונכרן עם ה-CRM</p>
         </div>
-        <button onClick={() => openEditor()} className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground rounded-lg px-4 py-2 font-medium shrink-0">
+        <button onClick={openGallery} className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground rounded-lg px-4 py-2 font-medium shrink-0">
           <Plus className="w-4 h-4" /> צור דיוור חדש
         </button>
       </div>
@@ -136,28 +173,6 @@ const DashboardEmailMarketing = () => {
           </button>
         ))}
       </div>
-
-      {tab === "overview" && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="אנשי קשר" value={fmtNum(stats?.contacts)} icon={Users} />
-            <Stat label="נשלחו" value={fmtNum(stats?.sent)} icon={Send} />
-            <Stat label="שיעור פתיחה" value={fmtPct(stats?.openRate)} icon={Mail} />
-            <Stat label="שיעור הקלקה" value={fmtPct(stats?.clickRate)} icon={MousePointerClick} />
-          </div>
-          <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-sm font-medium mb-3">קמפיינים אחרונים</p>
-            <div className="space-y-2">
-              {SAMPLE_CAMPAIGNS.map((c) => (
-                <div key={c.name} className="flex items-center justify-between text-sm">
-                  <span>{c.name}</span>
-                  <span className="text-xs text-muted-foreground">{c.status}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {tab === "audiences" && (
         <div className="space-y-5">
@@ -181,10 +196,16 @@ const DashboardEmailMarketing = () => {
       )}
 
       {tab === "campaigns" && (
-        <div className="space-y-3">
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Stat label="אנשי קשר" value={fmtNum(stats?.contacts)} icon={Users} />
+            <Stat label="נשלחו" value={fmtNum(stats?.sent)} icon={Send} />
+            <Stat label="שיעור פתיחה" value={fmtPct(stats?.openRate)} icon={Mail} />
+            <Stat label="שיעור הקלקה" value={fmtPct(stats?.clickRate)} icon={MousePointerClick} />
+          </div>
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">קמפיינים</p>
-            <button onClick={() => openEditor()} className="flex items-center gap-1.5 text-sm bg-primary/10 text-primary rounded-lg px-3 py-1.5"><Plus className="w-4 h-4" /> קמפיין חדש</button>
+            <p className="text-sm font-medium">הדיוורים שלי</p>
+            <button onClick={openGallery} className="flex items-center gap-1.5 text-sm bg-primary/10 text-primary rounded-lg px-3 py-1.5"><Plus className="w-4 h-4" /> דיוור חדש</button>
           </div>
           {SAMPLE_CAMPAIGNS.map((c) => (
             <div key={c.name} className="rounded-xl border border-border bg-card p-3">
@@ -199,40 +220,11 @@ const DashboardEmailMarketing = () => {
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {tab === "templates" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">תבניות מייל מוכנות (RTL)</p>
+          <div className="rounded-xl border border-border bg-card p-4">
+            <p className="text-sm font-medium mb-1">הכנסה מיוחסת</p>
+            <p className="text-2xl font-semibold text-muted-foreground">בקרוב</p>
+            <p className="text-xs text-muted-foreground mt-0.5">ייחוס הכנסה מהזמנות שהגיעו מדיוורים (היתרון שלנו - אנחנו מחזיקים את נתוני החנות). יתחבר בשלב הבא.</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <button onClick={() => openEditor([])} className="rounded-xl border-2 border-dashed border-border bg-card flex flex-col items-center justify-center gap-2 min-h-[150px] hover:border-primary/50 transition-colors">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"><Plus className="w-5 h-5 text-primary" /></div>
-              <div className="text-xs font-medium">קנבס ריק</div>
-              <div className="text-[10px] text-muted-foreground">בנייה מאפס</div>
-            </button>
-            {EMAIL_TEMPLATES.map((t) => (
-              <button key={t.id} onClick={() => openEditor(t.blocks)} className="rounded-xl border border-border bg-card overflow-hidden text-right hover:border-primary/40 transition-colors">
-                <div className="p-2 bg-[#eef0f2]">
-                  <div className="bg-white rounded overflow-hidden">
-                    <div style={{ background: t.accent }} className="h-5" />
-                    <div className="p-2 space-y-1.5">
-                      <div className="h-1.5 bg-black/10 rounded w-3/4" />
-                      <div className="h-1.5 bg-black/10 rounded w-1/2" />
-                      <div style={{ background: t.accent }} className="h-3 w-14 rounded mx-auto mt-1.5" />
-                    </div>
-                  </div>
-                </div>
-                <div className="px-2.5 py-2">
-                  <div className="text-xs font-medium truncate">{t.name}</div>
-                  <div className="text-[10px] text-muted-foreground">{t.category}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">בוחרים תבנית, והיא נטענת לעורך לעריכה חופשית - טקסט, תמונות, מוצרים וצבעים.</p>
         </div>
       )}
 
@@ -256,22 +248,6 @@ const DashboardEmailMarketing = () => {
             </div>
           ))}
           <p className="text-xs text-muted-foreground">כל אוטומציה מופעלת באישור בעל החנות בלבד, ומכבדת הסרה.</p>
-        </div>
-      )}
-
-      {tab === "analytics" && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="נשלחו" value={fmtNum(stats?.sent)} icon={Send} />
-            <Stat label="אנשי קשר" value={fmtNum(stats?.contacts)} icon={Users} />
-            <Stat label="נפתחו" value={fmtPct(stats?.openRate)} icon={Mail} />
-            <Stat label="הוקלקו" value={fmtPct(stats?.clickRate)} icon={MousePointerClick} />
-          </div>
-          <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-sm font-medium mb-1">הכנסה מיוחסת</p>
-            <p className="text-2xl font-semibold text-muted-foreground">בקרוב</p>
-            <p className="text-xs text-muted-foreground mt-0.5">ייחוס הכנסה מהזמנות שהגיעו מקמפיינים (היתרון שלנו - אנחנו מחזיקים את נתוני החנות). יתחבר בשלב הבא.</p>
-          </div>
         </div>
       )}
     </div>
