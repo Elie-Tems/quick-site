@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   LayoutDashboard, Package, ShoppingCart, Users, Megaphone, Puzzle, Settings,
-  ArrowLeft, ArrowRight, X, Check, Sparkles,
+  ArrowLeft, ArrowRight, X, Check, Star,
 } from "lucide-react";
 
 // First-visit guided tour of the management dashboard. A clean series of cards
@@ -18,7 +18,7 @@ const markSeen = () => { try { localStorage.setItem(TOUR_KEY, "done"); } catch {
 interface Card { icon: typeof Package; title: string; body: string; }
 
 const CARDS: Card[] = [
-  { icon: Sparkles, title: "ברוכים הבאים ללוח הניהול 👋", body: "זה המקום שבו מנהלים את כל החנות. ניקח אתכם בסיור קצר של 30 שניות - אפשר לדלג בכל רגע." },
+  { icon: Star, title: "ברוכים הבאים ללוח הניהול 👋", body: "זה המקום שבו מנהלים את כל החנות. ניקח אתכם בסיור קצר של 30 שניות - אפשר לדלג בכל רגע." },
   { icon: LayoutDashboard, title: "בית - מבט-על", body: "המסך הראשי: מכירות, הזמנות אחרונות והנתונים החשובים במבט אחד. כאן מתחילים את היום." },
   { icon: Package, title: "החנות שלי", body: "מוצרים, קטגוריות, עיצוב ותבנית - הכל כאן. מוסיפים, עורכים ומסדרים מתי שרוצים, בלי הגבלה." },
   { icon: ShoppingCart, title: "ניהול מכירות", body: "כל ההזמנות שנכנסות, וכרטיס לקוח לכל קונה (CRM) - היסטוריית רכישות, סטטוס, והזדמנויות להחזיר לקוחות." },

@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { OnboardingData, BusinessCategory } from "@/pages/Onboarding";
 import { businessCategoryList } from "@/lib/categoryConfig";
 import {
-  Store, Utensils, Coffee, Shirt, Gem, Smartphone, Sparkles, Dumbbell, Car, PawPrint,
+  Store, Utensils, Coffee, Shirt, Gem, Smartphone, Flower2, Dumbbell, Car, PawPrint,
   Flower2, BookOpen, Home, ShoppingBasket, Wine, Plus, Gamepad2, Palette, Baby, Gift,
   Pill, Sofa, Refrigerator, Scissors, Search, Check, Upload,
 } from "lucide-react";
@@ -19,7 +19,7 @@ interface Props {
 
 const categoryIcons: Record<BusinessCategory, React.ComponentType<any>> = {
   bakery: Store, restaurant: Utensils, cafe: Coffee, clothing: Shirt, jewelry: Gem,
-  electronics: Smartphone, beauty: Sparkles, fitness: Dumbbell, automotive: Car, pets: PawPrint,
+  electronics: Smartphone, beauty: Flower2, fitness: Dumbbell, automotive: Car, pets: PawPrint,
   flowers: Flower2, books: BookOpen, home: Home, grocery: ShoppingBasket, wine_alcohol: Wine,
   toys: Gamepad2, art: Palette, baby: Baby, gifts: Gift, pharmacy: Pill,
   furniture: Sofa, appliances: Refrigerator, handmade: Scissors, other: Plus,

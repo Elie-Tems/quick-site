@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { OnboardingData } from "@/pages/Onboarding";
-import { Globe, Upload, Wand2, ArrowLeft, Check, Loader2, Sparkles, AlertCircle, X, FileImage, Pencil } from "lucide-react";
+import { Globe, Upload, Wand2, ArrowLeft, Check, Loader2, AlertCircle, X, FileImage, Pencil } from "lucide-react";
 import { StepNavigation } from "./StepNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -364,7 +364,7 @@ const StepBrandStyle = ({ data, updateData, onNext, onBack }: StepBrandStyleProp
                   <h3 className="font-semibold text-foreground">{option.title}</h3>
                   {option.id === "website" && (
                     <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
+                      <Wand2 className="w-3 h-3" />
                       AI
                     </span>
                   )}
@@ -411,7 +411,7 @@ const StepBrandStyle = ({ data, updateData, onNext, onBack }: StepBrandStyleProp
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4" />
+                  <Wand2 className="w-4 h-4" />
                   נתח
                 </>
               )}
@@ -448,7 +448,7 @@ const StepBrandStyle = ({ data, updateData, onNext, onBack }: StepBrandStyleProp
               <div className="p-5 rounded-xl bg-card border border-border space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-primary">
-                    <Sparkles className="w-5 h-5" />
+                    <Wand2 className="w-5 h-5" />
                     <h3 className="font-semibold">פרטי המיתוג שזוהו</h3>
                   </div>
                   <Button

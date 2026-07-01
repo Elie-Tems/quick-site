@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Upload, Image as ImageIcon, ImagePlus, Loader2, Coins, Check, ChevronRight, Gift, Download, Shirt, Package, Wand2 } from "lucide-react";
+import { Upload, Image as ImageIcon, ImagePlus, Loader2, Coins, Check, ChevronRight, Gift, Download, Shirt, Package, Wand2 } from "lucide-react";
 import { useAICredits, useAIImageJobs, useGenerateStyledImage, useGrantFreeCredits } from "@/hooks/useAIImageEngine";
 import { useProducts } from "@/hooks/useProducts";
 import { useBusinessUsage } from "@/hooks/useBusinessUsage";
@@ -538,7 +538,7 @@ const DashboardAIImages = ({ businessId, onNavigateToSubscription }: DashboardAI
                     {generateImage.isPending ? (
                       <><Loader2 className="h-4 w-4 ml-2 animate-spin" />יוצר תמונה...</>
                     ) : (
-                      <><Sparkles className="h-4 w-4 ml-2" />צור תמונה עכשיו - 1 קרדיט</>
+                      <><Wand2 className="h-4 w-4 ml-2" />צור תמונה עכשיו - 1 קרדיט</>
                     )}
                   </Button>
                 </div>
