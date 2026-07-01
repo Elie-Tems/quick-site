@@ -127,3 +127,5 @@ serve(async (req) => {
 
   return json({ error: "unknown action" }, 400);
 });
+
+// redeploy: esm.sh 522 was transient (2026-07-01)
