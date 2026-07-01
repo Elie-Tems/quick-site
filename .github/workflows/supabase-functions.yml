@@ -22,6 +22,12 @@ on:
       - ".github/workflows/supabase-functions.yml"
   workflow_dispatch: {} # allow manual runs from the Actions tab
 
+# Only the newest push matters - cancel superseded in-progress deploys so rapid
+# pushes don't stack up (and don't each send a failure notification).
+concurrency:
+  group: deploy-edge-functions
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -49,6 +55,22 @@ jobs:
         with:
           version: latest
 
-      - name: Deploy all edge functions
+      # Retry transient failures (esm.sh/CDN 522, network blips, image pulls) instead
+      # of failing the whole run and emailing a "deploy failed" notification. Only a
+      # genuinely persistent failure (all attempts) fails the workflow.
+      - name: Deploy all edge functions (with retry)
         if: steps.token.outputs.enabled == 'true'
-        run: supabase functions deploy --project-ref "$PROJECT_REF"
+        run: |
+          for attempt in 1 2 3 4; do
+            echo "::group::Deploy attempt $attempt"
+            if supabase functions deploy --project-ref "$PROJECT_REF"; then
+              echo "::endgroup::"
+              echo "Deploy succeeded on attempt $attempt."
+              exit 0
+            fi
+            echo "::endgroup::"
+            echo "Attempt $attempt failed (usually a transient CDN/network blip). Retrying..."
+            sleep $((attempt * 20))
+          done
+          echo "All 4 deploy attempts failed - this looks like a real problem."
+          exit 1
