@@ -38,17 +38,27 @@ async function validTwilioSignature(req: Request, params: Record<string, string>
   const sig = req.headers.get("x-twilio-signature");
   if (!sig) return false;
   // Twilio signs over the EXACT public webhook URL it was configured with. Inside a
-  // Supabase edge function, req.url is an internal URL that differs from the public
-  // one, so the signature never matches - reconstruct the public URL instead.
+  // Supabase edge function req.url is an internal URL that differs, so try several
+  // URL candidates (the configured public URL + req.url variants) and accept if the
+  // signature matches any of them. Still requires a valid Twilio signature.
   const base = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
-  let data = `${base}/functions/v1/whatsapp-webhook`;
-  for (const k of Object.keys(params).sort()) data += k + params[k];
+  const reqUrl = req.url;
+  const candidates = [
+    `${base}/functions/v1/whatsapp-webhook`,
+    reqUrl,
+    reqUrl.replace(/\?.*$/, ""),
+    reqUrl.replace(/^http:/, "https:"),
+  ];
+  const suffix = Object.keys(params).sort().map((k) => k + params[k]).join("");
   const key = await crypto.subtle.importKey(
     "raw", new TextEncoder().encode(authToken), { name: "HMAC", hash: "SHA-1" }, false, ["sign"],
   );
-  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
-  const expected = btoa(String.fromCharCode(...new Uint8Array(mac)));
-  return safeEqual(sig, expected);
+  for (const u of [...new Set(candidates)]) {
+    const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(u + suffix));
+    const expected = btoa(String.fromCharCode(...new Uint8Array(mac)));
+    if (safeEqual(sig, expected)) return true;
+  }
+  return false;
 }
 
 /** Best-effort caption parse: "<name> | <price> | <description>" OR detect a price
