@@ -29,6 +29,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const StoreAboutPage = lazy(() => import("./pages/StoreAboutPage"));
+const MyOrders = lazy(() => import("./pages/MyOrders"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Accessibility = lazy(() => import("./pages/Accessibility"));
@@ -110,6 +111,7 @@ const App = () => {
                   <Route path="/terms" element={<StoreLegalPage docType="terms" slugOverride={tenantSlug} />} />
                   <Route path="/privacy" element={<StoreLegalPage docType="privacy" slugOverride={tenantSlug} />} />
                   <Route path="/unsubscribe" element={<StoreUnsubscribe slugOverride={tenantSlug} />} />
+                  <Route path="/my-orders" element={<MyOrders slugOverride={tenantSlug} />} />
                   {/* Any other path on a store subdomain falls back to the store home. */}
                   <Route path="*" element={<StoreFront slugOverride={tenantSlug} />} />
                 </Routes>
@@ -139,6 +141,7 @@ const App = () => {
                   <Route path="/store/:slug/terms" element={<StoreLegalPage docType="terms" />} />
                   <Route path="/store/:slug/privacy" element={<StoreLegalPage docType="privacy" />} />
                   <Route path="/store/:slug/unsubscribe" element={<StoreUnsubscribe />} />
+                  <Route path="/store/:slug/my-orders" element={<MyOrders />} />
                   <Route path="/unsubscribe" element={<PlatformUnsubscribe />} />
                   <Route path="/dashboard" element={<DashboardRoute />} />
                   <Route path="/manage-x7k9" element={<AdminDashboard />} />

@@ -38,6 +38,11 @@ verify_jwt = false
 [functions.orders-create]
 verify_jwt = false
 
+# customer-orders is the public "my orders" magic-link lookup (own HMAC token +
+# rate-limit guard), called by anonymous shoppers.
+[functions.customer-orders]
+verify_jwt = false
+
 # sitemap is fetched by search-engine crawlers - no auth.
 [functions.sitemap]
 verify_jwt = false

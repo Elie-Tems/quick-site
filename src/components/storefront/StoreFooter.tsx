@@ -63,6 +63,12 @@ const StoreFooter = ({ businessName, phone, email, storeSlug }: StoreFooterProps
                   >
                     מדיניות פרטיות
                   </a>
+                  <a
+                    href={`/store/${storeSlug}/my-orders`}
+                    className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    ההזמנות שלי
+                  </a>
                 </>
               )}
             </div>
