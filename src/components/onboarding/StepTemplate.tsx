@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { OnboardingData } from "@/pages/Onboarding";
-import { StoreTemplateId } from "@/lib/storeTemplates";
-import { Users, Home, Zap, ShoppingBag, Heart, Check, Upload, Loader2 } from "lucide-react";
+import { StoreTemplateId, templateList } from "@/lib/storeTemplates";
+import { Zap, ShoppingBag, Heart, Check, Upload, Loader2, Leaf, Gem, Waves, Sun, Shirt, Dumbbell, Baby, Cake } from "lucide-react";
 import { motion } from "framer-motion";
 import { StepNavigation } from "./StepNavigation";
 import { toast } from "sonner";
@@ -24,92 +24,74 @@ interface TemplateStyle {
   products: Array<{ img: string; name: string; price: string; sale?: boolean; originalPrice?: string }>;
 }
 
-const templateStyles: TemplateStyle[] = [
-  {
-    id: "luxury-boutique",
-    name: "בוטיק יוקרתי",
-    description: "מגזיני, אלגנטי, טקסט מעל תמונה",
-    icon: <Zap className="w-4 h-4" />,
-    heroLayout: "full-image",
-    accentColor: "#d4af37",
-    heroImage: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=600&q=80",
-    products: [
-      { img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&q=80", name: "שרשרת זהב", price: "₪1,899" },
-      { img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80", name: "שעון יוקרה", price: "₪3,499" },
-      { img: "https://images.unsplash.com/photo-1600721391776-b5cd0e0048f9?w=300&q=80", name: "טבעת", price: "₪5,999" },
-    ],
-  },
-  {
-    id: "bold-playful",
-    name: "נועז ושובב",
-    description: "פנל צבע + תמונה בצדדים",
-    icon: <Zap className="w-4 h-4" />,
-    heroLayout: "split",
-    accentColor: "#ff3cac",
-    heroImage: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&q=80",
-    products: [
-      { img: "https://images.unsplash.com/photo-1556906781-9a412961c28c?w=300&q=80", name: "נעלי סניקרס", price: "₪699" },
-      { img: "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=300&q=80", name: "הודי", price: "₪349", sale: true, originalPrice: "₪449" },
-      { img: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=300&q=80", name: "תיק גב", price: "₪289" },
-    ],
-  },
-  {
-    id: "natural-organic",
-    name: "טבעי ואורגני",
-    description: "טקסט ממורכז, אווירה ירוקה",
-    icon: <Home className="w-4 h-4" />,
-    heroLayout: "centered",
-    accentColor: "#4a7c59",
-    heroImage: "https://images.unsplash.com/photo-1466781783364-36c955e42a7f?w=600&q=80",
-    products: [
-      { img: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=300&q=80", name: "סבון טבעי", price: "₪49" },
-      { img: "https://images.unsplash.com/photo-1607006344380-b6775a0824a7?w=300&q=80", name: "שמן ארומתי", price: "₪89", sale: true, originalPrice: "₪129" },
-      { img: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=300&q=80", name: "עציץ", price: "₪65" },
-    ],
-  },
-  {
-    id: "tech-minimal",
-    name: "טכנולוגי ומינימלי",
-    description: "כהה, מדויק, מוצר בצד ימין",
-    icon: <Zap className="w-4 h-4" />,
-    heroLayout: "split",
-    accentColor: "#3b82f6",
-    heroImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
-    products: [
-      { img: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=300&q=80", name: "אוזניות", price: "₪1,299" },
-      { img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80", name: "שעון חכם", price: "₪899" },
-      { img: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=300&q=80", name: "אוזניות TWS", price: "₪649" },
-    ],
-  },
-  {
-    id: "vintage-warm",
-    name: "וינטג׳ וחם",
-    description: "טקסט ממורכז, אווירה כפרית",
-    icon: <Heart className="w-4 h-4" />,
-    heroLayout: "centered",
-    accentColor: "#c1440e",
-    heroImage: "https://images.unsplash.com/photo-1495121553079-4c61bcce1894?w=600&q=80",
-    products: [
-      { img: "https://images.unsplash.com/photo-1602028915047-37269d1a73f7?w=300&q=80", name: "כרית", price: "₪179" },
-      { img: "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=300&q=80", name: "נר ריחני", price: "₪89", sale: true, originalPrice: "₪129" },
-      { img: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=300&q=80", name: "ספל קרמיקה", price: "₪65" },
-    ],
-  },
-  {
-    id: "royal-purple",
-    name: "סגול מלכותי",
-    description: "דרמטי, תמונה מלאה, יוקרתי",
-    icon: <Zap className="w-4 h-4" />,
-    heroLayout: "full-image",
-    accentColor: "#a855f7",
-    heroImage: "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=600&q=80",
-    products: [
-      { img: "https://images.unsplash.com/photo-1608042314453-ae338d80c427?w=300&q=80", name: "צמיד", price: "₪3,499", sale: true, originalPrice: "₪4,299" },
-      { img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&q=80", name: "שרשרת", price: "₪1,899" },
-      { img: "https://images.unsplash.com/photo-1600721391776-b5cd0e0048f9?w=300&q=80", name: "טבעת", price: "₪5,999" },
-    ],
-  },
-];
+// Sample products for the live mini-preview. Each set is internally coherent
+// (image matches its label); assigned to templates by visual vibe below. The
+// merchant's real product images replace these in the preview the moment they
+// add them (see userProducts in StepTemplate).
+const SAMPLE: Record<string, TemplateStyle['products']> = {
+  jewelry: [
+    { img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&q=80", name: "שרשרת זהב", price: "₪1,899" },
+    { img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80", name: "שעון יוקרה", price: "₪3,499" },
+    { img: "https://images.unsplash.com/photo-1600721391776-b5cd0e0048f9?w=300&q=80", name: "טבעת", price: "₪5,999" },
+  ],
+  fashion: [
+    { img: "https://images.unsplash.com/photo-1556906781-9a412961c28c?w=300&q=80", name: "סניקרס", price: "₪699" },
+    { img: "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=300&q=80", name: "הודי", price: "₪349", sale: true, originalPrice: "₪449" },
+    { img: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=300&q=80", name: "תיק גב", price: "₪289" },
+  ],
+  natural: [
+    { img: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=300&q=80", name: "סבון טבעי", price: "₪49" },
+    { img: "https://images.unsplash.com/photo-1607006344380-b6775a0824a7?w=300&q=80", name: "שמן ארומתי", price: "₪89", sale: true, originalPrice: "₪129" },
+    { img: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=300&q=80", name: "עציץ", price: "₪65" },
+  ],
+  tech: [
+    { img: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=300&q=80", name: "אוזניות", price: "₪1,299" },
+    { img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80", name: "שעון חכם", price: "₪899" },
+    { img: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=300&q=80", name: "אוזניות TWS", price: "₪649" },
+  ],
+  home: [
+    { img: "https://images.unsplash.com/photo-1602028915047-37269d1a73f7?w=300&q=80", name: "כרית", price: "₪179" },
+    { img: "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=300&q=80", name: "נר ריחני", price: "₪89", sale: true, originalPrice: "₪129" },
+    { img: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=300&q=80", name: "ספל קרמיקה", price: "₪65" },
+  ],
+};
+
+// Per-template preview extras (icon + which sample set). Everything else -
+// heroLayout, hero image, name, description - comes from the SHARED
+// storeTemplates source, so the onboarding always shows EVERY template and
+// stays in sync with the dashboard (single source of truth). Adding a template
+// to storeTemplates.ts is now enough; it shows up here automatically.
+const PREVIEW_EXTRAS: Record<StoreTemplateId, { icon: React.ReactNode; sample: string }> = {
+  "luxury-boutique": { icon: <Gem className="w-4 h-4" />, sample: "jewelry" },
+  "bold-playful": { icon: <Zap className="w-4 h-4" />, sample: "fashion" },
+  "natural-organic": { icon: <Leaf className="w-4 h-4" />, sample: "natural" },
+  "tech-minimal": { icon: <Zap className="w-4 h-4" />, sample: "tech" },
+  "vintage-warm": { icon: <Heart className="w-4 h-4" />, sample: "home" },
+  "ocean-breeze": { icon: <Waves className="w-4 h-4" />, sample: "natural" },
+  "warm-sunset": { icon: <Sun className="w-4 h-4" />, sample: "home" },
+  "urban-chic": { icon: <Shirt className="w-4 h-4" />, sample: "fashion" },
+  "fresh-mint": { icon: <Dumbbell className="w-4 h-4" />, sample: "fashion" },
+  "royal-purple": { icon: <Gem className="w-4 h-4" />, sample: "jewelry" },
+  "editorial-mono": { icon: <Shirt className="w-4 h-4" />, sample: "fashion" },
+  "bakery-warm": { icon: <Cake className="w-4 h-4" />, sample: "home" },
+  "kids-pop": { icon: <Baby className="w-4 h-4" />, sample: "fashion" },
+  "spa-soft": { icon: <Heart className="w-4 h-4" />, sample: "natural" },
+  "fitness-bold": { icon: <Dumbbell className="w-4 h-4" />, sample: "fashion" },
+};
+
+const templateStyles: TemplateStyle[] = templateList.map((t) => {
+  const extra = PREVIEW_EXTRAS[t.id];
+  return {
+    id: t.id,
+    name: t.name,
+    description: t.description,
+    icon: extra?.icon ?? <ShoppingBag className="w-4 h-4" />,
+    heroLayout: t.heroStyle.layout,
+    accentColor: t.theme.primaryColor,
+    heroImage: t.previewImage.includes("?") ? t.previewImage : `${t.previewImage}?w=600&q=80`,
+    products: SAMPLE[extra?.sample ?? "fashion"],
+  };
+});
 
 const PRESET_COLORS = [
   "#3B82F6", "#8B5CF6", "#EC4899", "#EF4444", "#F97316",
