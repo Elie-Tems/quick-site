@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowRight, Eye } from "lucide-react";
+import { ArrowRight, Eye, Info } from "lucide-react";
 import logoDarkBg from "@/assets/logo-dark-bg.png";
 import { Button } from "@/components/ui/button";
 import OnboardingProgress from "@/components/onboarding/OnboardingProgress";
@@ -273,6 +273,15 @@ const Onboarding = () => {
       <main className="pt-24 pb-12 px-4">
         <div className="max-w-2xl mx-auto">
           {renderStep()}
+
+          {/* Persistent reassurance - shown on every build step so the merchant
+              always knows nothing here is final and everything is editable later. */}
+          <div className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-border bg-muted/30 px-4 py-3 text-center">
+            <Info className="w-4 h-4 text-primary shrink-0" />
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              כל מה שתגדירו כאן - תבנית, צבעים, מוצרים, פרטים - ניתן לשינוי ולעריכה בכל רגע מלוח הניהול. לא מתחייבים לכלום עכשיו.
+            </p>
+          </div>
         </div>
       </main>
     </div>

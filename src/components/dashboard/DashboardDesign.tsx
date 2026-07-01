@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
-import { storeTemplates, type StoreTemplateId, getTemplate } from "@/lib/storeTemplates";
+import { storeTemplates, type StoreTemplateId, type StoreTemplate, getTemplate } from "@/lib/storeTemplates";
 import { STORE_FONTS, loadStoreFonts } from "@/lib/storeFonts";
 import { Check, Palette, Type } from "lucide-react";
 import { toast } from "sonner";
@@ -13,10 +13,71 @@ interface DashboardDesignProps {
   currentTemplateId?: string | null;
 }
 
+// Real theme-based thumbnail: renders a mini-store using the template's OWN
+// colors + hero layout, so the preview actually reflects what the store looks
+// like (was random stock photos that felt disconnected / "not updating").
+function TemplateThumb({ t }: { t: StoreTemplate }) {
+  const { backgroundColor: bg, cardColor: card, primaryColor: primary, foregroundColor: fg, accentColor: accent } = t.theme;
+  const layout = t.heroStyle.layout;
+  return (
+    <div className="w-full h-full flex flex-col" style={{ background: bg }}>
+      {/* navbar */}
+      <div className="h-4 flex items-center justify-between px-2 shrink-0" style={{ background: card }}>
+        <div className="w-4 h-1.5 rounded-sm" style={{ background: primary }} />
+        <div className="flex gap-1">
+          <div className="w-1.5 h-1.5 rounded-full" style={{ background: fg, opacity: 0.3 }} />
+          <div className="w-1.5 h-1.5 rounded-full" style={{ background: primary }} />
+        </div>
+      </div>
+      {/* hero */}
+      {layout === "split" ? (
+        <div className="flex-1 flex" style={{ minHeight: 0 }}>
+          <div className="w-1/2 flex flex-col justify-center gap-1 px-2" style={{ background: primary }}>
+            <div className="w-8 h-1 rounded-sm bg-white/70" />
+            <div className="w-10 h-1.5 rounded-sm bg-white/90" />
+            <div className="w-6 h-1.5 rounded-sm mt-0.5" style={{ background: accent }} />
+          </div>
+          <div className="w-1/2" style={{ background: `linear-gradient(135deg, ${accent}, ${card})` }} />
+        </div>
+      ) : layout === "centered" ? (
+        <div className="flex-1 flex flex-col items-center justify-center gap-1" style={{ background: `linear-gradient(135deg, ${primary}22, ${accent}22)` }}>
+          <div className="w-10 h-1.5 rounded-sm" style={{ background: fg }} />
+          <div className="w-6 h-1 rounded-sm" style={{ background: primary }} />
+          <div className="w-8 h-1.5 rounded-full mt-0.5" style={{ background: primary }} />
+        </div>
+      ) : (
+        <div className="flex-1 relative" style={{ background: `linear-gradient(135deg, ${primary}, ${accent})` }}>
+          <div className="absolute bottom-1 right-2 flex flex-col items-end gap-1">
+            <div className="w-8 h-1.5 rounded-sm bg-white/90" />
+            <div className="w-5 h-1 rounded-sm bg-white/60" />
+          </div>
+        </div>
+      )}
+      {/* product tiles */}
+      <div className="h-8 grid grid-cols-3 gap-1 p-1 shrink-0" style={{ background: bg }}>
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="rounded-sm flex flex-col justify-end p-0.5 overflow-hidden" style={{ background: card }}>
+            <div className="w-full h-3 rounded-sm mb-0.5" style={{ background: `${accent}55` }} />
+            <div className="w-4 h-1 rounded-sm" style={{ background: primary }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardDesign({ businessId, currentTemplateId }: DashboardDesignProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<StoreTemplateId>(
-    (currentTemplateId as StoreTemplateId) || 'bold-modern'
+    (currentTemplateId && storeTemplates[currentTemplateId as StoreTemplateId]
+      ? (currentTemplateId as StoreTemplateId)
+      : 'luxury-boutique')
   );
+  // Keep local selection in sync if the saved template loads/changes after mount.
+  useEffect(() => {
+    if (currentTemplateId && storeTemplates[currentTemplateId as StoreTemplateId]) {
+      setSelectedTemplate(currentTemplateId as StoreTemplateId);
+    }
+  }, [currentTemplateId]);
   const updateBusiness = useUpdateBusiness();
 
   // ── Per-store fonts (heading + body) ──
@@ -115,13 +176,9 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
                   : 'border-border hover:border-primary/50'
               }`}
             >
-              {/* Preview Image */}
-              <div className="aspect-[4/3] bg-muted overflow-hidden">
-                <img
-                  src={template.previewImage}
-                  alt={template.name}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
+              {/* Preview - real theme-based thumbnail (matches the actual store) */}
+              <div className="aspect-[4/3] overflow-hidden">
+                <TemplateThumb t={template} />
               </div>
 
               {/* Template Info */}

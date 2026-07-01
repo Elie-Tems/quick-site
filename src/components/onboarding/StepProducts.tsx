@@ -37,6 +37,17 @@ interface ParsedProduct {
 
 type Method = "quick" | "catalog" | "voice";
 
+// Starter demo products created if a merchant skips this step with an empty store,
+// so their site is never empty on first publish. Clearly replaceable - the toast
+// tells them, and every field is editable under מוצרים in the dashboard.
+const DEMO_PRODUCTS: Array<{ name: string; price: number; description: string; imageUrl: string }> = [
+  { name: "מוצר לדוגמה - חולצת כותנה", price: 99, description: "מוצר דמו להתחלה. החליפו בשם, מחיר ותמונה שלכם.", imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80" },
+  { name: "מוצר לדוגמה - כוס קרמיקה", price: 45, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&q=80" },
+  { name: "מוצר לדוגמה - נר ריחני", price: 65, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=600&q=80" },
+  { name: "מוצר לדוגמה - תיק בד", price: 120, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=600&q=80" },
+  { name: "מוצר לדוגמה - סבון טבעי", price: 39, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80" },
+];
+
 const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) => {
   const [activeMethod, setActiveMethod] = useState<Method>("quick");
 
@@ -462,6 +473,25 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     updateData({ productCategories: data.productCategories.map(c => c.id === id ? { ...c, ...updates } : c) });
 
   const handleRemoveProduct = (id: string) => updateData({ products: data.products.filter(p => p.id !== id) });
+
+  // Continue to the next step. If the merchant is skipping with an empty store,
+  // seed 5 demo products so the site isn't blank, and tell them they're editable.
+  const handleContinue = () => {
+    if (data.products.length === 0) {
+      const now = Date.now();
+      const demo = DEMO_PRODUCTS.map((p, i) => ({
+        id: `demo-${now}-${i}`,
+        name: p.name,
+        description: p.description,
+        price: p.price,
+        imageUrl: p.imageUrl,
+        categoryId: undefined,
+      }));
+      updateData({ products: demo });
+      toast.success("יצרנו לך 5 מוצרי דמו להתחלה - תוכל להחליף, לערוך או למחוק אותם בכל רגע במסך המוצרים בלוח הניהול.", { duration: 6000 });
+    }
+    onNext();
+  };
 
   // ── Shared preview table ───────────────────────────────────────────────────
 
@@ -892,7 +922,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 }
               </button>
               {isRecording && (
-                <span className="absolute -inset-2 rounded-full border-2 border-destructive/50 animate-ping" />
+                <span className="absolute -inset-2 rounded-full border-2 border-destructive/50 animate-ping pointer-events-none" />
               )}
             </div>
             <p className="text-sm font-medium">
@@ -937,11 +967,6 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         </div>
       )}
 
-      <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground text-center mt-4">
-        <Wand2 className="w-3.5 h-3.5 text-primary/60 shrink-0" />
-        לא חייבים להוסיף הכל עכשיו - אפשר להוסיף, לערוך ולסדר מוצרים בכל רגע מלוח הניהול.
-      </p>
-
       {/* Sticky bottom navigation */}
       <div className="sticky bottom-0 bg-background/95 backdrop-blur border-t border-border py-3 flex items-center justify-between gap-3 -mx-4 px-4 mt-3">
         <button
@@ -952,10 +977,10 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
           חזרה
         </button>
         <button
-          onClick={onNext}
+          onClick={handleContinue}
           className="flex items-center gap-2 px-6 h-11 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
         >
-          {data.products.length > 0 ? "המשך" : "דלג בינתיים"}
+          {data.products.length > 0 ? "המשך" : "דלג עם מוצרי דמו"}
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
       </div>

@@ -1,12 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { OnboardingData } from "@/pages/Onboarding";
-import { ShoppingCart, CreditCard, Check, Rocket, Loader2, Info } from "lucide-react";
+import { Check, Rocket, Loader2, Info, CreditCard } from "lucide-react";
 import { useCreateBusiness } from "@/hooks/useCreateBusiness";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { providerLogo } from "@/lib/partnerLinks";
 import { getTemplate } from "@/lib/storeTemplates";
 import { getCategoryConfig } from "@/lib/categoryConfig";
 import { getPublishFeeIls } from "@/lib/publishPaymentConfig";
@@ -19,9 +18,29 @@ interface Props {
 
 const skipPublishPayment = import.meta.env.VITE_PUBLISH_SKIP_PAYMENT === "true";
 
+// Staged publish progress for a reassuring "building your site" experience.
+const PUBLISH_STAGES = [
+  { at: 0, label: "מקימים את החנות..." },
+  { at: 25, label: "מעלים מוצרים ותמונות..." },
+  { at: 55, label: "מחילים עיצוב וצבעים..." },
+  { at: 80, label: "מפרסמים את האתר..." },
+];
+
 const StepFinish = ({ data, updateData, onBack }: Props) => {
   const [isPublishing, setIsPublishing] = useState(false);
+  const [publishProgress, setPublishProgress] = useState(0);
   const [legalAcknowledged, setLegalAcknowledged] = useState(false);
+
+  // Animate the progress bar while publishing (eases toward 92%, then the real
+  // completion navigates away). Gives the merchant a sense of momentum.
+  useEffect(() => {
+    if (!isPublishing) { setPublishProgress(0); return; }
+    setPublishProgress(8);
+    const iv = setInterval(() => {
+      setPublishProgress((p) => (p < 92 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
+    }, 400);
+    return () => clearInterval(iv);
+  }, [isPublishing]);
   const { user } = useAuth();
   const navigate = useNavigate();
   const createBusiness = useCreateBusiness();
@@ -62,8 +81,8 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         businessCategory: data.businessCategory,
         customCategoryName: data.customCategoryName,
         isReligiousAudience: data.isReligiousAudience,
-        paymentEnabled: data.orderType === "orders-payments" && data.paymentConnected,
-        paymentProvider: data.paymentProvider || null,
+        paymentEnabled: false,
+        paymentProvider: null,
         logo: data.logo,
         heroImageUrl: branding?.heroImageUrl,
         templateId: data.storeTemplate,
@@ -118,103 +137,78 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
     }
   };
 
-  const ordersOnly = data.orderType === "orders-only";
+  // ── Publishing progress view (shown while the site is being built) ──
+  if (isPublishing) {
+    const stage = [...PUBLISH_STAGES].reverse().find((s) => publishProgress >= s.at) || PUBLISH_STAGES[0];
+    return (
+      <div className="space-y-8 py-6" dir="rtl">
+        <div className="text-center space-y-2">
+          <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+            <Rocket className="w-7 h-7 text-primary animate-pulse" />
+          </div>
+          <h1 className="text-2xl font-medium text-foreground">בונים את האתר שלך...</h1>
+          <p className="text-sm text-muted-foreground">{stage.label}</p>
+        </div>
+
+        <div className="max-w-md mx-auto space-y-4">
+          <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full bg-primary transition-all duration-500 ease-out rounded-full"
+              style={{ width: `${publishProgress}%` }}
+            />
+          </div>
+          <p className="text-center text-xs font-medium text-muted-foreground">{Math.round(publishProgress)}%</p>
+
+          {/* Stage timeline */}
+          <div className="space-y-2.5 pt-2">
+            {PUBLISH_STAGES.map((s, i) => {
+              const nextAt = PUBLISH_STAGES[i + 1]?.at ?? 100;
+              const done = publishProgress >= nextAt;
+              const active = stage.at === s.at && !done;
+              return (
+                <div key={i} className="flex items-center gap-3 text-sm">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                    done ? "bg-primary text-white" : active ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                  }`}>
+                    {done ? <Check className="w-3.5 h-3.5" /> : active ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+                  </div>
+                  <span className={active ? "text-foreground font-medium" : done ? "text-muted-foreground" : "text-muted-foreground/50"}>{s.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8" dir="rtl">
       <div className="text-center">
         <h1 className="text-2xl font-medium text-foreground mb-1">כמעט שם!</h1>
-        <p className="text-sm text-muted-foreground">בחרו איך לקבל הזמנות ופרסמו את האתר</p>
+        <p className="text-sm text-muted-foreground">רגע לפני שהאתר עולה לאוויר</p>
       </div>
 
-      {/* ── Order type ────────────────────────────────── */}
-      <div className="space-y-3">
-        <p className="text-sm font-medium">איך תקבלו הזמנות?</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            { id: "orders-only" as const, icon: ShoppingCart, title: "הזמנות בלבד", desc: "ללא סליקה" },
-            { id: "orders-payments" as const, icon: CreditCard, title: "הזמנות + תשלום אונליין", desc: "סליקת אשראי וביט ישירות באתר" },
-          ].map(opt => {
-            const selected = data.orderType === opt.id;
-            return (
-              <button key={opt.id} onClick={() => updateData({ orderType: opt.id })}
-                className={`p-4 rounded-xl border-2 text-right transition-all ${
-                  selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/30 bg-card"
-                }`}>
-                <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${selected ? "bg-primary" : "bg-muted"}`}>
-                    <opt.icon className={`w-5 h-5 ${selected ? "text-white" : "text-muted-foreground"}`} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium">{opt.title}</p>
-                      {selected && <Check className="w-4 h-4 text-primary" />}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{opt.desc}</p>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── Payment provider (only if orders-payments) ─ */}
-      {!ordersOnly && (
-        <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-          <div>
-            <p className="text-sm font-medium">ספק סליקה</p>
-            <p className="text-xs text-muted-foreground">הספק שגובה את התשלומים מהלקוחות שלכם. כרגע PayPlus - ספקים נוספים בקרוב.</p>
+      {/* ── How orders work (default: receive orders, pay with the customer) ── */}
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <CreditCard className="w-5 h-5 text-primary" />
           </div>
-          <button
-            onClick={() => updateData({ paymentProvider: "payplus", paymentConnected: false })}
-            className={`w-full p-4 rounded-xl border-2 text-right transition-all ${
-              data.paymentProvider === "payplus" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"
-            }`}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-white border border-border flex items-center justify-center shrink-0 overflow-hidden">
-                <img src={providerLogo("payplus.co.il")} alt="PayPlus" className="w-6 h-6" loading="lazy" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium">PayPlus</p>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary">מומלץ</span>
-                </div>
-                <p className="text-xs text-muted-foreground">סליקת אשראי + ביט + חשבוניות אוטומטיות</p>
-              </div>
-              {data.paymentProvider === "payplus" && <Check className="w-5 h-5 text-primary shrink-0" />}
-            </div>
-          </button>
-          {/* Guidance - the connect-later flow with step-by-step help */}
-          <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 flex items-start gap-2">
-            <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-            <p className="text-xs text-foreground">
-              את חיבור חשבון ה-PayPlus נשלים בלוח הניהול מיד אחרי הפרסום - לוקח כ-2 דקות, עם הדרכה צעד-אחר-צעד. עד אז אפשר להמשיך רגיל.
-            </p>
-          </div>
-          {/* Other providers - coming soon */}
-          <div className="rounded-lg border border-border p-3">
-            <p className="text-xs font-medium text-muted-foreground mb-2">ספקים נוספים - בקרוב:</p>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { name: "משולם / Grow", domain: "meshulam.co.il" },
-                { name: "קארדקום", domain: "cardcom.co.il" },
-                { name: "iCount", domain: "icount.co.il" },
-                { name: "Tranzila", domain: "tranzila.com" },
-                { name: "PayPal", domain: "paypal.com" },
-              ].map((p) => (
-                <span key={p.name} className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
-                  <img src={providerLogo(p.domain)} alt={p.name} className="w-4 h-4 rounded-sm" loading="lazy" />
-                  {p.name}
-                </span>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              מעוניינים בספק מסוים? כתבו ל-<span dir="ltr">office@siango.app</span>
+          <div className="flex-1">
+            <p className="text-sm font-medium">קבלת הזמנות</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              כרגע מוגדר אצלכם אפשרות לקבל הזמנות ישירות למייל, והתשלום מתבצע מול הלקוח - מזומן, העברה או כפי שתבחרו.
             </p>
           </div>
         </div>
-      )}
+        <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 flex items-start gap-2">
+          <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+          <p className="text-xs text-foreground">
+            רוצים לקבל תשלומים בכרטיס אשראי / ביט ישירות באתר? אפשר להוסיף סליקה בכל רגע מלוח הניהול, בהדרכה צעד-אחר-צעד.
+          </p>
+        </div>
+      </div>
 
       {/* ── Summary ───────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-2">
@@ -222,8 +216,8 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         {[
           { label: "שם עסק", value: data.businessName || "—" },
           { label: "מוצרים", value: `${data.products.length} מוצרים` },
-          { label: "תבנית", value: data.storeTemplate || "—" },
-          { label: "הזמנות", value: ordersOnly ? "הזמנות בלבד" : "הזמנות + תשלום" },
+          { label: "תבנית", value: getTemplate(data.storeTemplate).name },
+          { label: "הזמנות", value: "קבלת הזמנות (תשלום מול הלקוח)" },
         ].map(item => (
           <div key={item.label} className="flex justify-between text-sm">
             <span className="text-muted-foreground">{item.label}</span>
