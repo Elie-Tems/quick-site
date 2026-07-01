@@ -43,6 +43,11 @@ verify_jwt = false
 [functions.customer-orders]
 verify_jwt = false
 
+# whatsapp-webhook receives inbound WhatsApp messages from Twilio (no JWT); it verifies
+# Twilio's X-Twilio-Signature with TWILIO_AUTH_TOKEN instead.
+[functions.whatsapp-webhook]
+verify_jwt = false
+
 # sitemap is fetched by search-engine crawlers - no auth.
 [functions.sitemap]
 verify_jwt = false
