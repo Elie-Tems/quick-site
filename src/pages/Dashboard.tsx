@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardNav, { type DashboardView } from "@/components/dashboard/DashboardNav";
 import SubscriptionAlert from "@/components/dashboard/SubscriptionAlert";
@@ -75,6 +76,24 @@ const Dashboard = () => {
     }
   }, [searchParams, setSearchParams, queryClient]);
   
+  // Active, paid Siango subscription? Decides whether the store is live (drives the
+  // dashboard banner). "active" + paid_until in the future.
+  const { data: subData } = useQuery({
+    queryKey: ["my-subscription", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("paid_until, status")
+        .eq("user_id", user!.id)
+        .eq("status", "active")
+        .gt("paid_until", new Date().toISOString())
+        .maybeSingle();
+      return data;
+    },
+  });
+  const isSubscribed = !!subData;
+
   // Fetch real data from database
   const { data: dbProducts, isLoading: productsLoading } = useProducts(business?.id);
   const { categories: productCategories } = useProductCategories(business?.id);
@@ -470,7 +489,7 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (currentView) {
       case 'home':
-        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} hasAbout={!!(business as any)?.about_text?.trim()} onNavigate={setCurrentView} />;
+        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} hasAbout={!!(business as any)?.about_text?.trim()} onNavigate={setCurrentView} />;
       case 'products':
       case 'categories':
       case 'sales':

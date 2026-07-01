@@ -18,6 +18,13 @@ const IGNORE = [
   // Cloudflare's analytics beacon calls Array.prototype.at() which doesn't exist on
   // very old browsers (Chrome < 92) - it's their script, not ours.
   "this.i.at is not a function",
+  // Benign aborts: a fetch/promise cancelled because the user navigated away,
+  // backgrounded the tab, or an AbortController fired (common on mobile Safari).
+  // Not a bug - just noise.
+  "The operation was aborted",
+  "AbortError",
+  "The user aborted a request",
+  "signal is aborted",
 ];
 
 // Errors thrown inside third-party scripts (analytics beacons, tag managers, pixels)

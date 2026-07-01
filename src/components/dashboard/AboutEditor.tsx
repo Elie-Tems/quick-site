@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Mic, MicOff, Wand2, Loader2, RefreshCw, Edit3, Save } from "lucide-react";
+import { Mic, MicOff, Wand2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -371,211 +371,82 @@ const AboutEditor = ({
 
   return (
     <div className="space-y-4">
-      {/* Input Section */}
-      {isEditing && (
-        <div className="space-y-3">
+      {/* Step 1: tell us about the business (type or dictate) + style + generate */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-            <Label>טקסט כללי (יופיע בדף האודות)</Label>
-            {isSpeechRecognitionSupported && (
-              <Button
-                type="button"
-                variant={isRecording ? "destructive" : "outline"}
-                size="sm"
-                onClick={isRecording ? stopRecording : startRecording}
-                className="gap-2"
-              >
-                {isRecording ? (
-                  <>
-                    <MicOff className="h-4 w-4" />
-                    עצור ({formatDuration(recordingDuration)})
-                  </>
-                ) : (
-                  <>
-                    <Mic className="h-4 w-4" />
-                    דבר והמילים יופיעו
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-
-          {/* Recording indicator */}
-          {isRecording && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-destructive">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive"></span>
-                </span>
-                מקליט ומתמלל בזמן אמת...
-              </div>
-              <Progress value={(recordingDuration % 60) * 1.67} className="h-1" />
-            </div>
-          )}
-          
-          <Textarea
-            value={rawText + (interimTranscript ? ` ${interimTranscript}` : "")}
-            onChange={(e) => {
-              if (!isRecording) {
-                const next = e.target.value;
-                setRawText(next);
-                if (disableInternalSave) {
-                  onSave(next);
-                }
-              }
-            }}
-            placeholder={isRecording 
-              ? "הטקסט יופיע כאן בזמן שאתה מדבר..." 
-              : "כתוב כאן בקצרה על העסק שלך - מה אתם עושים, מה מייחד אתכם, למה לקוחות בוחרים בכם... או לחץ על הכפתור למעלה ודבר 🎙️"}
-            rows={4}
-            className={isRecording ? "border-destructive ring-1 ring-destructive/50" : ""}
-            readOnly={isRecording}
-          />
-          
-          <p className="text-xs text-muted-foreground">
-            לדוגמה: "אנחנו מאפייה משפחתית מזה 20 שנה, מכינים הכל טרי כל יום, מתמחים בעוגות יום הולדת ומאפים טבעוניים"
-          </p>
-
-          {rawText.trim() && (
+          <Label>ספר לנו על העסק שלך</Label>
+          {isSpeechRecognitionSupported && (
             <Button
               type="button"
-              onClick={improveAboutText}
-              disabled={isImproving}
-              variant="outline"
-              className="w-full gap-2"
+              variant={isRecording ? "destructive" : "outline"}
+              size="sm"
+              onClick={isRecording ? stopRecording : startRecording}
+              className="gap-2"
             >
-              {isImproving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  משפר עם AI...
-                </>
-              ) : (
-                <>
-                  <Wand2 className="h-4 w-4" />
-                  שפר עם AI
-                </>
-              )}
+              {isRecording ? <><MicOff className="h-4 w-4" /> עצור ({formatDuration(recordingDuration)})</> : <><Mic className="h-4 w-4" /> דבר</>}
             </Button>
           )}
-
-          {/* Writing Style Selector */}
-          {/* <div className="space-y-2">
-            <Label className="text-sm">בחר סגנון כתיבה</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {(Object.entries(writingStyles) as [keyof typeof writingStyles, typeof writingStyles.friendly][]).map(([key, style]) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setWritingStyle(key)}
-                  className={`p-3 rounded-lg border text-center transition-all ${
-                    writingStyle === key
-                      ? "border-primary bg-primary/10 ring-1 ring-primary"
-                      : "border-border hover:border-primary/50 hover:bg-muted/50"
-                  }`}
-                >
-                  <div className="font-medium text-sm">{style.label}</div>
-                  <div className="text-xs text-muted-foreground mt-1 hidden sm:block">
-                    {style.description}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            onClick={generateAboutText}
-            disabled={isGenerating || !rawText.trim()}
-            className="w-full gap-2"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                יוצר טקסט {writingStyles[writingStyle].label}...
-              </>
-            ) : (
-              <>
-                <Wand2 className="h-4 w-4" />
-                צור טקסט {writingStyles[writingStyle].label} עם AI
-              </>
-            )}
-          </Button>*/}
         </div>
-      )} 
 
-      {/* Generated Text Preview/Edit */}
+        {isRecording && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-destructive">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive" />
+              </span>
+              מקליט ומתמלל בזמן אמת...
+            </div>
+            <Progress value={(recordingDuration % 60) * 1.67} className="h-1" />
+          </div>
+        )}
+
+        <Textarea
+          value={rawText + (interimTranscript ? ` ${interimTranscript}` : "")}
+          onChange={(e) => { if (!isRecording) setRawText(e.target.value); }}
+          placeholder="כתוב בקצרה - מה אתם עושים, מה מייחד אתכם, למה לקוחות בוחרים בכם... או לחץ על המיקרופון ודבר 🎙️"
+          rows={4}
+          className={isRecording ? "border-destructive ring-1 ring-destructive/50" : ""}
+          readOnly={isRecording}
+        />
+
+        {/* Writing style */}
+        <div className="flex flex-wrap gap-2">
+          {(Object.entries(writingStyles) as [keyof typeof writingStyles, typeof writingStyles.friendly][]).map(([key, style]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setWritingStyle(key)}
+              className={`px-3 py-1.5 rounded-full border text-sm transition-all ${
+                writingStyle === key ? "border-primary bg-primary/10 text-foreground" : "border-border text-muted-foreground hover:border-primary/50"
+              }`}
+            >
+              {style.label}
+            </button>
+          ))}
+        </div>
+
+        <Button type="button" onClick={generateAboutText} disabled={isGenerating || !rawText.trim()} className="w-full gap-2">
+          {isGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> יוצר טקסט...</> : <><Wand2 className="h-4 w-4" /> צור טקסט עם AI</>}
+        </Button>
+      </div>
+
+      {/* Step 2: the generated text - editable, with "improve again" */}
       {generatedText && (
-        <div className="space-y-3 pt-4 border-t border-border">
-          {/* <div className="flex items-center justify-between">
-            <Label>טקסט אודות (לעריכה)</Label>
-            {!isEditing && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsEditing(true)}
-                className="gap-2"
-              >
-                <Edit3 className="h-4 w-4" />
-                ערוך
-              </Button>
-            )}
-          </div> */}
-          
-          {/* <Textarea
+        <div className="space-y-2 pt-4 border-t border-border">
+          <Label>הטקסט שנוצר (אפשר לערוך)</Label>
+          <Textarea
             value={generatedText}
             onChange={(e) => {
               const next = e.target.value;
               setGeneratedText(next);
-              if (disableInternalSave) {
-                onSave(next);
-              }
+              if (disableInternalSave) onSave(next);
             }}
-            rows={4}
-            className="bg-muted/50"
-          /> */}
-
-          {/* <div className="flex gap-2">
-            {isEditing && rawText && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={generateAboutText}
-                disabled={isGenerating}
-                className="gap-2"
-              >
-                <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                צור מחדש
-              </Button>
-            )} */}
-            
-            {/* <Button
-              type="button"
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex-1 gap-2"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  שומר...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  שמור טקסט אודות
-                </>
-              )}
-            </Button> */}
-          {/* </div> */}
-        </div>
-      )}
-
-      {/* Current saved text indicator */}
-      {currentAboutText && !isEditing && !generatedText && (
-        <div className="p-4 bg-muted/30 rounded-lg">
-          <p className="text-sm text-muted-foreground mb-2">טקסט אודות נוכחי:</p>
-          <p className="text-foreground">{currentAboutText}</p>
+            rows={5}
+          />
+          <Button type="button" variant="outline" size="sm" onClick={improveAboutText} disabled={isImproving} className="gap-2">
+            {isImproving ? <><Loader2 className="h-4 w-4 animate-spin" /> משפר...</> : <><Wand2 className="h-4 w-4" /> שפר שוב</>}
+          </Button>
         </div>
       )}
     </div>
