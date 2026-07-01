@@ -15,6 +15,20 @@ const IGNORE = [
   "Non-Error promise rejection captured",
   "Load failed",
   "Failed to fetch dynamically imported module",
+  // Cloudflare's analytics beacon calls Array.prototype.at() which doesn't exist on
+  // very old browsers (Chrome < 92) - it's their script, not ours.
+  "this.i.at is not a function",
+];
+
+// Errors thrown inside third-party scripts (analytics beacons, tag managers, pixels)
+// are not our bugs and not actionable - never email them.
+const THIRD_PARTY_SOURCES = [
+  "cloudflareinsights.com",
+  "googletagmanager.com",
+  "google-analytics.com",
+  "connect.facebook.net",
+  "static.hotjar.com",
+  "analytics.tiktok.com",
 ];
 
 const isProd = () => {
@@ -30,6 +44,8 @@ export const reportError = (
     if (!message || !isProd()) return;
     if (sentCount >= MAX_PER_SESSION) return;
     if (IGNORE.some((p) => message.includes(p))) return;
+    // Skip errors whose stack originates in a third-party script (not our code).
+    if (opts?.stack && THIRD_PARTY_SOURCES.some((d) => opts.stack!.includes(d))) return;
     const sig = `${opts?.kind || "error"}:${message}`.slice(0, 300);
     if (seen.has(sig)) return;
     seen.add(sig);
