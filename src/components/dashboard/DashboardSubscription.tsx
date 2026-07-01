@@ -144,26 +144,24 @@ const DashboardSubscription = () => {
 
     setIsCancelling(true);
     try {
-      const cancelAt = cancelType === "immediate" ? new Date().toISOString() : subscription.paid_until;
-
-      const { error } = await supabase
-        .from('subscriptions')
-        .update({ status: 'cancelled', cancel_type: cancelType, cancel_at: cancelAt, cancel_reason: cancelReason || null } as any)
-        .eq('id', subscription.id);
-      if (error) throw error;
-
-      // Immediate cancellation takes the store offline now. End-of-period stays
-      // live until cancel_at, when the scheduled job (expire-subscriptions) removes it.
-      if (cancelType === "immediate" && business?.id) {
-        await supabase.from('businesses').update({ is_published: false } as any).eq('id', business.id);
+      // Cancel via the edge function: it cancels the iCount recurring charge
+      // (הוראת קבע) FIRST - so billing actually stops - and only then records the
+      // cancellation. If iCount can't confirm, it errors and we keep the sub active
+      // (never "cancelled" while iCount still charges).
+      const { data, error } = await supabase.functions.invoke("icount-cancel-subscription", {
+        body: { cancelType, cancelReason: cancelReason || null },
+      });
+      if (error || !data?.ok) {
+        throw new Error((data as any)?.error || error?.message || "cancel_failed");
       }
 
+      const cancelAt = (data as any).cancelAt || (cancelType === "immediate" ? new Date().toISOString() : subscription.paid_until);
       setSubscription({ ...subscription, status: 'cancelled', cancel_type: cancelType, cancel_at: cancelAt });
       setCancelDialogOpen(false);
       toast.success(
         cancelType === "immediate"
-          ? 'המנוי בוטל והאתר ירד מהאוויר.'
-          : 'המנוי בוטל. האתר יישאר באוויר עד תום התקופה ששולמה.',
+          ? 'המנוי בוטל, החיוב הופסק והאתר ירד מהאוויר.'
+          : 'המנוי בוטל והחיוב הופסק. האתר יישאר באוויר עד תום התקופה ששולמה.',
       );
     } catch (error) {
       console.error('Error cancelling subscription:', error);

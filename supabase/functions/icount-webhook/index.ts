@@ -56,11 +56,27 @@ function extractBusinessId(payload: Record<string, unknown>): string | null {
   return null;
 }
 
+// A recurring (הוראת קבע) setup returns iCount's hk_id in the IPN. Probe common
+// key names + a nested data/body object.
+function extractHkId(payload: Record<string, unknown>): string | null {
+  for (const k of ["hk_id", "hkid", "hk", "recurring_id", "hkId"]) {
+    const v = payload[k];
+    if (typeof v === "number" && isFinite(v)) return String(v);
+    if (typeof v === "string" && v.trim() !== "") return v.trim();
+  }
+  const nested = payload["data"] ?? payload["body"];
+  if (nested && typeof nested === "object" && nested !== null) {
+    return extractHkId(nested as Record<string, unknown>);
+  }
+  return null;
+}
+
 async function handleVerifiedRequestByToken(
   supabase: ReturnType<typeof createClient>,
   sessionToken: string,
   externalId: string | null,
-  paidAmount: number | null
+  paidAmount: number | null,
+  hkId: string | null = null
 ) {
   const { data: session, error: findErr } = await supabase
     .from("publish_checkout_sessions")
@@ -155,6 +171,31 @@ async function handleVerifiedRequestByToken(
     .eq("id", session.id);
 
   console.log(`Business ${session.business_id} published successfully after payment`);
+
+  // If this was a recurring (הוראת קבע) setup, iCount sends an hk_id. Store it on
+  // the merchant's subscription (upsert by user_id) so a future cancellation can
+  // call hk/cancel and actually stop the charging. Also (re)activates + extends
+  // paid_until on each successful cycle. Best-effort - never fail the publish.
+  if (hkId) {
+    try {
+      const { data: biz } = await supabase.from("businesses").select("owner_id").eq("id", session.business_id).maybeSingle();
+      const ownerId = (biz as any)?.owner_id;
+      if (ownerId) {
+        const { data: prof } = await supabase.from("profiles").select("user_id").eq("id", ownerId).maybeSingle();
+        const uid = (prof as any)?.user_id;
+        if (uid) {
+          const paidUntil = new Date(Date.now() + 31 * 24 * 3600 * 1000).toISOString();
+          await supabase.from("subscriptions").upsert(
+            { user_id: uid, status: "active", icount_hk_id: hkId, paid_until: paidUntil, cancel_type: null, cancel_at: null, updated_at: now },
+            { onConflict: "user_id" },
+          );
+          console.log(`Subscription upserted for user ${uid} with hk_id ${hkId}`);
+        }
+      }
+    } catch (e) {
+      console.warn("subscription upsert (hk_id) failed:", e);
+    }
+  }
 
   return new Response(JSON.stringify({ ok: true, business_id: session.business_id, status: "completed", published: true }), {
     status: 200,
@@ -335,6 +376,7 @@ Deno.serve(async (req) => {
     null;
 
   const paidAmount = extractPaidAmount(payload);
+  const hkId = extractHkId(payload);
 
-  return handleVerifiedRequestByToken(supabase, sessionToken, externalId, paidAmount);
+  return handleVerifiedRequestByToken(supabase, sessionToken, externalId, paidAmount, hkId);
 });

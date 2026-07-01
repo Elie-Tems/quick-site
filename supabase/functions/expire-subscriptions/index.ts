@@ -12,6 +12,23 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+const ICOUNT_BASE = "https://api.icount.co.il/api/v3.php";
+// Call the iCount v3 API (Bearer ICOUNT_API_TOKEN). No-op if the token isn't set.
+async function icount(endpoint: string, payload: Record<string, unknown>) {
+  const token = Deno.env.get("ICOUNT_API_TOKEN");
+  if (!token) return { status: false } as any;
+  try {
+    const r = await fetch(`${ICOUNT_BASE}/${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload),
+    });
+    return await r.json();
+  } catch {
+    return { status: false } as any;
+  }
+}
+
 serve(async (req) => {
   try {
     // Fail closed: this is invoked only by the scheduled cron, which sends the
@@ -54,7 +71,25 @@ serve(async (req) => {
       if (!bizErr) processed++;
     }
 
-    return new Response(JSON.stringify({ ok: true, processed }), {
+    // Reconciliation: for recently-cancelled subscriptions that still carry an
+    // iCount hk_id, re-issue hk/cancel (idempotent). This is the safety net for a
+    // cancellation that our cancel endpoint thought succeeded but iCount didn't
+    // actually stop - so a customer who cancelled can never keep getting charged.
+    // Bounded to the last few days so we don't reprocess old cancellations forever.
+    let reconciled = 0;
+    const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: cancelledSubs } = await admin
+      .from("subscriptions")
+      .select("id, icount_hk_id")
+      .eq("status", "cancelled")
+      .not("icount_hk_id", "is", null)
+      .gte("cancel_at", cutoff);
+    for (const s of cancelledSubs ?? []) {
+      const res = await icount("hk/cancel", { hk_id: (s as any).icount_hk_id });
+      if ((res as any)?.status) reconciled++;
+    }
+
+    return new Response(JSON.stringify({ ok: true, processed, reconciled }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
