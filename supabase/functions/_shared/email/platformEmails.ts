@@ -468,7 +468,8 @@ export const newOrderMerchant = (c: PlatformCtx): BuiltEmail => ({
   }),
 });
 
-/** Customer-facing order confirmation (transactional). sender = the MERCHANT. */
+/** Customer-facing order confirmation (transactional). sender = the MERCHANT.
+ *  Localized to the shopper's language (defaults to Hebrew). */
 export const orderConfirmationCustomer = (
   merchant: EmailSender,
   args: {
@@ -478,21 +479,55 @@ export const orderConfirmationCustomer = (
     storeUrl: string;
     items?: { name: string; quantity: number; price: number }[];
     orderNumber?: string;
+    lang?: EmailLang;
   },
-): BuiltEmail => ({
-  subject: `יש! ההזמנה שלך מ${args.storeName} התקבלה 🎉`,
-  html: renderEmail({
-    sender: merchant,
-    previewText: "תודה רבה! הנה כל הפרטים",
-    bodyHtml:
-      h1("ההזמנה התקבלה! 🎉") +
-      p(`${args.firstName ? `היי ${args.firstName}! ` : "היי! "}תודה רבה על הרכישה ב${args.storeName} - בחירה מצוינת, אם יורשה לנו לומר 😉. קיבלנו את ההזמנה${args.orderNumber ? ` (מספר ${ltr(args.orderNumber)})` : ""} וכבר מתחילים לטפל בה.`) +
-      p("הנה מה שהזמנת:") +
-      (args.items && args.items.length ? emailItemsTable(args.items, args.orderTotal) : "") +
-      p("נעדכן אותך בכל שלב. יש שאלה? פשוט השב/י למייל הזה - אנחנו אנשים אמיתיים ונשמח לעזור. 🙏") +
-      emailButton("חזרה לחנות", args.storeUrl, merchant.brandColor || BRAND),
-  }),
-});
+): BuiltEmail => {
+  const lang = args.lang || "he";
+  const dir = dirForLang(lang);
+  const nm = args.firstName;
+  const store = args.storeName;
+  const onum = args.orderNumber ? ltr(args.orderNumber) : "";
+  const T = {
+    he: {
+      subject: `יש! ההזמנה שלך מ${store} התקבלה 🎉`, preview: "תודה רבה! הנה כל הפרטים", h1: "ההזמנה התקבלה! 🎉",
+      p1: `${nm ? `היי ${nm}! ` : "היי! "}תודה רבה על הרכישה ב${store} - בחירה מצוינת, אם יורשה לנו לומר 😉. קיבלנו את ההזמנה${onum ? ` (מספר ${onum})` : ""} וכבר מתחילים לטפל בה.`,
+      p2: "הנה מה שהזמנת:", p3: "נעדכן אותך בכל שלב. יש שאלה? פשוט השב/י למייל הזה - אנחנו אנשים אמיתיים ונשמח לעזור. 🙏", btn: "חזרה לחנות",
+    },
+    en: {
+      subject: `Yes! Your order from ${store} is confirmed 🎉`, preview: "Thank you! Here are all the details", h1: "Order confirmed! 🎉",
+      p1: `${nm ? `Hi ${nm}! ` : "Hi! "}Thank you for your purchase at ${store} - great choice, if we may say so 😉. We've received your order${onum ? ` (no. ${onum})` : ""} and we're already on it.`,
+      p2: "Here's what you ordered:", p3: "We'll keep you posted at every step. A question? Just reply to this email - we're real people and happy to help. 🙏", btn: "Back to store",
+    },
+    ar: {
+      subject: `رائع! تم تأكيد طلبك من ${store} 🎉`, preview: "شكرًا لك! إليك كل التفاصيل", h1: "تم تأكيد الطلب! 🎉",
+      p1: `${nm ? `مرحبًا ${nm}! ` : "مرحبًا! "}شكرًا لشرائك من ${store} - اختيار رائع، إن جاز لنا القول 😉. لقد استلمنا طلبك${onum ? ` (رقم ${onum})` : ""} وبدأنا العمل عليه.`,
+      p2: "إليك ما طلبته:", p3: "سنبقيك على اطلاع في كل خطوة. سؤال؟ فقط ردّ على هذا البريد - نحن أشخاص حقيقيون ويسعدنا المساعدة. 🙏", btn: "العودة إلى المتجر",
+    },
+    fr: {
+      subject: `Super ! Votre commande de ${store} est confirmée 🎉`, preview: "Merci ! Voici tous les détails", h1: "Commande confirmée ! 🎉",
+      p1: `${nm ? `Bonjour ${nm} ! ` : "Bonjour ! "}Merci pour votre achat chez ${store} - excellent choix, si nous pouvons nous permettre 😉. Nous avons bien reçu votre commande${onum ? ` (n° ${onum})` : ""} et nous nous en occupons déjà.`,
+      p2: "Voici ce que vous avez commandé :", p3: "Nous vous tiendrons informé à chaque étape. Une question ? Répondez simplement à cet e-mail - nous sommes de vraies personnes, ravies d'aider. 🙏", btn: "Retour à la boutique",
+    },
+    ru: {
+      subject: `Ура! Ваш заказ из ${store} подтверждён 🎉`, preview: "Спасибо! Вот все детали", h1: "Заказ подтверждён! 🎉",
+      p1: `${nm ? `Привет, ${nm}! ` : "Привет! "}Спасибо за покупку в ${store} - отличный выбор, если позволите 😉. Мы получили ваш заказ${onum ? ` (№ ${onum})` : ""} и уже занимаемся им.`,
+      p2: "Вот что вы заказали:", p3: "Будем держать вас в курсе на каждом шаге. Вопрос? Просто ответьте на это письмо - мы живые люди и рады помочь. 🙏", btn: "Вернуться в магазин",
+    },
+  }[lang];
+  return {
+    subject: T.subject,
+    html: renderEmail({
+      sender: merchant,
+      previewText: T.preview,
+      lang,
+      dir,
+      bodyHtml:
+        h1(T.h1) + p(T.p1) + p(T.p2) +
+        (args.items && args.items.length ? emailItemsTable(args.items, args.orderTotal) : "") +
+        p(T.p3) + emailButton(T.btn, args.storeUrl, merchant.brandColor || BRAND),
+    }),
+  };
+};
 
 /** Domain registered successfully - ownership + connection guide. Localized. */
 export const domainPurchased = (c: PlatformCtx): BuiltEmail => {

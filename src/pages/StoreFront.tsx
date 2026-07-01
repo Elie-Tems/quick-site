@@ -506,6 +506,8 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
                 firstName: data.fullName?.split(" ")[0],
                 orderTotal,
                 items: cartItems.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
+                // Send the confirmation in the shopper's current language.
+                lang: document.documentElement.lang || "he",
               },
             },
           })

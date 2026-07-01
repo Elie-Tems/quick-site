@@ -156,6 +156,7 @@ serve(async (req) => {
           storeUrl,
           items: order?.items,
           orderNumber: order?.orderNumber,
+          lang: ["he", "en", "ar", "fr", "ru"].includes(order?.lang) ? order.lang : "he",
         },
       );
       subject = built.subject;
