@@ -808,6 +808,8 @@ const DashboardProducts = ({
                       }}
                       productName={formData.name}
                       productDescription={formData.description}
+                      productId={editingProduct?.id}
+                      currentImageUrl={formData.imageUrl}
                     />
                   )}
                 </div>

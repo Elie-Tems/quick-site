@@ -572,9 +572,10 @@ const Dashboard = () => {
         return <DashboardCoupons businessId={business?.id} />;
       case 'ai-images':
         return (
-          <DashboardAIImages 
-            businessId={business?.id} 
+          <DashboardAIImages
+            businessId={business?.id}
             onNavigateToSubscription={() => setCurrentView('subscription')}
+            onNavigateToProducts={() => setCurrentView('products')}
           />
         );
       case 'ai-generated-images':
