@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Gem, Laptop, Gift, Home, Sparkles, ArrowLeft } from "lucide-react";
+import { ShoppingBag, Gem, Laptop, Gift, Home, Star, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const TemplateShowcaseSection = () => {
@@ -323,7 +323,7 @@ const TemplateShowcaseSection = () => {
               className="group h-full min-h-[280px] flex flex-col items-center justify-center text-center gap-4 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/[0.04] p-8 transition-all hover:border-primary/60 hover:bg-primary/[0.08]"
             >
               <div className="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center">
-                <Sparkles className="w-7 h-7 text-primary" />
+                <Star className="w-7 h-7 text-primary" />
               </div>
               <div>
                 <div className="text-xl font-bold text-foreground">האתר שלכם יכול להיראות ככה</div>

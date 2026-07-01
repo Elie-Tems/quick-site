@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   Store, Palette, Package, CreditCard, Rocket, ArrowRight, ArrowLeft,
-  Check, Clock, Upload, Sparkles, ShoppingBag, FileText, CheckCircle2,
+  Check, Clock, Upload, Star, ShoppingBag, FileText, CheckCircle2,
 } from "lucide-react";
 
 /**
@@ -149,7 +149,7 @@ const PreviewOnboardingV2 = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <button className="rounded-xl border-2 border-primary bg-primary/5 p-4 text-center">
-                      <Sparkles className="w-6 h-6 text-primary mx-auto mb-1" />
+                      <Star className="w-6 h-6 text-primary mx-auto mb-1" />
                       <span className="text-sm font-medium text-foreground">צור לי אוטומטית</span>
                       <p className="text-xs text-muted-foreground mt-0.5">AI יבחר עיצוב</p>
                     </button>

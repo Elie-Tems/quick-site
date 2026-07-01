@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -81,7 +81,7 @@ const WhoIsThisForSection = () => {
             viewport={{ once: true }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-6"
           >
-            <Sparkles className="w-4 h-4 text-primary" />
+            <Star className="w-4 h-4 text-primary" />
             <span className="text-sm text-muted-foreground">{t('whoIsThisFor.badge')}</span>
           </motion.div>
           

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sparkles, Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -131,7 +131,7 @@ export const AIImageGenerator = ({
             </>
           ) : (
             <>
-              <Sparkles className="h-4 w-4" />
+              <Wand2 className="h-4 w-4" />
               צור תמונה (1 קרדיט)
             </>
           )}

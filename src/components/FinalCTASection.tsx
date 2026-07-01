@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Rocket, Sparkles, Star, CheckCircle2, TrendingUp, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Rocket, Star, CheckCircle2, TrendingUp, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 

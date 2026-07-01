@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -265,7 +265,7 @@ const HeroSection = () => {
                 className={`absolute -top-8 ${dir === 'rtl' ? '-right-8' : '-left-8'} w-16 h-16 rounded-2xl glass-card border border-primary/30 flex items-center justify-center`}
                 style={{ boxShadow: 'none' }}
               >
-                <Sparkles className="w-6 h-6 text-primary" />
+                <Star className="w-6 h-6 text-primary" />
               </motion.div>
               
               <motion.div

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, HelpCircle, Loader2, Sparkles, ArrowRight, ArrowLeft, User, RotateCcw, Search, ChevronDown, BookOpen } from "lucide-react";
+import { Send, HelpCircle, Loader2, Bot, ArrowRight, ArrowLeft, User, RotateCcw, Search, ChevronDown, BookOpen } from "lucide-react";
 import { KNOWLEDGE_BASE } from "@/lib/knowledgeBase";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -540,7 +540,7 @@ const HelpCenter = () => {
                     className="h-full flex flex-col items-center justify-center text-center p-8"
                   >
                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                      <Sparkles className="w-8 h-8 text-primary" />
+                      <Bot className="w-8 h-8 text-primary" />
                     </div>
                     <p className="text-muted-foreground mb-6">
                       היי! 👋 אני כאן לעזור לך עם כל שאלה על המערכת.

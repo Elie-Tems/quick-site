@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, ArrowRight, Sparkles, Loader2, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, ArrowRight, Star, Loader2, Eye, EyeOff } from "lucide-react";
 
 interface FormErrors {
   email?: string;
@@ -444,7 +444,7 @@ const Login = () => {
           
           <div className="relative text-center px-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm mb-8">
-              <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
+              <Star className="w-4 h-4 text-primary" aria-hidden="true" />
               <span className="text-sm font-medium text-white/80">{t('login.welcomeBack')}</span>
             </div>
             <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: isHebrew ? 'Heebo, sans-serif' : undefined }}>

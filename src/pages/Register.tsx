@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getStoredUtm } from "@/lib/utmCapture";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, ArrowRight, Sparkles, Loader2, Gift, Zap, Check, Lock, Mail, User, Building2, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, ArrowRight, Star, Loader2, Gift, Zap, Check, Lock, Mail, User, Building2, Eye, EyeOff } from "lucide-react";
 
 interface FormErrors {
   fullName?: string;
@@ -203,7 +203,7 @@ const Register = () => {
   const benefits = [
     { icon: Zap, text: t('register.setupIn5') },
     { icon: Check, text: t('register.noCode') },
-    { icon: Sparkles, text: t('register.justStart') }
+    { icon: Star, text: t('register.justStart') }
   ];
 
   return (
@@ -660,7 +660,7 @@ const Register = () => {
                 transition={{ delay: 0.6 }}
                 className="register-visual-badge"
               >
-                <Sparkles className="w-4 h-4" />
+                <Star className="w-4 h-4" />
                 <span>{t('register.setupIn5')}</span>
                 <motion.div
                   animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0, 0.3] }}

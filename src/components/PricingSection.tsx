@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, ArrowLeft, ArrowRight, Sparkles, Zap, Wand2, Crown, Star, Shield } from "lucide-react";
+import { Check, ArrowLeft, ArrowRight, Zap, Wand2, Crown, Star, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -147,7 +147,7 @@ const PricingSection = () => {
               {plan.highlighted && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
                   <div className="bg-gradient-to-r from-primary to-primary/80 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2">
-                    <Sparkles className="w-4 h-4" />
+                    <Star className="w-4 h-4" />
                     הכי פופולרי
                   </div>
                 </div>
