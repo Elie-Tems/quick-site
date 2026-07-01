@@ -4,7 +4,7 @@
 // just opted in). verify_jwt=false (public). Basic abuse guards: email shape +
 // dedup. Rate-limiting is a follow-up.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendViaResend } from "../_shared/email/resend.ts";
 
 const corsHeaders = {

@@ -8,7 +8,7 @@
 // The frontend then sends the customer to the iCount payment page. Only after
 // iCount confirms (domain-purchase-webhook) do we actually register the domain,
 // so we never spend reseller balance before being paid.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { opCheckOne } from "../_shared/domains/openprovider.ts";
 import { priceDomain } from "../_shared/domains/pricing.ts";
 

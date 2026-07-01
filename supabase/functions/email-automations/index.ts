@@ -4,7 +4,7 @@
 // (welcome / drip / abandoned cart) is handled by separate runner functions;
 // this is the merchant's on/off control.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

@@ -2,7 +2,7 @@
 // verify_jwt = true: only the logged-in merchant, and only their OWN documents
 // (looked up by their business / account email). Server-side only - the iCount
 // API token lives in the ICOUNT_API_TOKEN secret and is never exposed to the client.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

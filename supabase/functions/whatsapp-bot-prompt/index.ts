@@ -2,7 +2,7 @@
 // professional WhatsApp service-bot instruction. Voice -> OpenAI Whisper
 // transcription -> LLM rewrite into a clean, safe Hebrew bot prompt.
 // Auth: the logged-in merchant (JWT). BUILD-ONLY: not deployed until approved.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

@@ -1,7 +1,7 @@
 // Generic "verify credentials" endpoint. Called by the logged-in merchant from
 // the dashboard. Dispatches to the chosen provider's adapter. verify_jwt = true.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { getProvider } from "../_shared/payments/registry.ts";
 
 const corsHeaders = {

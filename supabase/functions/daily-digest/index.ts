@@ -2,7 +2,7 @@
 // Data-focused (numbers first, minimal design). Triggered by a pg_cron job that
 // POSTs here with the x-cron-secret header. Also runnable manually with the same
 // secret. Metrics cover the last 24h.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendViaResend } from "../_shared/email/resend.ts";
 
 const RECIPIENTS = ["moti4384@gmail.com", "furmand713@gmail.com"];

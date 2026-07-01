@@ -3,7 +3,7 @@
 // internal secret) or by the merchant (JWT). Looks up the business's connected
 // sender, sends via Twilio, logs to whatsapp_messages.
 // BUILD-ONLY: not deployed until approved.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { twilioCreds, sendWhatsAppText, sendWhatsAppTemplate } from "../_shared/whatsapp/twilio.ts";
 
 const corsHeaders = {

@@ -2,7 +2,7 @@
 // DOWN (and again when it RECOVERS). Emails only on state CHANGE - never spams.
 // Meant to be called every few minutes by pg_cron. State is one row in
 // public.system_status. No-ops the email gracefully if RESEND_API_KEY is unset.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendViaResend } from "../_shared/email/resend.ts";
 
 const corsHeaders = {

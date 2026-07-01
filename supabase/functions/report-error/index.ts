@@ -3,7 +3,7 @@
 // if RESEND_API_KEY is not set. Callable by anyone (anon key) - it only sends a
 // fixed internal alert, never reflects attacker-controlled recipients.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendViaResend } from "../_shared/email/resend.ts";
 import { consumeRateLimit } from "../_shared/rateLimit.ts";
 

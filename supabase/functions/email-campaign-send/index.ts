@@ -5,7 +5,7 @@
 // owner's active (non-unsubscribed) contacts. Segment/condition targeting is
 // applied in a later iteration; the UI already captures it.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendViaResend } from "../_shared/email/resend.ts";
 
 const corsHeaders = {

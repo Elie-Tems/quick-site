@@ -5,7 +5,7 @@
 //   that email's orders for that store (read-only).
 // Rate-limited per IP + per target email so it can't be used to email-bomb anyone.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { hmacBase64 } from "../_shared/payments/provider.ts";
 import { sendViaResend } from "../_shared/email/resend.ts";
 import { consumeRateLimit } from "../_shared/rateLimit.ts";
@@ -128,4 +128,3 @@ serve(async (req) => {
   return json({ error: "unknown action" }, 400);
 });
 
-// redeploy: esm.sh 522 was transient (2026-07-01)

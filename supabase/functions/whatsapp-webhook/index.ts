@@ -6,7 +6,7 @@
 //      -> we map the sender to their business, parse the caption, upload the image,
 //      create the product, and reply "added".
 // BUILD-ONLY: ready to deploy but not activated until Moti approves.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { twilioCreds, sendWhatsAppText, toE164 } from "../_shared/whatsapp/twilio.ts";
 
 const corsHeaders = {
@@ -234,6 +234,4 @@ Deno.serve(async (req) => {
   }
 });
 
-// redeploy retry 1782905174
 
-// redeploy retry 2

@@ -2,7 +2,7 @@
 // hosted payment page link from whichever gateway the merchant configured.
 // Public storefront → verify_jwt = false. Amount is recomputed server-side.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { getProvider } from "../_shared/payments/registry.ts";
 
 const corsHeaders = {

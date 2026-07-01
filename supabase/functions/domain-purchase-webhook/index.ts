@@ -7,7 +7,7 @@
 // after iCount confirms payment. If the reseller balance is empty the order is
 // flagged failed_funds and an urgent admin alert is sent - the customer already
 // paid, so it needs manual handling (top up + register, or refund).
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { PLATFORM_EMAILS } from "../_shared/email/platformEmails.ts";
 import { sendViaResend } from "../_shared/email/resend.ts";
 import { opCreateCustomer, opRegisterDomain, opSetDnsToHost } from "../_shared/domains/openprovider.ts";

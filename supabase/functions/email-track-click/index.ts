@@ -1,7 +1,7 @@
 // Click tracking: records a 'clicked' event then 302-redirects to the real URL.
 // Public (called when a recipient clicks a wrapped link).
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 Deno.serve(async (req) => {
   const u = new URL(req.url);

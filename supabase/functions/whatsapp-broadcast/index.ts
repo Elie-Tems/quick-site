@@ -2,7 +2,7 @@
 // compliance). Only contacts with opted_in=true receive marketing. Rate-limited.
 // Called by the merchant (JWT) or a scheduler (internal secret).
 // BUILD-ONLY: ready to deploy but not activated until Moti approves.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { twilioCreds, sendWhatsAppTemplate } from "../_shared/whatsapp/twilio.ts";
 
 const corsHeaders = {

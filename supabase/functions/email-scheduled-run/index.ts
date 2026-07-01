@@ -3,7 +3,7 @@
 // the blocks, applies merge fields + the locked compliance footer, and sends to
 // the owner's active, non-unsubscribed contacts via Resend; then marks it sent.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendViaResend } from "../_shared/email/resend.ts";
 
 const esc = (s: string) => String(s ?? "").replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]!));

@@ -3,7 +3,7 @@
 // the resulting ids here and we persist them on whatsapp_accounts.
 // Auth: the logged-in merchant (verified to own the business).
 // BUILD-ONLY: not deployed until approved.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

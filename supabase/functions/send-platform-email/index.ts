@@ -3,7 +3,7 @@
 // (verify_jwt=true) so it can't be abused anonymously to send from our domain.
 // No-ops gracefully if RESEND_API_KEY is not configured yet.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { PLATFORM_EMAILS, orderConfirmationCustomer } from "../_shared/email/platformEmails.ts";
 import { sendViaResend } from "../_shared/email/resend.ts";
 

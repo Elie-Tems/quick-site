@@ -4,7 +4,7 @@
 //   - "search":  text query -> candidate businesses (name/address/rating/place_id)
 //   - "refresh": fetch the caller's saved place_id details -> cache on the row
 // The public storefront reads the cached reviews directly (no per-visitor API call).
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

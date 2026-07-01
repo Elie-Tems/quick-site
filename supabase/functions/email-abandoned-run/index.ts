@@ -4,7 +4,7 @@
 // abandoned_cart automation AND (b) the email is an active, consenting contact
 // AND (c) not globally unsubscribed (Israeli spam law - opt-in only).
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendViaResend } from "../_shared/email/resend.ts";
 
 const esc = (s: string) => String(s ?? "").replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]!));

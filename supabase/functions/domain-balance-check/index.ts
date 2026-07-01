@@ -2,7 +2,7 @@
 // stores a snapshot in domain_provider_status (admin dashboard reads it via RLS),
 // and emails the admin when the balance drops below the threshold - once per
 // crossing (the flag resets when the balance recovers), so we don't nag daily.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { PLATFORM_EMAILS } from "../_shared/email/platformEmails.ts";
 import { sendViaResend } from "../_shared/email/resend.ts";
 import { opGetBalance } from "../_shared/domains/openprovider.ts";

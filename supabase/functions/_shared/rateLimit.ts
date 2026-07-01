@@ -3,7 +3,7 @@
 // caller is WITHIN the limit (allow), false when over (caller should 429).
 // Fails OPEN on any infra error - the goal is cost/abuse protection, not a hard
 // security gate, so a transient DB error must not block legitimate users.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 export async function consumeRateLimit(
   admin: ReturnType<typeof createClient>,

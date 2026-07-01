@@ -5,7 +5,7 @@
 // Note (go-live): Israeli (+972) mobile numbers require a Twilio regulatory
 // bundle (business address docs). The bundle id goes in TWILIO_IL_BUNDLE_SID.
 // Auth: the owning merchant (JWT). BUILD-ONLY: ready, not deployed/published.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { twilioCreds } from "../_shared/whatsapp/twilio.ts";
 
 const corsHeaders = {

@@ -2,7 +2,7 @@
 // (30d / 7d) and expired-unpaid ones, emails the merchant once per stage via
 // Resend, and flips the per-stage flag so we never spam. No-ops when there are
 // no due domains. Reads recipient from the linked business.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { domainExpiryReminder, domainExpiringUnpaid } from "../_shared/email/platformEmails.ts";
 import { sendViaResend } from "../_shared/email/resend.ts";
 

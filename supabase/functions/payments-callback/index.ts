@@ -2,7 +2,7 @@
 // callback URL we registered when creating the page. verify_jwt = false; the
 // request is authenticated by the adapter's signature check.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { getProvider } from "../_shared/payments/registry.ts";
 
 const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*" };
