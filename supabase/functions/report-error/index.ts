@@ -3,7 +3,9 @@
 // if RESEND_API_KEY is not set. Callable by anyone (anon key) - it only sends a
 // fixed internal alert, never reflects attacker-controlled recipients.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendViaResend } from "../_shared/email/resend.ts";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +14,18 @@ const corsHeaders = {
 
 // Internal alert recipients (the two admins). Never taken from the request body.
 const ALERT_RECIPIENTS = ["moti4384@gmail.com", "furmand713@gmail.com"];
+
+const clientIp = (req: Request) =>
+  req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+  req.headers.get("cf-connecting-ip") || "ip";
+
+// Endpoint is public (anon) so it can catch client errors - but that also means it
+// could be spammed to email-bomb the admins. Rate-limit per IP + globally; drop
+// silently (200) when over so it can't be weaponized.
+const admin = createClient(
+  Deno.env.get("SUPABASE_URL") ?? "",
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+);
 
 const clip = (v: unknown, n = 4000) => String(v ?? "").slice(0, n);
 const esc = (s: string) =>
@@ -35,6 +49,17 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    // Anti-spam: max 6/hour per IP + 60/hour globally. Over -> drop silently.
+    const ip = clientIp(req);
+    const okIp = await consumeRateLimit(admin, `report-error:${ip}`, 6, 3600);
+    const okGlobal = await consumeRateLimit(admin, "report-error:global", 60, 3600);
+    if (!okIp || !okGlobal) {
+      return new Response(JSON.stringify({ ok: true, dropped: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const kind = clip(body.kind, 60) || "error";
     const url = clip(body.url, 500);
     const context = clip(body.context, 500);
