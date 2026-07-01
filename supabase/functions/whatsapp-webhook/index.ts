@@ -37,7 +37,11 @@ function safeEqual(a: string, b: string): boolean {
 async function validTwilioSignature(req: Request, params: Record<string, string>, authToken: string): Promise<boolean> {
   const sig = req.headers.get("x-twilio-signature");
   if (!sig) return false;
-  let data = req.url;
+  // Twilio signs over the EXACT public webhook URL it was configured with. Inside a
+  // Supabase edge function, req.url is an internal URL that differs from the public
+  // one, so the signature never matches - reconstruct the public URL instead.
+  const base = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
+  let data = `${base}/functions/v1/whatsapp-webhook`;
   for (const k of Object.keys(params).sort()) data += k + params[k];
   const key = await crypto.subtle.importKey(
     "raw", new TextEncoder().encode(authToken), { name: "HMAC", hash: "SHA-1" }, false, ["sign"],
