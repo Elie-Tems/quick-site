@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
             price: parsed.price ?? 0,
             description: parsed.description,
             image_url: imageUrl,
-            is_active: true,
+            active: true,
           });
           if (insErr) throw insErr;
           await reply(`נוסף ✅\nמוצר: ${parsed.name}${parsed.price ? `\nמחיר: ₪${parsed.price}` : "\n(לא זוהה מחיר - אפשר לעדכן בדשבורד)"}\nתוכל/י לערוך בדשבורד.`);
