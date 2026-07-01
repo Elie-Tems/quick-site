@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Globe, MessageCircle, Mail, Sparkles, ArrowLeft, Crown, Check, BarChart3, Star } from "lucide-react";
+import { Globe, MessageCircle, Mail, Wand2, ArrowLeft, Crown, Check, BarChart3, Star } from "lucide-react";
 import type { DashboardView } from "@/components/dashboard/DashboardNav";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 
@@ -45,7 +45,7 @@ const DashboardUpgrades = ({ onNavigate }: Props) => {
       bullets: ["מדידת המרות מדויקת", "קהלי ריטרגטינג", "כל הפלטפורמות"], show: true,
     },
     {
-      id: "ai-images" as DashboardView, icon: Sparkles, color: "#7c3aed",
+      id: "ai-images" as DashboardView, icon: Wand2, color: "#7c3aed",
       title: "תמונות AI", price: "לפי חבילה",
       pitch: "תמונות מקצועיות לחנות ולמוצרים, נוצרות ב-AI תוך שניות - בלי צלם ובלי מעצב.",
       bullets: ["תמונות בקליק", "חוסך זמן וכסף", "מראה מקצועי"], show: true,

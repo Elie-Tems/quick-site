@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { Users, Search, ArrowRight, Phone, Mail, ShoppingBag, Calendar, Sparkles, Crown, Repeat, Eye, Download, MessageCircle, Gift, Copy, X, Plus } from "lucide-react";
+import { Users, Search, ArrowRight, Phone, Mail, ShoppingBag, Calendar, Crown, Repeat, Eye, Download, MessageCircle, Gift, Copy, X, Plus, Bell } from "lucide-react";
 import type { Order } from "@/components/dashboard/DashboardOrders";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -419,7 +419,7 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
       {/* Opportunity: at-risk - catch them BEFORE they go dormant (better timing) */}
       {counts.at_risk > 0 && (
         <div className="rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 flex items-start gap-3">
-          <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+          <Bell className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-sm font-medium">{counts.at_risk} לקוחות מתחילים להתרחק ({AT_RISK_DAYS}-{DORMANT_DAYS} יום)</p>
             <p className="text-xs text-muted-foreground mt-0.5">הרגע הכי טוב להחזיר אותם - לפני שהם הופכים לרדומים. הצעה קטנה עכשיו שווה הרבה.</p>
@@ -431,7 +431,7 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
       {/* Opportunity: dormant win-back */}
       {counts.dormant > 0 && (
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-start gap-3">
-          <Sparkles className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <Bell className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-sm font-medium">{counts.dormant} לקוחות לא קנו מעל {DORMANT_DAYS} יום</p>
             <p className="text-xs text-muted-foreground mt-0.5">הזדמנות להחזיר אותם עם הטבה. שליחה אוטומטית תתאפשר כשמודול וואטסאפ/מייל יעלה - בינתיים אפשר לראות מי הם וליצור קשר.</p>

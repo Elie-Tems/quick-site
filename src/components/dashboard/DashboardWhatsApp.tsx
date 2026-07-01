@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   MessageCircle, Check, Users, Megaphone, Settings as SettingsIcon,
   Plus, Upload, Loader2, BadgeCheck, ShieldCheck, Bell,
-  Sparkles, Send, Image as ImageIcon, ChevronDown, ArrowLeft, Eye, CheckCheck,
+  Send, Coins, Image as ImageIcon, ChevronDown, ArrowLeft, Eye, CheckCheck,
   MessagesSquare, FileText, Bot, Smartphone, Facebook, FileSpreadsheet, Wand2, Mic, Paperclip,
 } from "lucide-react";
 
@@ -162,7 +162,7 @@ const GuidanceScreen = () => {
       {/* Pricing + number ordering */}
       <div className="grid md:grid-cols-2 gap-4">
         <motion.div {...fade(0.12)} className="rounded-3xl border border-border bg-card p-6">
-          <h3 className="font-bold text-foreground text-lg mb-3 flex items-center gap-2"><Sparkles className="w-5 h-5" style={{ color: WA }} /> כמה זה עולה</h3>
+          <h3 className="font-bold text-foreground text-lg mb-3 flex items-center gap-2"><Coins className="w-5 h-5" style={{ color: WA }} /> כמה זה עולה</h3>
           <div className="space-y-2.5 text-sm">
             <div className="flex items-baseline justify-between"><span className="text-muted-foreground">הקמה חד-פעמית</span><span className="font-extrabold text-foreground text-lg">₪190</span></div>
             <div className="flex items-baseline justify-between"><span className="text-muted-foreground">מנוי חודשי</span><span className="font-extrabold text-foreground text-lg">₪89<span className="text-xs font-normal text-muted-foreground">/חודש</span></span></div>

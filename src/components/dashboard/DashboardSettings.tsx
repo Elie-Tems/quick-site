@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Upload, Check, X, CreditCard, Loader2, Palette, Image, Type, Megaphone, Sparkles, RefreshCw, Store, Utensils, Coffee, Shirt, Gem, Smartphone, Dumbbell, Car, PawPrint, Flower2, BookOpen, Home, ShoppingBasket, MoreHorizontal, ImagePlus, MessageCircle, Wine, Gamepad2, Palette as PaletteIcon, Baby, Gift, Pill, Sofa, Refrigerator, Scissors, Truck, ChevronDown, ChevronUp, Tag } from "lucide-react";
+import { Upload, Check, X, CreditCard, Loader2, Palette, Image, Type, Megaphone, RefreshCw, Store, Utensils, Coffee, Shirt, Gem, Smartphone, Dumbbell, Car, PawPrint, Flower2, BookOpen, Home, ShoppingBasket, MoreHorizontal, ImagePlus, MessageCircle, Wine, Gamepad2, Palette as PaletteIcon, Baby, Gift, Pill, Sofa, Refrigerator, Scissors, Truck, ChevronDown, ChevronUp, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +22,7 @@ const categoryIcons: Record<BusinessCategory, React.ComponentType<any>> = {
   clothing: Shirt,
   jewelry: Gem,
   electronics: Smartphone,
-  beauty: Sparkles,
+  beauty: Flower2,
   fitness: Dumbbell,
   automotive: Car,
   pets: PawPrint,
@@ -1102,7 +1102,7 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
             </div>
 
             <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
+                <Flower2 className="h-4 w-4 text-primary" />
                 <span className="font-medium text-sm"> או צור תמונה ראשית באמצעות AI ✨</span>
               </div>
             

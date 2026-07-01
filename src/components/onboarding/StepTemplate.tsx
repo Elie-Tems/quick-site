@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { OnboardingData } from "@/pages/Onboarding";
 import { StoreTemplateId } from "@/lib/storeTemplates";
-import { Users, Home, Sparkles, Zap, ShoppingBag, Heart, Check, Upload, Loader2 } from "lucide-react";
+import { Users, Home, Zap, ShoppingBag, Heart, Check, Upload, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { StepNavigation } from "./StepNavigation";
 import { toast } from "sonner";
@@ -29,7 +29,7 @@ const templateStyles: TemplateStyle[] = [
     id: "luxury-boutique",
     name: "בוטיק יוקרתי",
     description: "מגזיני, אלגנטי, טקסט מעל תמונה",
-    icon: <Sparkles className="w-4 h-4" />,
+    icon: <Zap className="w-4 h-4" />,
     heroLayout: "full-image",
     accentColor: "#d4af37",
     heroImage: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=600&q=80",
@@ -99,7 +99,7 @@ const templateStyles: TemplateStyle[] = [
     id: "royal-purple",
     name: "סגול מלכותי",
     description: "דרמטי, תמונה מלאה, יוקרתי",
-    icon: <Sparkles className="w-4 h-4" />,
+    icon: <Zap className="w-4 h-4" />,
     heroLayout: "full-image",
     accentColor: "#a855f7",
     heroImage: "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=600&q=80",

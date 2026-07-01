@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sparkles, Coins, Check, CreditCard, Gift, Loader2 } from "lucide-react";
+import { Wand2, Coins, Check, CreditCard, Gift, Loader2 } from "lucide-react";
 import { CREDIT_PACKAGES, useAICredits, useGrantFreeCredits } from "@/hooks/useAIImageEngine";
 import { toast } from "@/hooks/use-toast";
 
@@ -24,7 +24,7 @@ export const AIImageUpsellCard = ({ businessId, onNavigateToAI }: AIImageUpsellP
       <CardContent className="pt-6">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <Sparkles className="h-6 w-6 text-primary" />
+            <Wand2 className="h-6 w-6 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground mb-1">
@@ -98,7 +98,7 @@ export const AIImageSuggestion = ({ businessId, imageUrl, onAccept, onDismiss }:
     <>
       <div className="mt-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
         <div className="flex items-center gap-3">
-          <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />
+          <Wand2 className="h-5 w-5 text-primary flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground">
               רוצה שהתמונה תיראה כמו צילום סטודיו מקצועי?

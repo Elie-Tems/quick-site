@@ -1,4 +1,4 @@
-import { Upload, Palette, Package, Sparkles, Store, FileImage, Zap, Plus, Image, Tag } from "lucide-react";
+import { Upload, Palette, Package, Store, FileImage, Zap, Plus, Image, Tag } from "lucide-react";
 import { motion } from "framer-motion";
 
 const steps = [

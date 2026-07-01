@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Monitor, Smartphone, ChevronDown, ChevronUp, Check, ExternalLink, Maximize2, Palette, Type, Megaphone, Sparkles } from "lucide-react";
+import { Monitor, Smartphone, ChevronDown, ChevronUp, Check, ExternalLink, Maximize2, Palette, Type, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { OnboardingData, BusinessCategory } from "@/pages/Onboarding";

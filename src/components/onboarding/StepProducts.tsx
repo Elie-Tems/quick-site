@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { OnboardingData, ProductCategory } from "@/pages/Onboarding";
 import {
   Plus, Trash2, Package, FileSpreadsheet, Upload, X, Download,
-  AlertCircle, Sparkles, Loader2, LayoutGrid, List, FolderOpen,
+  AlertCircle, Loader2, LayoutGrid, List, FolderOpen,
   Mic, MicOff, Pencil, ImagePlus, Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -520,7 +520,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 className="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
                 title="צור תמונה עם AI"
               >
-                <Sparkles className="w-4 h-4 text-white" />
+                <Wand2 className="w-4 h-4 text-white" />
               </button>
             </>
           )}
@@ -550,7 +550,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             disabled={!editPrompt.trim() || generatingProductId === product.id}
             className="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium disabled:opacity-50 flex items-center gap-1 shrink-0"
           >
-            {generatingProductId === product.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+            {generatingProductId === product.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
             החל
           </button>
         </div>
@@ -926,7 +926,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
               >
                 {isGeneratingAllImages
                   ? <><Loader2 className="w-3 h-3 animate-spin" /> {generatingProgress.current}/{generatingProgress.total}</>
-                  : <><Sparkles className="w-3 h-3" /> צור תמונות לכולם</>
+                  : <><Wand2 className="w-3 h-3" /> צור תמונות לכולם</>
                 }
               </button>
             )}
@@ -938,7 +938,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       )}
 
       <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground text-center mt-4">
-        <Sparkles className="w-3.5 h-3.5 text-primary/60 shrink-0" />
+        <Wand2 className="w-3.5 h-3.5 text-primary/60 shrink-0" />
         לא חייבים להוסיף הכל עכשיו - אפשר להוסיף, לערוך ולסדר מוצרים בכל רגע מלוח הניהול.
       </p>
 

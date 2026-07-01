@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Save, Eye, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Save, Eye, Wand2 } from "lucide-react";
 import { ReactNode } from "react";
 
 interface StepNavigationProps {
@@ -40,7 +40,7 @@ export const StepNavigation = ({
     <>
     {reassurance && (
       <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-6 text-center">
-        <Sparkles className="w-3.5 h-3.5 text-primary/60 shrink-0" />
+        <Wand2 className="w-3.5 h-3.5 text-primary/60 shrink-0" />
         {reassurance}
       </p>
     )}

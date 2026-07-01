@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Star, Check, Loader2, Lock, Search, RefreshCw, Sparkles, ExternalLink } from "lucide-react";
+import { Star, Check, Loader2, Lock, Search, RefreshCw, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
 import { getReviewsPaymentUrl, REVIEWS_ADDON_PRICE_ILS } from "@/lib/publishPaymentConfig";
@@ -164,7 +164,7 @@ const DashboardReviews = ({ businessId }: Props) => {
           </p>
           <button onClick={startPayment}
             className="inline-flex items-center gap-2 rounded-2xl bg-primary text-primary-foreground font-bold px-8 h-12 hover:opacity-90 transition-opacity">
-            <Sparkles className="w-5 h-5" /> שדרגו עכשיו · ₪{REVIEWS_ADDON_PRICE_ILS}/חודש + מע"מ
+            <Star className="w-5 h-5" /> שדרגו עכשיו · ₪{REVIEWS_ADDON_PRICE_ILS}/חודש + מע"מ
           </button>
         </motion.div>
       ) : !connected ? (

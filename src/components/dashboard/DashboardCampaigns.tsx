@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, X, Power, PowerOff, Calendar, ChevronRight, Image, Package, LayoutList, Sparkles, Clock, Info, Copy, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Power, PowerOff, Calendar, ChevronRight, Image, Package, LayoutList, Megaphone, Clock, Info, Copy, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -340,7 +340,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
         </div>
       ) : campaigns?.length === 0 ? (
         <div className="text-center py-12 bg-muted/30 rounded-xl">
-          <Sparkles className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+          <Megaphone className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
           <p className="text-muted-foreground mb-2">עדיין אין קמפיינים</p>
           <p className="text-sm text-muted-foreground mb-4">
             צור קמפיין עונתי כמו "פורים 2026" או "מבצעי פסח"

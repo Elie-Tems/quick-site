@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  Mail, Users, Send, Zap, Plus, Clock, Sparkles,
+  Mail, Users, Send, Zap, Plus, Clock,
   MousePointerClick, Tag, ArrowRight,
 } from "lucide-react";
 import DashboardEmailEditor from "@/components/dashboard/DashboardEmailEditor";
@@ -147,7 +147,7 @@ const DashboardEmailMarketing = () => {
     <div className="space-y-5" dir="rtl">
       {/* Coming-soon banner */}
       <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 flex items-start gap-3">
-        <Sparkles className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+        <Zap className="w-5 h-5 text-primary shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-medium">מערכת דיוור - בקרוב</p>
           <p className="text-xs text-muted-foreground mt-0.5">תצוגה מקדימה של המערכת. השליחה בפועל תופעל כשנחבר ספק שליחה. הנתונים כאן לדוגמה.</p>

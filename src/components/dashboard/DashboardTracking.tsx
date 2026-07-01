@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { BarChart3, Check, Loader2, Lock, Save, Sparkles, ExternalLink } from "lucide-react";
+import { BarChart3, Check, Loader2, Lock, Save, Crown, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
 import { getTagsPaymentUrl, TAGS_ADDON_PRICE_ILS } from "@/lib/publishPaymentConfig";
@@ -146,7 +146,7 @@ const DashboardTracking = ({ businessId }: Props) => {
             onClick={startPayment}
             className="inline-flex items-center gap-2 rounded-2xl bg-primary text-primary-foreground font-bold px-8 h-12 hover:opacity-90 transition-opacity"
           >
-            <Sparkles className="w-5 h-5" /> שדרגו עכשיו · ₪{TAGS_ADDON_PRICE_ILS} + מע"מ
+            <Crown className="w-5 h-5" /> שדרגו עכשיו · ₪{TAGS_ADDON_PRICE_ILS} + מע"מ
           </button>
         </motion.div>
       ) : (

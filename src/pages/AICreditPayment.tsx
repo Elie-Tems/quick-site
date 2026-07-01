@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
+import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";

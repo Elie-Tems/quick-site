@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, Fragment } from "react";
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Package, X, Upload, FileSpreadsheet, Download, AlertCircle, Search, Sparkles, Loader2, LayoutGrid, List } from "lucide-react";
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Package, X, Upload, FileSpreadsheet, Download, AlertCircle, Search, Wand2, Loader2, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -794,7 +794,7 @@ const DashboardProducts = ({
                     onClick={() => setShowAIGenerator(!showAIGenerator)}
                     className="w-full gap-2 border-primary/30 hover:bg-primary/10"
                   >
-                    <Sparkles className="h-4 w-4" />
+                    <Wand2 className="h-4 w-4" />
                     {showAIGenerator ? 'הסתר יצירת תמונה AI' : 'צור תמונה באמצעות AI'}
                   </Button>
                   

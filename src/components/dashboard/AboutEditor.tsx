@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Mic, MicOff, Sparkles, Loader2, RefreshCw, Edit3, Save } from "lucide-react";
+import { Mic, MicOff, Wand2, Loader2, RefreshCw, Edit3, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -451,7 +451,7 @@ const AboutEditor = ({
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4" />
+                  <Wand2 className="h-4 w-4" />
                   שפר עם AI
                 </>
               )}
@@ -495,7 +495,7 @@ const AboutEditor = ({
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4" />
+                <Wand2 className="h-4 w-4" />
                 צור טקסט {writingStyles[writingStyle].label} עם AI
               </>
             )}

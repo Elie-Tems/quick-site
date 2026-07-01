@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Coins, Sparkles, CreditCard, Loader2 } from "lucide-react";
+import { Check, Coins, CreditCard, Loader2 } from "lucide-react";
 import { AI_CREDIT_PACKAGES } from "@/lib/pricingConfig";
 import { toast } from "@/hooks/use-toast";
 
@@ -107,7 +107,7 @@ const AICreditPackages = ({ businessId, currentCredits, onPurchaseComplete }: AI
 
         <div className="mt-6 p-4 bg-muted/50 rounded-lg text-center">
           <p className="text-sm text-muted-foreground">
-            <Sparkles className="h-4 w-4 inline ml-1" />
+            <Coins className="h-4 w-4 inline ml-1" />
             נשארו לך כרגע <strong className="text-foreground">{currentCredits}</strong> קרדיטים
           </p>
         </div>
