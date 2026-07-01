@@ -36,17 +36,22 @@ const DashboardAIGeneratedImages = () => {
   const [assignType, setAssignType] = useState<'product' | 'banner' | 'hero' | null>(null);
   const [selectedTargetId, setSelectedTargetId] = useState<string>("");
 
-  // Debug logs
-  console.log("DashboardAIGeneratedImages - business ID:", business?.id);
-  console.log("DashboardAIGeneratedImages - jobs:", jobs);
-  console.log("DashboardAIGeneratedImages - isLoading:", isLoading);
-
-  // Filter only completed jobs with generated images
-  const completedImages = jobs?.filter(
-    (job) => job.status === "completed" && job.generated_image_url
-  ) || [];
-  
-  console.log("DashboardAIGeneratedImages - completedImages:", completedImages);
+  // Show ALL of the merchant's images in one gallery - product photos, banners,
+  // the hero image, and AI generations - deduped by URL.
+  const allImages = (() => {
+    const seen = new Set<string>();
+    const out: { id: string; url: string; source: string }[] = [];
+    const add = (url: string | null | undefined, source: string, id: string) => {
+      if (!url || seen.has(url)) return;
+      seen.add(url);
+      out.push({ id, url, source });
+    };
+    (jobs || []).forEach((j) => { if (j.status === "completed") add(j.generated_image_url, "AI", `job-${j.id}`); });
+    (products || []).forEach((p) => add((p as any).image_url, "מוצר", `prod-${p.id}`));
+    (banners || []).forEach((b) => add((b as any).image_url, "באנר", `ban-${b.id}`));
+    add((business as any)?.hero_image_url, "רקע", "hero");
+    return out;
+  })();
 
   const handleDownload = async (imageUrl: string, jobId: string) => {
     try {
@@ -120,13 +125,13 @@ const DashboardAIGeneratedImages = () => {
     );
   }
 
-  if (completedImages.length === 0) {
+  if (allImages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
         <ImageIcon className="h-16 w-16 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">אין תמונות שנוצרו</h3>
+        <h3 className="text-lg font-semibold mb-2">אין עדיין תמונות</h3>
         <p className="text-muted-foreground">
-          התמונות שתיצור בעזרת AI יופיעו כאן
+          תמונות המוצרים, הבאנרים והתמונות שתיצור יופיעו כאן
         </p>
       </div>
     );
@@ -136,32 +141,32 @@ const DashboardAIGeneratedImages = () => {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">תמונות שנוצרו ב-AI</h2>
+          <h2 className="text-2xl font-bold">התמונות שלי</h2>
           <p className="text-muted-foreground">
-            {completedImages.length} תמונות זמינות
+            {allImages.length} תמונות - מוצרים, באנרים, רקע ותמונות AI
           </p>
         </div>
       </div>
 
       {/* Images Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {completedImages.map((job) => (
+        {allImages.map((img) => (
           <div
-            key={job.id}
+            key={img.id}
             className="group relative aspect-square rounded-lg overflow-hidden border border-border bg-muted"
           >
             <img
-              src={job.generated_image_url!}
-              alt="AI Generated"
+              src={img.url}
+              alt={img.source}
               className="w-full h-full object-cover"
             />
-            
+
             {/* Overlay with actions */}
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4">
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => handleDownload(job.generated_image_url!, job.id)}
+                onClick={() => handleDownload(img.url, img.id)}
                 className="w-full"
               >
                 <Download className="h-4 w-4 ml-1" />
@@ -170,7 +175,7 @@ const DashboardAIGeneratedImages = () => {
               <Button
                 size="sm"
                 variant="default"
-                onClick={() => handleAssignImage(job.generated_image_url!)}
+                onClick={() => handleAssignImage(img.url)}
                 className="w-full"
               >
                 <Package className="h-4 w-4 ml-1" />
@@ -180,7 +185,7 @@ const DashboardAIGeneratedImages = () => {
 
             {/* Info badge */}
             <Badge className="absolute top-2 right-2 text-xs">
-              {job.style_type}
+              {img.source}
             </Badge>
           </div>
         ))}

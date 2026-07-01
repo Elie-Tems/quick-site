@@ -37,12 +37,11 @@ const navItems: {
   { id: "products", label: "מוצרים", icon: Package, group: "החנות שלי" },
   { id: "design", label: "עיצוב", icon: Palette, group: "החנות שלי" },
   { id: "ai-images", label: "תמונות AI", icon: ImagePlus, premium: true, group: "החנות שלי" },
-  { id: "ai-generated-images", label: "גלריית AI", shortLabel: "גלריה", icon: Image, premium: true, group: "החנות שלי" },
+  { id: "ai-generated-images", label: "גלריית תמונות", shortLabel: "גלריה", icon: Image, group: "החנות שלי" },
   { id: "preview", label: "תצוגה מקדימה", shortLabel: "תצוגה", icon: Eye, group: "החנות שלי" },
 
   // ניהול מכירות
   { id: "orders", label: "הזמנות", icon: ShoppingCart, group: "ניהול מכירות" },
-  { id: "customers", label: "לקוחות / CRM", shortLabel: "CRM", icon: Users, premium: true, group: "ניהול מכירות" },
   { id: "coupons", label: "קופונים", icon: Ticket, group: "ניהול מכירות" },
   { id: "shipping", label: "משלוחים", icon: Truck, group: "ניהול מכירות" },
   { id: "payments", label: "סליקה", icon: CreditCard, group: "ניהול מכירות" },
@@ -53,7 +52,8 @@ const navItems: {
   { id: "reviews", label: "ביקורות Google", shortLabel: "ביקורות", icon: Star, group: "שיווק" },
   { id: "insights", label: "אנליטיקה", icon: BarChart3, group: "שיווק" },
 
-  // הרחבות
+  // הרחבות - מודולים מתקדמים (חלקם בתשלום / עם מצב דמו)
+  { id: "customers", label: "לקוחות / CRM", shortLabel: "CRM", icon: Users, premium: true, group: "הרחבות" },
   { id: "domains", label: "דומיין", icon: Globe, group: "הרחבות" },
   { id: "whatsapp", label: "וואטסאפ", icon: MessageCircle, group: "הרחבות" },
   { id: "email", label: "מייל עסקי", icon: AtSign, group: "הרחבות" },
