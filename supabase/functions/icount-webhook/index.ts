@@ -208,9 +208,17 @@ Deno.serve(async (req) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, serviceKey);
 
+  // iCount's IPN posts to a URL and cannot attach a custom auth header, so also
+  // accept the shared secret from the webhook URL query (?secret=...). req.url is
+  // intentionally never logged (see the comment above the fields log) so the
+  // secret isn't leaked. Header still works for any caller that can set it.
+  const urlForSecret = new URL(req.url);
   const headerSecret =
     req.headers.get("x-webhook-secret") ??
-    (req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "");
+    req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
+    urlForSecret.searchParams.get("secret") ??
+    urlForSecret.searchParams.get("webhook_secret") ??
+    "";
 
   if (req.method === "GET") {
     return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
