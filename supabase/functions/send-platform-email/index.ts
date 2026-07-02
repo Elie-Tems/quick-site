@@ -33,6 +33,7 @@ const MARKETING_TYPES = new Set([
   "accountWelcome",
   "onboardingAbandoned1",
   "onboardingAbandoned2",
+  "publishPaymentFailed",
   "siteReady",
   "siteReactivated",
 ]);

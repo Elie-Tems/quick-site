@@ -270,6 +270,76 @@ export const onboardingAbandoned2 = (c: PlatformCtx): BuiltEmail => {
   };
 };
 
+/**
+ * Publish payment failed / abandoned. Sent when a merchant started the publish
+ * checkout but the payment never completed (a few hours later, still pending).
+ * Reassures no charge went through and nudges them to finish. Localized.
+ */
+export const publishPaymentFailed = (c: PlatformCtx): BuiltEmail => {
+  const lang = c.lang || "he";
+  const dir = dirForLang(lang);
+  const nm = c.firstName;
+  const bn = bizL(c, lang);
+  const url = c.continueUrl || dash(c);
+  const T = {
+    he: {
+      subject: "כמעט פרסמת! החנות שלך מחכה 🛒",
+      preview: "התשלום לא הושלם - החנות מוכנה, עוד קליק אחד",
+      h1: "נשאר רק צעד אחד 🙌",
+      p1: `${nm ? `היי ${nm}! ` : "היי! "}ניסית לפרסם את החנות של ${bn}, אבל נראה שהתשלום לא הושלם. שום דבר לא נגבה ממך - החנות שמורה ומוכנה בדיוק איפה שהשארת אותה.`,
+      hl: "עוד קליק אחד והחנות באוויר. אפשר לנסות שוב בכל אמצעי תשלום.",
+      p2: `נתקלת בבעיה בתשלום? כתבו לנו ל-${ltr(SUPPORT_EMAIL)} ונעזור לסיים ביחד.`,
+      btn: "להשלמת הפרסום",
+    },
+    en: {
+      subject: "Almost there! Your store is waiting 🛒",
+      preview: "Payment didn't go through - your store is ready, one click away",
+      h1: "Just one step left 🙌",
+      p1: `${nm ? `Hi ${nm}! ` : "Hi! "}You started publishing the ${bn} store, but the payment didn't complete. Nothing was charged - your store is saved exactly where you left it.`,
+      hl: "One more click and your store is live. You can retry with any payment method.",
+      p2: `Ran into a payment issue? Email us at ${ltr(SUPPORT_EMAIL)} and we'll help you finish.`,
+      btn: "Finish publishing",
+    },
+    ar: {
+      subject: "اقتربت! متجرك في الانتظار 🛒",
+      preview: "لم تكتمل عملية الدفع - متجرك جاهز بنقرة واحدة",
+      h1: "بقيت خطوة واحدة 🙌",
+      p1: `${nm ? `مرحبًا ${nm}! ` : "مرحبًا! "}بدأت نشر متجر ${bn}، لكن الدفع لم يكتمل. لم يتم خصم أي مبلغ - متجرك محفوظ تمامًا حيث تركته.`,
+      hl: "نقرة واحدة أخرى ويصبح متجرك مباشرًا. يمكنك المحاولة بأي وسيلة دفع.",
+      p2: `واجهت مشكلة في الدفع؟ راسلنا على ${ltr(SUPPORT_EMAIL)} وسنساعدك على الإنهاء.`,
+      btn: "إكمال النشر",
+    },
+    fr: {
+      subject: "Presque fini ! Votre boutique vous attend 🛒",
+      preview: "Le paiement n'a pas abouti - votre boutique est prête, à un clic",
+      h1: "Il ne reste qu'une étape 🙌",
+      p1: `${nm ? `Bonjour ${nm} ! ` : "Bonjour ! "}Vous avez commencé à publier la boutique ${bn}, mais le paiement n'a pas abouti. Rien n'a été débité - votre boutique est enregistrée là où vous l'avez laissée.`,
+      hl: "Encore un clic et votre boutique est en ligne. Vous pouvez réessayer avec tout moyen de paiement.",
+      p2: `Un souci de paiement ? Écrivez-nous à ${ltr(SUPPORT_EMAIL)} et on vous aide à finir.`,
+      btn: "Terminer la publication",
+    },
+    ru: {
+      subject: "Почти готово! Ваш магазин ждёт 🛒",
+      preview: "Оплата не прошла - магазин готов, остался один клик",
+      h1: "Остался всего один шаг 🙌",
+      p1: `${nm ? `Привет, ${nm}! ` : "Привет! "}Вы начали публикацию магазина ${bn}, но оплата не завершилась. Ничего не списано - магазин сохранён там, где вы остановились.`,
+      hl: "Ещё один клик - и магазин онлайн. Можно повторить с любым способом оплаты.",
+      p2: `Проблема с оплатой? Напишите нам на ${ltr(SUPPORT_EMAIL)}, и мы поможем завершить.`,
+      btn: "Завершить публикацию",
+    },
+  }[lang];
+  return {
+    subject: T.subject,
+    html: renderEmail({
+      sender: siangoSender(c),
+      previewText: T.preview,
+      lang,
+      dir,
+      bodyHtml: h1(T.h1) + p(T.p1) + emailHighlight(T.hl) + p(T.p2) + emailButton(T.btn, url, BRAND),
+    }),
+  };
+};
+
 /** 4. Site is live. Localized (he/en/ar/fr/ru); defaults to Hebrew. */
 export const siteReady = (c: PlatformCtx): BuiltEmail => {
   const lang = c.lang || "he";
@@ -875,6 +945,7 @@ export const domainLowBalance = (c: PlatformCtx & { balance?: number; currency?:
 
 export const PLATFORM_EMAILS = {
   accountWelcome, onboardingAbandoned1, onboardingAbandoned2, siteReady,
+  publishPaymentFailed,
   paymentReceipt, paymentFailed, paymentReminder, siteFrozen,
   deletionWarning, siteDeleted, siteReactivated, subscriptionCancelled,
   newOrderMerchant, domainPurchased, domainExpiryReminder, domainExpiringUnpaid,

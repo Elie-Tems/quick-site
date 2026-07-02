@@ -71,6 +71,21 @@ function extractHkId(payload: Record<string, unknown>): string | null {
   return null;
 }
 
+// Pull the payer's email out of an iCount notification. Used as a last-resort
+// way to match a payment to its checkout session (by publish_checkout_sessions
+// .email) when iCount doesn't echo our session_token/business_id.
+function extractEmail(payload: Record<string, unknown>): string | null {
+  for (const k of ["email", "client_email", "customer_email", "payer_email", "mail", "client_mail"]) {
+    const v = payload[k];
+    if (typeof v === "string" && /@/.test(v)) return v.trim().toLowerCase();
+  }
+  const nested = payload["data"] ?? payload["body"] ?? payload["client"];
+  if (nested && typeof nested === "object" && nested !== null) {
+    return extractEmail(nested as Record<string, unknown>);
+  }
+  return null;
+}
+
 async function handleVerifiedRequestByToken(
   supabase: ReturnType<typeof createClient>,
   sessionToken: string,
@@ -338,35 +353,45 @@ Deno.serve(async (req) => {
     console.log("Found session by business_id from URL:", sessionToken);
   }
 
-  // If still no session, try to find by client email from iCount payload
+  // If still no session, try business_id from the payload...
   if (!sessionToken) {
     const businessId = extractBusinessId(payload);
-    if (!businessId) {
-      console.warn("icount-webhook: no session_token in URL and no business_id in payload", payload);
-      return new Response(JSON.stringify({ error: "session_token or business_id required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (businessId) {
+      const { data: sessions } = await supabase
+        .from("publish_checkout_sessions")
+        .select("session_token")
+        .eq("business_id", businessId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      sessionToken = sessions?.[0]?.session_token || null;
     }
-    
-    // Find latest pending session for this business
-    const { data: sessions } = await supabase
-      .from("publish_checkout_sessions")
-      .select("session_token")
-      .eq("business_id", businessId)
-      .eq("status", "pending")
-      .order("created_at", { ascending: false })
-      .limit(1);
-    
-    sessionToken = sessions?.[0]?.session_token || null;
-    
-    if (!sessionToken) {
-      console.warn("icount-webhook: no pending session found for business_id", businessId);
-      return new Response(JSON.stringify({ error: "No pending session found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+  }
+
+  // ...and as a last resort, match by the payer's email. iCount sometimes does
+  // not echo our session_token/business_id in the IPN; the email is always
+  // present, so this keeps publishing reliable regardless of iCount's config.
+  if (!sessionToken) {
+    const email = extractEmail(payload);
+    if (email) {
+      const { data: sessions } = await supabase
+        .from("publish_checkout_sessions")
+        .select("session_token")
+        .eq("status", "pending")
+        .ilike("email", email)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      sessionToken = sessions?.[0]?.session_token || null;
+      if (sessionToken) console.log("icount-webhook: matched session by payer email");
     }
+  }
+
+  if (!sessionToken) {
+    console.warn("icount-webhook: could not match payment to any pending session", Object.keys(payload).join(","));
+    return new Response(JSON.stringify({ error: "No pending session found" }), {
+      status: 404,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   const externalId =

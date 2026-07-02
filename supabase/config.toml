@@ -28,6 +28,11 @@ verify_jwt = true
 [functions.expire-subscriptions]
 verify_jwt = false
 
+# publish-payment-recovery is an hourly cron (no user JWT) that nudges merchants
+# who started but never finished the publish payment. Optional CRON_SECRET guard.
+[functions.publish-payment-recovery]
+verify_jwt = false
+
 # send-presentation is an admin-triggered one-off (guarded by its own token), called
 # without a JWT.
 [functions.send-presentation]

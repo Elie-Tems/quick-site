@@ -122,6 +122,9 @@ const PublishPayment = () => {
       status: "pending",
       amount_ils: fee,
       provider: "icount",
+      // Stored so the iCount IPN can match the payment back to this session by
+      // the payer's email even if iCount doesn't echo our session_token.
+      email: user.email ?? null,
     });
 
     if (insErr) throw insErr;
