@@ -23,6 +23,7 @@ import DashboardPreview from "@/components/dashboard/DashboardPreview";
 import DashboardCategories from "@/components/dashboard/DashboardCategories";
 import DashboardDesign from "@/components/dashboard/DashboardDesign";
 import DashboardStoreTexts from "@/components/dashboard/DashboardStoreTexts";
+import DashboardWhatsAppButton from "@/components/dashboard/DashboardWhatsAppButton";
 import DashboardTracking from "@/components/dashboard/DashboardTracking";
 import DashboardReviews from "@/components/dashboard/DashboardReviews";
 import DashboardSubscription from "@/components/dashboard/DashboardSubscription";
@@ -672,6 +673,8 @@ const Dashboard = () => {
         return <DashboardLegal business={business as any} />;
       case 'store-texts':
         return <DashboardStoreTexts />;
+      case 'whatsapp-button':
+        return <DashboardWhatsAppButton />;
       case 'design':
       case 'banners':
         return (

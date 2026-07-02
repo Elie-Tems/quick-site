@@ -152,7 +152,6 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showBusinessInfo, setShowBusinessInfo] = useState(false);
   const [showShipping, setShowShipping] = useState(false);
-  const [showWhatsapp, setShowWhatsapp] = useState(false);
   const [showPayments, setShowPayments] = useState(false);
 
   // ברירת מחדל: מכובה (false) - המשתמש צריך להפעיל באופן ידני
@@ -191,8 +190,6 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
         brand_style: formData.brandStyle,
         business_category: formData.businessCategory || 'other',
         custom_category_name: formData.customCategoryName || null,
-        whatsapp_enabled: formData.whatsappEnabled ?? true,
-        whatsapp_message: formData.whatsappMessage || null,
         shabbat_mode: formData.shabbatMode ?? false,
           delivery_mode: formData.deliveryMode || 'pickup_only',
           delivery_fee: formData.deliveryMode === 'pickup_and_delivery'
@@ -623,94 +620,6 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
                   <p className="text-xs text-muted-foreground">
                     עלות המשלוח שתתווסף לסכום ההזמנה כאשר הלקוח בוחר משלוח.
                   </p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* WhatsApp Section */}
-        <div className="bg-card rounded-xl border border-border p-5 shadow-soft space-y-4">
-          <button
-            type="button"
-            className="w-full flex items-center justify-between text-right"
-            onClick={() => setShowWhatsapp(prev => !prev)}
-          >
-            <div className="flex items-center gap-3">
-              <MessageCircle className="h-5 w-5 text-[#25D366]" />
-              <h2 className="font-semibold text-lg text-foreground">כפתור וואטסאפ</h2>
-            </div>
-            {showWhatsapp ? (
-              <ChevronUp className="h-5 w-5 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-            )}
-          </button>
-
-          {showWhatsapp && (
-            <div className="space-y-4 pt-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {formData.whatsappEnabled ?? true
-                    ? "כפתור וואטסאפ צף יופיע בחנות שלך ויאפשר ללקוחות ליצור איתך קשר בקלות"
-                    : "הכפתור מוסתר בחנות. להצגת כפתור וואטסאפ - הפעל את המתג למעלה."}
-                </p>
-                <Switch
-                  checked={formData.whatsappEnabled ?? true}
-                  onCheckedChange={(checked) => setFormData({ ...formData, whatsappEnabled: checked })}
-                />
-              </div>
-
-              {(formData.whatsappEnabled ?? true) && (
-                <div className="space-y-4">
-                  {/* Phone for WhatsApp */}
-                  <div className="space-y-2">
-                    <Label htmlFor="whatsappPhone">מספר טלפון לוואטסאפ</Label>
-                    <Input
-                      id="whatsappPhone"
-                      type="tel"
-                      dir="ltr"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="050-0000000"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      המספר שיפתח בלחיצה על כפתור הוואטסאפ (משתמש במספר הטלפון של העסק)
-                    </p>
-                  </div>
-
-                  {/* Default WhatsApp Message */}
-                  <div className="space-y-2">
-                    <Label htmlFor="whatsappMessage">הודעה אוטומטית</Label>
-                    <Textarea
-                      id="whatsappMessage"
-                      value={formData.whatsappMessage || ''}
-                      onChange={(e) => setFormData({ ...formData, whatsappMessage: e.target.value })}
-                      placeholder="שלום, הגעתי מהאתר שלכם ואשמח לקבל פרטים נוספים"
-                      rows={2}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      ההודעה שתופיע מראש כשהלקוח לוחץ על כפתור הוואטסאפ
-                    </p>
-                  </div>
-
-                  {/* Preview */}
-                  <div className="p-4 rounded-lg bg-[#25D366]/10 border border-[#25D366]/20">
-                    <p className="text-sm font-medium text-foreground mb-2">תצוגה מקדימה:</p>
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full bg-[#25D366] flex items-center justify-center text-white shadow-md">
-                        <MessageCircle className="h-6 w-6" fill="currentColor" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-muted-foreground">
-                          לחיצה תפתח וואטסאפ עם ההודעה:
-                        </p>
-                        <p className="text-sm font-medium text-foreground mt-1">
-                          "{formData.whatsappMessage || 'שלום, הגעתי מהאתר שלכם ואשמח לקבל פרטים נוספים'}"
-                        </p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
