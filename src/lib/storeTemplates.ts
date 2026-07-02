@@ -1,6 +1,6 @@
 // Store template configurations inspired by top e-commerce sites
 
-export type StoreTemplateId = 
+export type StoreTemplateId =
   | 'luxury-boutique'
   | 'bold-playful'
   | 'natural-organic'
@@ -59,11 +59,20 @@ export interface StoreTemplate {
   };
 }
 
+const GENERIC_CATEGORIES = [
+  { name: 'חדש', description: 'מוצרים שנוספו לאחרונה' },
+  { name: 'מומלצים', description: 'הפריטים הפופולריים' },
+  { name: 'מבצעים', description: 'הנחות ומחירים מיוחדים' },
+  { name: 'קולקציה', description: 'מבחר הפריטים שלנו' },
+  { name: 'מתנות', description: 'רעיונות למתנה' },
+  { name: 'הכל', description: 'כל הפריטים בחנות' },
+];
+
 export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
   'luxury-boutique': {
     id: 'luxury-boutique',
-    name: 'בוטיק יוקרתי',
-    description: 'עיצוב אלגנטי ומינימליסטי למותגי פרימיום',
+    name: 'שחור וזהב',
+    description: 'עיצוב אלגנטי ומינימליסטי - שחור, לבן וזהב עם פונטים קלאסיים',
     previewImage: 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04',
     theme: {
       primaryColor: '#000000',
@@ -95,19 +104,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       button: "border border-[#d4af37] text-[#d4af37] px-10 py-3 text-xs tracking-[0.15em] hover:bg-[#d4af37] hover:text-black transition-all",
       header: "fixed top-0 w-full bg-black/90 backdrop-blur-sm z-50 py-4 px-8",
     },
-    defaultCategories: [
-      { name: 'תכשיטים', description: 'טבעות, שרשראות וצמידים' },
-      { name: 'שעונים', description: 'שעוני יוקרה' },
-      { name: 'אביזרי יוקרה', description: 'אופטיקה ואביזרים' },
-      { name: 'עגילים', description: 'עגילים ותליונים' },
-      { name: 'צמידים', description: 'צמידים וענבלים' },
-      { name: 'מתנות יוקרה', description: 'מתנות ומזכרות פרימיום' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'bold-playful': {
     id: 'bold-playful',
-    name: 'נועז ושובב',
-    description: 'עיצוב דינמי ואנרגטי למותגי נוער ורחוב',
+    name: 'ורוד וסגול',
+    description: 'עיצוב דינמי ואנרגטי - גרדיאנט ורוד-סגול-כחול עם פינות מעוגלות',
     previewImage: 'https://images.unsplash.com/photo-1523381294911-8d3cead13475',
     theme: {
       primaryColor: '#ff3cac',
@@ -138,19 +140,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       button: "bg-white text-[#784ba0] font-black px-8 py-3 rounded-full text-sm hover:bg-[#ff3cac] hover:text-white transition-all duration-200",
       header: "sticky top-0 bg-[#784ba0] z-50 px-4 py-3 flex items-center justify-between",
     },
-    defaultCategories: [
-      { name: 'אופנת רחוב', description: 'בגדים ואביזרים אורבניים' },
-      { name: 'סניקרס', description: 'נעלי ספורט ואופנה' },
-      { name: 'אקססוריז', description: 'תיקים, כובעים ותכשיטים' },
-      { name: 'חולצות', description: 'טישרטים וסווטשירטים' },
-      { name: 'מכנסיים', description: 'ג\'ינסים ומכנסי ספורט' },
-      { name: 'ג\'קטים', description: 'מעילים וג\'קטים' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'natural-organic': {
     id: 'natural-organic',
-    name: 'טבעי ואורגני',
-    description: 'עיצוב רגוע ואדמתי למוצרים טבעיים ובריאותיים',
+    name: 'ירוק ואדמתי',
+    description: 'עיצוב רגוע ומאוזן - גוונים ירוקים ואדמתיים עם תחושה חמה',
     previewImage: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136',
     theme: {
       primaryColor: '#4a7c59',
@@ -182,19 +177,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       button: "bg-[#f5f0e8] text-[#4a7c59] font-semibold px-7 py-3 rounded-full hover:bg-white transition-colors text-sm",
       header: "sticky top-0 bg-[#f5f0e8] border-b border-[#d4c5a9] px-4 py-3 z-50",
     },
-    defaultCategories: [
-      { name: 'מזון אורגני', description: 'מזון טבעי ובריא' },
-      { name: 'טיפוח טבעי', description: 'קוסמטיקה אורגנית' },
-      { name: 'אקו-אביזרים', description: 'אביזרים ידידותיים לסביבה' },
-      { name: 'תבלינים ותה', description: 'תבלינים, תה וקפה אורגני' },
-      { name: 'חטיפים בריאים', description: 'חטיפים ומזונות על' },
-      { name: 'מתכלים', description: 'כלי אוכל וכלים מתכלים' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'tech-minimal': {
     id: 'tech-minimal',
-    name: 'טכנולוגי ומינימלי',
-    description: 'עיצוב כהה ומדויק לחנויות אלקטרוניקה וגאדג\'טים',
+    name: 'כחול כהה',
+    description: 'עיצוב מדויק ונקי - רקע כהה עם כחול בהיר, פינות חדות',
     previewImage: 'https://images.unsplash.com/photo-1518770660439-4636190af475',
     theme: {
       primaryColor: '#3b82f6',
@@ -226,19 +214,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       button: "bg-[#3b82f6] text-white px-6 py-2.5 rounded-sm text-sm font-semibold hover:bg-[#2563eb] transition-colors tracking-wide",
       header: "sticky top-0 bg-[#0a0a0f] border-b border-[#1e2433] px-6 py-3 z-50",
     },
-    defaultCategories: [
-      { name: 'גאדג\'טים', description: 'מכשירים וטכנולוגיה' },
-      { name: 'אודיו', description: 'אוזניות, רמקולים ועוד' },
-      { name: 'אביזרים', description: 'אביזרים נלווים' },
-      { name: 'שעונים חכמים', description: 'שעונים וטכנולוגיה נישאת' },
-      { name: 'מחשבים וטאבלטים', description: 'מחשבים, טאבלטים ואביזרים' },
-      { name: 'מצלמות', description: 'מצלמות וציוד צילום' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'vintage-warm': {
     id: 'vintage-warm',
-    name: 'וינטג׳ וחם',
-    description: 'עיצוב חמים ואותנטי לחנויות מלאכת יד ומוצרים נוסטלגיים',
+    name: 'חרס ושמנת',
+    description: 'עיצוב אותנטי וחמים - גוונים שמנתיים וחרס עם מגע נוסטלגי',
     previewImage: 'https://images.unsplash.com/photo-1495121553079-4c61bcce1894',
     theme: {
       primaryColor: '#c1440e',
@@ -269,19 +250,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       button: "border-2 border-[#c1440e] text-[#c1440e] px-8 py-3 rounded text-sm tracking-wider font-medium hover:bg-[#c1440e] hover:text-white transition-all",
       header: "sticky top-0 bg-[#fdf6ed] border-b-2 border-[#c1440e] px-6 py-3 z-50 flex items-center justify-between",
     },
-    defaultCategories: [
-      { name: 'מלאכת יד', description: 'מוצרים בעבודת יד' },
-      { name: 'וינטג׳', description: 'פריטים וינטג\' ונוסטלגיים' },
-      { name: 'קרמיקה', description: 'כלי קרמיקה וחרס' },
-      { name: 'טקסטיל', description: 'בדים ורקמות' },
-      { name: 'תכשיטים בעבודת יד', description: 'תכשיטים מעוצבים' },
-      { name: 'מתנות אישיות', description: 'מתנות מותאמות אישית' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'ocean-breeze': {
     id: 'ocean-breeze',
-    name: 'רוח ים',
-    description: 'גוונים כחולים רגועים, תחושה רעננה',
+    name: 'כחול וציאן',
+    description: 'עיצוב רענן ואוורירי - גוונים כחולים בהירים עם תחושה נקייה',
     previewImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
     theme: {
       primaryColor: '#0077b6',
@@ -305,19 +279,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       hoverEffect: 'lift',
       borderStyle: 'subtle',
     },
-    defaultCategories: [
-      { name: 'ים וחוף', description: 'אביזרים לחוף וים' },
-      { name: 'ספורט ימי', description: 'ציוד ופעילות' },
-      { name: 'בריכה', description: 'אביזרי בריכה' },
-      { name: 'בגדי ים', description: 'בגדי ים ומגבות' },
-      { name: 'ציוד צלילה', description: 'צלילה ושנורקלינג' },
-      { name: 'סירות וקייאקים', description: 'ציוד שיט' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'warm-sunset': {
     id: 'warm-sunset',
-    name: 'שקיעה חמה',
-    description: 'כתומים וחומים חמימים, אווירה ביתית',
+    name: 'כתום וחום',
+    description: 'עיצוב חמים ומזמין - גוונים כתומים וחומים עם אווירה ביתית',
     previewImage: 'https://images.unsplash.com/photo-1495195134817-aeb325a55b65?w=800&q=80',
     theme: {
       primaryColor: '#c2410c',
@@ -341,19 +308,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       hoverEffect: 'zoom',
       borderStyle: 'none',
     },
-    defaultCategories: [
-      { name: 'דקורציה לבית', description: 'אביזרים ועיצוב הבית' },
-      { name: 'טקסטיל', description: 'כריות, שמיכות ומצעים' },
-      { name: 'נרות וריח', description: 'נרות ריחניים ואביזרים' },
-      { name: 'כלי בית', description: 'כלי מטבח ועיצוב' },
-      { name: 'גן ומרפסת', description: 'צמחים ואביזרי חוץ' },
-      { name: 'מתנות לבית', description: 'מתנות ועיצוב' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'urban-chic': {
     id: 'urban-chic',
-    name: 'אורבני שיק',
-    description: 'אפורים מתוחכמים עם נגיעת זהב',
+    name: 'אפור וזהב',
+    description: 'עיצוב מתוחכם ומינימלי - אפורים כהים עם נגיעת זהב',
     previewImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80',
     theme: {
       primaryColor: '#374151',
@@ -377,19 +337,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       hoverEffect: 'lift',
       borderStyle: 'bold',
     },
-    defaultCategories: [
-      { name: 'נעליים', description: 'נעליים וסניקרס' },
-      { name: 'ביגוד', description: 'בגדים ואופנה' },
-      { name: 'אקססוריז', description: 'תיקים, חגורות ואביזרים' },
-      { name: 'חולצות', description: 'חולצות וטופים' },
-      { name: 'מכנסיים', description: 'מכנסיים וחצאיות' },
-      { name: 'שמלות', description: 'שמלות ובגדי ערב' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'fresh-mint': {
     id: 'fresh-mint',
-    name: 'מנטה רעננה',
-    description: 'ירוק בהיר ורענן, מושלם לבריאות וספורט',
+    name: 'ירוק בהיר',
+    description: 'עיצוב רענן ונקי - ירוק מנטה בהיר עם קווים נקיים ומינימליים',
     previewImage: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80',
     theme: {
       primaryColor: '#059669',
@@ -413,19 +366,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       hoverEffect: 'lift',
       borderStyle: 'none',
     },
-    defaultCategories: [
-      { name: 'ספורט', description: 'ציוד ספורט וכושר' },
-      { name: 'בריאות', description: 'תזונה וויטמינים' },
-      { name: 'יוגה ומדיטציה', description: 'אביזרים ומשטחים' },
-      { name: 'ריצה', description: 'נעלי ריצה וציוד' },
-      { name: 'משקולות וכוח', description: 'ציוד חדר כושר' },
-      { name: 'תזונת ספורט', description: 'חלבונים ותוספים' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'royal-purple': {
     id: 'royal-purple',
-    name: 'סגול מלכותי',
-    description: 'יוקרתי ודרמטי, מושלם לתכשיטים ואביזרים',
+    name: 'סגול יוקרתי',
+    description: 'עיצוב דרמטי ויוקרתי - סגול עמוק עם פינות מעוגלות ופונטים קלאסיים',
     previewImage: 'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=800&q=80',
     theme: {
       primaryColor: '#6b21a8',
@@ -450,19 +396,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       borderStyle: 'subtle',
     },
     productGrid: 'uniform-3col',
-    defaultCategories: [
-      { name: 'תכשיטים', description: 'טבעות, עגילים ושרשראות' },
-      { name: 'אביזרים', description: 'תיקים, שעונים ואביזרים' },
-      { name: 'מתנות', description: 'מתנות ומזכרות' },
-      { name: 'עגילים', description: 'עגילים ותליונים' },
-      { name: 'שעונים', description: 'שעונים קלאסיים' },
-      { name: 'מתנות פרימיום', description: 'מתנות יוקרתיות' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'editorial-mono': {
     id: 'editorial-mono',
-    name: 'מגזין עריכה',
-    description: 'שחור-לבן חד עם דגש אדום - טיפוגרפיה גדולה בסגנון מגזין אופנה',
+    name: 'שחור-לבן ואדום',
+    description: 'שחור-לבן חד עם הדגשה אדומה - טיפוגרפיה בולטת בסגנון עיתון',
     previewImage: 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04',
     theme: {
       primaryColor: '#111111',
@@ -494,19 +433,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       button: "bg-black text-white px-9 py-3 text-xs tracking-[0.25em] uppercase hover:bg-[#e11d2a] transition-colors",
       header: "sticky top-0 bg-white z-50 py-5 px-6 border-b border-black/10 flex items-center justify-between",
     },
-    defaultCategories: [
-      { name: 'קולקציה', description: 'הקולקציה העונתית' },
-      { name: 'אופנה', description: 'פריטי לבוש' },
-      { name: 'אקססוריז', description: 'תיקים ואביזרים' },
-      { name: 'נעליים', description: 'הנעלה' },
-      { name: 'עורכים ממליצים', description: 'מבחר נבחר' },
-      { name: 'חדש', description: 'הגעות אחרונות' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'bakery-warm': {
     id: 'bakery-warm',
-    name: 'מאפייה חמה',
-    description: 'גווני שמנת, טרקוטה וחום - חמים ומזמין למאפיות, בתי קפה ואוכל',
+    name: 'חם וביתי',
+    description: 'גווני שמנת, טרקוטה וחום - חמים ומזמינים עם פינות מעוגלות רכות',
     previewImage: 'https://images.unsplash.com/photo-1495121553079-4c61bcce1894',
     theme: {
       primaryColor: '#b45309',
@@ -538,19 +470,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       button: "bg-[#b45309] text-white font-semibold px-8 py-3 rounded-full hover:bg-[#c2410c] transition-colors",
       header: "sticky top-0 bg-[#fdf6ec]/95 backdrop-blur z-50 px-5 py-4 flex items-center justify-between border-b border-[#b45309]/10",
     },
-    defaultCategories: [
-      { name: 'לחמים', description: 'לחמי מחמצת ומאפים' },
-      { name: 'עוגות', description: 'עוגות ליום יום ולאירועים' },
-      { name: 'מאפים מתוקים', description: 'קרואסונים ודניש' },
-      { name: 'קפה', description: 'פולים ומשקאות' },
-      { name: 'מארזים', description: 'מארזי מתנה' },
-      { name: 'טרי מהתנור', description: 'מאפי היום' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'kids-pop': {
     id: 'kids-pop',
-    name: 'ילדים צבעוני',
-    description: 'צהוב, תכלת וקורל עליזים - שובב ומזמין לצעצועים, ילדים ותינוקות',
+    name: 'צבעוני ועליז',
+    description: 'צהוב, תכלת וקורל עליזים - שובב ומרגש עם פינות עגולות גדולות',
     previewImage: 'https://images.unsplash.com/photo-1523381294911-8d3cead13475',
     theme: {
       primaryColor: '#2563eb',
@@ -582,19 +507,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       button: "bg-[#2563eb] text-white font-extrabold px-8 py-3 rounded-full text-base hover:bg-[#f59e0b] transition-colors",
       header: "sticky top-0 bg-white/90 backdrop-blur z-50 px-4 py-3 flex items-center justify-between rounded-b-3xl shadow-sm",
     },
-    defaultCategories: [
-      { name: 'צעצועים', description: 'משחקים לכל גיל' },
-      { name: 'בגדי ילדים', description: 'ביגוד לתינוקות וילדים' },
-      { name: 'משחקי חשיבה', description: 'פאזלים ומשחקי קופסה' },
-      { name: 'לתינוק', description: 'מוצרי תינוקות' },
-      { name: 'יצירה', description: 'ערכות יצירה ואמנות' },
-      { name: 'מתנות', description: 'רעיונות למתנה' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'spa-soft': {
     id: 'spa-soft',
-    name: 'ספא רך',
-    description: 'ורוד עדין, חול וסייג׳ - רגוע ונקי לקוסמטיקה, טיפוח ורווחה',
+    name: 'ורוד ועדין',
+    description: 'ורוד עדין, חול וסייג׳ - רגוע ונקי עם טיפוגרפיה מעודנת',
     previewImage: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80',
     theme: {
       primaryColor: '#9d7d6a',
@@ -626,19 +544,12 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       button: "border border-[#9d7d6a] text-[#9d7d6a] px-9 py-3 text-sm tracking-wide rounded-lg hover:bg-[#9d7d6a] hover:text-white transition-all",
       header: "sticky top-0 bg-[#faf5f2]/90 backdrop-blur z-50 px-6 py-4 flex items-center justify-between",
     },
-    defaultCategories: [
-      { name: 'טיפוח פנים', description: 'סרומים וקרמים' },
-      { name: 'טיפוח גוף', description: 'שמנים ותכשירים' },
-      { name: 'איפור', description: 'קוסמטיקה טבעית' },
-      { name: 'ארומתרפיה', description: 'שמנים אתריים ונרות' },
-      { name: 'מארזי פינוק', description: 'מארזי מתנה' },
-      { name: 'רבי מכר', description: 'המוצרים האהובים' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
   'fitness-bold': {
     id: 'fitness-bold',
-    name: 'כושר נועז',
-    description: 'שחור עמוק עם ליים אנרגטי - חד וספורטיבי לכושר, תוספי תזונה וספורט',
+    name: 'כהה ואנרגטי',
+    description: 'שחור עמוק עם ליים אנרגטי - חד ודרמטי עם קונטרסט מקסימלי',
     previewImage: 'https://images.unsplash.com/photo-1518770660439-4636190af475',
     theme: {
       primaryColor: '#111111',
@@ -670,14 +581,7 @@ export const storeTemplates: Record<StoreTemplateId, StoreTemplate> = {
       button: "bg-[#c6ff00] text-black font-black uppercase px-9 py-3 text-sm tracking-wider rounded-md hover:brightness-110 transition-all",
       header: "sticky top-0 bg-black/90 backdrop-blur z-50 px-4 py-4 flex items-center justify-between border-b border-white/10",
     },
-    defaultCategories: [
-      { name: 'תוספי תזונה', description: 'חלבונים וויטמינים' },
-      { name: 'ציוד אימון', description: 'משקולות ואביזרים' },
-      { name: 'ביגוד ספורט', description: 'לבוש אימון' },
-      { name: 'אביזרים', description: 'בקבוקים וכפפות' },
-      { name: 'לפני ואחרי', description: 'פרי-וורקאאוט והתאוששות' },
-      { name: 'מבצעים חמים', description: 'הכי נמכרים' },
-    ],
+    defaultCategories: GENERIC_CATEGORIES,
   },
 };
 
