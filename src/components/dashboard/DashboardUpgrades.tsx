@@ -8,7 +8,7 @@ interface Props { onNavigate: (v: DashboardView) => void }
 
 const fade = (d = 0) => ({ initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4, delay: d } });
 
-type Category = "הכל" | "שיווק" | "לקוחות" | "תקשורת" | "מראה";
+type Category = "הכל" | "שיווק" | "לקוחות" | "דומיין" | "תמונות";
 
 const products: {
   id: DashboardView;
@@ -69,17 +69,17 @@ const products: {
     id: "domains", icon: Globe, color: "#2563eb", gradient: "from-blue-500 to-indigo-600",
     title: "דומיין אישי", price: 'מ-₪50/שנה + מע"מ',
     pitch: "כתובת אמיתית ומקצועית לאתר - your-brand.co.il. משדר אמון, נראה רציני, וקל לזכור.",
-    bullets: ["נראים מקצועיים", "כתובת קלה לזכירה", "חיבור אוטומטי לאתר"], category: "מראה", show: true,
+    bullets: ["נראים מקצועיים", "כתובת קלה לזכירה", "חיבור אוטומטי לאתר"], category: "דומיין", show: true,
   },
   {
     id: "ai-images", icon: Wand2, color: "#7c3aed", gradient: "from-purple-500 to-fuchsia-600",
     title: "תמונות AI", price: "לפי חבילה",
     pitch: "תמונות מקצועיות לחנות ולמוצרים, נוצרות ב-AI תוך שניות - בלי צלם ובלי מעצב.",
-    bullets: ["תמונות בקליק", "חוסך זמן וכסף", "מראה מקצועי"], category: "מראה", show: true,
+    bullets: ["תמונות בקליק", "חוסך זמן וכסף", "מראה מקצועי"], category: "תמונות", show: true,
   },
 ].filter((p) => p.show);
 
-const CATEGORIES: Category[] = ["הכל", "שיווק", "לקוחות", "תקשורת", "מראה"];
+const CATEGORIES: Category[] = ["הכל", "שיווק", "לקוחות", "דומיין", "תמונות"];
 
 const DashboardUpgrades = ({ onNavigate }: Props) => {
   const [activeCategory, setActiveCategory] = useState<Category>("הכל");
