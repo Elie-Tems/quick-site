@@ -19,92 +19,74 @@ const featuredTemplates = FEATURED_IDS.map(
   (id) => templateList.find((t) => t.id === id)!,
 );
 
-// Color-based mini-store preview — identical to what DashboardDesign shows,
-// so the merchant sees the real vibe before selecting.
+// Realistic mini-store thumbnail — identical to DashboardDesign so merchants
+// see the same preview everywhere.
 const TemplateThumb = ({ t }: { t: StoreTemplate }) => {
-  const {
-    backgroundColor: bg,
-    cardColor: card,
-    primaryColor: primary,
-    foregroundColor: fg,
-    accentColor: accent,
-  } = t.theme;
+  const { backgroundColor: bg, cardColor: card, primaryColor: primary, foregroundColor: fg, accentColor: accent, borderRadius } = t.theme;
   const layout = t.heroStyle.layout;
+  const r = parseInt(borderRadius) > 12 ? '6px' : parseInt(borderRadius) > 6 ? '3px' : parseInt(borderRadius) > 0 ? '2px' : '0px';
+  const productColors = [accent, primary, `${accent}99`];
 
   return (
-    <div className="w-full h-full flex flex-col" style={{ background: bg }}>
-      {/* navbar */}
-      <div
-        className="h-5 flex items-center justify-between px-2 shrink-0"
-        style={{ background: card, borderBottom: `1px solid ${fg}15` }}
-      >
-        <div className="w-5 h-2 rounded-sm" style={{ background: primary }} />
-        <div className="flex gap-1">
-          <div className="w-2 h-2 rounded-full" style={{ background: fg, opacity: 0.25 }} />
-          <div className="w-2 h-2 rounded-full" style={{ background: primary }} />
+    <div className="w-full h-full flex flex-col overflow-hidden" style={{ background: bg }}>
+
+      {/* Navbar */}
+      <div className="flex items-center justify-between px-3 shrink-0" style={{ height: '20px', background: card, borderBottom: `1px solid ${fg}15` }}>
+        <div className="h-2.5 w-10 rounded-sm" style={{ background: primary, borderRadius: '1px' }} />
+        <div className="flex gap-1.5">
+          {[4, 5, 4].map((w, i) => (
+            <div key={i} className="h-1.5 rounded-sm" style={{ width: `${w * 2}px`, background: `${fg}28` }} />
+          ))}
         </div>
+        <div className="h-3.5 w-3.5 rounded-sm" style={{ background: `${fg}18` }} />
       </div>
 
-      {/* hero */}
-      {layout === "split" ? (
-        <div className="flex shrink-0" style={{ height: "130px" }}>
-          <div
-            className="w-2/5 flex flex-col justify-center gap-1.5 px-3"
-            style={{ background: primary }}
-          >
-            <div className="w-10 h-1.5 rounded-sm bg-white/70" />
-            <div className="w-14 h-2 rounded-sm bg-white/90" />
-            <div className="w-8 h-2 rounded-sm mt-1" style={{ background: accent }} />
+      {/* Hero */}
+      {layout === 'split' ? (
+        <div className="flex shrink-0" style={{ height: '80px' }}>
+          <div className="w-[46%] flex flex-col justify-center gap-1 px-3 shrink-0" style={{ background: primary }}>
+            <div className="h-1.5 rounded-sm bg-white/40" style={{ width: '55%' }} />
+            <div className="h-2 rounded-sm bg-white/85" style={{ width: '80%' }} />
+            <div className="h-3 mt-1 flex items-center px-2 rounded-sm" style={{ width: '52%', background: 'rgba(255,255,255,0.25)', borderRadius: r }}>
+              <div className="h-1 w-full rounded-sm bg-white/70" />
+            </div>
           </div>
-          <div
-            className="flex-1"
-            style={{ background: `linear-gradient(135deg, ${accent}cc, ${card})` }}
-          />
+          <div className="flex-1" style={{ background: `linear-gradient(135deg, ${accent}cc 0%, ${primary}44 100%)` }} />
         </div>
-      ) : layout === "centered" ? (
-        <div
-          className="shrink-0 flex flex-col items-center justify-center gap-1.5 px-3"
-          style={{
-            height: "130px",
-            background: `linear-gradient(135deg, ${primary}22, ${accent}22)`,
-          }}
-        >
-          <div className="w-14 h-2 rounded-sm" style={{ background: fg }} />
-          <div className="w-8 h-1.5 rounded-sm" style={{ background: primary }} />
-          <div className="w-10 h-2 rounded-full mt-1" style={{ background: primary }} />
+      ) : layout === 'centered' ? (
+        <div className="shrink-0 flex flex-col items-center justify-center gap-1 px-3" style={{ height: '80px', background: `linear-gradient(160deg, ${primary}ee, ${accent}99)` }}>
+          <div className="h-1.5 rounded-sm bg-white/50" style={{ width: '40%' }} />
+          <div className="h-2 rounded-sm bg-white/90" style={{ width: '65%' }} />
+          <div className="h-3 mt-1 flex items-center justify-center px-3 rounded-full" style={{ width: '40%', background: 'rgba(255,255,255,0.3)' }}>
+            <div className="h-1 w-full rounded-sm bg-white/80" />
+          </div>
         </div>
       ) : (
-        <div
-          className="shrink-0 relative"
-          style={{ height: "130px", background: `linear-gradient(135deg, ${primary}, ${accent})` }}
-        >
-          <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${t.heroStyle.overlayOpacity})` }} />
-          <div className="absolute bottom-3 right-3 text-right">
-            <div className="w-12 h-2 rounded-sm bg-white/70 mb-1.5" />
-            <div className="w-8 h-1.5 rounded-sm bg-white/50" />
+        <div className="shrink-0 relative flex flex-col justify-end pb-3 px-3" style={{ height: '80px', background: `linear-gradient(135deg, ${primary}, ${accent})` }}>
+          <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${Math.min(t.heroStyle.overlayOpacity + 0.15, 0.6)})` }} />
+          <div className="relative flex flex-col gap-1" style={{ alignItems: t.heroStyle.textAlignment === 'center' ? 'center' : t.heroStyle.textAlignment === 'left' ? 'flex-start' : 'flex-end' }}>
+            <div className="h-1.5 rounded-sm bg-white/55" style={{ width: '40%' }} />
+            <div className="h-2 rounded-sm bg-white/90" style={{ width: '60%' }} />
           </div>
         </div>
       )}
 
-      {/* product grid */}
-      <div className="flex-1 grid grid-cols-3 gap-1 p-2" style={{ minHeight: 0 }}>
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="rounded overflow-hidden flex flex-col"
-            style={{
-              background: card,
-              borderRadius: t.theme.borderRadius,
-              border: `1px solid ${fg}10`,
-            }}
-          >
-            <div className="flex-1" style={{ background: `${accent}${i === 1 ? "33" : "1a"}` }} />
-            <div className="px-1 py-1">
-              <div className="w-full h-1.5 rounded-sm mb-1" style={{ background: `${fg}30` }} />
-              <div className="w-2/3 h-1.5 rounded-sm" style={{ background: primary }} />
+      {/* Products */}
+      <div className="flex-1 overflow-hidden" style={{ background: bg, padding: '7px 7px 6px' }}>
+        <div className="h-1.5 w-14 mb-2 rounded-sm" style={{ background: `${fg}22` }} />
+        <div className="grid grid-cols-3 gap-1.5" style={{ height: 'calc(100% - 14px)' }}>
+          {productColors.map((color, i) => (
+            <div key={i} className="flex flex-col overflow-hidden" style={{ background: card, borderRadius: r, border: `1px solid ${fg}10` }}>
+              <div className="flex-1 flex items-center justify-center" style={{ background: `linear-gradient(150deg, ${color}40, ${color}18)`, minHeight: '24px' }}>
+                <div className="rounded-sm" style={{ width: '50%', height: '50%', background: `${color}55` }} />
+              </div>
+              <div style={{ padding: '4px 5px 5px' }}>
+                <div className="rounded-sm mb-1" style={{ height: '3px', width: '78%', background: `${fg}35` }} />
+                <div className="rounded-sm" style={{ height: '3px', width: '44%', background: primary }} />
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
