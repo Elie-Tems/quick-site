@@ -358,7 +358,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
               <div>
                 <h2 className="text-lg font-semibold text-foreground mb-1">פרסום בתוך החנות שלך</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  פרסום באתר מאפשר לך לקדם מוצרים ומבצעים <b>ישירות בחנות שלך</b> - בלי פרסום ממומן ובלי פייסבוק. מוסיפים באנרים, חלון קופץ עם מבצע, ומוצרים ייעודיים שיקפצו לעין.
+                  פרסום באתר מאפשר לך לקדם מוצרים ומבצעים <b>ישירות בחנות שלך</b>. מוסיפים באנרים, חלון קופץ עם מבצע, ומוצרים ייעודיים שיקפצו לעין.
                 </p>
                 <Button onClick={openAddForm} className="mt-4 gap-1.5">
                   <Plus className="h-4 w-4" />
