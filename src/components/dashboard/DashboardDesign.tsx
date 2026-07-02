@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { useUpdateBusiness } from "@/hooks/useBusiness";
+import { useUpdateBusiness, useMyBusiness } from "@/hooks/useBusiness";
 import { storeTemplates, type StoreTemplateId, type StoreTemplate, getTemplate } from "@/lib/storeTemplates";
 import { STORE_FONTS, loadStoreFonts } from "@/lib/storeFonts";
-import { Check, Palette, Type } from "lucide-react";
+import { Check, Palette, Type, ImagePlus, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface DashboardDesignProps {
@@ -131,6 +131,45 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
       await updateBusiness.mutateAsync({ id: businessId, font_heading: fontHeading || null, font_body: fontBody || null } as any);
       toast.success("הפונטים עודכנו! מתעדכן בחנות שלך.");
     } catch { toast.error("שגיאה בשמירת הפונטים"); }
+  };
+
+  const { data: biz } = useMyBusiness();
+  const [heroImageUrl, setHeroImageUrl] = useState<string>("");
+  const [isUploadingHero, setIsUploadingHero] = useState(false);
+  const heroImageInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if ((biz as any)?.hero_image_url) setHeroImageUrl((biz as any).hero_image_url);
+  }, [(biz as any)?.hero_image_url]);
+
+  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !businessId) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("יש להעלות קובץ תמונה בלבד (JPG, PNG, WEBP)");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("גודל הקובץ המקסימלי הוא 5MB");
+      return;
+    }
+    setIsUploadingHero(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `hero-${Date.now()}.${fileExt}`;
+      const filePath = `${businessId}/branding/${fileName}`;
+      const { error } = await supabase.storage.from("business-assets").upload(filePath, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("business-assets").getPublicUrl(filePath);
+      setHeroImageUrl(data.publicUrl);
+      await updateBusiness.mutateAsync({ id: businessId, hero_image_url: data.publicUrl } as any);
+      toast.success("תמונת הבאנר עודכנה!");
+    } catch (err: any) {
+      toast.error(err.message || "שגיאה בהעלאה");
+    } finally {
+      setIsUploadingHero(false);
+      if (heroImageInputRef.current) heroImageInputRef.current.value = "";
+    }
   };
 
   const handleSaveTemplate = async () => {

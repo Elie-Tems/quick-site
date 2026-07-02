@@ -148,27 +148,15 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
   const [isSaving, setIsSaving] = useState(false);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [isGeneratingHero, setIsGeneratingHero] = useState(false);
-  const [isUploadingHero, setIsUploadingHero] = useState(false);
-  const [customPrompt, setCustomPrompt] = useState<string>("");
-  const [showCustomPrompt, setShowCustomPrompt] = useState(true);
-  const heroImageInputRef = useRef<HTMLInputElement>(null);
   const logoImageInputRef = useRef<HTMLInputElement>(null);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showBusinessInfo, setShowBusinessInfo] = useState(false);
   const [showShipping, setShowShipping] = useState(false);
-  const [showStoreTexts, setShowStoreTexts] = useState(false);
-  const [showBranding, setShowBranding] = useState(false);
   const [showWhatsapp, setShowWhatsapp] = useState(false);
   const [showPayments, setShowPayments] = useState(false);
 
   // ברירת מחדל: מכובה (false) - המשתמש צריך להפעיל באופן ידני
   const effectiveUseTagline = formData.useTagline ?? false;
-  const effectiveUseHeroTitle = formData.useHeroTitle ?? (formData.heroTitle !== "");
-  const effectiveUseHeroBadge = formData.useHeroBadge ?? false;
-  const effectiveUsePromoText = formData.usePromoText ?? false;
-  const effectiveUseCtaText = formData.useCtaText ?? Boolean(formData.ctaText);
-  const effectiveUseHeroBenefits = formData.useHeroBenefits ?? Boolean(formData.heroBenefits && formData.heroBenefits.length);
 
   // לעדכן את האובייקט settings של הדשבורד בכל שינוי טופס - בשביל תצוגה מקדימה חיה
   useEffect(() => {
@@ -203,14 +191,6 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
         brand_style: formData.brandStyle,
         business_category: formData.businessCategory || 'other',
         custom_category_name: formData.customCategoryName || null,
-        hero_title: effectiveUseHeroTitle ? (formData.heroTitle || null) : "",
-        hero_badge: effectiveUseHeroBadge ? (formData.heroBadge || null) : null,
-        hero_benefits: effectiveUseHeroBenefits
-          ? ((formData.heroBenefits?.filter(Boolean).length ? formData.heroBenefits.filter(Boolean) : null) as string[] | null)
-          : null,
-        hero_image_url: (formData.heroImageUrl?.trim() || null) as string | null,
-        promo_text: effectiveUsePromoText ? (formData.promoText || null) : null,
-        cta_text: effectiveUseCtaText ? (formData.ctaText || null) : "",
         whatsapp_enabled: formData.whatsappEnabled ?? true,
         whatsapp_message: formData.whatsappMessage || null,
         shabbat_mode: formData.shabbatMode ?? false,
@@ -241,142 +221,6 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
     
     setConnectionStatus(formData.apiKey && formData.apiKey.length > 5 ? 'success' : 'error');
     setIsTestingConnection(false);
-  };
-
-  const generateAIHero = async () => {
-    if (!settings.id) {
-      toast({
-        title: "שגיאה",
-        description: "לא ניתן לייצר באנר - מזהה העסק חסר",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const category = formData.businessCategory || 'other';
-    
-    setIsGeneratingHero(true);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-hero-image', {
-        body: {
-          category,
-          businessName: formData.name,
-          businessId: settings.id,
-          customPrompt: customPrompt.trim() || undefined,
-        }
-      });
-      
-      if (error) throw error;
-      
-      if (data?.imageUrl) {
-        setFormData(prev => ({ ...prev, heroImageUrl: data.imageUrl }));
-        toast({
-          title: "תמונת באנר נוצרה בהצלחה! ✨",
-          description: "התמונה עודכנה בחנות שלך",
-        });
-      }
-    } catch (err: any) {
-      console.error('Failed to generate hero:', err);
-      toast({
-        title: "שגיאה ביצירת באנר",
-        description: err.message || "נסה שוב מאוחר יותר",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingHero(false);
-    }
-  };
-
-  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "קובץ לא תקין",
-        description: "יש להעלות קובץ תמונה בלבד (JPG, PNG, WEBP)",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "הקובץ גדול מדי",
-        description: "גודל הקובץ המקסימלי הוא 5MB",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!settings.id) {
-      toast({
-        title: "שגיאה",
-        description: "מזהה העסק חסר - שמור את ההגדרות קודם",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsUploadingHero(true);
-
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `hero-${Date.now()}.${fileExt}`;
-      const filePath = `${settings.id}/branding/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('business-assets')
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from('business-assets')
-        .getPublicUrl(filePath);
-
-      const heroUrl = urlData.publicUrl;
-
-      // Update form data
-      setFormData(prev => ({ ...prev, heroImageUrl: heroUrl }));
-
-      // Update the business record
-      const { error: updateError } = await supabase
-        .from('businesses')
-        .update({ hero_image_url: heroUrl })
-        .eq('id', settings.id);
-
-      if (updateError) {
-        console.error('Failed to update business:', updateError);
-        toast({
-          title: "שגיאה בשמירה",
-          description: "התמונה הועלתה אך עדכון העסק נכשל. נסה ללחוץ על שמירה.",
-          variant: "destructive",
-        });
-      } else {
-        queryClient.invalidateQueries({ queryKey: ['storefront-business'] });
-        toast({
-          title: "התמונה הועלתה בהצלחה! 🎉",
-          description: "תמונת הבאנר עודכנה בחנות",
-        });
-      }
-    } catch (err: any) {
-      console.error('Failed to upload hero image:', err);
-      toast({
-        title: "שגיאה בהעלאה",
-        description: err.message || "נסה שוב מאוחר יותר",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploadingHero(false);
-      // Reset the input
-      if (heroImageInputRef.current) {
-        heroImageInputRef.current.value = '';
-      }
-    }
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
