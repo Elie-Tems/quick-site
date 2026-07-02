@@ -118,10 +118,10 @@ const DashboardTracking = ({ businessId }: Props) => {
           <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Lock className="w-7 h-7 text-primary" />
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-2">שדרוג חד-פעמי: חיבור כלי פרסום</h2>
+          <h2 className="text-xl font-bold text-foreground mb-2">תדע מאיפה מגיעים הלקוחות שלך</h2>
           <p className="text-muted-foreground max-w-lg mx-auto mb-6">
-            הפעלה חד-פעמית שמאפשרת לכם להדביק את כל מזהי המעקב שלכם, ואנחנו מזריקים אותם אוטומטית לחנות -
-            בלי מתכנת. כל מי שמפרסם בגוגל/פייסבוק/טיקטוק חייב את זה כדי למדוד ולמטב.
+            כשמישהו קונה בחנות - תוכל לראות אם הגיע מגוגל, מפייסבוק, מטיקטוק, או ישירות.
+            בלי המידע הזה, אתה מפרסם בעיוורון. תשלום חד-פעמי, בלי מתכנת.
           </p>
           <div className="flex flex-col items-center gap-1 mb-6">
             <div className="text-4xl font-extrabold text-foreground">
@@ -131,11 +131,11 @@ const DashboardTracking = ({ businessId }: Props) => {
           </div>
           <ul className="text-sm text-foreground/90 max-w-md mx-auto space-y-2 mb-7 text-right">
             {[
-              "Google Tag Manager + Google Analytics 4",
-              "פיקסל פייסבוק / אינסטגרם (Meta)",
-              "Google Ads + טיקטוק פיקסל",
-              "שדה קוד מותאם אישית לכל תג אחר",
-              "מדידת המרות, ריטרגטינג ומיטוב קמפיינים",
+              "גוגל - ראה כמה מהמודעות הגיעו לרכישה בפועל",
+              "פייסבוק/אינסטגרם - בנה קהל של מי שביקר בחנות",
+              "טיקטוק, Google Ads וכל כלי פרסום אחר",
+              "מקום אחד לכולם - בלי לגעת בקוד",
+              "מדידת המרות וריטרגטינג אוטומטי",
             ].map((t) => (
               <li key={t} className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary shrink-0" /> {t}

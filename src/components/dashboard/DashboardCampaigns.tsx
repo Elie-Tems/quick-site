@@ -240,9 +240,18 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
           <button onClick={resetForm} className="p-2 hover:bg-muted rounded-lg">
             <X className="h-5 w-5" />
           </button>
-          <h1 className="text-xl font-bold text-foreground">
-            {editingCampaign ? `עריכת קמפיין: ${editingCampaign.name}` : 'יצירת קמפיין חדש'}
+          <h1 className="text-xl font-bold text-foreground flex-1">
+            {editingCampaign ? `עריכת פרסום: ${editingCampaign.name}` : 'פרסום חדש'}
           </h1>
+          {editingCampaign && (
+            <button
+              onClick={() => setPreviewCampaign(editingCampaign)}
+              className="flex items-center gap-1.5 text-sm text-primary border border-primary/30 rounded-lg px-3 py-1.5 hover:bg-primary/5 transition-colors"
+            >
+              <Eye className="h-4 w-4" />
+              הצג בחנות
+            </button>
+          )}
         </div>
 
         {editingCampaign ? (
@@ -307,14 +316,14 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">קמפיינים</h1>
+          <h1 className="text-2xl font-bold text-foreground">פרסום באתר</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            צור קמפיינים עונתיים עם באנרים ומוצרים ייעודיים
+            קדם מוצרים ומבצעים בתוך החנות שלך
           </p>
         </div>
         <Button onClick={openAddForm} className="gap-1.5">
           <Plus className="h-4 w-4" />
-          קמפיין חדש
+          פרסום חדש
         </Button>
       </div>
 
@@ -324,7 +333,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
           <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
           <div>
             <p className="font-medium text-green-800 dark:text-green-200">
-              קמפיין פעיל: {campaigns.find(c => c.is_active)?.name}
+              פרסום פעיל: {campaigns.find(c => c.is_active)?.name}
             </p>
             <p className="text-sm text-green-600 dark:text-green-400">
               התוכן מוצג בחנות לפי הגדרות הקמפיין
@@ -336,18 +345,63 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
       {isLoading ? (
         <div className="text-center py-12">
           <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto" />
-          <p className="text-muted-foreground mt-4">טוען קמפיינים...</p>
+          <p className="text-muted-foreground mt-4">טוען פרסומים...</p>
         </div>
       ) : campaigns?.length === 0 ? (
-        <div className="text-center py-12 bg-muted/30 rounded-xl">
-          <Megaphone className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-          <p className="text-muted-foreground mb-2">עדיין אין קמפיינים</p>
-          <p className="text-sm text-muted-foreground mb-4">
-            צור קמפיין עונתי כמו "פורים 2026" או "מבצעי פסח"
-          </p>
-          <Button onClick={openAddForm} variant="outline">
-            צור קמפיין ראשון
-          </Button>
+        <div className="space-y-6">
+          {/* Explanation */}
+          <div className="rounded-xl border border-border bg-muted/20 p-6 text-right">
+            <div className="flex items-start gap-4">
+              <div className="bg-primary/10 rounded-xl p-3 shrink-0">
+                <Megaphone className="h-7 w-7 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground mb-1">פרסום בתוך החנות שלך</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  פרסום באתר מאפשר לך לקדם מוצרים ומבצעים <b>ישירות בחנות שלך</b> - בלי פרסום ממומן ובלי פייסבוק. מוסיפים באנרים, חלון קופץ עם מבצע, ומוצרים ייעודיים שיקפצו לעין.
+                </p>
+                <Button onClick={openAddForm} className="mt-4 gap-1.5">
+                  <Plus className="h-4 w-4" />
+                  צור פרסום ראשון
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Visual demos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Banner demo */}
+            <div className="rounded-xl border border-border overflow-hidden">
+              <div className="bg-muted/30 px-4 py-2 text-xs text-muted-foreground font-medium border-b">
+                דוגמה - באנר בראש החנות
+              </div>
+              <div className="p-4">
+                <div className="rounded-lg bg-primary text-primary-foreground px-4 py-3 text-center space-y-1">
+                  <p className="font-bold text-sm">🌸 מבצעי פורים - עד 30% הנחה!</p>
+                  <p className="text-xs opacity-80">הנחה אוטומטית בסל הקניות</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Popup demo */}
+            <div className="rounded-xl border border-border overflow-hidden">
+              <div className="bg-muted/30 px-4 py-2 text-xs text-muted-foreground font-medium border-b">
+                דוגמה - חלון מבצע קופץ
+              </div>
+              <div className="p-4 flex justify-center">
+                <div className="bg-background rounded-xl border shadow-lg p-5 max-w-[220px] w-full text-center space-y-2">
+                  <p className="font-bold text-sm">ברוכים הבאים! 🎉</p>
+                  <p className="text-xs text-muted-foreground">15% הנחה על הזמנה ראשונה</p>
+                  <div className="bg-primary/10 text-primary font-mono font-bold px-3 py-1.5 rounded-lg text-xs inline-block">
+                    WELCOME15
+                  </div>
+                  <button className="w-full bg-primary text-primary-foreground rounded-lg py-1.5 text-xs font-medium">
+                    קנו עכשיו
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
@@ -568,12 +622,12 @@ const CampaignDetailsForm = ({ formData, setFormData, onSubmit, onCancel, isEdit
   return (
     <form onSubmit={onSubmit} className="max-w-lg space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">שם הקמפיין *</Label>
+        <Label htmlFor="name">שם הפרסום *</Label>
         <Input
           id="name"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="לדוגמה: מבצעי פורים 2026"
+          placeholder="לדוגמה: פורים 2026, קולקציה חדשה, מבצע סוף עונה"
           required
         />
       </div>
@@ -740,14 +794,34 @@ const CampaignDetailsForm = ({ formData, setFormData, onSubmit, onCancel, isEdit
                 onChange={(e) => setFormData({ ...formData, popup_cta_url: e.target.value })}
                 placeholder="#products" />
             </div>
-            <p className="text-xs text-muted-foreground">הפופאפ מופיע רק כשהקמפיין פעיל. הזינו לפחות כותרת או טקסט.</p>
+            <p className="text-xs text-muted-foreground">הפופאפ מופיע רק כשהפרסום פעיל. הזינו לפחות כותרת או טקסט.</p>
+
+            {(formData.popup_title || formData.popup_text) && (
+              <div className="mt-3 rounded-lg border border-dashed p-3 bg-muted/30">
+                <p className="text-xs text-muted-foreground mb-2">כך ייראה החלון הקופץ:</p>
+                <div className="bg-background rounded-xl border shadow-lg p-5 max-w-xs mx-auto text-center space-y-2">
+                  {formData.popup_title && <h3 className="font-bold text-lg">{formData.popup_title}</h3>}
+                  {formData.popup_text && <p className="text-sm text-muted-foreground">{formData.popup_text}</p>}
+                  {formData.popup_coupon_code && (
+                    <div className="bg-primary/10 text-primary font-mono font-bold px-3 py-1.5 rounded-lg text-sm inline-block">
+                      {formData.popup_coupon_code}
+                    </div>
+                  )}
+                  {formData.popup_cta_text && (
+                    <button className="w-full bg-primary text-primary-foreground rounded-lg py-2 text-sm font-medium">
+                      {formData.popup_cta_text}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
 
       <div className="flex gap-3 pt-4">
         <Button type="submit" className="flex-1" disabled={isSubmitting}>
-          {isSubmitting ? 'שומר...' : isEditing ? 'שמור שינויים' : 'צור קמפיין'}
+          {isSubmitting ? 'שומר...' : isEditing ? 'שמור שינויים' : 'צור פרסום'}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
           ביטול

@@ -12,6 +12,7 @@ import DashboardOrders, { type Order } from "@/components/dashboard/DashboardOrd
 import DashboardCRM from "@/components/dashboard/DashboardCRM";
 import PremiumOverlay from "@/components/dashboard/PremiumOverlay";
 import { useCrmEntitled } from "@/hooks/useCrmEntitled";
+import { useAnalyticsEntitled } from "@/hooks/useAnalyticsEntitled";
 import DashboardBanners, { type Banner } from "@/components/dashboard/DashboardBanners";
 import DashboardCoupons from "@/components/dashboard/DashboardCoupons";
 import DashboardSales from "@/components/dashboard/DashboardSales";
@@ -63,6 +64,7 @@ const Dashboard = () => {
   
   const [currentView, setCurrentView] = useState<DashboardView>('home');
   const { entitled: crmEntitled } = useCrmEntitled();
+  const { entitled: analyticsEntitled } = useAnalyticsEntitled();
 
   // Refetch business data when returning from payment
   useEffect(() => {
@@ -605,28 +607,37 @@ const Dashboard = () => {
       case 'traffic':
       case 'ad-budget':
         return (
-          <div className="space-y-4">
-            <div className="flex gap-1 border-b border-border overflow-x-auto">
-              {([
-                { id: 'insights', label: 'תובנות' },
-                { id: 'traffic', label: 'מקורות הגעה' },
-                { id: 'ad-budget', label: 'תקציב פרסום' },
-              ] as const).map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setAnalyticsTab(t.id)}
-                  className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${
-                    analyticsTab === t.id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
+          <PremiumOverlay
+            locked={!analyticsEntitled}
+            title="אנליטיקה - נתוני החנות שלך"
+            description="מי הלקוחות שלך, מאיפה הם מגיעים, ואיפה אפשר להשתפר. הנתונים שמאפשרים לקבל החלטות מבוססות."
+            bullets={["כמה מבקרים הגיעו לחנות ומתי", "מקורות הגעה - גוגל, ישיר, רשתות חברתיות", "תובנות לשיפור המכירות", "תקציב פרסום ומעקב קמפיינים"]}
+            priceLabel="הפעלה ב-₪29 לחודש (או כחלק מ-CRM)"
+            onUpgrade={() => setCurrentView('upgrades')}
+          >
+            <div className="space-y-4">
+              <div className="flex gap-1 border-b border-border overflow-x-auto">
+                {([
+                  { id: 'insights', label: 'תובנות' },
+                  { id: 'traffic', label: 'מקורות הגעה' },
+                  { id: 'ad-budget', label: 'תקציב פרסום' },
+                ] as const).map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setAnalyticsTab(t.id)}
+                    className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${
+                      analyticsTab === t.id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              {analyticsTab === 'insights' && <DashboardInsights businessId={business?.id} />}
+              {analyticsTab === 'traffic' && <DashboardTrafficSources businessId={business?.id} />}
+              {analyticsTab === 'ad-budget' && <DashboardAdBudget businessId={business?.id} />}
             </div>
-            {analyticsTab === 'insights' && <DashboardInsights businessId={business?.id} />}
-            {analyticsTab === 'traffic' && <DashboardTrafficSources businessId={business?.id} />}
-            {analyticsTab === 'ad-budget' && <DashboardAdBudget businessId={business?.id} />}
-          </div>
+          </PremiumOverlay>
         );
       case 'domains':
         return <DashboardDomains businessId={business?.id} />;
