@@ -335,11 +335,25 @@ const PublishPayment = () => {
                     siango.app/store/{previewSlug}
                   </div>
                 </div>
-                <iframe
-                  title="תצוגת החנות שלך"
-                  src={`/store/${previewSlug}?preview=true`}
-                  className="w-full h-[min(68vh,700px)] border-0 bg-white"
-                />
+                {/* Open the (still-unpublished) store in a NEW TAB at top level, where
+                    the owner's auth session is reliably available. An inline iframe
+                    fails on mobile: browsers partition iframe storage, so the store's
+                    preview-auth check can't see the session and shows "not published". */}
+                <div className="flex flex-col items-center justify-center gap-4 py-14 px-6 text-center bg-gradient-to-b from-muted/20 to-transparent">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <Eye className="w-8 h-8 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-foreground">החנות שלכם מוכנה לתצוגה</p>
+                    <p className="text-sm text-muted-foreground mt-1">לחצו לצפייה בחנות המלאה - בדיוק כפי שהלקוחות יראו אותה.</p>
+                  </div>
+                  <Button asChild variant="outline" size="lg" className="gap-2">
+                    <a href={`/store/${previewSlug}?preview=true`} target="_blank" rel="noopener noreferrer">
+                      <Eye className="w-5 h-5" /> צפו בחנות שלכם
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="rounded-2xl border border-border p-10 text-center text-muted-foreground">

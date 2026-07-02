@@ -84,6 +84,23 @@ const App = () => {
   // Capture first-touch UTM from ad links (Siango acquisition attribution).
   useEffect(() => { captureUtm(); }, []);
 
+  // Break out of accidental iframe nesting. The iCount payment iframe redirects
+  // back to an app page (e.g. /dashboard) after payment, which loads the WHOLE
+  // app *inside* the payment frame. When one of our own app pages finds itself
+  // embedded, escape to the top window. Store/preview pages are legitimately
+  // embedded (dashboard live preview), so leave those alone.
+  useEffect(() => {
+    try {
+      if (window.top && window.top !== window.self) {
+        const p = window.location.pathname;
+        const embeddable = p.startsWith("/store") || p.startsWith("/preview");
+        if (!embeddable) window.top.location.replace(window.location.href);
+      }
+    } catch {
+      /* cross-origin parent: not our nesting - ignore */
+    }
+  }, []);
+
   return (
   <ErrorBoundary>
   <HelmetProvider>
