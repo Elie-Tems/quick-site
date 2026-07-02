@@ -42,6 +42,9 @@ const PublishPayment = () => {
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid' | 'completed' | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [approvalNum, setApprovalNum] = useState<string>("");
+  // Two-stage flow: show the finished store first ("here's your store!"), then
+  // reveal the payment when the merchant clicks "publish".
+  const [showPayment, setShowPayment] = useState(false);
 
   const fee = getPublishFeeIls();
   const basePaymentUrl = (import.meta.env.VITE_ICOUNT_PAYMENT_BASE_URL || "").trim();
@@ -297,6 +300,65 @@ const PublishPayment = () => {
     );
   }
 
+  const previewSlug = (myBusiness as any)?.slug as string | undefined;
+
+  // ── Stage 1: show the finished store, then let them continue to payment ──
+  if (!showPayment) {
+    return (
+      <>
+        <SEOHead title="פרסום אתר | סיאנגו" noindex={true} />
+        <div className="min-h-screen bg-surface-1 flex flex-col">
+          <div className="w-full max-w-5xl mx-auto px-4 py-8 flex flex-col gap-6 flex-1">
+            <div className="flex items-center justify-between">
+              <Button variant="ghost" asChild>
+                <Link to="/dashboard" className="gap-2"><ArrowRight className="w-4 h-4" /> לדשבורד</Link>
+              </Button>
+              <div className="w-[90px]" />
+            </div>
+
+            <div className="text-center space-y-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">החנות שלך מוכנה! 🎉</h1>
+              <p className="text-muted-foreground text-lg">כך היא תיראה ללקוחות. פרסמו כדי להעלות אותה לאוויר.</p>
+            </div>
+
+            {previewSlug ? (
+              <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xl">
+                <div className="h-9 bg-muted/60 border-b border-border flex items-center gap-1.5 px-3">
+                  <span className="w-3 h-3 rounded-full bg-red-400" />
+                  <span className="w-3 h-3 rounded-full bg-yellow-400" />
+                  <span className="w-3 h-3 rounded-full bg-green-400" />
+                  <div className="mx-auto text-xs text-muted-foreground bg-background rounded px-3 py-0.5" dir="ltr">
+                    siango.app/store/{previewSlug}
+                  </div>
+                </div>
+                <iframe
+                  title="תצוגת החנות שלך"
+                  src={`/store/${previewSlug}`}
+                  className="w-full h-[min(68vh,700px)] border-0 bg-white"
+                />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-border p-10 text-center text-muted-foreground">
+                התצוגה תיטען לאחר שמירת החנות.
+              </div>
+            )}
+
+            <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 max-w-3xl mx-auto w-full">
+              <div className="text-center sm:text-right">
+                <p className="text-lg font-bold text-foreground">פרסמו את החנות</p>
+                <p className="text-sm text-muted-foreground">₪{fee}/חודש + מע"מ · ללא התחייבות, ביטול בכל עת</p>
+              </div>
+              <Button size="lg" variant="hero" onClick={() => setShowPayment(true)} className="gap-2 text-base px-8">
+                פרסמו עכשיו
+                <ArrowRight className="w-5 h-5 rotate-180" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <SEOHead title="פרסום אתר | סיאנגו" noindex={true} />
@@ -304,11 +366,9 @@ const PublishPayment = () => {
       <div className="w-full px-4 py-8 flex flex-col gap-6 flex-1">
         <div className="w-full max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <Button variant="ghost" asChild>
-              <Link to="/dashboard" className="gap-2">
-                <ArrowRight className="w-4 h-4" />
-                מעבר לדשבורד
-              </Link>
+            <Button variant="ghost" onClick={() => setShowPayment(false)} className="gap-2">
+              <ArrowRight className="w-4 h-4" />
+              חזרה לתצוגה
             </Button>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">תשלום לפרסום האתר</h1>
             <div className="w-[120px]"></div>
