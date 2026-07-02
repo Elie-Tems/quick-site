@@ -46,15 +46,8 @@ const navItems: {
   { id: "shipping", label: "משלוחים", icon: Truck, group: "ניהול מכירות" },
   { id: "payments", label: "סליקה", icon: CreditCard, group: "ניהול מכירות" },
 
-  // חנות פיצ'רים - כל הפיצ'רים בתשלום
+  // חנות פיצ'רים - כניסה לחנות בלבד; הפירוט נמצא בתוך החנות עצמה
   { id: "upgrades", label: "כל הפיצ'רים", shortLabel: "פיצ'רים", icon: Sparkles, group: "חנות פיצ'רים" },
-  { id: "customers", label: "לקוחות / CRM", shortLabel: "CRM", icon: Users, premium: true, group: "חנות פיצ'רים" },
-  { id: "insights", label: "אנליטיקה", icon: BarChart3, premium: true, group: "חנות פיצ'רים" },
-  { id: "domains", label: "דומיין", icon: Globe, group: "חנות פיצ'רים" },
-  { id: "whatsapp", label: "וואטסאפ", icon: MessageCircle, group: "חנות פיצ'רים" },
-  { id: "email", label: "מייל עסקי", icon: AtSign, group: "חנות פיצ'רים" },
-  { id: "tracking", label: "תגי שיווק ומעקב", shortLabel: "תגי מעקב", icon: BarChart3, group: "חנות פיצ'רים" },
-  { id: "reviews", label: "ביקורות Google", shortLabel: "ביקורות", icon: Star, group: "חנות פיצ'רים" },
 
   // שיווק
   { id: "campaigns", label: "פרסום באתר", icon: Megaphone, group: "שיווק" },
