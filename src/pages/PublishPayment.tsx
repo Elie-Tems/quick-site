@@ -333,7 +333,7 @@ const PublishPayment = () => {
                 </div>
                 <iframe
                   title="תצוגת החנות שלך"
-                  src={`/store/${previewSlug}`}
+                  src={`/store/${previewSlug}?preview=true`}
                   className="w-full h-[min(68vh,700px)] border-0 bg-white"
                 />
               </div>
