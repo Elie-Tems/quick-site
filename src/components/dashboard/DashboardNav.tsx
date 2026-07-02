@@ -125,10 +125,12 @@ const DashboardNav = ({
           const groupItems = itemsToRender.filter((item) => item.group === group);
           if (groupItems.length === 0) return null;
           const open = openGroups[group];
+          // Single-item group: clicking the header navigates directly, no accordion
+          const singleItemId = groupItems.length === 1 ? groupItems[0].id : null;
           return (
             <div key={group} className="mb-1">
               <button
-                onClick={() => toggleGroup(group)}
+                onClick={() => singleItemId ? onViewChange(singleItemId) : toggleGroup(group)}
                 className={cn(
                   "w-full flex items-center justify-between px-3 pt-3 pb-1.5 text-[11px] font-semibold tracking-wider transition-colors",
                   group === "חנות פיצ'רים"
@@ -137,7 +139,7 @@ const DashboardNav = ({
                 )}
               >
                 <span className={group === "חנות פיצ'רים" ? "font-bold text-[12px]" : ""}>{group}</span>
-                <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open ? "" : "-rotate-90")} />
+                {!singleItemId && <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open ? "" : "-rotate-90")} />}
               </button>
               {open && groupItems.map((item) => {
                 const Icon = item.icon;
