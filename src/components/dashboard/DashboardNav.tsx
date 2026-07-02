@@ -36,7 +36,6 @@ const navItems: {
   // (קטגוריות + מבצעים הם עכשיו טאבים בתוך "מוצרים")
   { id: "products", label: "מוצרים", icon: Package, group: "עריכה ועיצוב" },
   { id: "design", label: "עיצוב", icon: Palette, group: "עריכה ועיצוב" },
-  { id: "ai-images", label: "תמונות AI", icon: ImagePlus, premium: true, group: "עריכה ועיצוב" },
   { id: "ai-generated-images", label: "גלריית תמונות", shortLabel: "גלריה", icon: Image, group: "עריכה ועיצוב" },
   { id: "preview", label: "תצוגה מקדימה", shortLabel: "תצוגה", icon: Eye, group: "עריכה ועיצוב" },
 

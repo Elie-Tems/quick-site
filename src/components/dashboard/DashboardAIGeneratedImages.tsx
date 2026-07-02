@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Download, Package, Image as ImageIcon, Loader2, X } from "lucide-react";
+import AICreditPackages from "./AICreditPackages";
+import { useAICredits } from "@/hooks/useAIImageEngine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAIImageJobs } from "@/hooks/useAIImageEngine";
@@ -24,6 +26,7 @@ import {
 
 const DashboardAIGeneratedImages = () => {
   const { data: business } = useMyBusiness();
+  const { data: credits } = useAICredits(business?.id);
   const { data: jobs, isLoading } = useAIImageJobs(business?.id);
   const { data: products } = useProducts(business?.id);
   const { data: banners } = useBanners(business?.id);
@@ -189,6 +192,20 @@ const DashboardAIGeneratedImages = () => {
             </Badge>
           </div>
         ))}
+      </div>
+
+      {/* AI Credits upgrade section */}
+      <div className="border-t border-border pt-6">
+        <div className="mb-4">
+          <h3 className="text-lg font-bold text-foreground">שדרוג קרדיטים לתמונות AI</h3>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            יצירת תמונות מקצועיות לחנות בכמה שניות - ללא צלם ובלי מעצב
+          </p>
+        </div>
+        <AICreditPackages
+          businessId={business?.id}
+          currentCredits={credits?.credits_remaining ?? 0}
+        />
       </div>
 
       {/* Assign Dialog */}
