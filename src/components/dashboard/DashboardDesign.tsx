@@ -347,6 +347,92 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
           <li>• התבנית תשפיע על מראה החנות הציבורית שלך</li>
         </ul>
       </div>
+
+      {/* Hero Image Section */}
+      <div className="border-t border-border pt-6 space-y-4">
+        <div>
+          <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+            <ImagePlus className="h-5 w-5" />
+            תמונת רקע ראשית
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            תמונה שתופיע בחלק העליון של החנות - ניתן להעלות מהמחשב או להדביק קישור
+          </p>
+        </div>
+
+        {heroImageUrl && (
+          <div className="relative aspect-video max-w-sm rounded-lg overflow-hidden bg-muted">
+            <img src={heroImageUrl} alt="Hero" className="w-full h-full object-cover" />
+            <button
+              type="button"
+              onClick={() => setHeroImageUrl("")}
+              className="absolute top-2 left-2 w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <input
+              ref={heroImageInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleHeroImageUpload}
+              className="hidden"
+              id="hero-upload-design"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => heroImageInputRef.current?.click()}
+              disabled={isUploadingHero}
+              className="w-full gap-2"
+            >
+              {isUploadingHero ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  מעלה תמונה...
+                </>
+              ) : (
+                <>
+                  <ImagePlus className="h-4 w-4" />
+                  העלה מהמחשב
+                </>
+              )}
+            </Button>
+          </div>
+
+          <div className="flex-[2] flex gap-2">
+            <input
+              type="url"
+              value={heroImageUrl}
+              onChange={(e) => setHeroImageUrl(e.target.value)}
+              placeholder="או הדבק URL לתמונה"
+              dir="ltr"
+              className="flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                if (!businessId) return;
+                try {
+                  await updateBusiness.mutateAsync({ id: businessId, hero_image_url: heroImageUrl || null } as any);
+                  toast.success("תמונת הבאנר עודכנה!");
+                } catch (err: any) {
+                  toast.error(err.message || "שגיאה בשמירה");
+                }
+              }}
+            >
+              שמור
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
