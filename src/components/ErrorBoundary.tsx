@@ -1,5 +1,5 @@
 import { Component, ReactNode } from "react";
-import { reportError } from "@/lib/errorReporter";
+import { reportError, maybeReloadOnStaleChunk } from "@/lib/errorReporter";
 
 interface Props {
   children: ReactNode;
@@ -18,6 +18,9 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: { componentStack: string }) {
+    // A stale-chunk crash (new deploy while this tab held the old index) isn't a
+    // real bug - reload once to fetch the fresh build instead of reporting it.
+    if (maybeReloadOnStaleChunk(error.message || "")) return;
     reportError(error.message || "React render error", {
       kind: "react.boundary",
       stack: `${error.stack || ""}\n--- component stack ---\n${info.componentStack}`,

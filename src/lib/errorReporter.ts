@@ -72,12 +72,36 @@ export const reportError = (
   }
 };
 
+// A "stale chunk" error means a new version was deployed while this tab still
+// held the old index.html, so a lazily-imported JS chunk now 404s (the SPA
+// fallback returns index.html -> MIME "text/html" -> module load fails). This is
+// not a real bug - reloading once fetches the fresh index + chunks. We reload at
+// most ONCE per session (sessionStorage survives the reload) so a genuinely
+// broken deploy can't cause an infinite reload loop; it falls back to the error UI.
+const CHUNK_ERROR_RE =
+  /Failed to fetch dynamically imported module|error loading dynamically imported module|Failed to load module script|Importing a module script failed|Loading chunk [\w-]+ failed|ChunkLoadError/i;
+export const maybeReloadOnStaleChunk = (msg: string): boolean => {
+  if (!msg || !CHUNK_ERROR_RE.test(msg)) return false;
+  try {
+    const KEY = "siango_chunk_reloaded";
+    if (!sessionStorage.getItem(KEY)) {
+      sessionStorage.setItem(KEY, "1");
+      window.location.reload();
+    }
+  } catch {
+    /* ignore */
+  }
+  return true;
+};
+
 let installed = false;
 export const installGlobalErrorReporting = () => {
   if (installed) return;
   installed = true;
   window.addEventListener("error", (e) => {
-    reportError(e.message || "window.error", {
+    const msg = e.message || "window.error";
+    if (maybeReloadOnStaleChunk(msg)) return;
+    reportError(msg, {
       kind: "window.onerror",
       stack: (e.error && e.error.stack) || `${e.filename}:${e.lineno}:${e.colno}`,
     });
@@ -85,6 +109,7 @@ export const installGlobalErrorReporting = () => {
   window.addEventListener("unhandledrejection", (e) => {
     const reason = e.reason as { message?: string; stack?: string } | string | undefined;
     const msg = typeof reason === "string" ? reason : reason?.message || "unhandledrejection";
+    if (maybeReloadOnStaleChunk(msg)) return;
     reportError(msg, {
       kind: "unhandledrejection",
       stack: typeof reason === "object" ? reason?.stack : undefined,
