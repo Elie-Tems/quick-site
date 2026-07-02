@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
@@ -18,7 +18,7 @@ interface DashboardNavProps {
 
 // Sidebar groups (desktop shows these as section headers). Order here = display order.
 // Redesigned IA: 6 focused groups instead of the old sprawling list.
-const NAV_GROUPS = ["בית", "החנות שלי", "ניהול מכירות", "שיווק", "הרחבות", "הגדרות"] as const;
+const NAV_GROUPS = ["בית", "חנות פיצ'רים", "החנות שלי", "ניהול מכירות", "שיווק", "הגדרות"] as const;
 type NavGroup = (typeof NAV_GROUPS)[number];
 
 const navItems: {
@@ -46,17 +46,18 @@ const navItems: {
   { id: "shipping", label: "משלוחים", icon: Truck, group: "ניהול מכירות" },
   { id: "payments", label: "סליקה", icon: CreditCard, group: "ניהול מכירות" },
 
+  // חנות פיצ'רים - כל הפיצ'רים בתשלום
+  { id: "upgrades", label: "כל הפיצ'רים", shortLabel: "פיצ'רים", icon: Sparkles, group: "חנות פיצ'רים" },
+  { id: "customers", label: "לקוחות / CRM", shortLabel: "CRM", icon: Users, premium: true, group: "חנות פיצ'רים" },
+  { id: "insights", label: "אנליטיקה", icon: BarChart3, premium: true, group: "חנות פיצ'רים" },
+  { id: "domains", label: "דומיין", icon: Globe, group: "חנות פיצ'רים" },
+  { id: "whatsapp", label: "וואטסאפ", icon: MessageCircle, group: "חנות פיצ'רים" },
+  { id: "email", label: "מייל עסקי", icon: AtSign, group: "חנות פיצ'רים" },
+  { id: "tracking", label: "תגי שיווק ומעקב", shortLabel: "תגי מעקב", icon: BarChart3, group: "חנות פיצ'רים" },
+  { id: "reviews", label: "ביקורות Google", shortLabel: "ביקורות", icon: Star, group: "חנות פיצ'רים" },
+
   // שיווק
   { id: "campaigns", label: "פרסום באתר", icon: Megaphone, group: "שיווק" },
-  { id: "tracking", label: "תגי שיווק ומעקב", shortLabel: "תגי מעקב", icon: BarChart3, group: "שיווק" },
-  { id: "reviews", label: "ביקורות Google", shortLabel: "ביקורות", icon: Star, group: "שיווק" },
-  // הרחבות - מודולים מתקדמים (חלקם בתשלום / עם מצב דמו)
-  { id: "customers", label: "לקוחות / CRM", shortLabel: "CRM", icon: Users, premium: true, group: "הרחבות" },
-  { id: "insights", label: "אנליטיקה", icon: BarChart3, premium: true, group: "הרחבות" },
-  { id: "domains", label: "דומיין", icon: Globe, group: "הרחבות" },
-  { id: "whatsapp", label: "וואטסאפ", icon: MessageCircle, group: "הרחבות" },
-  { id: "email", label: "מייל עסקי", icon: AtSign, group: "הרחבות" },
-  { id: "upgrades", label: "כל ההרחבות", shortLabel: "שדרוגים", icon: Crown, group: "הרחבות" },
 
   // הגדרות
   { id: "settings", label: "פרטי העסק", shortLabel: "הגדרות", icon: Settings, group: "הגדרות" },
@@ -135,9 +136,14 @@ const DashboardNav = ({
             <div key={group} className="mb-1">
               <button
                 onClick={() => toggleGroup(group)}
-                className="w-full flex items-center justify-between px-3 pt-3 pb-1.5 text-[11px] font-semibold tracking-wider text-muted-foreground/70 hover:text-foreground transition-colors"
+                className={cn(
+                  "w-full flex items-center justify-between px-3 pt-3 pb-1.5 text-[11px] font-semibold tracking-wider transition-colors",
+                  group === "חנות פיצ'רים"
+                    ? "text-primary hover:text-primary/80"
+                    : "text-muted-foreground/70 hover:text-foreground"
+                )}
               >
-                <span>{group}</span>
+                <span className={group === "חנות פיצ'רים" ? "font-bold text-[12px]" : ""}>{group}</span>
                 <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open ? "" : "-rotate-90")} />
               </button>
               {open && groupItems.map((item) => {
@@ -162,14 +168,18 @@ const DashboardNav = ({
                     onClick={() => onViewChange(item.id)}
                     className={cn(
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-right relative",
-                      isActive
+                      item.id === "upgrades"
+                        ? isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-primary/10 text-primary hover:bg-primary/20 font-semibold"
+                        : isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
                     <Icon className="h-5 w-5 flex-shrink-0" />
                     <span>{item.label}</span>
-                    {item.premium && (
+                    {item.premium && item.id !== "upgrades" && (
                       <span className="mr-auto px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded">
                         פרימיום
                       </span>
