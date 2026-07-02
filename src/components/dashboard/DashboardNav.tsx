@@ -51,11 +51,11 @@ const navItems: {
 
   // שיווק
   { id: "campaigns", label: "פרסום באתר", icon: Megaphone, group: "שיווק" },
+  { id: "about", label: "אודות", icon: Info, group: "שיווק" },
 
   // הגדרות
   { id: "settings", label: "פרטי העסק", shortLabel: "הגדרות", icon: Settings, group: "הגדרות" },
   { id: "subscription", label: "התוכנית שלי", icon: Crown, group: "הגדרות" },
-  { id: "about", label: "אודות", icon: Info, group: "הגדרות" },
   { id: "legal", label: "מסמכים משפטיים", shortLabel: "משפטי", icon: ScrollText, group: "הגדרות" },
 ];
 
