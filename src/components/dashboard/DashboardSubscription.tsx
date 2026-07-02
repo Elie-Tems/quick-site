@@ -683,11 +683,11 @@ const DashboardSubscription = () => {
               <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
                 <AlertDialogTrigger asChild>
                   <Button
-                    variant="destructive"
-                    className="w-full justify-start gap-2"
+                    variant="ghost"
+                    className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive hover:bg-transparent text-sm"
                     disabled={isCancelling}
                   >
-                    <XCircle className="h-4 w-4" />
+                    <XCircle className="h-3.5 w-3.5" />
                     ביטול מנוי
                   </Button>
                 </AlertDialogTrigger>
