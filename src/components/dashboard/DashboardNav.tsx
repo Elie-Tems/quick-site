@@ -47,7 +47,7 @@ const navItems: {
   { id: "payments", label: "סליקה", icon: CreditCard, group: "ניהול מכירות" },
 
   // שיווק
-  { id: "campaigns", label: "קמפיינים", icon: Megaphone, group: "שיווק" },
+  { id: "campaigns", label: "פרסום באתר", icon: Megaphone, group: "שיווק" },
   { id: "tracking", label: "תגי שיווק ומעקב", shortLabel: "תגי מעקב", icon: BarChart3, group: "שיווק" },
   { id: "reviews", label: "ביקורות Google", shortLabel: "ביקורות", icon: Star, group: "שיווק" },
   { id: "insights", label: "אנליטיקה", icon: BarChart3, group: "שיווק" },
