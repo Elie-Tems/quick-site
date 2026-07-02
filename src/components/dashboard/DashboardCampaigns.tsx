@@ -50,7 +50,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
     description: '',
     start_date: '',
     end_date: '',
-    display_mode: 'replace' as 'replace' | 'add' | 'prioritize',
+    display_mode: 'replace' as 'replace' | 'add' | 'prioritize' | 'all',
     is_active: false,
     popup_enabled: false,
     popup_title: '',
@@ -227,9 +227,10 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
   };
 
   const displayModeLabels = {
-    replace: 'מחליף לגמרי',
-    add: 'מוסיף על הקיים',
-    prioritize: 'מציג קודם',
+    replace: 'ראש הדף',
+    add: 'בין המוצרים',
+    prioritize: 'מעל המוצרים',
+    all: 'כל המיקומים',
   };
 
   // Form View
@@ -599,7 +600,7 @@ interface CampaignFormData {
   description: string;
   start_date: string;
   end_date: string;
-  display_mode: 'replace' | 'add' | 'prioritize';
+  display_mode: 'replace' | 'add' | 'prioritize' | 'all';
   is_active: boolean;
   popup_enabled: boolean;
   popup_title: string;
@@ -705,7 +706,7 @@ const CampaignDetailsForm = ({ formData, setFormData, onSubmit, onCancel, isEdit
 
       <div className="space-y-3">
         <Label>מיקום הפרסום באתר</Label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {([
             {
               value: 'replace',
@@ -749,6 +750,22 @@ const CampaignDetailsForm = ({ formData, setFormData, onSubmit, onCancel, isEdit
                   </div>
                   <div className="grid grid-cols-3 gap-0.5">
                     {[0,1,2].map(i => <div key={i} className="h-2 rounded-sm bg-muted" />)}
+                  </div>
+                </div>
+              ),
+            },
+            {
+              value: 'all',
+              label: 'כל הבאנרים',
+              desc: 'בכל המיקומים',
+              diagram: (
+                <div className="w-full space-y-0.5">
+                  <div className="h-2 w-full rounded-sm bg-primary/70" />
+                  <div className="h-2 w-full rounded-sm bg-primary/50" />
+                  <div className="grid grid-cols-3 gap-0.5">
+                    <div className="h-2 rounded-sm bg-muted" />
+                    <div className="h-2 rounded-sm bg-primary/30" />
+                    <div className="h-2 rounded-sm bg-muted" />
                   </div>
                 </div>
               ),
