@@ -141,31 +141,88 @@ const DashboardReviews = ({ businessId }: Props) => {
       </div>
 
       {!paid ? (
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-400/5 to-transparent p-8 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-amber-400/10 flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-7 h-7 text-amber-500" />
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+
+          {/* Mock storefront preview */}
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            {/* browser bar */}
+            <div className="flex items-center gap-1.5 px-3 py-2 bg-muted/50 border-b border-border">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-400/60" />
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/60" />
+              <div className="w-2.5 h-2.5 rounded-full bg-green-400/60" />
+              <div className="flex-1 mx-3 h-5 rounded bg-background text-[10px] text-muted-foreground flex items-center px-2">
+                החנות שלך · siango.app
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4" dir="rtl">
+              {/* section header */}
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">מה אומרים עלינו</p>
+                <div className="flex items-center justify-center gap-2">
+                  <div className="flex">
+                    {[1,2,3,4,5].map(i => <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />)}
+                  </div>
+                  <span className="font-bold text-foreground text-lg">4.9</span>
+                  <span className="text-sm text-muted-foreground">(127 ביקורות בגוגל)</span>
+                </div>
+              </div>
+
+              {/* mock review cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { name: "דנה כ.", text: "שירות מדהים, המוצרים הגיעו מהר ובאריזה יפה. ממליצה בחום!", stars: 5 },
+                  { name: "יוסי מ.", text: "קניתי כבר פעמיים ובכל פעם חוויה מצוינת. האיכות גבוהה והמחיר הוגן.", stars: 5 },
+                  { name: "רונית ש.", text: "המוצר בדיוק כמו בתמונה. שירות לקוחות זמין ונעים, תודה!", stars: 5 },
+                ].map((r, i) => (
+                  <div key={i} className="rounded-xl border border-border bg-background p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center text-xs font-bold text-primary">
+                        {r.name[0]}
+                      </div>
+                      <div>
+                        <div className="text-xs font-semibold text-foreground">{r.name}</div>
+                        <div className="flex">
+                          {[1,2,3,4,5].map(s => <Star key={s} className="w-3 h-3 fill-amber-400 text-amber-400" />)}
+                        </div>
+                      </div>
+                      <div className="mr-auto">
+                        <svg className="w-4 h-4 opacity-40" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{r.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-2">⭐ הציגו את ביקורות Google שלכם בדף הבית</h2>
-          <p className="text-muted-foreground max-w-lg mx-auto mb-2">
-            יש לכם כרטיס עסק בגוגל עם ביקורות? חברו אותו והדירוג + הביקורות יופיעו יפה בחנות - בונה אמון ומגדיל מכירות.
-          </p>
-          <p className="text-sm text-foreground/80 max-w-lg mx-auto mb-6">
-            <b>כל מה שצריך:</b> רק שם העסק שלכם. אנחנו נמצא אותו בשבילכם - בלי קוד, בלי הגדרות טכניות.
-          </p>
-          <div className="text-4xl font-extrabold text-foreground mb-1">
-            ₪{REVIEWS_ADDON_PRICE_ILS} <span className="text-base font-medium text-muted-foreground">/ חודש + מע"מ</span>
+
+          {/* paywall card */}
+          <div className="rounded-2xl border border-amber-400/30 bg-amber-400/5 p-6 flex flex-col sm:flex-row items-center gap-6">
+            <div className="flex-1 text-right space-y-2">
+              <h2 className="text-lg font-bold text-foreground">הביקורות שלכם בגוגל - ישר בחנות</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                מחברים את כרטיס Google Business שלכם ואנחנו מציגים את הדירוג + הביקורות בדף הבית של החנות.<br />
+                כל מה שצריך: <b>שם העסק</b>. אנחנו מוצאים אותו - בלי קוד.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                אין לכם עדיין כרטיס בגוגל?{" "}
+                <a href="https://www.google.com/business/" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                  פתחו Google Business חינם (5 דקות)
+                </a>
+              </p>
+            </div>
+            <div className="text-center shrink-0 space-y-3">
+              <div>
+                <div className="text-3xl font-extrabold text-foreground">₪{REVIEWS_ADDON_PRICE_ILS}</div>
+                <div className="text-xs text-muted-foreground">לחודש + מע"מ</div>
+              </div>
+              <button onClick={startPayment}
+                className="inline-flex items-center gap-2 rounded-xl bg-amber-500 text-white font-bold px-6 h-11 hover:bg-amber-600 transition-colors whitespace-nowrap">
+                <Star className="w-4 h-4 fill-white" /> הפעל עכשיו
+              </button>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground mb-6">
-            אין לכם עדיין כרטיס עסק בגוגל?{" "}
-            <a href="https://www.google.com/business/" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-              פתחו כרטיס Google Business (חינם, 5 דקות)
-            </a>
-          </p>
-          <button onClick={startPayment}
-            className="inline-flex items-center gap-2 rounded-2xl bg-primary text-primary-foreground font-bold px-8 h-12 hover:opacity-90 transition-opacity">
-            <Star className="w-5 h-5" /> שדרגו עכשיו · ₪{REVIEWS_ADDON_PRICE_ILS}/חודש + מע"מ
-          </button>
         </motion.div>
       ) : !connected ? (
         /* Paid, not connected yet - find the business by name */
