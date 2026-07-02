@@ -136,7 +136,7 @@ const Dashboard = () => {
   });
   const [productsCategoryFilter, setProductsCategoryFilter] = useState<string | null>(null);
   // Products hub: list / categories / sales are now tabs inside one screen.
-  const [productsTab, setProductsTab] = useState<'list' | 'categories' | 'sales'>('list');
+  const [productsTab, setProductsTab] = useState<'list' | 'categories'>('list');
   // Design hub: template / banners are tabs inside one screen.
   const [designTab, setDesignTab] = useState<'template' | 'banners'>('template');
   // Analytics hub: insights / traffic / ad-budget are tabs inside one screen.
@@ -144,7 +144,6 @@ const Dashboard = () => {
   // Redirect legacy nav targets into the matching hub tab.
   useEffect(() => {
     if (currentView === 'categories') { setProductsTab('categories'); setCurrentView('products'); }
-    else if (currentView === 'sales') { setProductsTab('sales'); setCurrentView('products'); }
     else if (currentView === 'banners') { setDesignTab('banners'); setCurrentView('design'); }
     else if (currentView === 'traffic') { setAnalyticsTab('traffic'); setCurrentView('insights'); }
     else if (currentView === 'ad-budget') { setAnalyticsTab('ad-budget'); setCurrentView('insights'); }
@@ -497,12 +496,11 @@ const Dashboard = () => {
       case 'sales':
         return (
           <div className="space-y-4">
-            {/* One product hub: list / categories / sales as tabs */}
+            {/* One product hub: list / categories as tabs */}
             <div className="flex gap-1 border-b border-border overflow-x-auto">
               {([
                 { id: 'list', label: 'רשימת מוצרים' },
                 { id: 'categories', label: 'קטגוריות' },
-                { id: 'sales', label: 'מבצעים ומובילים' },
               ] as const).map((t) => (
                 <button
                   key={t.id}
@@ -549,22 +547,23 @@ const Dashboard = () => {
               />
             )}
 
-            {productsTab === 'sales' && (
-              <DashboardSales
-                products={products.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  price: p.price,
-                  sale_price: (p as any).sale_price,
-                  is_on_sale: (p as any).is_on_sale,
-                  is_hot: (p as any).is_hot,
-                  imageUrl: p.imageUrl,
-                }))}
-                onProductUpdate={handleSaleUpdate}
-                isLoading={productsLoading}
-              />
-            )}
           </div>
+        );
+      case 'discounts':
+        return (
+          <DashboardSales
+            products={products.map((p) => ({
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              sale_price: (p as any).sale_price,
+              is_on_sale: (p as any).is_on_sale,
+              is_hot: (p as any).is_hot,
+              imageUrl: p.imageUrl,
+            }))}
+            onProductUpdate={handleSaleUpdate}
+            isLoading={productsLoading}
+          />
         );
       case 'orders':
         return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} />;
