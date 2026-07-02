@@ -45,6 +45,12 @@ const DashboardUpgrades = ({ onNavigate }: Props) => {
       bullets: ["מדידת המרות מדויקת", "קהלי ריטרגטינג", "כל הפלטפורמות"], show: true,
     },
     {
+      id: "insights" as DashboardView, icon: BarChart3, color: "#0891b2",
+      title: "אנליטיקה", price: '₪29/חודש + מע"מ',
+      pitch: "מי הלקוחות שלך, מאיפה הם מגיעים, ואיפה אפשר להשתפר. הנתונים שמאפשרים לקבל החלטות מבוססות - לא לנחש.",
+      bullets: ["כמות מבקרים ומגמות לאורך זמן", "מקורות הגעה - גוגל, ישיר, רשתות", "תובנות לשיפור המכירות"], show: true,
+    },
+    {
       id: "ai-images" as DashboardView, icon: Wand2, color: "#7c3aed",
       title: "תמונות AI", price: "לפי חבילה",
       pitch: "תמונות מקצועיות לחנות ולמוצרים, נוצרות ב-AI תוך שניות - בלי צלם ובלי מעצב.",

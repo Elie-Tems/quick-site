@@ -50,10 +50,9 @@ const navItems: {
   { id: "campaigns", label: "פרסום באתר", icon: Megaphone, group: "שיווק" },
   { id: "tracking", label: "תגי שיווק ומעקב", shortLabel: "תגי מעקב", icon: BarChart3, group: "שיווק" },
   { id: "reviews", label: "ביקורות Google", shortLabel: "ביקורות", icon: Star, group: "שיווק" },
-  { id: "insights", label: "אנליטיקה", icon: BarChart3, group: "שיווק" },
-
   // הרחבות - מודולים מתקדמים (חלקם בתשלום / עם מצב דמו)
   { id: "customers", label: "לקוחות / CRM", shortLabel: "CRM", icon: Users, premium: true, group: "הרחבות" },
+  { id: "insights", label: "אנליטיקה", icon: BarChart3, premium: true, group: "הרחבות" },
   { id: "domains", label: "דומיין", icon: Globe, group: "הרחבות" },
   { id: "whatsapp", label: "וואטסאפ", icon: MessageCircle, group: "הרחבות" },
   { id: "email", label: "מייל עסקי", icon: AtSign, group: "הרחבות" },
