@@ -2,10 +2,12 @@ import { useEffect, useState, useCallback } from "react";
 import { gtm } from "@/lib/gtm";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, useSearchParams, useLocation, Link } from "react-router-dom";
-import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight } from "lucide-react";
+import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight, RefreshCw, XCircle, Trash2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { VAT_RATE, withVatTotal } from "@/lib/pricingConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyBusiness } from "@/hooks/useBusiness";
@@ -42,9 +44,11 @@ const PublishPayment = () => {
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid' | 'completed' | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [approvalNum, setApprovalNum] = useState<string>("");
-  // Two-stage flow: show the finished store first ("here's your store!"), then
-  // reveal the payment when the merchant clicks "publish".
+  // Three-stage flow: (1) show the finished store first ("here's your store!"),
+  // (2) a clear terms-of-charge confirmation, (3) the actual payment iframe.
   const [showPayment, setShowPayment] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [agreedTerms, setAgreedTerms] = useState(false);
 
   const fee = getPublishFeeIls();
   const basePaymentUrl = (import.meta.env.VITE_ICOUNT_PAYMENT_BASE_URL || "").trim();
@@ -359,6 +363,102 @@ const PublishPayment = () => {
     );
   }
 
+  // ── Stage 2: crystal-clear terms of the recurring charge, before payment ──
+  if (!confirmed) {
+    const gross = withVatTotal(fee);
+    const vatPct = Math.round(VAT_RATE * 100);
+    const terms = [
+      {
+        icon: RefreshCw,
+        title: "מנוי חודשי מתחדש",
+        body: `החיוב הוא הוראת קבע חודשית של ₪${fee} + מע"מ (סה"כ כ-₪${gross} כולל מע"מ ${vatPct}%), שמתחדשת אוטומטית בכל חודש כל עוד החנות מפורסמת.`,
+      },
+      {
+        icon: XCircle,
+        title: "ביטול בכל עת - החיוב נעצר מיד",
+        body: 'אפשר לבטל בכל רגע דרך "התוכנית שלי" בדשבורד. ברגע הביטול החיוב החודשי נפסק - אין התחייבות ואין קנס.',
+      },
+      {
+        icon: Trash2,
+        title: "מחיקת החנות מבטלת את המנוי",
+        body: "אם תמחקו את החנות, המנוי מתבטל אוטומטית ולא תחויבו יותר.",
+      },
+      {
+        icon: ShieldCheck,
+        title: "תשלום מאובטח דרך iCount",
+        body: "הסליקה מתבצעת בעמוד המאובטח של חברת הסליקה (iCount). סיאנגו לא רואה ולא שומרת את פרטי כרטיס האשראי שלכם.",
+      },
+    ];
+    return (
+      <>
+        <SEOHead title="אישור תשלום | סיאנגו" noindex={true} />
+        <div className="min-h-screen bg-surface-1 flex flex-col">
+          <div className="w-full max-w-2xl mx-auto px-4 py-8 flex flex-col gap-6 flex-1">
+            <div className="flex items-center justify-between">
+              <Button variant="ghost" onClick={() => setShowPayment(false)} className="gap-2">
+                <ArrowRight className="w-4 h-4" />
+                חזרה לתצוגה
+              </Button>
+              <div className="w-[90px]" />
+            </div>
+
+            <div className="text-center space-y-2">
+              <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-1">
+                <CreditCard className="w-7 h-7 text-primary" />
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">רגע לפני שמפרסמים</h1>
+              <p className="text-muted-foreground">הנה בדיוק על מה אתם משלמים - חשוב לנו שיהיה ברור.</p>
+            </div>
+
+            <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-5 text-center">
+              <p className="text-3xl font-extrabold text-foreground">₪{gross} <span className="text-lg font-semibold text-muted-foreground">לחודש</span></p>
+              <p className="text-sm text-muted-foreground mt-1">₪{fee} + מע"מ {vatPct}% · חיוב חודשי מתחדש</p>
+            </div>
+
+            <div className="space-y-3">
+              {terms.map(({ icon: Icon, title, body }) => (
+                <div key={title} className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
+                  <div className="mt-0.5 shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground">{title}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <label className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 cursor-pointer select-none">
+              <Checkbox
+                checked={agreedTerms}
+                onCheckedChange={(v) => setAgreedTerms(v === true)}
+                className="mt-0.5"
+              />
+              <span className="text-sm text-foreground">
+                קראתי והבנתי - אני מאשר/ת חיוב חודשי מתחדש של ₪{gross} כולל מע"מ, שאפשר לבטל בכל עת.
+              </span>
+            </label>
+
+            <Button
+              size="lg"
+              variant="hero"
+              disabled={!agreedTerms}
+              onClick={() => setConfirmed(true)}
+              className="gap-2 text-base"
+            >
+              אישור - המשך לתשלום
+              <ArrowRight className="w-5 h-5 rotate-180" />
+            </Button>
+            <p className="text-center text-xs text-muted-foreground -mt-2">
+              תעברו לעמוד הסליקה המאובטח של iCount רק אחרי האישור.
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <SEOHead title="פרסום אתר | סיאנגו" noindex={true} />
@@ -366,9 +466,9 @@ const PublishPayment = () => {
       <div className="w-full px-4 py-8 flex flex-col gap-6 flex-1">
         <div className="w-full max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <Button variant="ghost" onClick={() => setShowPayment(false)} className="gap-2">
+            <Button variant="ghost" onClick={() => setConfirmed(false)} className="gap-2">
               <ArrowRight className="w-4 h-4" />
-              חזרה לתצוגה
+              חזרה
             </Button>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">תשלום לפרסום האתר</h1>
             <div className="w-[120px]"></div>

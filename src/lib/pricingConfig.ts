@@ -10,6 +10,12 @@ export const VAT_DISCLOSURE = 'המחירים אינם כוללים מע"מ. מ�
 /** Build a price label with the VAT suffix, e.g. withVat("₪69") => "₪69 + מע\"מ". */
 export const withVat = (label: string): string => `${label} ${VAT_SUFFIX}`;
 
+/** Current statutory VAT rate in Israel (18% since Jan 2025). */
+export const VAT_RATE = 0.18;
+/** Gross (VAT-inclusive) amount for a pre-VAT price, rounded to agorot. */
+export const withVatTotal = (netIls: number): number =>
+  Math.round(netIls * (1 + VAT_RATE) * 100) / 100;
+
 export interface PlanConfig {
   id: string;
   name: string;
