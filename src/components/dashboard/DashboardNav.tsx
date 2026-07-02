@@ -18,7 +18,7 @@ interface DashboardNavProps {
 
 // Sidebar groups (desktop shows these as section headers). Order here = display order.
 // Redesigned IA: 6 focused groups instead of the old sprawling list.
-const NAV_GROUPS = ["בית", "חנות פיצ'רים", "החנות שלי", "ניהול מכירות", "שיווק", "הגדרות"] as const;
+const NAV_GROUPS = ["בית", "חנות פיצ'רים", "עריכה ועיצוב", "ניהול מכירות", "שיווק", "הגדרות"] as const;
 type NavGroup = (typeof NAV_GROUPS)[number];
 
 const navItems: {
@@ -32,13 +32,13 @@ const navItems: {
   // בית
   { id: "home", label: "סקירה", icon: LayoutDashboard, group: "בית" },
 
-  // החנות שלי - כל מה שבונה את תוכן ומראה החנות
+  // עריכה ועיצוב - כל מה שבונה את תוכן ומראה החנות
   // (קטגוריות + מבצעים הם עכשיו טאבים בתוך "מוצרים")
-  { id: "products", label: "מוצרים", icon: Package, group: "החנות שלי" },
-  { id: "design", label: "עיצוב", icon: Palette, group: "החנות שלי" },
-  { id: "ai-images", label: "תמונות AI", icon: ImagePlus, premium: true, group: "החנות שלי" },
-  { id: "ai-generated-images", label: "גלריית תמונות", shortLabel: "גלריה", icon: Image, group: "החנות שלי" },
-  { id: "preview", label: "תצוגה מקדימה", shortLabel: "תצוגה", icon: Eye, group: "החנות שלי" },
+  { id: "products", label: "מוצרים", icon: Package, group: "עריכה ועיצוב" },
+  { id: "design", label: "עיצוב", icon: Palette, group: "עריכה ועיצוב" },
+  { id: "ai-images", label: "תמונות AI", icon: ImagePlus, premium: true, group: "עריכה ועיצוב" },
+  { id: "ai-generated-images", label: "גלריית תמונות", shortLabel: "גלריה", icon: Image, group: "עריכה ועיצוב" },
+  { id: "preview", label: "תצוגה מקדימה", shortLabel: "תצוגה", icon: Eye, group: "עריכה ועיצוב" },
 
   // ניהול מכירות
   { id: "orders", label: "הזמנות", icon: ShoppingCart, group: "ניהול מכירות" },
