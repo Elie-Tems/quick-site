@@ -704,34 +704,77 @@ const CampaignDetailsForm = ({ formData, setFormData, onSubmit, onCancel, isEdit
       </div>
 
       <div className="space-y-3">
-        <Label>התנהגות בחנות כשהקמפיין פעיל</Label>
-        <RadioGroup
-          value={formData.display_mode}
-          onValueChange={(value) => setFormData({ ...formData, display_mode: value as any })}
-          className="space-y-2"
-        >
-          <div className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer">
-            <RadioGroupItem value="replace" id="replace" className="mt-0.5" />
-            <label htmlFor="replace" className="cursor-pointer flex-1">
-              <div className="font-medium">מחליף לגמרי</div>
-              <div className="text-sm text-muted-foreground">רק תוכן הקמפיין מוצג בחנות</div>
-            </label>
-          </div>
-          <div className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer">
-            <RadioGroupItem value="add" id="add" className="mt-0.5" />
-            <label htmlFor="add" className="cursor-pointer flex-1">
-              <div className="font-medium">מוסיף על הקיים</div>
-              <div className="text-sm text-muted-foreground">תוכן הקמפיין מצטרף למוצרים הרגילים</div>
-            </label>
-          </div>
-          <div className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer">
-            <RadioGroupItem value="prioritize" id="prioritize" className="mt-0.5" />
-            <label htmlFor="prioritize" className="cursor-pointer flex-1">
-              <div className="font-medium">מציג קודם</div>
-              <div className="text-sm text-muted-foreground">תוכן הקמפיין מוצג ראשון, ואז שאר המוצרים</div>
-            </label>
-          </div>
-        </RadioGroup>
+        <Label>מיקום הפרסום באתר</Label>
+        <div className="grid grid-cols-3 gap-2">
+          {([
+            {
+              value: 'replace',
+              label: 'ראש הדף',
+              desc: 'באנר מעל הכל',
+              diagram: (
+                <div className="w-full space-y-0.5">
+                  <div className="h-2.5 w-full rounded-sm bg-primary/70" />
+                  <div className="h-1 w-full rounded-sm bg-muted" />
+                  <div className="grid grid-cols-3 gap-0.5">
+                    {[0,1,2].map(i => <div key={i} className="h-2 rounded-sm bg-muted" />)}
+                  </div>
+                </div>
+              ),
+            },
+            {
+              value: 'prioritize',
+              label: 'מעל המוצרים',
+              desc: 'אחרי ה-hero',
+              diagram: (
+                <div className="w-full space-y-0.5">
+                  <div className="h-1 w-full rounded-sm bg-muted" />
+                  <div className="h-2.5 w-full rounded-sm bg-primary/70" />
+                  <div className="grid grid-cols-3 gap-0.5">
+                    {[0,1,2].map(i => <div key={i} className="h-2 rounded-sm bg-muted" />)}
+                  </div>
+                </div>
+              ),
+            },
+            {
+              value: 'add',
+              label: 'בין המוצרים',
+              desc: 'משולב בגריד',
+              diagram: (
+                <div className="w-full space-y-0.5">
+                  <div className="h-1 w-full rounded-sm bg-muted" />
+                  <div className="grid grid-cols-3 gap-0.5">
+                    <div className="h-2 rounded-sm bg-muted" />
+                    <div className="h-2 rounded-sm bg-primary/70" />
+                    <div className="h-2 rounded-sm bg-muted" />
+                  </div>
+                  <div className="grid grid-cols-3 gap-0.5">
+                    {[0,1,2].map(i => <div key={i} className="h-2 rounded-sm bg-muted" />)}
+                  </div>
+                </div>
+              ),
+            },
+          ] as const).map(({ value, label, desc, diagram }) => {
+            const active = formData.display_mode === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFormData({ ...formData, display_mode: value })}
+                className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all text-center ${
+                  active
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/40 bg-background'
+                }`}
+              >
+                <div className="w-full px-1">{diagram}</div>
+                <div>
+                  <div className={`text-xs font-semibold ${active ? 'text-primary' : 'text-foreground'}`}>{label}</div>
+                  <div className="text-[10px] text-muted-foreground">{desc}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
