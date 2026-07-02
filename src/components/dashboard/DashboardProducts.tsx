@@ -810,6 +810,7 @@ const DashboardProducts = ({
                       productDescription={formData.description}
                       productId={editingProduct?.id}
                       currentImageUrl={formData.imageUrl}
+                      onBuyCredits={onNavigateToAI}
                     />
                   )}
                 </div>

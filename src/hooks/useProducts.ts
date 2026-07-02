@@ -138,7 +138,14 @@ export const useCreateProduct = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['products', data.business_id] });
+      queryClient.invalidateQueries({ queryKey: ['business-usage', data.business_id] });
       toast.success('המוצר נוסף בהצלחה!');
+      // Recalculate stored image count so quota meter stays in sync
+      if (data.image_url) {
+        supabase.rpc('recalculate_business_usage', { p_business_id: data.business_id }).then(() => {
+          queryClient.invalidateQueries({ queryKey: ['business-usage', data.business_id] });
+        });
+      }
     },
     onError: (error) => {
       toast.error('שגיאה בהוספת המוצר: ' + error.message);
@@ -218,7 +225,12 @@ export const useUpdateProduct = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['products', data.business_id] });
+      queryClient.invalidateQueries({ queryKey: ['business-usage', data.business_id] });
       toast.success('המוצר עודכן בהצלחה');
+      // Recalculate stored image count so quota meter stays in sync
+      supabase.rpc('recalculate_business_usage', { p_business_id: data.business_id }).then(() => {
+        queryClient.invalidateQueries({ queryKey: ['business-usage', data.business_id] });
+      });
     },
     onError: (error) => {
       toast.error('שגיאה בעדכון המוצר: ' + error.message);

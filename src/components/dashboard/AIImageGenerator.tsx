@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Loader2, Wand2, Upload, Image as ImageIcon, Check } from "lucide-react";
+import { Loader2, Wand2, Upload, Image as ImageIcon, Check, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import {
 interface AIImageGeneratorProps {
   businessId: string;
   onImageGenerated: (imageUrl: string) => void;
+  onBuyCredits?: () => void;
   productName?: string;
   productDescription?: string;
   productId?: string;
@@ -29,8 +30,10 @@ export const AIImageGenerator = ({
   productDescription = "",
   productId,
   currentImageUrl,
+  onBuyCredits,
 }: AIImageGeneratorProps) => {
   const [mode, setMode] = useState<Mode>("text");
+  const [showNoCredits, setShowNoCredits] = useState(false);
   const { data: credits } = useAICredits(businessId);
   const creditsRemaining = credits?.credits_remaining ?? 0;
   const grantFree = useGrantFreeCredits();
@@ -60,7 +63,7 @@ export const AIImageGenerator = ({
 
   const handleGenerateText = async () => {
     if (!prompt.trim()) { toast.error("נא להזין תיאור לתמונה"); return; }
-    if (creditsRemaining < 1) { toast.error("אין לך מספיק קרדיטים. רכוש קרדיטים נוספים."); return; }
+    if (creditsRemaining < 1) { setShowNoCredits(true); return; }
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-product-image", {
@@ -102,7 +105,7 @@ export const AIImageGenerator = ({
 
   const handleGenerateStyled = async () => {
     if (!originalUrl) { toast.error("צריך תמונת מקור - השתמש בתמונת המוצר או העלה אחת"); return; }
-    if (creditsRemaining < 1) { toast.error("אין לך מספיק קרדיטים. רכוש קרדיטים נוספים."); return; }
+    if (creditsRemaining < 1) { setShowNoCredits(true); return; }
     const styleType = styleMode === "custom"
       ? "custom_prompt"
       : (productType === "fashion" && (selectedStyle === "female_model" || selectedStyle === "male_model") && selectedSkinTone
@@ -133,9 +136,25 @@ export const AIImageGenerator = ({
           <h3 className="font-semibold text-foreground">יצירת תמונה באמצעות AI</h3>
         </div>
         <span className="text-xs text-muted-foreground">
-          קרדיטים: <span className="font-semibold text-primary">{creditsRemaining}</span>
+          קרדיטים: <span className={`font-semibold ${creditsRemaining > 0 ? "text-primary" : "text-destructive"}`}>{creditsRemaining}</span>
         </span>
       </div>
+
+      {/* No-credits upgrade banner */}
+      {showNoCredits && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-4 flex items-center gap-3">
+          <Coins className="h-8 w-8 text-amber-500 shrink-0" />
+          <div className="flex-1">
+            <p className="font-semibold text-amber-800 dark:text-amber-300 text-sm">אין קרדיטים</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">רכוש חבילת קרדיטים כדי להמשיך ליצור תמונות AI</p>
+          </div>
+          {onBuyCredits && (
+            <Button size="sm" onClick={onBuyCredits} className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white border-0">
+              רכוש קרדיטים
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Mode toggle */}
       <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-xl">
