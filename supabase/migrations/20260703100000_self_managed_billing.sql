@@ -15,6 +15,10 @@
 CREATE TABLE IF NOT EXISTS public.subscription_coupons (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   code text NOT NULL,
+  -- Which paid product this coupon discounts. 'all' = any paid feature; or a
+  -- specific product key: publish | crm | whatsapp | email | domains |
+  -- ai_credits | reviews | tags. Lets us issue a coupon for ANY revenue feature.
+  scope text NOT NULL DEFAULT 'all',
   discount_type text NOT NULL CHECK (discount_type IN ('percent', 'fixed')),
   discount_value numeric NOT NULL CHECK (discount_value >= 0),
   -- first_month = discount applies to the first charge only, then full price.
@@ -65,8 +69,10 @@ FOR SELECT USING (auth.uid() = user_id OR has_role((select auth.uid()), 'admin':
 -- 3) Coupon validation (anti-enumeration): validate a code WITHOUT exposing the
 --    table. Returns the discount to apply, or valid=false. Callable by anyone.
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE OR REPLACE FUNCTION public.validate_subscription_coupon(p_code text)
-RETURNS TABLE (valid boolean, discount_type text, discount_value numeric, duration text)
+-- Validate a coupon FOR A GIVEN PAID PRODUCT (p_product; 'all' matches any).
+-- Anti-enumeration: returns only the discount to apply, never exposes the table.
+CREATE OR REPLACE FUNCTION public.validate_subscription_coupon(p_code text, p_product text DEFAULT 'all')
+RETURNS TABLE (valid boolean, discount_type text, discount_value numeric, duration text, scope text)
 LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
@@ -81,16 +87,18 @@ BEGIN
 
   IF NOT FOUND
      OR (c.valid_until IS NOT NULL AND c.valid_until < now())
-     OR (c.max_redemptions IS NOT NULL AND c.redeemed_count >= c.max_redemptions) THEN
-    RETURN QUERY SELECT false, NULL::text, NULL::numeric, NULL::text;
+     OR (c.max_redemptions IS NOT NULL AND c.redeemed_count >= c.max_redemptions)
+     -- scope gate: the coupon must be 'all' or match the product being purchased
+     OR (c.scope <> 'all' AND p_product <> 'all' AND c.scope <> p_product) THEN
+    RETURN QUERY SELECT false, NULL::text, NULL::numeric, NULL::text, NULL::text;
     RETURN;
   END IF;
 
-  RETURN QUERY SELECT true, c.discount_type, c.discount_value, c.duration;
+  RETURN QUERY SELECT true, c.discount_type, c.discount_value, c.duration, c.scope;
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION public.validate_subscription_coupon(text) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.validate_subscription_coupon(text, text) TO anon, authenticated;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 4) Billing tokens - a REFERENCE to iCount's stored card token. No card data.

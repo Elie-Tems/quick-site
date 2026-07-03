@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
   // Validate the coupon server-side (anti-enumeration RPC). Never trust the client.
   let coupon: CouponInfo | null = null;
   if (body.couponCode?.trim()) {
-    const { data: v } = await admin.rpc("validate_subscription_coupon", { p_code: body.couponCode.trim() });
+    const { data: v } = await admin.rpc("validate_subscription_coupon", { p_code: body.couponCode.trim(), p_product: "publish" });
     const row = Array.isArray(v) ? v[0] : v;
     if (row?.valid) {
       coupon = { discount_type: row.discount_type, discount_value: Number(row.discount_value), duration: row.duration };
