@@ -121,6 +121,21 @@ export function tokenInfo(ccTokenId: string | number) {
   }>("cc_storage/token_info", { cc_token_id: ccTokenId });
 }
 
+/**
+ * List a client's stored card tokens (by client_id / custom_client_id / email).
+ * iCount confirmed the cc_token_id arrives directly in the IPN; this is the
+ * proactive fallback (per iCount: use client/get_cc_tokens, NOT token_info,
+ * which needs the token id itself). Response shape varies, so callers should
+ * probe the returned list defensively.
+ */
+export function getCcTokens(client: { clientId?: string | number; customClientId?: string; email?: string }) {
+  return icountCall<Record<string, unknown>>("client/get_cc_tokens", {
+    ...(client.clientId != null ? { client_id: client.clientId } : {}),
+    ...(client.customClientId ? { custom_client_id: client.customClientId } : {}),
+    ...(client.email ? { email: client.email } : {}),
+  });
+}
+
 /** Refund a previously successful charge (edge cases / goodwill). */
 export function refundCharge(payload: Record<string, unknown>) {
   return icountCall("cc/refund", payload);

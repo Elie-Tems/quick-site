@@ -39,7 +39,7 @@
 ## מה צריך כדי להעלות לאוויר (צ'קליסט)
 1. **iCount:** להפעיל את מודול **Credit-Card Storage** (שמירת כרטיסים; יתכן חיוב נוסף).
 2. **iCount:** ליצור עמוד סליקה (paypage) עם שמירת כרטיס מופעלת + 3DS כבוי, ולקבל את ה-`paypage_id`.
-3. **לברר מול iCount:** איפה חוזר ה-`cc_token_id` אחרי תשלום ב-paypage (ב-IPN? דרך `cc_storage/token_info`?) → להתאים את `extractTokenId` ב-`billing-icount-ipn` בהתאם.
+3. ~~לברר איפה חוזר ה-`cc_token_id`~~ **נפתר (iCount, 2026-07-03):** ה-`cc_token_id` נשלח **ישירות ב-IPN** מיד עם סיום העסקה. `billing-icount-ipn` כבר קולט אותו (`extractTokenId`), + fallback יזום `client/get_cc_tokens` לפי אימייל.
 4. **Secrets ב-Supabase:** `ICOUNT_API_TOKEN` (קיים), `ICOUNT_WEBHOOK_SECRET` (קיים), `ICOUNT_PUBLISH_PAYPAGE_ID`, `PUBLISH_FEE_ILS` (אופ'), `BILLING_TEST_MODE=true` (לבדיקה).
 5. **ליישם את המיגרציות** (`20260703100000` + הקרון) ב-DB.
 6. **לפרוס** את הפונקציות (merge ל-main).

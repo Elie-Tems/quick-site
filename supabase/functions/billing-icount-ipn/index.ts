@@ -7,7 +7,7 @@
 // (?secret=). verify_jwt=false in config.toml.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { tokenInfo } from "../_shared/icount/api.ts";
+import { tokenInfo, getCcTokens } from "../_shared/icount/api.ts";
 
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type" };
 const json = (b: unknown, s = 200) =>
@@ -29,6 +29,22 @@ function extractTokenId(p: Record<string, unknown>): string | null {
   }
   const nested = p["data"] ?? p["body"];
   if (nested && typeof nested === "object") return extractTokenId(nested as Record<string, unknown>);
+  return null;
+}
+
+// Pull the newest token id out of a client/get_cc_tokens response (shape varies:
+// the list may sit under tokens/cc_tokens/data/list, items keyed cc_token_id or
+// token_id). Defensive - takes the last (usually most-recent) entry.
+function tokenIdFromList(resp: Record<string, unknown>): string | null {
+  const listKey = ["tokens", "cc_tokens", "data", "list", "items"].find(
+    (k) => Array.isArray((resp as any)[k]),
+  );
+  const arr = listKey ? ((resp as any)[listKey] as Record<string, unknown>[]) : null;
+  if (!arr?.length) return null;
+  for (const item of [...arr].reverse()) {
+    const id = item["cc_token_id"] ?? item["token_id"] ?? item["id"];
+    if (id != null && String(id).trim() !== "") return String(id);
+  }
   return null;
 }
 
@@ -72,10 +88,14 @@ Deno.serve(async (req) => {
   const userId = session.user_id as string;
   const businessId = session.business_id as string;
 
-  // Capture the stored-card token. If the IPN doesn't carry it, we still activate
-  // the first period but flag that recurring isn't armed (Moti confirms the exact
-  // field with iCount, then we backfill). Enrich last4/expiry when possible.
-  const tokenId = extractTokenId(payload);
+  // Capture the stored-card token. iCount sends cc_token_id directly in the IPN;
+  // if it's missing (field-name drift), fall back to client/get_cc_tokens by the
+  // payer email. Enrich last4/expiry when possible.
+  let tokenId = extractTokenId(payload);
+  if (!tokenId && session.email) {
+    const list = await getCcTokens({ email: session.email as string });
+    if (list.ok) tokenId = tokenIdFromList(list.data);
+  }
   let last4: string | undefined, ccType: string | undefined, expM: number | undefined, expY: number | undefined;
   if (tokenId) {
     const info = await tokenInfo(tokenId);
