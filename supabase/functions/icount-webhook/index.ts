@@ -162,12 +162,16 @@ async function handleVerifiedRequestByToken(
 
   console.log(`Payment verified for business ${session.business_id}. Auto-publishing site...`);
 
-  // Auto-publish the site after payment verification
+  // Auto-publish the site after payment verification. NOTE: use only columns that
+  // exist on `businesses` (is_published + updated_at). An earlier version also set
+  // `published_at`, which does NOT exist -> every webhook publish failed with
+  // "column published_at does not exist", so paid publishing never actually
+  // published even when the payment matched. Mirror finalize-publish's update.
   const { error: publishErr } = await supabase
     .from("businesses")
-    .update({ 
+    .update({
       is_published: true,
-      published_at: now 
+      updated_at: now
     })
     .eq("id", session.business_id);
 
