@@ -34,7 +34,7 @@ serve(async (req) => {
   // Due, active, token-billed subscriptions that aren't cancelled.
   const { data: subs, error } = await admin
     .from("subscriptions")
-    .select("id, user_id, status, cc_token_id, base_amount_ils, coupon_duration, coupon_discount_type, coupon_discount_value, billing_cycle_count, next_charge_at, cancel_type")
+    .select("id, user_id, status, cc_token_id, base_amount_ils, coupon_duration, coupon_discount_type, coupon_discount_value, billing_cycle_count, next_charge_at, cancel_type, free_months_credit")
     .eq("billing_provider", "icount_token")
     .eq("status", "active")
     .not("cc_token_id", "is", null)
@@ -43,13 +43,33 @@ serve(async (req) => {
 
   if (error) { console.error("charge-run query:", error); return new Response(JSON.stringify({ error: "query" }), { status: 500 }); }
 
-  let charged = 0, failed = 0, skipped = 0;
+  let charged = 0, failed = 0, skipped = 0, freeMonths = 0;
 
   for (const s of subs ?? []) {
     const base = Number(s.base_amount_ils);
     if (!base || !s.cc_token_id) { skipped++; continue; }
 
     const cycle = Number(s.billing_cycle_count ?? 1); // 0 was the first (IPN) charge
+
+    // Referral free month: consume a credit instead of charging. Records a ₪0
+    // "charge" (reusing the cycle idempotency key) and extends the period.
+    if (Number(s.free_months_credit ?? 0) > 0) {
+      const { error: fErr } = await admin.from("billing_charges").insert({
+        user_id: s.user_id, subscription_id: s.id, amount_ils: 0, status: "success",
+        is_test: isTest, idempotency_key: `${s.id}:cycle${cycle}`,
+        payment_description: "חודש חינם (הפניית חבר)",
+      });
+      if (fErr) { skipped++; continue; } // cycle already handled
+      await admin.from("subscriptions").update({
+        free_months_credit: Number(s.free_months_credit) - 1,
+        paid_until: new Date(nowMs + 31 * 864e5).toISOString(),
+        next_charge_at: new Date(nowMs + 30 * 864e5).toISOString(),
+        billing_cycle_count: cycle + 1,
+        last_charge_status: "free_month",
+        updated_at: nowIso,
+      }).eq("id", s.id);
+      freeMonths++; continue;
+    }
     const coupon: CouponInfo | null = s.coupon_discount_type
       ? { discount_type: s.coupon_discount_type, discount_value: Number(s.coupon_discount_value), duration: (s.coupon_duration || "forever") }
       : null;
@@ -119,6 +139,6 @@ serve(async (req) => {
     }
   }
 
-  console.log(`billing-charge-run: charged ${charged}, failed ${failed}, skipped ${skipped}, test=${isTest}`);
-  return new Response(JSON.stringify({ ok: true, charged, failed, skipped, isTest }), { status: 200, headers: { "Content-Type": "application/json" } });
+  console.log(`billing-charge-run: charged ${charged}, freeMonths ${freeMonths}, failed ${failed}, skipped ${skipped}, test=${isTest}`);
+  return new Response(JSON.stringify({ ok: true, charged, freeMonths, failed, skipped, isTest }), { status: 200, headers: { "Content-Type": "application/json" } });
 });

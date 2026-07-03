@@ -150,6 +150,33 @@ Deno.serve(async (req) => {
     }
   }
 
+  // Referral reward: if this merchant was referred, grant the REFERRER a free
+  // month (once per referred merchant - the unique referral_rewards row + the
+  // session-completed idempotency both guard against double-granting).
+  try {
+    const { data: me } = await admin.from("profiles").select("referred_by").eq("user_id", userId).maybeSingle();
+    const refCode = (me as any)?.referred_by as string | undefined;
+    if (refCode) {
+      const { data: refProf } = await admin.from("profiles").select("user_id").eq("referral_code", refCode).maybeSingle();
+      const referrerId = (refProf as any)?.user_id as string | undefined;
+      if (referrerId && referrerId !== userId) {
+        const { data: reward } = await admin.from("referral_rewards")
+          .upsert({ referrer_user_id: referrerId, referred_user_id: userId, reward_type: "free_month" },
+                  { onConflict: "referred_user_id,reward_type", ignoreDuplicates: true })
+          .select("id");
+        // Only credit when the reward row was newly created (not a duplicate).
+        if (reward && reward.length > 0) {
+          const { data: rs } = await admin.from("subscriptions").select("free_months_credit").eq("user_id", referrerId).maybeSingle();
+          await admin.from("subscriptions").upsert(
+            { user_id: referrerId, free_months_credit: (((rs as any)?.free_months_credit ?? 0) + 1), updated_at: now },
+            { onConflict: "user_id" },
+          );
+          console.log(`referral: granted free month to referrer ${referrerId} for ${userId}`);
+        }
+      }
+    }
+  } catch (e) { console.warn("referral reward failed (non-fatal):", e); }
+
   // Publish the store (service role passes the publish gate).
   await admin.from("businesses").update({ is_published: true, updated_at: now }).eq("id", businessId);
   await admin.from("publish_checkout_sessions").update({ status: "completed", payment_verified_at: now, updated_at: now }).eq("id", session.id);
