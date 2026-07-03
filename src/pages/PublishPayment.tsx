@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { gtm } from "@/lib/gtm";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, useSearchParams, useLocation, Link } from "react-router-dom";
-import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight, RefreshCw, XCircle, Trash2, ShieldCheck } from "lucide-react";
+import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight, RefreshCw, XCircle, Trash2, ShieldCheck, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
