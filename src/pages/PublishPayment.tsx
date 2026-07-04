@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { gtm } from "@/lib/gtm";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, useSearchParams, useLocation, Link } from "react-router-dom";
-import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight, RefreshCw, XCircle, Trash2, ShieldCheck, Eye } from "lucide-react";
+import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight, RefreshCw, XCircle, Trash2, ShieldCheck, Eye, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +49,12 @@ const PublishPayment = () => {
   const [showPayment, setShowPayment] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [agreedTerms, setAgreedTerms] = useState(false);
+  // Self-managed billing (iCount token) - flag-gated until tested + live.
+  const selfManaged = import.meta.env.VITE_BILLING_SELF_MANAGED === "true";
+  const [couponCode, setCouponCode] = useState("");
+  const [couponInfo, setCouponInfo] = useState<{ discount_type: string; discount_value: number; duration: string } | null>(null);
+  const [couponMsg, setCouponMsg] = useState("");
+  const [startingCheckout, setStartingCheckout] = useState(false);
 
   const fee = getPublishFeeIls();
   const basePaymentUrl = (import.meta.env.VITE_ICOUNT_PAYMENT_BASE_URL || "").trim();
@@ -287,6 +293,37 @@ const PublishPayment = () => {
     }
   };
 
+  // Validate a subscription coupon (self-managed billing) via the anti-enumeration
+  // RPC. Shows the discount; the real amount is recomputed server-side at checkout.
+  const applyCoupon = async () => {
+    const code = couponCode.trim();
+    if (!code) return;
+    const { data } = await supabase.rpc("validate_subscription_coupon" as any, { p_code: code, p_product: "publish" } as any);
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row?.valid) { setCouponInfo(row); setCouponMsg("הקופון הוחל ✓"); }
+    else { setCouponInfo(null); setCouponMsg("קוד קופון לא תקין"); }
+  };
+
+  // Confirm -> payment. Self-managed: create the iCount token sale (server injects
+  // the discounted amount) and load its sale_url into the payment iframe. Legacy:
+  // just reveal the existing checkout iframe.
+  const handleConfirm = async () => {
+    if (!selfManaged) { setConfirmed(true); return; }
+    setStartingCheckout(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("billing-create-checkout", {
+        body: { businessId: effectiveBusinessId, couponCode: couponInfo ? couponCode.trim() : undefined },
+      });
+      if (error) throw error;
+      if ((data as any)?.saleUrl) { setCheckoutUrl((data as any).saleUrl); setConfirmed(true); }
+      else throw new Error((data as any)?.error || "לא ניתן להתחיל תשלום");
+    } catch (e: unknown) {
+      toast({ title: "לא ניתן להתחיל תשלום", description: e instanceof Error ? e.message : "נסו שוב", variant: "destructive" });
+    } finally {
+      setStartingCheckout(false);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -384,6 +421,15 @@ const PublishPayment = () => {
   if (!confirmed) {
     const gross = withVatTotal(fee);
     const vatPct = Math.round(VAT_RATE * 100);
+    // Discounted price when a coupon is applied (self-managed billing). Mirrors the
+    // server-side computation; the server recomputes the real charge at checkout.
+    const discNet = couponInfo
+      ? (couponInfo.discount_type === "percent"
+          ? Math.max(0, fee * (1 - Math.min(100, couponInfo.discount_value) / 100))
+          : Math.max(0, fee - couponInfo.discount_value))
+      : fee;
+    const discGross = withVatTotal(discNet);
+    const hasDiscount = !!couponInfo && discNet < fee;
     const terms = [
       {
         icon: RefreshCw,
@@ -428,9 +474,27 @@ const PublishPayment = () => {
             </div>
 
             <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-5 text-center">
-              <p className="text-3xl font-extrabold text-foreground">₪{gross} <span className="text-lg font-semibold text-muted-foreground">לחודש</span></p>
-              <p className="text-sm text-muted-foreground mt-1">₪{fee} + מע"מ {vatPct}% · חיוב חודשי מתחדש</p>
+              <p className="text-3xl font-extrabold text-foreground">
+                ₪{discGross} <span className="text-lg font-semibold text-muted-foreground">לחודש</span>
+                {hasDiscount && <span className="text-lg font-semibold text-muted-foreground line-through mr-2">₪{gross}</span>}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {hasDiscount
+                  ? `מבצע: ${couponInfo!.discount_type === "percent" ? `${couponInfo!.discount_value}% הנחה` : `₪${couponInfo!.discount_value} הנחה`}${couponInfo!.duration === "first_month" ? " (חודש ראשון)" : ""} · כולל מע"מ`
+                  : `₪${fee} + מע"מ ${vatPct}% · חיוב חודשי מתחדש`}
+              </p>
             </div>
+
+            {selfManaged && (
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <div className="flex items-center gap-2 mb-2 text-sm font-semibold text-foreground"><Ticket className="w-4 h-4 text-primary" /> יש לכם קוד קופון?</div>
+                <div className="flex gap-2">
+                  <Input value={couponCode} onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponMsg(""); }} placeholder="קוד קופון" dir="ltr" className="flex-1" />
+                  <Button type="button" variant="outline" onClick={applyCoupon} disabled={!couponCode.trim()}>החל</Button>
+                </div>
+                {couponMsg && <p className={`text-xs mt-1.5 ${couponInfo ? "text-green-600" : "text-destructive"}`}>{couponMsg}</p>}
+              </div>
+            )}
 
             <div className="space-y-3">
               {terms.map(({ icon: Icon, title, body }) => (
@@ -460,12 +524,11 @@ const PublishPayment = () => {
             <Button
               size="lg"
               variant="hero"
-              disabled={!agreedTerms}
-              onClick={() => setConfirmed(true)}
+              disabled={!agreedTerms || startingCheckout}
+              onClick={handleConfirm}
               className="gap-2 text-base"
             >
-              אישור - המשך לתשלום
-              <ArrowRight className="w-5 h-5 rotate-180" />
+              {startingCheckout ? <><Loader2 className="w-5 h-5 animate-spin" /> מכינים תשלום...</> : <>אישור - המשך לתשלום <ArrowRight className="w-5 h-5 rotate-180" /></>}
             </Button>
             <p className="text-center text-xs text-muted-foreground -mt-2">
               תעברו לעמוד הסליקה המאובטח של iCount רק אחרי האישור.
