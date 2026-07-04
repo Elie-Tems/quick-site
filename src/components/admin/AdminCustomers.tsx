@@ -12,9 +12,11 @@ import {
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { toast } from "sonner";
+import BillingChargesPanel from "./BillingChargesPanel";
 
 interface CustomerRow {
   id: string;
+  user_id: string;
   full_name: string | null;
   email: string | null;
   phone: string | null;
@@ -191,6 +193,10 @@ function CustomerCard({ c, onResetOnboarding }: { c: CustomerRow; onResetOnboard
               </p>
             )}
           </div>
+          {/* Subscription charges + admin refund (full width) */}
+          <div className="md:col-span-3">
+            <BillingChargesPanel userId={c.user_id} />
+          </div>
         </div>
       )}
     </div>
@@ -221,7 +227,7 @@ const AdminCustomers = () => {
       const { data: profiles, error } = await supabase
         .from("profiles")
         .select(`
-          id, full_name, email, phone, created_at, onboarding_completed_at, status,
+          id, user_id, full_name, email, phone, created_at, onboarding_completed_at, status,
           businesses (
             id, business_name, slug, is_published, business_category, created_at, subscription_plan
           )
