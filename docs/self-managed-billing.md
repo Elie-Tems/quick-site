@@ -38,7 +38,7 @@
 
 ## מה צריך כדי להעלות לאוויר (צ'קליסט)
 1. **iCount:** להפעיל את מודול **Credit-Card Storage** (שמירת כרטיסים; יתכן חיוב נוסף).
-2. **iCount:** ליצור עמוד סליקה (paypage) - בלשונית **"אפשרויות"** להגדיר **"סוג עמוד סליקה" = "טוקן אשראי"** + 3DS כבוי, ולקבל את ה-`paypage_id`. (מודול שמירת הכרטיסים כבר הופעל - ₪20/חודש; נתיב: מערכת ← פיצ'רים ← שמירת כרטיסי אשראי.)
+2. ✅ **נעשה:** עמוד הסליקה "טוקן אשראי" נוצר - **"דף סליקה סיאנגו", `paypage_id = 9`** (סלאג b3761). מוגדר כברירת מחדל ב-`billing-create-checkout`. מודול שמירת הכרטיסים הופעל (₪20/חודש). *(עדיין לוודא: 3DS כבוי + הגדרת ה-IPN של העמוד ל-`billing-icount-ipn` עם הסוד - או שנשתמש ב-ipn_url מ-generate_sale.)*
 3. ~~לברר איפה חוזר ה-`cc_token_id`~~ **נפתר (iCount, 2026-07-03):** ה-`cc_token_id` נשלח **ישירות ב-IPN** מיד עם סיום העסקה. `billing-icount-ipn` כבר קולט אותו (`extractTokenId`), + fallback יזום `client/get_cc_tokens` לפי אימייל.
 4. **Secrets ב-Supabase:** `ICOUNT_API_TOKEN` (קיים), `ICOUNT_WEBHOOK_SECRET` (קיים), `ICOUNT_PUBLISH_PAYPAGE_ID`, `PUBLISH_FEE_ILS` (אופ'), `BILLING_TEST_MODE=true` (לבדיקה).
 5. **ליישם את המיגרציות** (`20260703100000` + הקרון) ב-DB.

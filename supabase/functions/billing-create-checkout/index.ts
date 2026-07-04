@@ -41,8 +41,9 @@ Deno.serve(async (req) => {
   const businessId = body.businessId?.trim();
   if (!businessId) return json({ error: "businessId required" }, 400);
 
-  const paypageId = Deno.env.get("ICOUNT_PUBLISH_PAYPAGE_ID");
-  if (!paypageId) return json({ error: "billing not configured" }, 503);
+  // iCount token-credit paypage id. Default 9 = "דף סליקה סיאנגו" (the token page
+  // Moti created; hosted slug b3761). Override via secret if it ever changes.
+  const paypageId = Deno.env.get("ICOUNT_PUBLISH_PAYPAGE_ID") || "9";
 
   const admin = createClient(url, svc);
 
