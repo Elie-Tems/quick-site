@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Building2, ShoppingCart, CreditCard,
   Gift, XCircle, TrendingUp, BarChart3, GitMerge, Users2,
   Trophy, Moon, PieChart, AlertCircle, Settings, Zap,
-  ChevronRight, Menu, X, Ticket, Handshake, Globe, Megaphone, MessageCircle, AtSign, MailX,
+  ChevronRight, Menu, X, Ticket, Handshake, Globe, Megaphone, MessageCircle, AtSign, MailX, MailCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlatformStats } from "@/hooks/useAdmin";
@@ -26,6 +26,7 @@ import AdminPaymentErrors from "./AdminPaymentErrors";
 import AdminCohortRetention from "./AdminCohortRetention";
 import AdminCustomers from "./AdminCustomers";
 import AdminSubscriptionCoupons from "./AdminSubscriptionCoupons";
+import AdminEmailLog from "./AdminEmailLog";
 import AdminPartnerEarnings from "./AdminPartnerEarnings";
 import AdminMarketplace from "./AdminMarketplace";
 import AdminDomainSettings from "./AdminDomainSettings";
@@ -41,7 +42,7 @@ type AdminView =
   | "referrals" | "cancellations" | "activity"
   | "mrr" | "funnel" | "churn" | "cohort" | "analytics"
   | "top" | "dormant" | "categories" | "payment-errors"
-  | "coupons" | "partners" | "marketing" | "whatsapp" | "whatsapp-bot" | "marketplace" | "domains" | "email-pricing" | "unsubscribes" | "settings";
+  | "coupons" | "partners" | "marketing" | "whatsapp" | "whatsapp-bot" | "marketplace" | "domains" | "email-pricing" | "unsubscribes" | "email-log" | "settings";
 
 interface NavItem {
   id: AdminView;
@@ -73,6 +74,7 @@ const NAV: NavItem[] = [
   { id: "whatsapp",       label: "וואטסאפ",           icon: MessageCircle,   group: "תקשורת ודיוור" },
   { id: "whatsapp-bot",   label: "הבוט שלנו",         icon: MessageCircle,   group: "תקשורת ודיוור" },
   { id: "unsubscribes",   label: "רשימת הסרות",      icon: MailX,           group: "תקשורת ודיוור" },
+  { id: "email-log",      label: "לוג מיילים",       icon: MailCheck,       group: "תקשורת ודיוור" },
   // הכנסות
   { id: "mrr",            label: "MRR / ARR",        icon: TrendingUp,      group: "הכנסות" },
   { id: "funnel",         label: "Funnel",            icon: GitMerge,        group: "הכנסות" },
@@ -189,6 +191,7 @@ function ViewContent({ view, stats, statsLoading }: {
     case "referrals":      return <AdminReferrals />;
     case "cancellations":  return <AdminCancellations />;
     case "coupons":        return <AdminSubscriptionCoupons />;
+    case "email-log":      return <AdminEmailLog />;
     case "partners":       return <AdminPartnerEarnings />;
     case "marketing":      return <AdminMarketing />;
     case "whatsapp":       return <AdminWhatsApp />;

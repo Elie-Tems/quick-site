@@ -195,6 +195,21 @@ serve(async (req) => {
 
     const result = await sendViaResend({ to, subject, html, fromName: sendFromName, replyTo: sendReplyTo });
 
+    // Audit trail: log every send so the admin has visibility (sent/failed now;
+    // the Resend webhook later flips this row to delivered/opened/bounced). Best
+    // effort - never fail the send because logging failed.
+    try {
+      const logDb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      await logDb.from("platform_email_log").insert({
+        email_type: type || "unknown",
+        to_email: Array.isArray(to) ? to[0] : to,
+        subject: subject ?? null,
+        status: result.ok ? "sent" : (result.skipped ? "skipped" : "failed"),
+        provider_id: result.id ?? null,
+        error: result.error ?? null,
+      });
+    } catch (_) { /* logging is best-effort */ }
+
     return new Response(JSON.stringify(result), {
       status: result.ok || result.skipped ? 200 : 502,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
