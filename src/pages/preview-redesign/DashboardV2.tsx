@@ -5,7 +5,7 @@ import {
   TrendingUp, DollarSign, Eye, Plus, Search, Bell, MoreHorizontal, ArrowUpLeft,
 } from "lucide-react";
 import {
-  AuroraBg, AppShell, Card, StatCard, Pill, BarChart, LineChart, PreviewBanner, PageHeading,
+  AuroraBg, AppShell, Card, StatCard, Pill, BarChart, LineChart, PreviewBanner, PageHeading, PreviewThemeRoot,
 } from "@/components/preview-redesign/kit";
 
 /** PREVIEW-ONLY redesigned merchant dashboard mockup. Illustrative sample data. */
@@ -40,17 +40,17 @@ const DashboardV2 = () => {
   const [active, setActive] = useState("overview");
 
   return (
-    <div className="theme-refined text-white min-h-screen">
+    <PreviewThemeRoot>
       <AuroraBg dim />
       <PreviewBanner title="דשבורד הסוחר" />
       <AppShell
         nav={NAV} active={active} onNav={setActive} storeName="בוטיק הדוגמה"
         topRight={
           <>
-            <div className="hidden sm:flex items-center gap-2 px-3 h-9 rounded-xl bg-white/5 border border-white/10 text-white/40 text-sm">
+            <div className="hidden sm:flex items-center gap-2 px-3 h-9 rounded-xl pv-surface2 border pv-border pv-muted text-sm">
               <Search className="w-4 h-4" /> חיפוש...
             </div>
-            <button className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/60 relative">
+            <button className="w-9 h-9 rounded-xl pv-surface2 border pv-border flex items-center justify-center pv-muted relative">
               <Bell className="w-4 h-4" />
               <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
             </button>
@@ -60,7 +60,6 @@ const DashboardV2 = () => {
       >
         <PageHeading title="ברוך הבא 👋" subtitle="כל ניהול המכירות במקום אחד" />
 
-        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatCard icon={DollarSign} label="הכנסות החודש" value="₪12,480" delta="18%" delay={0} />
           <StatCard icon={ShoppingBag} label="הזמנות" value="64" delta="12%" delay={0.05} />
@@ -68,13 +67,12 @@ const DashboardV2 = () => {
           <StatCard icon={TrendingUp} label="אחוז המרה" value="5.1%" delta="2%" deltaUp={false} delay={0.15} />
         </div>
 
-        {/* Charts row */}
         <div className="grid lg:grid-cols-3 gap-4 mb-6">
           <Card className="p-6 lg:col-span-2">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-display font-bold text-lg text-white">מכירות</h3>
-                <p className="text-sm text-white/40">12 החודשים האחרונים</p>
+                <h3 className="font-display font-bold text-lg pv-strong">מכירות</h3>
+                <p className="text-sm pv-muted">12 החודשים האחרונים</p>
               </div>
               <Pill tone="green"><ArrowUpLeft className="w-3 h-3" /> +18% מהחודש שעבר</Pill>
             </div>
@@ -82,15 +80,15 @@ const DashboardV2 = () => {
           </Card>
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-bold text-lg text-white">תנועה לחנות</h3>
+              <h3 className="font-display font-bold text-lg pv-strong">תנועה לחנות</h3>
               <Pill tone="primary">בזמן אמת</Pill>
             </div>
             <LineChart data={VISITS} />
             <div className="mt-4 space-y-2">
               {[["גוגל", 48], ["ישיר", 31], ["רשתות חברתיות", 21]].map(([src, pct]) => (
                 <div key={src as string}>
-                  <div className="flex justify-between text-xs text-white/60 mb-1"><span>{src}</span><span>{pct}%</span></div>
-                  <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                  <div className="flex justify-between text-xs pv-muted mb-1"><span>{src}</span><span>{pct}%</span></div>
+                  <div className="h-1.5 rounded-full pv-surface2 overflow-hidden">
                     <motion.div className="h-full rounded-full bg-gradient-to-l from-primary to-emerald-400"
                       initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1 }} />
                   </div>
@@ -100,26 +98,25 @@ const DashboardV2 = () => {
           </Card>
         </div>
 
-        {/* Orders + products */}
         <div className="grid lg:grid-cols-3 gap-4">
           <Card className="p-6 lg:col-span-2">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-bold text-lg text-white">הזמנות אחרונות</h3>
-              <button className="text-sm text-primary hover:text-emerald-300">הצג הכל</button>
+              <h3 className="font-display font-bold text-lg pv-strong">הזמנות אחרונות</h3>
+              <button className="text-sm text-primary hover:opacity-80">הצג הכל</button>
             </div>
             <div className="space-y-2">
               {ORDERS.map((o, i) => (
                 <motion.div key={o.id}
                   initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-primary/30 transition-colors">
+                  className="flex items-center gap-3 p-3 rounded-2xl pv-surface border pv-border hover:border-primary/30 transition-colors">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-xs font-bold">{o.id}</div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-white truncate">{o.name}</div>
-                    <div className="text-xs text-white/40">{o.customer}</div>
+                    <div className="text-sm font-medium pv-strong truncate">{o.name}</div>
+                    <div className="text-xs pv-muted">{o.customer}</div>
                   </div>
                   <Pill tone={o.tone}>{o.status}</Pill>
-                  <div className="text-sm font-bold text-white w-16 text-left">{o.amount}</div>
-                  <MoreHorizontal className="w-4 h-4 text-white/30" />
+                  <div className="text-sm font-bold pv-strong w-16 text-left">{o.amount}</div>
+                  <MoreHorizontal className="w-4 h-4 pv-faint" />
                 </motion.div>
               ))}
             </div>
@@ -127,8 +124,8 @@ const DashboardV2 = () => {
 
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-bold text-lg text-white">מוצרים</h3>
-              <button className="inline-flex items-center gap-1 text-sm text-primary hover:text-emerald-300"><Plus className="w-4 h-4" /> הוסף</button>
+              <h3 className="font-display font-bold text-lg pv-strong">מוצרים</h3>
+              <button className="inline-flex items-center gap-1 text-sm text-primary hover:opacity-80"><Plus className="w-4 h-4" /> הוסף</button>
             </div>
             <div className="space-y-3">
               {PRODUCTS.map((p, i) => (
@@ -137,8 +134,8 @@ const DashboardV2 = () => {
                   className="flex items-center gap-3">
                   <img src={p.img} alt="" className="w-11 h-11 rounded-xl object-cover" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-white truncate">{p.name}</div>
-                    <div className="text-xs text-white/40">{p.stock} במלאי</div>
+                    <div className="text-sm pv-strong truncate">{p.name}</div>
+                    <div className="text-xs pv-muted">{p.stock} במלאי</div>
                   </div>
                   <div className="text-sm font-bold text-primary">{p.price}</div>
                 </motion.div>
@@ -147,7 +144,7 @@ const DashboardV2 = () => {
           </Card>
         </div>
       </AppShell>
-    </div>
+    </PreviewThemeRoot>
   );
 };
 

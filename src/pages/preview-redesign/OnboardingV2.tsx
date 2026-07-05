@@ -4,7 +4,7 @@ import {
   Store, Palette, Package, CreditCard, Rocket, Check, ArrowLeft, ArrowRight,
   Upload, Sparkles,
 } from "lucide-react";
-import { AuroraBg, Card, PreviewBanner } from "@/components/preview-redesign/kit";
+import { AuroraBg, Card, PreviewBanner, PreviewThemeRoot } from "@/components/preview-redesign/kit";
 
 /** PREVIEW-ONLY redesigned onboarding wizard mockup. No data saved. */
 
@@ -18,9 +18,9 @@ const STEPS = [
 
 const Field = ({ label, placeholder, value }: { label: string; placeholder?: string; value?: string }) => (
   <div className="space-y-1.5">
-    <label className="text-sm font-medium text-white/80">{label}</label>
-    <div className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white/90 focus-within:border-primary/40 transition-colors">
-      {value || <span className="text-white/30">{placeholder}</span>}
+    <label className="text-sm font-medium pv-text">{label}</label>
+    <div className="w-full rounded-xl pv-surface2 border pv-border px-4 py-3 text-sm focus-within:border-primary/40 transition-colors">
+      {value ? <span className="pv-text">{value}</span> : <span className="pv-faint">{placeholder}</span>}
     </div>
   </div>
 );
@@ -38,7 +38,7 @@ const OnboardingV2 = () => {
   const pct = (step / STEPS.length) * 100;
 
   return (
-    <div className="theme-refined text-white min-h-screen">
+    <PreviewThemeRoot>
       <AuroraBg />
       <PreviewBanner title="הקמת חנות (Onboarding)" />
 
@@ -56,18 +56,18 @@ const OnboardingV2 = () => {
                     className={`w-11 h-11 rounded-2xl flex items-center justify-center border transition-colors ${
                       done ? "bg-primary border-primary text-white"
                         : on ? "bg-primary/15 border-primary/50 text-primary"
-                        : "bg-white/5 border-white/10 text-white/30"
+                        : "pv-surface2 pv-border pv-faint"
                     }`}
                   >
                     {done ? <Check className="w-5 h-5" /> : <s.icon className="w-5 h-5" />}
                   </motion.div>
-                  <span className={`text-[11px] md:text-xs text-center ${on ? "text-primary font-medium" : "text-white/40"}`}>{s.label}</span>
+                  <span className={`text-[11px] md:text-xs text-center ${on ? "text-primary font-medium" : "pv-muted"}`}>{s.label}</span>
                 </div>
               );
             })}
           </div>
-          <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-            <motion.div className="h-full rounded-full bg-gradient-to-l from-primary via-emerald-400 to-lime-300"
+          <div className="h-1.5 rounded-full pv-surface2 overflow-hidden">
+            <motion.div className="h-full rounded-full bg-gradient-to-l from-primary via-emerald-400 to-lime-500"
               animate={{ width: `${pct}%` }} transition={{ duration: 0.5 }} />
           </div>
         </div>
@@ -81,8 +81,8 @@ const OnboardingV2 = () => {
               {step === 1 && (
                 <div className="space-y-5">
                   <div>
-                    <h2 className="text-2xl font-display font-bold text-white mb-1">קצת על העסק</h2>
-                    <p className="text-white/50 text-sm">נתחיל מהבסיס - שם, תחום ופרטי קשר</p>
+                    <h2 className="text-2xl font-display font-bold pv-strong mb-1">קצת על העסק</h2>
+                    <p className="pv-muted text-sm">נתחיל מהבסיס - שם, תחום ופרטי קשר</p>
                   </div>
                   <Field label="שם העסק" value="בוטיק הדוגמה" />
                   <div className="grid sm:grid-cols-2 gap-4">
@@ -94,24 +94,24 @@ const OnboardingV2 = () => {
               {step === 2 && (
                 <div className="space-y-5">
                   <div>
-                    <h2 className="text-2xl font-display font-bold text-white mb-1">עיצוב ומיתוג</h2>
-                    <p className="text-white/50 text-sm">בחרו סגנון והעלו לוגו - או תנו ל-Siango לבחור</p>
+                    <h2 className="text-2xl font-display font-bold pv-strong mb-1">עיצוב ומיתוג</h2>
+                    <p className="pv-muted text-sm">בחרו סגנון והעלו לוגו - או תנו ל-Siango לבחור</p>
                   </div>
                   <motion.div
                     animate={{ borderColor: ["hsl(152 44% 41% / 0.3)", "hsl(152 44% 41% / 0.6)", "hsl(152 44% 41% / 0.3)"] }}
                     transition={{ duration: 2, repeat: Infinity }}
                     className="h-28 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 flex flex-col items-center justify-center gap-2">
                     <Upload className="w-6 h-6 text-primary" />
-                    <span className="text-sm text-white/50">גררו לוגו או לחצו להעלאה</span>
+                    <span className="text-sm pv-muted">גררו לוגו או לחצו להעלאה</span>
                   </motion.div>
                   <div>
-                    <div className="text-sm text-white/80 mb-2">סגנון עיצוב</div>
+                    <div className="text-sm pv-text mb-2">סגנון עיצוב</div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {THEMES.map((t, i) => (
                         <button key={t.name} onClick={() => setTheme(i)}
-                          className={`rounded-2xl overflow-hidden border-2 transition-all ${theme === i ? "border-primary shadow-[0_0_20px_hsl(152_44%_41%/0.4)]" : "border-white/10"}`}>
+                          className={`rounded-2xl overflow-hidden border-2 transition-all ${theme === i ? "border-primary shadow-[0_0_20px_hsl(152_44%_41%/0.4)]" : "pv-border"}`}>
                           <div className="h-14 flex" style={{ background: `linear-gradient(135deg, ${t.c[0]}, ${t.c[1]})` }} />
-                          <div className="py-2 text-xs text-white/80 bg-black/40">{t.name}</div>
+                          <div className="py-2 text-xs pv-text pv-surface2">{t.name}</div>
                         </button>
                       ))}
                     </div>
@@ -121,16 +121,16 @@ const OnboardingV2 = () => {
               {step === 3 && (
                 <div className="space-y-5">
                   <div>
-                    <h2 className="text-2xl font-display font-bold text-white mb-1">המוצרים שלי</h2>
-                    <p className="text-white/50 text-sm">הוסיפו מוצרים עם תמונה, מחיר ותיאור</p>
+                    <h2 className="text-2xl font-display font-bold pv-strong mb-1">המוצרים שלי</h2>
+                    <p className="pv-muted text-sm">הוסיפו מוצרים עם תמונה, מחיר ותיאור</p>
                   </div>
                   {[
                     { n: "שמלת קיץ פרחונית", p: "₪189", img: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=100&q=80" },
                     { n: "נעלי ספורט", p: "₪599", img: "https://images.unsplash.com/photo-1560343090-f0409e92791a?w=100&q=80" },
                   ].map((m, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.02] border border-white/10">
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-2xl pv-surface border pv-border">
                       <img src={m.img} alt="" className="w-12 h-12 rounded-xl object-cover" />
-                      <div className="flex-1 text-sm text-white">{m.n}</div>
+                      <div className="flex-1 text-sm pv-strong">{m.n}</div>
                       <div className="text-sm font-bold text-primary">{m.p}</div>
                     </div>
                   ))}
@@ -142,18 +142,18 @@ const OnboardingV2 = () => {
               {step === 4 && (
                 <div className="space-y-5">
                   <div>
-                    <h2 className="text-2xl font-display font-bold text-white mb-1">תשלומים</h2>
-                    <p className="text-white/50 text-sm">חברו סליקה עכשיו או דלגו וחברו אחר כך מהדשבורד</p>
+                    <h2 className="text-2xl font-display font-bold pv-strong mb-1">תשלומים</h2>
+                    <p className="pv-muted text-sm">חברו סליקה עכשיו או דלגו וחברו אחר כך מהדשבורד</p>
                   </div>
                   <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5 flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center"><CreditCard className="w-6 h-6 text-primary" /></div>
                     <div className="flex-1">
-                      <div className="font-bold text-white">חיבור סליקה</div>
-                      <div className="text-sm text-white/50">התשלום עובר ישירות מחברת האשראי אליכם</div>
+                      <div className="font-bold pv-strong">חיבור סליקה</div>
+                      <div className="text-sm pv-muted">התשלום עובר ישירות מחברת האשראי אליכם</div>
                     </div>
                     <span className="w-11 h-6 rounded-full bg-primary flex items-center px-0.5 justify-end"><span className="w-5 h-5 rounded-full bg-white" /></span>
                   </div>
-                  <button className="text-sm text-white/40 hover:text-white/70">דלג לעכשיו →</button>
+                  <button className="text-sm pv-muted hover:text-primary transition-colors">דלג לעכשיו →</button>
                 </div>
               )}
               {step === 5 && (
@@ -162,9 +162,9 @@ const OnboardingV2 = () => {
                     className="w-20 h-20 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center mx-auto">
                     <Rocket className="w-10 h-10 text-primary" />
                   </motion.div>
-                  <h2 className="text-3xl font-display font-bold text-white">הכל מוכן!</h2>
-                  <p className="text-white/60 max-w-sm mx-auto">החנות שלכם מוכנה לעלות לאוויר. לחיצה אחת ואתם מוכרים.</p>
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-white/70">
+                  <h2 className="text-3xl font-display font-bold pv-strong">הכל מוכן!</h2>
+                  <p className="pv-muted max-w-sm mx-auto">החנות שלכם מוכנה לעלות לאוויר. לחיצה אחת ואתם מוכרים.</p>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full pv-surface2 border pv-border text-sm pv-text">
                     <Sparkles className="w-4 h-4 text-primary" /> siango.app/my-store
                   </div>
                 </div>
@@ -176,7 +176,7 @@ const OnboardingV2 = () => {
         {/* Nav */}
         <div className="flex items-center justify-between mt-6">
           <button onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={step === 1}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 border border-white/10 text-white/70 disabled:opacity-30 hover:bg-white/10 transition">
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl pv-surface2 border pv-border pv-text disabled:opacity-30 pv-hover transition">
             <ArrowRight className="w-4 h-4" /> חזרה
           </button>
           {step < STEPS.length ? (
@@ -185,13 +185,13 @@ const OnboardingV2 = () => {
               המשך <ArrowLeft className="w-4 h-4" />
             </button>
           ) : (
-            <button className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-gradient-to-l from-primary via-emerald-400 to-lime-300 text-black font-bold shadow-lg shadow-primary/40">
+            <button className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-gradient-to-l from-primary via-emerald-400 to-lime-500 text-white font-bold shadow-lg shadow-primary/40">
               פרסמו את החנות <Rocket className="w-4 h-4" />
             </button>
           )}
         </div>
       </div>
-    </div>
+    </PreviewThemeRoot>
   );
 };
 
