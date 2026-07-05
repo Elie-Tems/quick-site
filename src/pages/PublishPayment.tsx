@@ -81,13 +81,16 @@ const PublishPayment = () => {
   }, [location.state]);
 
   const goToComplete = useCallback(
-    (data: OnboardingData | null) => {
+    (data: OnboardingData | null, slug?: string) => {
       sessionStorage.removeItem(STORAGE_KEY);
+      // Always send the user to their live store if we know the slug
+      if (slug) {
+        window.location.href = `/store/${slug}`;
+        return;
+      }
       if (data) {
-        // Coming from onboarding flow
         navigate("/onboarding/complete?from_payment=true", { state: { onboardingData: data }, replace: true });
       } else {
-        // Coming from dashboard
         navigate("/dashboard?from_payment=true", { replace: true });
       }
     },
@@ -284,10 +287,16 @@ const PublishPayment = () => {
         gtm.sitePublished();
         toast({
           title: "🎉 האתר פורסם בהצלחה!",
-          description: "האתר שלך עכשיו זמין לציבור",
+          description: "מיד מועבר לאתר שלך...",
         });
+        // Fetch slug so we can redirect to the live store
+        const { data: biz } = await supabase
+          .from("businesses")
+          .select("slug")
+          .eq("id", data.businessId || effectiveBusinessId)
+          .maybeSingle();
         setTimeout(() => {
-          goToComplete(onboardingData);
+          goToComplete(onboardingData, biz?.slug);
         }, 1500);
         return;
       }
@@ -436,6 +445,31 @@ const PublishPayment = () => {
                 <ArrowRight className="w-5 h-5 rotate-180" />
               </Button>
             </div>
+
+            {/* Approval number fallback - always visible so returning payers can activate immediately */}
+            <div className="rounded-xl border border-border bg-card p-5 space-y-3 text-right max-w-3xl mx-auto w-full">
+              <p className="text-sm font-medium text-foreground">כבר שילמת? הכנס מספר אישור לפרסום ידני</p>
+              <p className="text-xs text-muted-foreground">מספר האישור מופיע ב-SMS / אימייל שקיבלת מ-iCount</p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handlePublish}
+                  disabled={publishing || !approvalNum.trim()}
+                  variant="outline"
+                  className="shrink-0"
+                >
+                  {publishing ? <Loader2 className="h-4 w-4 animate-spin ml-1" /> : <CheckCircle2 className="h-4 w-4 ml-1" />}
+                  פרסם
+                </Button>
+                <Input
+                  dir="ltr"
+                  placeholder="מספר אישור (לדוגמה: 1968172)"
+                  value={approvalNum}
+                  onChange={(e) => setApprovalNum(e.target.value)}
+                  className="text-left"
+                />
+              </div>
+            </div>
+
           </div>
         </div>
       </>
@@ -628,6 +662,31 @@ const PublishPayment = () => {
             )}
           </div>
         </div>
+
+      {/* Manual approval number fallback */}
+      <div className="w-full max-w-xl mx-auto mt-2">
+        <div className="rounded-xl border border-border bg-card p-5 space-y-3 text-right">
+          <p className="text-sm font-medium text-foreground">שילמת ולא קיבלת אישור?</p>
+          <p className="text-xs text-muted-foreground">הכנס את מספר האישור שקיבלת ב-SMS / אימייל מ-iCount</p>
+          <div className="flex gap-2">
+            <Button
+              onClick={handlePublish}
+              disabled={publishing || !approvalNum.trim()}
+              className="shrink-0"
+            >
+              {publishing ? <Loader2 className="h-4 w-4 animate-spin ml-1" /> : <CheckCircle2 className="h-4 w-4 ml-1" />}
+              פרסם את האתר
+            </Button>
+            <Input
+              dir="ltr"
+              placeholder="מספר אישור"
+              value={approvalNum}
+              onChange={(e) => setApprovalNum(e.target.value)}
+              className="text-left"
+            />
+          </div>
+        </div>
+      </div>
 
       </div>
     </div>
