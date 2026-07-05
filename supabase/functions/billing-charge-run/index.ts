@@ -9,7 +9,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { billToken } from "../_shared/icount/api.ts";
+import { billToken, createDoc } from "../_shared/icount/api.ts";
 import { chargeAmount, withinChargeCeiling, type CouponInfo } from "../_shared/billing/pricing.ts";
 
 const VAT_RATE = 0.18;
@@ -119,6 +119,15 @@ serve(async (req) => {
         last_charge_status: "success",
         updated_at: nowIso,
       }).eq("id", s.id);
+      // Issue the monthly tax invoice/receipt (cc/bill doesn't create one).
+      try {
+        const doc = await createDoc({
+          description: "מנוי פרסום Siango - חיוב חודשי",
+          sumIls: amount, clientId: clientId ?? undefined, email: email ?? undefined,
+          confirmationCode: res.data.confirmation_code ?? undefined,
+        });
+        if (!doc.ok) console.warn("charge-run: doc/create failed for", s.id, doc.error || JSON.stringify(doc.data));
+      } catch (e) { console.warn("charge-run: doc/create threw:", e); }
       charged++;
     } else {
       const errCode = (res.data as any)?.error || res.error || "declined";
