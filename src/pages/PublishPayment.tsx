@@ -398,29 +398,13 @@ const PublishPayment = () => {
                     siango.app/store/{previewSlug}
                   </div>
                 </div>
-                {/* Desktop: render the store INLINE (the owner's session is available
-                    to the iframe here, so preview mode renders the still-unpublished
-                    store). Mobile browsers partition iframe storage, so the preview-auth
-                    check can't see the session and would show "not published" - there we
-                    fall back to a new-tab button that opens the store at top level with
-                    the session intact. */}
-                <div className="hidden md:block bg-background">
-                  <iframe
-                    title="תצוגה מקדימה של החנות"
-                    src={`/store/${previewSlug}?preview=true`}
-                    className="w-full border-0 bg-background"
-                    style={{ height: "min(70vh, 720px)" }}
-                    loading="lazy"
-                  />
-                  <div className="flex justify-center py-3 border-t border-border bg-muted/30">
-                    <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
-                      <a href={`/store/${previewSlug}?preview=true`} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="w-4 h-4" /> פתחו במסך מלא
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-                <div className="md:hidden flex flex-col items-center justify-center gap-4 py-14 px-6 text-center bg-gradient-to-b from-muted/20 to-transparent">
+                {/* Preview opens in a NEW TAB at top level, where the owner's auth
+                    session is reliably available. An inline iframe does NOT work: modern
+                    browsers partition iframe storage by top-level site, so the store's
+                    preview-auth check can't see the session and shows "not published" -
+                    on desktop too (confirmed). A true inline render needs the storefront
+                    rendered as components (no iframe); tracked as a follow-up. */}
+                <div className="flex flex-col items-center justify-center gap-4 py-14 px-6 text-center bg-gradient-to-b from-muted/20 to-transparent">
                   <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
                     <Eye className="w-8 h-8 text-primary" />
                   </div>
