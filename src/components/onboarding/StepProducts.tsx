@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { OnboardingData, ProductCategory } from "@/pages/Onboarding";
+import { BusinessCategory } from "@/lib/categoryConfig";
 import {
   Plus, Trash2, Package, FileSpreadsheet, Upload, X, Download,
   AlertCircle, Loader2, LayoutGrid, List, FolderOpen,
@@ -37,16 +38,177 @@ interface ParsedProduct {
 
 type Method = "quick" | "catalog" | "voice";
 
-// Starter demo products created if a merchant skips this step with an empty store,
-// so their site is never empty on first publish. Clearly replaceable - the toast
-// tells them, and every field is editable under מוצרים in the dashboard.
-const DEMO_PRODUCTS: Array<{ name: string; price: number; description: string; imageUrl: string }> = [
-  { name: "מוצר לדוגמה - חולצת כותנה", price: 99, description: "מוצר דמו להתחלה. החליפו בשם, מחיר ותמונה שלכם.", imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80" },
-  { name: "מוצר לדוגמה - כוס קרמיקה", price: 45, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&q=80" },
-  { name: "מוצר לדוגמה - נר ריחני", price: 65, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=600&q=80" },
-  { name: "מוצר לדוגמה - תיק בד", price: 120, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=600&q=80" },
-  { name: "מוצר לדוגמה - סבון טבעי", price: 39, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80" },
+type DemoProduct = { name: string; price: number; description: string; imageUrl: string };
+
+const DEMO_PRODUCTS_BY_CATEGORY: Partial<Record<BusinessCategory, DemoProduct[]>> = {
+  bakery: [
+    { name: "לחם כפרי טרי", price: 28, description: "לחם על בסיס מחמצת, אפוי מדי בוקר.", imageUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80" },
+    { name: "קרואסון חמאה", price: 14, description: "קרואסון פריך עם חמאה איכותית.", imageUrl: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&q=80" },
+    { name: "עוגת שוקולד שלמה", price: 120, description: "עוגה ביתית עשירה בשוקולד בלגי.", imageUrl: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&q=80" },
+    { name: "מאפין אוכמניות", price: 12, description: "מאפין רך עם אוכמניות טריות.", imageUrl: "https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=600&q=80" },
+    { name: "בייגלה שומשום", price: 8, description: "בייגלה מסורתי עם ציפוי שומשום.", imageUrl: "https://images.unsplash.com/photo-1586444248879-bc7a8a6b9a9c?w=600&q=80" },
+  ],
+  restaurant: [
+    { name: "מנת שקשוקה", price: 58, description: "שקשוקה ביתית בסיר ברזל עם ביצים טריות.", imageUrl: "https://images.unsplash.com/photo-1590412200988-a436970781fa?w=600&q=80" },
+    { name: "סלט ירקות", price: 42, description: "סלט ירקות עונתיים עם רוטב לימון.", imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80" },
+    { name: "פסטה ארביאטה", price: 68, description: "פסטה ברוטב עגבניות חריף.", imageUrl: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&q=80" },
+    { name: "שניצל עם תוספות", price: 89, description: "שניצל עוף קריספי עם ציפס ביתי.", imageUrl: "https://images.unsplash.com/photo-1562967914-608f82629710?w=600&q=80" },
+    { name: "קינוח עוגת גבינה", price: 38, description: "עוגת גבינה קרמית עם קולי פירות.", imageUrl: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600&q=80" },
+  ],
+  cafe: [
+    { name: "קפה הפוך", price: 16, description: "אספרסו עם חלב מוקצף.", imageUrl: "https://images.unsplash.com/photo-1534040385115-33dcb3acba5b?w=600&q=80" },
+    { name: "קפה קר Cold Brew", price: 22, description: "קפה קר בחליטה ארוכה.", imageUrl: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&q=80" },
+    { name: "חתיכת עוגה יומית", price: 28, description: "עוגה ביתית - משתנה מדי יום.", imageUrl: "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=600&q=80" },
+    { name: "כריך גורמה", price: 44, description: "כריך עם גבינות ועלי רוקט.", imageUrl: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=600&q=80" },
+    { name: "לאטה חמאת בוטנים", price: 24, description: "לאטה עם חמאת בוטנים וסירופ וניל.", imageUrl: "https://images.unsplash.com/photo-1572286258217-40f935e0119d?w=600&q=80" },
+  ],
+  clothing: [
+    { name: "חולצת כותנה בייסיק", price: 89, description: "חולצת כותנה נוחה בגזרה ישרה.", imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80" },
+    { name: "ג'ינס סקיני", price: 249, description: "ג'ינס בגזרה צמודה, כחול כהה.", imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&q=80" },
+    { name: "שמלת קיץ פרחונית", price: 179, description: "שמלה קלה לקיץ עם הדפס פרחים.", imageUrl: "https://images.unsplash.com/photo-1572804013427-4d7ca7268217?w=600&q=80" },
+    { name: "מעיל מנדרין", price: 349, description: "מעיל קצר עם צווארון מנדרין.", imageUrl: "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=600&q=80" },
+    { name: "כובע בייסבול", price: 69, description: "כובע מצחייה עם לוגו רקום.", imageUrl: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=600&q=80" },
+  ],
+  jewelry: [
+    { name: "צמיד זהב עדין", price: 320, description: "צמיד זהב 14K בעבודת יד.", imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&q=80" },
+    { name: "עגילי חישוק כסף", price: 180, description: "עגילי חישוק בכסף 925.", imageUrl: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&q=80" },
+    { name: "שרשרת עם תליון לב", price: 220, description: "שרשרת זהב עם תליון לב.", imageUrl: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80" },
+    { name: "טבעת נישואין קלאסית", price: 890, description: "טבעת זהב לבן בעיצוב נקי.", imageUrl: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&q=80" },
+    { name: "סט תכשיטים מתנה", price: 450, description: "סט שרשרת + עגיליים בקופסת מתנה.", imageUrl: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&q=80" },
+  ],
+  beauty: [
+    { name: "קרם לחות יומי", price: 89, description: "קרם לחות לכל סוגי העור.", imageUrl: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&q=80" },
+    { name: "שמפו טבעי לשיער", price: 65, description: "שמפו מרכיבים טבעיים ללא סולפטים.", imageUrl: "https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=600&q=80" },
+    { name: "מסכת פנים מרגיעה", price: 49, description: "מסכת לילה לעור עייף ורגיש.", imageUrl: "https://images.unsplash.com/photo-1570194065650-d99fb4abbd90?w=600&q=80" },
+    { name: "שמן ארגן לשיער", price: 79, description: "שמן ארגן מרוקאי לשיער מבריק.", imageUrl: "https://images.unsplash.com/photo-1617897903246-719242758050?w=600&q=80" },
+    { name: "סבון טבעי", price: 39, description: "סבון טבעי עם לבנדר ושמן קוקוס.", imageUrl: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80" },
+  ],
+  fitness: [
+    { name: "חבל קפיצה מקצועי", price: 79, description: "חבל קפיצה עם ידיות מסתובבות.", imageUrl: "https://images.unsplash.com/photo-1598289431512-b97b0917affc?w=600&q=80" },
+    { name: "מזרן יוגה 6mm", price: 149, description: "מזרן אנטי-החלקה לאימון יוגה.", imageUrl: "https://images.unsplash.com/photo-1592432678016-e910b452f9a2?w=600&q=80" },
+    { name: "משקולות יד 2 ק\"ג", price: 89, description: "זוג משקולות יד מגומי.", imageUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80" },
+    { name: "גומיית התנגדות", price: 49, description: "סט 3 גומיות בעוצמות שונות.", imageUrl: "https://images.unsplash.com/photo-1598971457999-ca4ef48a9a71?w=600&q=80" },
+    { name: "בקבוק שתייה 1L", price: 59, description: "בקבוק ספורט 1 ליטר ללא BPA.", imageUrl: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600&q=80" },
+  ],
+  pets: [
+    { name: "מזון כלבים פרימיום 3 ק\"ג", price: 89, description: "מזון יבש איכותי לכלבים בוגרים.", imageUrl: "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=600&q=80" },
+    { name: "מיטת חתול רכה", price: 129, description: "מיטה קטיפתית עם כרית נשלפת.", imageUrl: "https://images.unsplash.com/photo-1592754862816-1a21a4ea2281?w=600&q=80" },
+    { name: "צעצוע לכלב", price: 39, description: "צעצוע גומי עמיד לכלבים פעילים.", imageUrl: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&q=80" },
+    { name: "קולר וכבל לכלב", price: 79, description: "קולר ניילון עם כבל 2 מטר.", imageUrl: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=600&q=80" },
+    { name: "שמפו לחיות מחמד", price: 45, description: "שמפו עדין לעור רגיש של בעלי חיים.", imageUrl: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=600&q=80" },
+  ],
+  flowers: [
+    { name: "זר ורדים אדומים", price: 150, description: "זר 12 ורדים אדומים טריים.", imageUrl: "https://images.unsplash.com/photo-1455582916367-25f75bfc6710?w=600&q=80" },
+    { name: "עציץ סוקולנט", price: 45, description: "עציץ סוקולנט קל לתחזוקה.", imageUrl: "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=600&q=80" },
+    { name: "זר חתונה לכלה", price: 380, description: "זר כלה בצבעים לבנים ורכים.", imageUrl: "https://images.unsplash.com/photo-1487530811015-780c82fc1534?w=600&q=80" },
+    { name: "סידור פרחים מעורב", price: 95, description: "סידור צבעוני לשולחן או מתנה.", imageUrl: "https://images.unsplash.com/photo-1490750967868-88df5691cc73?w=600&q=80" },
+    { name: "עציץ נחמה", price: 120, description: "עציץ גדול עם עיצוב מינימלי.", imageUrl: "https://images.unsplash.com/photo-1463320898484-cdee8141c787?w=600&q=80" },
+  ],
+  home: [
+    { name: "כרית נוי 50×50", price: 89, description: "כרית דקורטיבית לסלון.", imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80" },
+    { name: "נר ריחני בכוס", price: 65, description: "נר ריחני 40 שעות בוער.", imageUrl: "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=600&q=80" },
+    { name: "מנורת שולחן מינימלית", price: 189, description: "מנורה עם בסיס מתכת ואהיל בד.", imageUrl: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&q=80" },
+    { name: "מגש עץ לשולחן", price: 79, description: "מגש עץ אקאציה לשרות ועיצוב.", imageUrl: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&q=80" },
+    { name: "שטיח סלון 160×230", price: 449, description: "שטיח ארוג בצמר רך.", imageUrl: "https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?w=600&q=80" },
+  ],
+  handmade: [
+    { name: "קופסת עץ מעוצבת", price: 149, description: "קופסת עץ בעבודת יד עם חריטה.", imageUrl: "https://images.unsplash.com/photo-1544256718-3bcf237f3974?w=600&q=80" },
+    { name: "תיק קרושה ביתי", price: 189, description: "תיק קרושה בצבעים טבעיים.", imageUrl: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&q=80" },
+    { name: "כד חרס מצוייר", price: 95, description: "כד חרס צבוע ביד, ייחודי.", imageUrl: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&q=80" },
+    { name: "תמונה ממוסגרת עבודת יד", price: 220, description: "הדפס אמנות בעיצוב אישי.", imageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&q=80" },
+    { name: "סל קש ארוג", price: 129, description: "סל קש בסגנון בוהו-שיק.", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80" },
+  ],
+  art: [
+    { name: "הדפס אמנות A3", price: 180, description: "הדפס איכות גבוהה על נייר ארכיוני.", imageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&q=80" },
+    { name: "ציור שמן מקורי", price: 850, description: "ציור שמן על קנבס, חתום.", imageUrl: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600&q=80" },
+    { name: "סקיצת עיפרון פורטרט", price: 250, description: "פורטרט מהתמונה שלכם.", imageUrl: "https://images.unsplash.com/photo-1561839561-b13bcfe95249?w=600&q=80" },
+    { name: "כרזה ממוסגרת", price: 220, description: "כרזה וינטג' בלוק ממוסגר.", imageUrl: "https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=600&q=80" },
+    { name: "הדפס אקוורל פרחים", price: 140, description: "אקוורל פרחוני בצבעים עדינים.", imageUrl: "https://images.unsplash.com/photo-1490750967868-88df5691cc73?w=600&q=80" },
+  ],
+  baby: [
+    { name: "שמיכת תינוק רכה", price: 89, description: "שמיכה מפלנל רכה לתינוק.", imageUrl: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=600&q=80" },
+    { name: "צעצוע בד לתינוק", price: 59, description: "צעצוע ממולא בד עם צלצול.", imageUrl: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=600&q=80" },
+    { name: "בגד גוף 3-6 חודשים", price: 45, description: "בגד גוף כותנה אורגנית.", imageUrl: "https://images.unsplash.com/photo-1522771930-78848d9293e8?w=600&q=80" },
+    { name: "ספר ילדים קרטון", price: 38, description: "ספר קרטון עמיד לתינוקות.", imageUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&q=80" },
+    { name: "מוצץ סיליקון", price: 29, description: "מוצץ סיליקון BPA-Free.", imageUrl: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=600&q=80" },
+  ],
+  gifts: [
+    { name: "קופסת מתנה ממולאת", price: 180, description: "קופסת מתנה ממולאת מוצרים נבחרים.", imageUrl: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=600&q=80" },
+    { name: "ספל עם הקדשה", price: 75, description: "ספל קרמיקה עם הדפסת שם.", imageUrl: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&q=80" },
+    { name: "לוח שנה אישי", price: 120, description: "לוח שנה עם תמונות אישיות.", imageUrl: "https://images.unsplash.com/photo-1506784365847-bbad939e9335?w=600&q=80" },
+    { name: "סט כתיבה יוקרתי", price: 95, description: "עט ופנקס בקופסת מתנה.", imageUrl: "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=600&q=80" },
+    { name: "נר ריחני סט", price: 110, description: "סט 3 נרות ריח בתיבת מתנה.", imageUrl: "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=600&q=80" },
+  ],
+  books: [
+    { name: "ספר בישול ישראלי", price: 89, description: "מתכונים מהמטבח הישראלי המסורתי.", imageUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&q=80" },
+    { name: "רומן עברי עכשווי", price: 68, description: "יצירה ספרותית עברית בהוצאה חדשה.", imageUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&q=80" },
+    { name: "ספר ילדים מאוייר", price: 49, description: "ספר ילדים עם איורים צבעוניים.", imageUrl: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80" },
+    { name: "מדריך טיולים ישראל", price: 79, description: "מדריך מפורט לטיולים בארץ.", imageUrl: "https://images.unsplash.com/photo-1476820865390-c52aeebb9891?w=600&q=80" },
+    { name: "פנקס עיצוב קרמיקה", price: 55, description: "פנקס מחברת בעיצוב אמנותי.", imageUrl: "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=600&q=80" },
+  ],
+  furniture: [
+    { name: "כיסא עץ לפינת אוכל", price: 490, description: "כיסא עץ מלא בגימור טבעי.", imageUrl: "https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?w=600&q=80" },
+    { name: "מדף קיר מתכת", price: 189, description: "מדף מתכת בסגנון תעשייתי.", imageUrl: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80" },
+    { name: "שולחן קפה עגול", price: 790, description: "שולחן מרכזי מעץ עם רגלי ברזל.", imageUrl: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600&q=80" },
+    { name: "ספה תלת מושבית", price: 3200, description: "ספה בד אפור בסגנון סקנדינבי.", imageUrl: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80" },
+    { name: "שידת לילה", price: 590, description: "שידת לילה עם מגירה ומדף פתוח.", imageUrl: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=600&q=80" },
+  ],
+  electronics: [
+    { name: "אוזניות Bluetooth", price: 199, description: "אוזניות אלחוטיות עם ביטול רעשים.", imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80" },
+    { name: "כבל USB-C טעינה מהירה", price: 49, description: "כבל 1.5 מטר לטעינה מהירה.", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80" },
+    { name: "מטען אלחוטי 15W", price: 89, description: "מטען אלחוטי Qi תואם לכל האייפונים.", imageUrl: "https://images.unsplash.com/photo-1591337676887-a217a6970a8a?w=600&q=80" },
+    { name: "רמקול Bluetooth נייד", price: 149, description: "רמקול עמיד למים עם סוללה 12 שעות.", imageUrl: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&q=80" },
+    { name: "מעמד לפלאפון", price: 39, description: "מעמד מתכוונן לשולחן.", imageUrl: "https://images.unsplash.com/photo-1512054502232-10a0a035d672?w=600&q=80" },
+  ],
+  grocery: [
+    { name: "שמן זית בכבישה קרה", price: 45, description: "שמן זית כתית מעולה 500 מ\"ל.", imageUrl: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=600&q=80" },
+    { name: "דבש צבר טבעי", price: 38, description: "דבש מדבורים ישראליות 250 גרם.", imageUrl: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&q=80" },
+    { name: "ממרח טחינה גולמי", price: 22, description: "טחינה גולמית טחונה טרייה.", imageUrl: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&q=80" },
+    { name: "חבילת קפה 250 גרם", price: 35, description: "קפה ערביקה טחון טרי.", imageUrl: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&q=80" },
+    { name: "תה צמחים סט", price: 28, description: "סט 6 טעמי תה צמחים ישראלי.", imageUrl: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=600&q=80" },
+  ],
+  wine_alcohol: [
+    { name: "יין אדום כרמל", price: 89, description: "יין אדום יבש מיקב כרמל.", imageUrl: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=80" },
+    { name: "יין לבן צ'ארדונה", price: 79, description: "יין לבן חצי יבש עם ניחוחות הדרים.", imageUrl: "https://images.unsplash.com/photo-1474722883778-792e7990302f?w=600&q=80" },
+    { name: "בירה מקומית קרפט", price: 22, description: "בירה קרפט בקבוק 330 מ\"ל.", imageUrl: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=80" },
+    { name: "ויסקי יחיד מאלט", price: 249, description: "ויסקי סינגל מאלט 10 שנה.", imageUrl: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=600&q=80" },
+    { name: "זוג גביעי יין קריסטל", price: 120, description: "זוג גביעי יין קריסטל בקופסה.", imageUrl: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=80" },
+  ],
+  toys: [
+    { name: "משחק לוח משפחתי", price: 149, description: "משחק לוח לכל המשפחה.", imageUrl: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=600&q=80" },
+    { name: "ערכת LEGO בסיסית", price: 89, description: "ערכת לגו לגילאי 5+.", imageUrl: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=600&q=80" },
+    { name: "בובת ממולאת גדולה", price: 79, description: "בובת קטיפה ממולאת רכה.", imageUrl: "https://images.unsplash.com/photo-1602463395525-5c85b1c65bae?w=600&q=80" },
+    { name: "פאזל 1000 חלקים", price: 69, description: "פאזל תמונת נוף ישראלי.", imageUrl: "https://images.unsplash.com/photo-1611996575749-79a3a250f948?w=600&q=80" },
+    { name: "רכב שלט רחוק", price: 119, description: "רכב שלט רחוק מהיר לחוץ.", imageUrl: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=600&q=80" },
+  ],
+  pharmacy: [
+    { name: "ויטמין C 1000 מ\"ג", price: 49, description: "ויטמין C ב-30 טבליות.", imageUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&q=80" },
+    { name: "קרם הגנה SPF 50", price: 65, description: "קרם הגנה לפנים SPF 50+.", imageUrl: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&q=80" },
+    { name: "מד חום דיגיטלי", price: 79, description: "מד חום אוזן/מצח דיגיטלי.", imageUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&q=80" },
+    { name: "אומגה 3 פרימיום", price: 89, description: "אומגה 3 דגים 60 קפסולות.", imageUrl: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=600&q=80" },
+    { name: "ג'ל חיטוי ידיים", price: 25, description: "ג'ל חיטוי 250 מ\"ל עם ניחוח לימון.", imageUrl: "https://images.unsplash.com/photo-1584483720412-ce931f4aefa8?w=600&q=80" },
+  ],
+  automotive: [
+    { name: "מטהר אוויר לרכב", price: 89, description: "מטהר אוויר USB עם פחם פעיל.", imageUrl: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&q=80" },
+    { name: "מחזיק טלפון לרכב", price: 49, description: "מחזיק מגנטי לחשת האוורור.", imageUrl: "https://images.unsplash.com/photo-1502161254066-6c74afbf07aa?w=600&q=80" },
+    { name: "כיסויי מושב עור", price: 249, description: "זוג כיסויי מושב קדמיים מעור.", imageUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80" },
+    { name: "מטען לרכב USB-C", price: 69, description: "מטען לרכב 45W עם 2 יציאות.", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80" },
+    { name: "פנס LED לרכב", price: 129, description: "פנסי LED H4 קדמיים זוג.", imageUrl: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&q=80" },
+  ],
+};
+
+// Fallback demo products for categories without specific data
+const FALLBACK_DEMO_PRODUCTS: DemoProduct[] = [
+  { name: "מוצר לדוגמה 1", price: 99, description: "מוצר דמו להתחלה. החליפו בשם, מחיר ותמונה שלכם.", imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80" },
+  { name: "מוצר לדוגמה 2", price: 45, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&q=80" },
+  { name: "מוצר לדוגמה 3", price: 65, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=600&q=80" },
+  { name: "מוצר לדוגמה 4", price: 120, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=600&q=80" },
+  { name: "מוצר לדוגמה 5", price: 39, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80" },
 ];
+
+function getDemoProducts(category: BusinessCategory): DemoProduct[] {
+  return DEMO_PRODUCTS_BY_CATEGORY[category] ?? FALLBACK_DEMO_PRODUCTS;
+}
 
 const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) => {
   const [activeMethod, setActiveMethod] = useState<Method>("quick");
@@ -479,7 +641,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   const handleContinue = () => {
     if (data.products.length === 0) {
       const now = Date.now();
-      const demo = DEMO_PRODUCTS.map((p, i) => ({
+      const demo = getDemoProducts(data.businessCategory).map((p, i) => ({
         id: `demo-${now}-${i}`,
         name: p.name,
         description: p.description,
