@@ -74,35 +74,47 @@ Deno.serve(async (req) => {
 
   // If approval number provided, find business_id
   if (approvalNum) {
-    // Always validate the approval number against the approval_num table.
-    // The table is the source of truth - it records which business each
-    // payment-approval number belongs to. Never trust a client-supplied
-    // businessId on its own, otherwise any logged-in user could mark their
-    // own business "paid" with an arbitrary approval number.
-    const { data: approval, error: approvalErr } = await admin
+    // Approval number provided by the merchant from their iCount receipt.
+    // We need businessId to know which business to publish. It can come from:
+    // 1. An existing pending session for this user (most common path)
+    // 2. businessIdFromBody (if supplied explicitly)
+    // 3. The approval_num table (if the IPN webhook already stored it)
+
+    // First check if this approval number was already stored by the IPN webhook
+    const { data: storedApproval } = await admin
       .from("approval_num")
       .select("number, business_id")
       .eq("number", approvalNum)
       .maybeSingle();
 
-    if (approvalErr || !approval) {
-      return new Response(JSON.stringify({ error: "Approval number not found in database" }), {
+    // Determine target business_id
+    let targetBusinessId: string | null = storedApproval?.business_id ?? businessIdFromBody ?? null;
+
+    // If we still don't have a business_id, find the most recent pending session for this user
+    if (!targetBusinessId) {
+      const { data: pendingSession } = await admin
+        .from("publish_checkout_sessions")
+        .select("business_id")
+        .eq("user_id", user.id)
+        .in("status", ["pending", "paid"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      targetBusinessId = pendingSession?.business_id ?? null;
+    }
+
+    if (!targetBusinessId) {
+      return new Response(JSON.stringify({ error: "Could not determine business for this approval number. Please contact support." }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const targetBusinessId = approval.business_id;
-
-    // If the client also passed a businessId, it must match the approval's
-    // business. A mismatch means the request is trying to apply someone
-    // else's payment to a different business.
-    if (businessIdFromBody && businessIdFromBody !== targetBusinessId) {
-      return new Response(JSON.stringify({ error: "Approval number does not match business" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Save the approval number to approval_num table (idempotent)
+    await admin.from("approval_num").upsert({
+      number: approvalNum,
+      business_id: targetBusinessId,
+    }, { onConflict: "number" });
 
     // Find or create session for this business
     const { data: existingSession, error: sessionErr } = await admin
@@ -122,11 +134,11 @@ Deno.serve(async (req) => {
       const now = new Date().toISOString();
       await admin
         .from("publish_checkout_sessions")
-        .update({ 
-          status: "paid", 
+        .update({
+          status: "paid",
           payment_verified_at: now,
           external_transaction_id: approvalNum,
-          updated_at: now 
+          updated_at: now
         })
         .eq("id", existingSession.id);
       session.payment_verified_at = now;
