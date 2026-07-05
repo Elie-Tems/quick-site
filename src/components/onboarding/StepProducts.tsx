@@ -375,12 +375,13 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       const headers = jsonData[0].map((h: any) => String(h || "").toLowerCase().trim());
       const idx = (terms: string[]) => headers.findIndex((h: string) => terms.some(t => h.includes(t)));
 
-      const nameIdx = idx(["שם", "name", "מוצר", "product"]);
+      // Meta Commerce Manager CSV uses: title, description, price, image_link, id, google_product_category
+      const nameIdx = idx(["שם", "name", "מוצר", "product", "title"]);
       const priceIdx = idx(["מחיר", "price", "עלות", "cost"]);
       const descIdx = idx(["תיאור", "description", "desc"]);
-      const skuIdx = idx(['מק"ט', "מקט", "sku", "קוד"]);
-      const imageIdx = idx(["תמונה", "image", "url", "קישור"]);
-      const catIdx = idx(["קטגוריה", "category"]);
+      const skuIdx = idx(['מק"ט', "מקט", "sku", "קוד", "id"]);
+      const imageIdx = idx(["תמונה", "image_link", "image link", "image", "url", "קישור"]);
+      const catIdx = idx(["קטגוריה", "category", "google_product_category"]);
 
       if (nameIdx === -1) {
         setParseError("הקובץ חייב להכיל עמודת שם מוצר");
