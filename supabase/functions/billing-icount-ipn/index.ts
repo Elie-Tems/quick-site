@@ -7,7 +7,10 @@
 // (?secret=). verify_jwt=false in config.toml.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { tokenInfo, getCcTokens } from "../_shared/icount/api.ts";
+import { tokenInfo, getCcTokens, billToken } from "../_shared/icount/api.ts";
+
+const VAT_RATE = 0.18;
+const grossIls = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
 
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type" };
 const json = (b: unknown, s = 200) =>
@@ -109,32 +112,82 @@ Deno.serve(async (req) => {
     console.warn("billing-icount-ipn: no token id in IPN - recurring not armed. Fields:", Object.keys(payload).join(","));
   }
 
+  // Without a stored token we can neither collect nor arm recurring - do NOT
+  // publish (the hosted page only validated the card; there's nothing to charge on).
+  if (!tokenId) {
+    await admin.from("publish_checkout_sessions").update({ status: "no_token", updated_at: now }).eq("id", session.id);
+    return json({ ok: false, error: "no_token", published: false }, 200);
+  }
+
+  const idem = `${sessionToken}:cycle0`;
+  const isTest = Deno.env.get("BILLING_TEST_MODE") === "true";
+  // session.amount_ils is the NET (pre-VAT, coupon-applied) first-charge amount.
+  const firstGross = grossIls(Number(session.amount_ils) || 0);
+
+  // Idempotency: if this session's first charge already succeeded (duplicate IPN),
+  // just make sure the store is published and return.
+  const { data: prior } = await admin.from("billing_charges").select("id, status").eq("idempotency_key", idem).maybeSingle();
+  if (prior && (prior as any).status === "success") {
+    await admin.from("businesses").update({ is_published: true, updated_at: now }).eq("id", businessId);
+    await admin.from("publish_checkout_sessions").update({ status: "completed", payment_verified_at: now, updated_at: now }).eq("id", session.id);
+    return json({ ok: true, duplicate: true, published: true });
+  }
+
+  // Collect the first month on the stored token. The token page only VALIDATED the
+  // card (₪1); per our self-managed model WE charge the real amount via cc/bill.
+  // A 100%-off coupon makes firstGross 0 -> nothing to charge (still activate/publish).
+  let chargeOk = firstGross <= 0;
+  let confCode: string | null = (payload["confirmation_code"] as string) ?? null;
+  let chargeErr: string | null = null;
+  if (firstGross > 0) {
+    const res = await billToken({
+      ccTokenId: tokenId, sumIls: firstGross,
+      description: "פרסום אתר Siango - חיוב ראשון",
+      email: (session.email as string) ?? undefined, isTest,
+    });
+    chargeOk = res.ok && (res.data as any).success !== false;
+    confCode = res.data.confirmation_code ?? confCode;
+    if (!chargeOk) chargeErr = String((res.data as any)?.error || res.error || "declined");
+  }
+
+  // Audit the REAL outcome (append-only, idempotent on the cycle-0 key).
+  await admin.from("billing_charges").insert({
+    user_id: userId, business_id: businessId, amount_ils: firstGross,
+    status: chargeOk ? "success" : "failed", is_test: isTest,
+    confirmation_code: chargeOk ? confCode : null, error_code: chargeErr,
+    idempotency_key: idem,
+    payment_description: "פרסום אתר Siango - חיוב ראשון",
+  }).then(() => {}).catch(() => {});
+
+  // First charge declined -> do NOT publish. Keep the token so the customer can
+  // retry (kept pending). The store stays unpublished until a charge succeeds.
+  if (!chargeOk) {
+    await admin.from("subscriptions").upsert({
+      user_id: userId, status: "pending", billing_provider: "icount_token",
+      cc_token_id: tokenId, last_charge_status: "failed", updated_at: now,
+    }, { onConflict: "user_id" });
+    await admin.from("publish_checkout_sessions").update({ status: "charge_failed", updated_at: now }).eq("id", session.id);
+    return json({ ok: false, charged: false, error: chargeErr, published: false }, 200);
+  }
+
   const paidUntil = new Date(Date.now() + 31 * 24 * 3600 * 1000).toISOString();
   const nextCharge = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString();
 
-  // Activate the subscription for token-based recurring billing.
+  // Activate the subscription for token-based recurring billing (cycle 0 done;
+  // the monthly cron picks up cycle 1 at next_charge_at).
   await admin.from("subscriptions").upsert({
     user_id: userId,
     status: "active",
     billing_provider: "icount_token",
-    cc_token_id: tokenId ?? null,
+    cc_token_id: tokenId,
     paid_until: paidUntil,
-    next_charge_at: tokenId ? nextCharge : null,   // only arm recurring if we have a token
+    next_charge_at: nextCharge,
     billing_cycle_count: 1,
     last_charge_status: "success",
     cancel_type: null,
     cancel_at: null,
     updated_at: now,
   }, { onConflict: "user_id" });
-
-  // Audit the first charge.
-  await admin.from("billing_charges").insert({
-    user_id: userId, business_id: businessId,
-    amount_ils: session.amount_ils, status: "success", is_test: false,
-    confirmation_code: (payload["confirmation_code"] as string) ?? null,
-    idempotency_key: `${sessionToken}:cycle0`,
-    payment_description: "פרסום אתר Siango - חיוב ראשון",
-  }).then(() => {}).catch(() => {});
 
   // Redeem the coupon (increment + record), if one was on the subscription.
   const { data: sub } = await admin.from("subscriptions").select("coupon_code").eq("user_id", userId).maybeSingle();
