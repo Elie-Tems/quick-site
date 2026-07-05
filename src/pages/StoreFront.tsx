@@ -350,6 +350,23 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     const isUnpublished = error instanceof Error && error.message === 'SITE_NOT_PUBLISHED';
     const isSuspended = error instanceof Error && error.message === 'SITE_SUSPENDED';
 
+    // Owner arrived at their own unpublished store → send them to the payment/publish flow
+    // instead of showing a dead end. useStorefront already verified ownership before
+    // throwing SITE_NOT_PUBLISHED in preview mode, so we can trust the check here.
+    if (isUnpublished) {
+      supabase.auth.getUser().then(({ data }) => {
+        if (data?.user) {
+          window.location.replace('/publish-payment');
+        }
+      });
+      // Show a brief loading state while the auth check happens
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md px-4">
@@ -357,13 +374,11 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
             <Store className="h-10 w-10 text-muted-foreground" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">
-            {isSuspended ? 'האתר אינו זמין כעת' : isUnpublished ? 'האתר עדיין לא פורסם' : 'החנות לא נמצאה'}
+            {isSuspended ? 'האתר אינו זמין כעת' : 'החנות לא נמצאה'}
           </h1>
           <p className="text-muted-foreground mb-6">
             {isSuspended
               ? 'האתר מושהה זמנית. אנא נסו שוב מאוחר יותר.'
-              : isUnpublished
-              ? 'אתר זה עדיין לא פורסם לציבור. אנא השלם את תהליך הפרסום כדי להפעיל את האתר.'
               : 'לא הצלחנו למצוא חנות בכתובת הזו. ייתכן שהיא הוסרה או שהכתובת שגויה.'
             }
           </p>
