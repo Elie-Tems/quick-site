@@ -188,50 +188,44 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
   }
 
   return (
-    <div className="space-y-8" dir="rtl">
-      <div className="text-center">
-        <h1 className="text-2xl font-medium text-foreground mb-1">כמעט שם!</h1>
-        <p className="text-sm text-muted-foreground">רגע לפני שהאתר עולה לאוויר</p>
+    <div className="space-y-6" dir="rtl">
+      {/* Hero */}
+      <div className="text-center py-4">
+        <div className="w-20 h-20 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center mb-4 relative">
+          <Rocket className="w-9 h-9 text-primary" />
+          <span className="absolute -top-1 -right-1 text-lg">✨</span>
+        </div>
+        <h1 className="text-3xl font-semibold text-foreground">כמעט שם!</h1>
+        <p className="text-sm text-muted-foreground mt-2">עוד לחיצה אחת - והחנות שלכם בשידור חי 🎉</p>
       </div>
 
-      {/* ── How orders work (default: receive orders, pay with the customer) ── */}
-      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <CreditCard className="w-5 h-5 text-primary" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium">קבלת הזמנות</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              כרגע מוגדר אצלכם אפשרות לקבל הזמנות ישירות למייל, והתשלום מתבצע מול הלקוח - מזומן, העברה או כפי שתבחרו.
-            </p>
-          </div>
-        </div>
-        <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 flex items-start gap-2">
-          <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-          <p className="text-xs text-foreground">
-            רוצים לקבל תשלומים בכרטיס אשראי / ביט ישירות באתר? אפשר להוסיף סליקה בכל רגע מלוח הניהול, בהדרכה צעד-אחר-צעד.
-          </p>
-        </div>
-      </div>
-
-      {/* ── Summary ───────────────────────────────────── */}
-      <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-2">
-        <p className="text-sm font-medium mb-3">סיכום</p>
+      {/* Summary grid */}
+      <div className="grid grid-cols-2 gap-3">
         {[
-          { label: "שם עסק", value: data.businessName || "—" },
-          { label: "מוצרים", value: `${data.products.length} מוצרים` },
-          { label: "תבנית", value: getTemplate(data.storeTemplate).name },
-          { label: "הזמנות", value: "קבלת הזמנות (תשלום מול הלקוח)" },
+          { emoji: "🏪", label: "שם העסק", value: data.businessName || "—" },
+          { emoji: "📦", label: "מוצרים", value: `${data.products.length} מוצרים` },
+          { emoji: "🎨", label: "תבנית", value: getTemplate(data.storeTemplate).name },
+          { emoji: "📩", label: "הזמנות", value: "ישירות למייל" },
         ].map(item => (
-          <div key={item.label} className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{item.label}</span>
-            <span className="font-medium">{item.value}</span>
+          <div key={item.label} className="rounded-xl border border-border bg-card p-4 flex items-start gap-3">
+            <span className="text-xl leading-none mt-0.5">{item.emoji}</span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-muted-foreground">{item.label}</p>
+              <p className="text-sm font-medium truncate mt-0.5">{item.value}</p>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* ── Legal ─────────────────────────────────────── */}
+      {/* Payment upsell hint - compact */}
+      <div className="rounded-xl bg-primary/5 border border-primary/15 p-3.5 flex items-start gap-2.5">
+        <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+        <p className="text-xs text-foreground leading-relaxed">
+          רוצים לקבל תשלומים בכרטיס / ביט ישירות באתר? אפשר להוסיף סליקה בכל רגע מלוח הניהול.
+        </p>
+      </div>
+
+      {/* Legal */}
       <label className="flex items-start gap-3 cursor-pointer">
         <input
           type="checkbox"
@@ -247,8 +241,8 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         </span>
       </label>
 
-      {/* ── Actions ───────────────────────────────────── */}
-      <div className="flex gap-3">
+      {/* Actions */}
+      <div className="flex gap-3 pb-2">
         <button onClick={onBack}
           className="flex-none px-5 h-12 rounded-xl border border-border text-sm hover:bg-muted transition-colors">
           חזרה
@@ -256,10 +250,10 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         <button
           onClick={handlePublish}
           disabled={isPublishing || !legalAcknowledged || !data.businessName}
-          className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 h-13 rounded-xl bg-primary text-primary-foreground text-base font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-primary/20"
         >
-          {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Rocket className="w-4 h-4" />}
-          {isPublishing ? "מפרסם..." : "פרסמו את האתר"}
+          {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />}
+          {isPublishing ? "מפרסם..." : "פרסמו את האתר ←"}
         </button>
       </div>
     </div>
