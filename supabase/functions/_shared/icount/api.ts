@@ -123,6 +123,50 @@ export function billToken(o: BillTokenOpts) {
   );
 }
 
+export interface CreateDocOpts {
+  description: string;
+  sumIls: number;             // VAT-INCLUSIVE total actually charged
+  clientName?: string;
+  clientId?: string | number;
+  email?: string;
+  vatPercent?: number;        // default 18
+  confirmationCode?: string;  // the cc/bill confirmation, recorded on the receipt
+  ccType?: string;
+  ccLast4?: string;
+}
+
+/**
+ * Issue a tax invoice/receipt (חשבונית מס/קבלה) for a charge already captured via
+ * cc/bill - iCount's cc/bill does NOT create a document on its own. doctype is
+ * configurable via ICOUNT_DOCTYPE (default "invrec"). unitprice is the NET
+ * (pre-VAT) amount; iCount adds VAT per the account settings. Emails the doc.
+ * NOTE: verify the FIRST generated document in iCount (amount / VAT / paid) before
+ * relying on it - the exact field set varies by account.
+ */
+export function createDoc(o: CreateDocOpts) {
+  const doctype = Deno.env.get("ICOUNT_DOCTYPE") || "invrec";
+  const vat = o.vatPercent ?? 18;
+  const net = Math.round((o.sumIls / (1 + vat / 100)) * 100) / 100;
+  return icountCall<{ doc_url?: string; docnum?: string | number; doc_number?: string | number }>(
+    "doc/create",
+    {
+      doctype,
+      lang: "he",
+      currency: "ILS",
+      ...(o.clientName ? { client_name: o.clientName } : {}),
+      ...(o.clientId != null ? { client_id: o.clientId } : {}),
+      ...(o.email ? { email: o.email, email_to: o.email } : {}),
+      items: [{ description: o.description, unitprice: net, quantity: 1 }],
+      // Mark it paid by credit card (invrec = tax invoice + receipt).
+      cc: 1,
+      ...(o.confirmationCode ? { confirmation_code: o.confirmationCode } : {}),
+      ...(o.ccType ? { cc_type: o.ccType } : {}),
+      ...(o.ccLast4 ? { cc_last4: o.ccLast4 } : {}),
+      send_email: 1,
+    },
+  );
+}
+
 /** Look up a stored token's non-sensitive details (last4 / type / expiry). */
 export function tokenInfo(ccTokenId: string | number) {
   return icountCall<{

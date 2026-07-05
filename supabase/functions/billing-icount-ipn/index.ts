@@ -7,7 +7,7 @@
 // (?secret=). verify_jwt=false in config.toml.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { tokenInfo, getCcTokens, billToken } from "../_shared/icount/api.ts";
+import { tokenInfo, getCcTokens, billToken, createDoc } from "../_shared/icount/api.ts";
 
 const VAT_RATE = 0.18;
 const grossIls = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
@@ -215,6 +215,23 @@ Deno.serve(async (req) => {
     cancel_at: null,
     updated_at: now,
   }, { onConflict: "user_id" });
+
+  // Issue the tax invoice/receipt (חשבונית מס/קבלה) - cc/bill captured the money
+  // but does NOT create a document; doc/create does. Best effort (never block the
+  // publish). Verify the FIRST real doc in iCount for correct amount/VAT.
+  if (firstGross > 0) {
+    try {
+      const doc = await createDoc({
+        description: "פרסום אתר Siango - מנוי חודשי",
+        sumIls: firstGross,
+        clientId: clientId ?? undefined,
+        email: (session.email as string) ?? undefined,
+        confirmationCode: confCode ?? undefined,
+        ccType, ccLast4: last4,
+      });
+      if (!doc.ok) console.warn("billing-icount-ipn: doc/create failed:", doc.error || JSON.stringify(doc.data));
+    } catch (e) { console.warn("billing-icount-ipn: doc/create threw:", e); }
+  }
 
   // Redeem the coupon (increment + record), if one was on the subscription.
   const { data: sub } = await admin.from("subscriptions").select("coupon_code").eq("user_id", userId).maybeSingle();
