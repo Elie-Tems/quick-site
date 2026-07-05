@@ -93,19 +93,29 @@ export interface BillTokenOpts {
   ccTokenId: string | number;
   sumIls: number;
   description: string;
+  clientId?: string | number;        // iCount client id (per iCount: required alongside the token)
+  customClientId?: string;           // our own stable client ref, as a fallback
   email?: string;
   clientName?: string;
   isTest?: boolean;
 }
 
-/** Charge a stored card token for a custom amount (the monthly recurring charge). */
+/**
+ * Charge a stored card token for a custom amount (subscription charge).
+ * Per iCount: pass cc_token_id + the client id (client_id / custom_client_id), and
+ * `sum` in shekels (float). We do NOT send use_j5_if_available, so this is a real
+ * J4 capture (not a J5 auth-only hold). A genuine charge returns success:true +
+ * confirmation_code; a failure returns an `error` (e.g. bad_token / cc_expired).
+ */
 export function billToken(o: BillTokenOpts) {
-  return icountCall<{ success?: boolean; confirmation_code?: string; cc_type?: string }>(
+  return icountCall<{ success?: boolean; confirmation_code?: string; cc_type?: string; error?: string }>(
     "cc/bill",
     {
       cc_token_id: o.ccTokenId,
       sum: o.sumIls,
       payment_description: o.description,
+      ...(o.clientId != null ? { client_id: o.clientId } : {}),
+      ...(o.customClientId ? { custom_client_id: o.customClientId } : {}),
       ...(o.email ? { email: o.email } : {}),
       ...(o.clientName ? { client_name: o.clientName } : {}),
       ...(o.isTest ? { is_test: true } : {}),

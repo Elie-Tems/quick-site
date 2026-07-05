@@ -51,6 +51,29 @@ function tokenIdFromList(resp: Record<string, unknown>): string | null {
   return null;
 }
 
+// iCount needs the client id alongside the token to charge (cc/bill). Probe the
+// IPN payload (and a get_cc_tokens list) for it.
+function extractClientId(p: Record<string, unknown>): string | null {
+  for (const k of ["client_id", "clientId", "cid", "custom_client_id"]) {
+    const v = p[k];
+    if (typeof v === "number" && isFinite(v)) return String(v);
+    if (typeof v === "string" && v.trim() !== "") return v.trim();
+  }
+  const nested = p["data"] ?? p["body"];
+  if (nested && typeof nested === "object") return extractClientId(nested as Record<string, unknown>);
+  return null;
+}
+function clientIdFromList(resp: Record<string, unknown>): string | null {
+  const listKey = ["tokens", "cc_tokens", "data", "list", "items"].find((k) => Array.isArray((resp as any)[k]));
+  const arr = listKey ? ((resp as any)[listKey] as Record<string, unknown>[]) : null;
+  if (!arr?.length) return null;
+  for (const item of [...arr].reverse()) {
+    const id = item["client_id"] ?? item["cid"];
+    if (id != null && String(id).trim() !== "") return String(id);
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   if (req.method !== "POST") return json({ error: "method" }, 405);
@@ -95,16 +118,17 @@ Deno.serve(async (req) => {
   // if it's missing (field-name drift), fall back to client/get_cc_tokens by the
   // payer email. Enrich last4/expiry when possible.
   let tokenId = extractTokenId(payload);
+  let clientId = extractClientId(payload);   // iCount client id - needed to charge the token
   if (!tokenId && session.email) {
     const list = await getCcTokens({ email: session.email as string });
-    if (list.ok) tokenId = tokenIdFromList(list.data);
+    if (list.ok) { tokenId = tokenIdFromList(list.data); clientId = clientId ?? clientIdFromList(list.data); }
   }
   let last4: string | undefined, ccType: string | undefined, expM: number | undefined, expY: number | undefined;
   if (tokenId) {
     const info = await tokenInfo(tokenId);
     if (info.ok) { last4 = info.data.cc_last4; ccType = info.data.cc_type; expM = info.data.cc_exp_month; expY = info.data.cc_exp_year; }
     await admin.from("billing_tokens").insert({
-      user_id: userId, provider: "icount", cc_token_id: tokenId,
+      user_id: userId, provider: "icount", cc_token_id: tokenId, icount_client_id: clientId ?? null,
       cc_last4: last4 ?? null, cc_type: ccType ?? null,
       cc_exp_month: expM ?? null, cc_exp_year: expY ?? null,
     });
@@ -142,10 +166,13 @@ Deno.serve(async (req) => {
   if (firstGross > 0) {
     const res = await billToken({
       ccTokenId: tokenId, sumIls: firstGross,
+      clientId: clientId ?? undefined, customClientId: userId,
       description: "פרסום אתר Siango - חיוב ראשון",
       email: (session.email as string) ?? undefined, isTest,
     });
-    chargeOk = res.ok && (res.data as any).success !== false;
+    // STRICT: a real charge returns success===true (a fake/simulator or error
+    // response that merely lacks success:false must NOT count as paid).
+    chargeOk = res.ok && (res.data as any).success === true;
     confCode = res.data.confirmation_code ?? confCode;
     if (!chargeOk) chargeErr = String((res.data as any)?.error || res.error || "declined");
   }

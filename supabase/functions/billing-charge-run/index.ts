@@ -96,13 +96,21 @@ serve(async (req) => {
     // Look up the payer email for the invoice/receipt.
     const { data: u } = await admin.auth.admin.getUserById(s.user_id);
     const email = u?.user?.email;
+    // iCount needs the client id alongside the token to charge.
+    const { data: tok } = await admin.from("billing_tokens")
+      .select("icount_client_id").eq("user_id", s.user_id).eq("cc_token_id", s.cc_token_id)
+      .order("created_at", { ascending: false }).limit(1).maybeSingle();
+    const clientId = (tok as any)?.icount_client_id as string | undefined;
 
     const res = await billToken({
       ccTokenId: s.cc_token_id, sumIls: amount, description: "מנוי פרסום Siango",
+      clientId: clientId ?? undefined, customClientId: s.user_id,
       email: email ?? undefined, isTest,
     });
 
-    if (res.ok && res.data.success !== false) {
+    // STRICT: only success===true counts as a real charge (guards against a
+    // simulator/error response that merely lacks success:false).
+    if (res.ok && res.data.success === true) {
       await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.confirmation_code ?? null }).eq("idempotency_key", idem);
       await admin.from("subscriptions").update({
         paid_until: new Date(nowMs + 31 * 864e5).toISOString(),
