@@ -170,10 +170,12 @@ Deno.serve(async (req) => {
       description: "פרסום אתר Siango - חיוב ראשון",
       email: (session.email as string) ?? undefined, isTest,
     });
-    // STRICT: a real charge returns success===true (a fake/simulator or error
-    // response that merely lacks success:false must NOT count as paid).
-    chargeOk = res.ok && (res.data as any).success === true;
+    // A real charge returns a confirmation_code (and success:true). res.ok already
+    // rejects an explicit failure (success:false / error). We accept either the
+    // success flag OR a confirmation_code so a harmless format difference in
+    // iCount's response can't silently make a real, paid charge look declined.
     confCode = res.data.confirmation_code ?? confCode;
+    chargeOk = res.ok && ((res.data as any).success === true || !!res.data.confirmation_code);
     if (!chargeOk) chargeErr = String((res.data as any)?.error || res.error || "declined");
   }
 
@@ -216,23 +218,6 @@ Deno.serve(async (req) => {
     updated_at: now,
   }, { onConflict: "user_id" });
 
-  // Issue the tax invoice/receipt (חשבונית מס/קבלה) - cc/bill captured the money
-  // but does NOT create a document; doc/create does. Best effort (never block the
-  // publish). Verify the FIRST real doc in iCount for correct amount/VAT.
-  if (firstGross > 0) {
-    try {
-      const doc = await createDoc({
-        description: "פרסום אתר Siango - מנוי חודשי",
-        sumIls: firstGross,
-        clientId: clientId ?? undefined,
-        email: (session.email as string) ?? undefined,
-        confirmationCode: confCode ?? undefined,
-        ccType, ccLast4: last4,
-      });
-      if (!doc.ok) console.warn("billing-icount-ipn: doc/create failed:", doc.error || JSON.stringify(doc.data));
-    } catch (e) { console.warn("billing-icount-ipn: doc/create threw:", e); }
-  }
-
   // Redeem the coupon (increment + record), if one was on the subscription.
   const { data: sub } = await admin.from("subscriptions").select("coupon_code").eq("user_id", userId).maybeSingle();
   const code = (sub as any)?.coupon_code as string | undefined;
@@ -274,9 +259,28 @@ Deno.serve(async (req) => {
     }
   } catch (e) { console.warn("referral reward failed (non-fatal):", e); }
 
-  // Publish the store (service role passes the publish gate).
+  // Publish the store (service role passes the publish gate). Do this BEFORE
+  // issuing the invoice / sending emails so a slow iCount doc/create or email
+  // call can never leave a paid store unpublished.
   await admin.from("businesses").update({ is_published: true, updated_at: now }).eq("id", businessId);
   await admin.from("publish_checkout_sessions").update({ status: "completed", payment_verified_at: now, updated_at: now }).eq("id", session.id);
+
+  // Issue the tax invoice/receipt (חשבונית מס/קבלה) - cc/bill captured the money
+  // but does NOT create a document; doc/create does. Best effort (publish already
+  // happened). Verify the FIRST real doc in iCount for correct amount/VAT.
+  if (firstGross > 0) {
+    try {
+      const doc = await createDoc({
+        description: "פרסום אתר Siango - מנוי חודשי",
+        sumIls: firstGross,
+        clientId: clientId ?? undefined,
+        email: (session.email as string) ?? undefined,
+        confirmationCode: confCode ?? undefined,
+        ccType, ccLast4: last4,
+      });
+      if (!doc.ok) console.warn("billing-icount-ipn: doc/create failed:", doc.error || JSON.stringify(doc.data));
+    } catch (e) { console.warn("billing-icount-ipn: doc/create threw:", e); }
+  }
 
   // Welcome ("your site is live") + payment receipt emails (best effort - never
   // block publishing). The formal tax invoice itself is issued by iCount per the
