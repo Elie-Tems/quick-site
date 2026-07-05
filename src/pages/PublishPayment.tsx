@@ -446,29 +446,6 @@ const PublishPayment = () => {
               </Button>
             </div>
 
-            {/* Approval number fallback - always visible so returning payers can activate immediately */}
-            <div className="rounded-xl border border-border bg-card p-5 space-y-3 text-right max-w-3xl mx-auto w-full">
-              <p className="text-sm font-medium text-foreground">כבר שילמת? הכנס מספר אישור לפרסום ידני</p>
-              <p className="text-xs text-muted-foreground">מספר האישור מופיע ב-SMS / אימייל שקיבלת מ-iCount</p>
-              <div className="flex gap-2">
-                <Button
-                  onClick={handlePublish}
-                  disabled={publishing || !approvalNum.trim()}
-                  variant="outline"
-                  className="shrink-0"
-                >
-                  {publishing ? <Loader2 className="h-4 w-4 animate-spin ml-1" /> : <CheckCircle2 className="h-4 w-4 ml-1" />}
-                  פרסם
-                </Button>
-                <Input
-                  dir="ltr"
-                  placeholder="מספר אישור (לדוגמה: 1968172)"
-                  value={approvalNum}
-                  onChange={(e) => setApprovalNum(e.target.value)}
-                  className="text-left"
-                />
-              </div>
-            </div>
 
           </div>
         </div>
