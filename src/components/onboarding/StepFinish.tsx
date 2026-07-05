@@ -129,7 +129,12 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         navigate("/onboarding/complete", { state: { data } });
         return;
       }
-      navigate("/dashboard");
+      // Paid publishing: go straight to the iCount payment page (not the
+      // dashboard) - the toast promised "ממשיכים לתשלום", and the site publishes
+      // once payment is verified by the webhook.
+      navigate(`/publish-payment?businessId=${encodeURIComponent(result.businessId)}`, {
+        state: { onboardingData: data },
+      });
     } catch (error: any) {
       toast({ title: "שגיאה בפרסום", description: error.message || "משהו השתבש, נסה שוב", variant: "destructive" });
     } finally {

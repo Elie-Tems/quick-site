@@ -47,6 +47,12 @@ const PreviewPayments = lazy(() => import("./pages/PreviewPayments"));
 const PreviewEmails = lazy(() => import("./pages/PreviewEmails"));
 const PublishCheckoutPreview = lazy(() => import("./pages/PublishCheckoutPreview"));
 const PreviewOnboardingV2 = lazy(() => import("./pages/PreviewOnboardingV2"));
+const PreviewHomeV2 = lazy(() => import("./pages/PreviewHomeV2"));
+const RedesignHub = lazy(() => import("./pages/preview-redesign/Hub"));
+const RedesignDashboard = lazy(() => import("./pages/preview-redesign/DashboardV2"));
+const RedesignOnboarding = lazy(() => import("./pages/preview-redesign/OnboardingV2"));
+const RedesignLogin = lazy(() => import("./pages/preview-redesign/LoginV2"));
+const RedesignAdmin = lazy(() => import("./pages/preview-redesign/AdminV2"));
 const PreviewWhatsApp = lazy(() => import("./pages/PreviewWhatsApp"));
 const PreviewEmail = lazy(() => import("./pages/PreviewEmail"));
 const OnboardingCompleteGate = lazy(() => import("./pages/OnboardingCompleteGate"));
@@ -83,6 +89,23 @@ const App = () => {
 
   // Capture first-touch UTM from ad links (Siango acquisition attribution).
   useEffect(() => { captureUtm(); }, []);
+
+  // Break out of accidental iframe nesting. The iCount payment iframe redirects
+  // back to an app page (e.g. /dashboard) after payment, which loads the WHOLE
+  // app *inside* the payment frame. When one of our own app pages finds itself
+  // embedded, escape to the top window. Store/preview pages are legitimately
+  // embedded (dashboard live preview), so leave those alone.
+  useEffect(() => {
+    try {
+      if (window.top && window.top !== window.self) {
+        const p = window.location.pathname;
+        const embeddable = p.startsWith("/store") || p.startsWith("/preview");
+        if (!embeddable) window.top.location.replace(window.location.href);
+      }
+    } catch {
+      /* cross-origin parent: not our nesting - ignore */
+    }
+  }, []);
 
   return (
   <ErrorBoundary>
@@ -133,6 +156,12 @@ const App = () => {
                   <Route path="/preview/emails" element={<PreviewEmails />} />
                   <Route path="/preview/publish" element={<PublishCheckoutPreview />} />
                   <Route path="/preview/onboarding-v2" element={<PreviewOnboardingV2 />} />
+                  <Route path="/preview/home-v2" element={<PreviewHomeV2 />} />
+                  <Route path="/preview/redesign" element={<RedesignHub />} />
+                  <Route path="/preview/redesign/dashboard" element={<RedesignDashboard />} />
+                  <Route path="/preview/redesign/onboarding" element={<RedesignOnboarding />} />
+                  <Route path="/preview/redesign/login" element={<RedesignLogin />} />
+                  <Route path="/preview/redesign/admin" element={<RedesignAdmin />} />
                   <Route path="/preview/whatsapp" element={<PreviewWhatsApp />} />
                   <Route path="/preview/email" element={<PreviewEmail />} />
                   <Route path="/store" element={<StoreFront />} />

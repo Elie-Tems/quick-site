@@ -118,6 +118,13 @@ const GuidanceScreen = () => {
     { icon: Facebook, title: "פייסבוק + חשבון עסקי ב-Meta", desc: "החיבור דרך Meta Business Manager (חינם). אין לכם פייסבוק? פתחו חשבון ב-facebook.com. אנחנו מלווים בפתיחת החשבון העסקי." },
     { icon: FileText, title: "פרטי העסק + כתובת", desc: "שם העסק, כתובת ופרטי קשר - לרישום ולאימות מול Meta. אפשר להתחיל מיד; אימות עסק מלא (לתקרות שליחה גבוהות) נעשה בהמשך ולוקח ~1-2 שבועות אצל Meta." },
   ];
+  const steps = [
+    { title: "מתחברים לפייסבוק", desc: 'לוחצים "חברו וואטסאפ" ומתחברים לחשבון ה-Meta שלכם, ומאשרים ל-Siango לנהל את חשבון הוואטסאפ העסקי.' },
+    { title: "בוחרים חשבון עסקי", desc: "יוצרים או בוחרים חשבון עסקי ב-Meta, ואז חשבון WhatsApp Business. אין לכם? נוצר תוך כדי, בלי כאב ראש." },
+    { title: "שם תצוגה וקטגוריה", desc: "מגדירים את השם שהלקוח יראה בוואטסאפ ואת קטגוריית העסק. שם נקי וברור עובר אישור מהר יותר." },
+    { title: "מאמתים את המספר", desc: "מקבלים קוד ב-SMS למספר, מזינים אותו, וזהו - המספר מאומת ומחובר." },
+    { title: "מתחילים לעבוד", desc: "שולחים ומקבלים הודעות. אימות עסק מלא של Meta (לתקרות שליחה גבוהות) מתקבל תוך ~1-2 שבועות." },
+  ];
   const limits = [
     "המספר שמתחבר יוצא מאפליקציית וואטסאפ הרגילה (לכן מספר ייעודי).",
     "שיווק נשלח רק למי שאישר לקבל (opt-in) - שומר עליכם מול החוק.",
@@ -156,6 +163,31 @@ const GuidanceScreen = () => {
               </div>
             );
           })}
+        </div>
+      </motion.div>
+
+      {/* Critical: the number must be free of any existing WhatsApp */}
+      <motion.div {...fade(0.11)} className="rounded-2xl border border-amber-300/60 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/5 p-5 flex items-start gap-3">
+        <Smartphone className="w-5 h-5 mt-0.5 shrink-0 text-amber-600" />
+        <div className="text-sm">
+          <b className="text-foreground">חשוב לפני שמתחילים:</b> המספר שתחברו <b className="text-foreground">לא יכול להיות רשום כרגע בוואטסאפ</b> (רגיל או עסקי). אם יש עליו וואטסאפ - מוחקים אותו קודם באפליקציה (הגדרות ← חשבון ← מחיקת החשבון), או פשוט משתמשים במספר פנוי חדש. זו הסיבה הנפוצה ביותר לתקלה ברישום.
+        </div>
+      </motion.div>
+
+      {/* How connecting works - step by step */}
+      <motion.div {...fade(0.12)} className="rounded-3xl border border-border bg-card p-6">
+        <h3 className="font-bold text-foreground text-lg mb-1 flex items-center gap-2"><MessageCircle className="w-5 h-5" style={{ color: DEEP }} /> איך מתבצע החיבור</h3>
+        <p className="text-sm text-muted-foreground mb-5">5 שלבים קצרים, ואנחנו מלווים בכל אחד:</p>
+        <div className="space-y-3">
+          {steps.map((s, i) => (
+            <div key={i} className="flex items-start gap-3.5">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ background: DEEP }}>{i + 1}</div>
+              <div className="pt-0.5">
+                <div className="font-semibold text-foreground text-sm">{s.title}</div>
+                <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{s.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </motion.div>
 
