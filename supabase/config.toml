@@ -33,6 +33,17 @@ verify_jwt = false
 [functions.publish-payment-recovery]
 verify_jwt = false
 
+# billing-icount-ipn is the iCount IPN for the first self-managed subscription
+# payment (captures the card token). Authenticated by the shared secret in the
+# URL query, not a Supabase JWT.
+[functions.billing-icount-ipn]
+verify_jwt = false
+
+# billing-charge-run is the monthly self-managed billing cron (charges stored
+# tokens via cc/bill). Cron-only; optional CRON_SECRET guard.
+[functions.billing-charge-run]
+verify_jwt = false
+
 # send-presentation is an admin-triggered one-off (guarded by its own token), called
 # without a JWT.
 [functions.send-presentation]

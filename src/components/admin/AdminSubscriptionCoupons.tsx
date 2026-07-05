@@ -12,9 +12,24 @@ import { Ticket, Plus, Power, Trash2 } from "lucide-react";
  * 69₪/month plan. Duration = first month only, or recurring forever.
  * The merchant enters the code at checkout (application wired in the billing flow).
  */
+// Paid features a coupon can target. 'all' = any revenue feature.
+const SCOPES: { value: string; label: string }[] = [
+  { value: "all", label: "כל הפיצ'רים בתשלום" },
+  { value: "publish", label: "פרסום אתר (מנוי)" },
+  { value: "crm", label: "CRM" },
+  { value: "whatsapp", label: "וואטסאפ" },
+  { value: "email", label: "מייל עסקי" },
+  { value: "domains", label: "דומיינים" },
+  { value: "ai_credits", label: "תמונות AI (קרדיטים)" },
+  { value: "reviews", label: "ביקורות Google" },
+  { value: "tags", label: "תגיות שיווק" },
+];
+const scopeLabel = (v: string) => SCOPES.find((s) => s.value === v)?.label || v;
+
 interface Coupon {
   id: string;
   code: string;
+  scope: string;
   discount_type: "percent" | "fixed";
   discount_value: number;
   duration: "first_month" | "forever";
@@ -31,6 +46,7 @@ const AdminSubscriptionCoupons = () => {
   const [discountType, setDiscountType] = useState<"percent" | "fixed">("percent");
   const [discountValue, setDiscountValue] = useState("");
   const [duration, setDuration] = useState<"first_month" | "forever">("first_month");
+  const [scope, setScope] = useState("all");
   const [maxRedemptions, setMaxRedemptions] = useState("");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
@@ -56,6 +72,7 @@ const AdminSubscriptionCoupons = () => {
     setSaving(true);
     const { error } = await (supabase as any).from("subscription_coupons").insert({
       code: code.trim().toUpperCase(),
+      scope,
       discount_type: discountType,
       discount_value: Number(discountValue),
       duration,
@@ -117,6 +134,12 @@ const AdminSubscriptionCoupons = () => {
             </select>
           </div>
           <div>
+            <Label className="text-xs">עבור פיצ'ר</Label>
+            <select value={scope} onChange={(e) => setScope(e.target.value)} className="mt-1 w-full h-10 rounded-lg border border-border bg-background px-3 text-sm">
+              {SCOPES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+          </div>
+          <div>
             <Label className="text-xs">מקסימום מימושים (ריק = ללא הגבלה)</Label>
             <Input type="number" value={maxRedemptions} onChange={(e) => setMaxRedemptions(e.target.value)} placeholder="∞" className="mt-1" />
           </div>
@@ -149,7 +172,7 @@ const AdminSubscriptionCoupons = () => {
                     {!c.is_active && <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">כבוי</span>}
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5">
-                    {fmtDiscount(c)} הנחה · {fmtDuration(c)} · מומש {c.redeemed_count}{c.max_redemptions ? `/${c.max_redemptions}` : ""}
+                    {fmtDiscount(c)} הנחה · {scopeLabel(c.scope || "all")} · {fmtDuration(c)} · מומש {c.redeemed_count}{c.max_redemptions ? `/${c.max_redemptions}` : ""}
                     {c.note ? ` · ${c.note}` : ""}
                   </div>
                 </div>
