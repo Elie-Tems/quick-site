@@ -35,9 +35,13 @@ CREATE TABLE IF NOT EXISTS public.subscription_coupons (
 -- Self-heal: if the table already existed from an earlier ad-hoc creation, the
 -- CREATE TABLE IF NOT EXISTS above is a no-op and the newer `scope` column would
 -- be missing (the admin coupon insert then 400s: "column scope does not exist").
--- This explicit ALTER guarantees the column exists regardless of table history.
+-- This explicit ALTER guarantees the columns exist regardless of table history.
+-- (The legacy table also used `expires_at` instead of `valid_until`; we add
+-- `valid_until` so validate_subscription_coupon's expiry check resolves. The
+-- legacy `expires_at` column, if present, is left untouched and simply unused.)
 ALTER TABLE public.subscription_coupons
-  ADD COLUMN IF NOT EXISTS scope text NOT NULL DEFAULT 'all';
+  ADD COLUMN IF NOT EXISTS scope text NOT NULL DEFAULT 'all',
+  ADD COLUMN IF NOT EXISTS valid_until timestamptz;
 
 -- Case-insensitive uniqueness on the code (users type WELCOME50 / welcome50).
 CREATE UNIQUE INDEX IF NOT EXISTS idx_subscription_coupons_code
