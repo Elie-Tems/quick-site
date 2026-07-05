@@ -246,6 +246,28 @@ const PublishPayment = () => {
     return () => clearInterval(id);
   }, [effectiveBusinessId, onboardingData, sessionToken, goToComplete]);
 
+  // Returning from the hosted payment lands here as ?paid=1. The self-managed IPN
+  // publishes the store server-side a few seconds later, and it marks the session
+  // "completed" - so ensureSession (which only looks for pending/paid) never sets
+  // sessionToken, and the poll above never runs. Watch is_published directly here:
+  // navigate to the success flow the moment the store goes live (also covers simply
+  // revisiting the page for an already-published store).
+  useEffect(() => {
+    if (!effectiveBusinessId) return;
+    let done = false;
+    const paidReturn = searchParams.get("paid") === "1";
+    const check = async () => {
+      const { data: b } = await supabase
+        .from("businesses").select("is_published").eq("id", effectiveBusinessId).maybeSingle();
+      if (!done && b?.is_published) { done = true; goToComplete(onboardingData); }
+    };
+    check();
+    if (!paidReturn) return () => { done = true; };
+    const id = window.setInterval(check, 3000);
+    const stop = window.setTimeout(() => { done = true; clearInterval(id); }, 90000);
+    return () => { done = true; clearInterval(id); clearTimeout(stop); };
+  }, [effectiveBusinessId, searchParams, onboardingData, goToComplete]);
+
   const handlePublish = async () => {
     if (!sessionToken && !approvalNum.trim()) return;
     setPublishing(true);
