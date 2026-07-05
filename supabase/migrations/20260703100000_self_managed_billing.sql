@@ -32,6 +32,13 @@ CREATE TABLE IF NOT EXISTS public.subscription_coupons (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- Self-heal: if the table already existed from an earlier ad-hoc creation, the
+-- CREATE TABLE IF NOT EXISTS above is a no-op and the newer `scope` column would
+-- be missing (the admin coupon insert then 400s: "column scope does not exist").
+-- This explicit ALTER guarantees the column exists regardless of table history.
+ALTER TABLE public.subscription_coupons
+  ADD COLUMN IF NOT EXISTS scope text NOT NULL DEFAULT 'all';
+
 -- Case-insensitive uniqueness on the code (users type WELCOME50 / welcome50).
 CREATE UNIQUE INDEX IF NOT EXISTS idx_subscription_coupons_code
   ON public.subscription_coupons (upper(code));
