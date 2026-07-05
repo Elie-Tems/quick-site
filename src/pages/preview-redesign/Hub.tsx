@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import {
   Home, LayoutDashboard, Rocket, LogIn, Shield, ArrowLeft, Sparkles,
   Layers, CalendarClock, CalendarCheck, Building2, Inbox, Compass, ClipboardList,
+  Heart, HandHeart,
 } from "lucide-react";
 import { AuroraBg, Card, PreviewThemeRoot, ThemeToggle } from "@/components/preview-redesign/kit";
 
@@ -30,6 +31,13 @@ const GROUPS: { title: string; items: { to: string; icon: typeof Home; title: st
       { to: "/preview/redesign/realestate-dashboard", icon: Inbox, title: "נדל״ן מתווך - ניהול", desc: "צד סוחר: נכסים + לידים", tag: "נדל״ן", tone: "primary" },
       { to: "/preview/redesign/project", icon: Compass, title: "נדל״ן יזם - דף פרויקט", desc: "צד לקוח: הדמיות, 360, תוכניות מכר, מחירון", tag: "נדל״ן", tone: "primary" },
       { to: "/preview/redesign/project-dashboard", icon: ClipboardList, title: "נדל״ן יזם - ניהול", desc: "צד סוחר: יחידות, לידים, מדיה", tag: "נדל״ן", tone: "primary" },
+    ],
+  },
+  {
+    title: "תרומות וגיוס המונים",
+    items: [
+      { to: "/preview/redesign/nonprofit", icon: Heart, title: "עמותה", desc: "תדמית, סיפור, אלבומים, תרומה כללית + לפרויקטים, סעיף 46", tag: "תרומות", tone: "primary" },
+      { to: "/preview/redesign/crowdfunding", icon: HandHeart, title: "גיוס המונים", desc: "עמוד קמפיין: יעד, מתגייסים, ימים, ומדרגות תמיכה", tag: "קמפיין", tone: "primary" },
     ],
   },
 ];
