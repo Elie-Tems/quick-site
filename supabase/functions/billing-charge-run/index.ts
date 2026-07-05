@@ -108,9 +108,10 @@ serve(async (req) => {
       email: email ?? undefined, isTest,
     });
 
-    // STRICT: only success===true counts as a real charge (guards against a
-    // simulator/error response that merely lacks success:false).
-    if (res.ok && res.data.success === true) {
+    // A real charge returns a confirmation_code (and success:true). res.ok already
+    // rejects an explicit failure; accept either the flag or the code so a format
+    // difference can't make a real, paid charge look declined.
+    if (res.ok && (res.data.success === true || !!res.data.confirmation_code)) {
       await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.confirmation_code ?? null }).eq("idempotency_key", idem);
       await admin.from("subscriptions").update({
         paid_until: new Date(nowMs + 31 * 864e5).toISOString(),
