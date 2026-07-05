@@ -42,6 +42,12 @@ jobs:
           # To fully lock it, also set ALLOW_UNVERIFIED_PUBLISH=false on finalize-publish.
           # (Set VITE_PUBLISH_SKIP_PAYMENT back to "true" to revert to free publishing.)
           VITE_PUBLISH_SKIP_PAYMENT: "false"
+          # Self-managed token billing is LIVE (default for everyone): publish routes
+          # to the iCount token page (#9), we store the card + charge the first month
+          # via cc/bill (coupon-aware), then the monthly cron. Set back to "false" to
+          # revert to the legacy iCount הו"ק page. Charges are real unless the Supabase
+          # secret BILLING_TEST_MODE="true" is set.
+          VITE_BILLING_SELF_MANAGED: "true"
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
