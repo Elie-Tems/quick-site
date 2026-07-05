@@ -28,7 +28,7 @@ const LanguageSwitcher = () => {
           aria-label="בחר שפה"
         >
           <Globe className="w-4 h-4" />
-          <span className="text-sm font-medium">שפות</span>
+          <span className="hidden sm:inline text-sm font-medium">שפות</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 

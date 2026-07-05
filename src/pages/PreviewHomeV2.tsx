@@ -282,8 +282,8 @@ const PreviewHomeV2 = () => {
       <div className="overflow-x-hidden">
         <Header />
 
-        {/* Floating theme toggle */}
-        <div className="fixed z-50 bottom-5 left-5">
+        {/* Floating theme toggle - right side to avoid accessibility widget (bottom-4 left-4) */}
+        <div className="fixed z-50 bottom-5 right-5">
           <ThemeToggle />
         </div>
 

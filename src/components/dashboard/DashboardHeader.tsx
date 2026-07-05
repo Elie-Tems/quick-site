@@ -91,7 +91,7 @@ const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }:
             <Button variant="default" size="sm" asChild className="gap-1.5 font-semibold">
               <a href={siteUrl} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-4 w-4" />
-                <span>צפה באתר</span>
+                <span className="hidden sm:inline">צפה באתר</span>
               </a>
             </Button>
           )}
