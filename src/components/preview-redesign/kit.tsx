@@ -279,3 +279,19 @@ export const PageHeading = ({ title, subtitle }: { title: string; subtitle?: str
     {subtitle && <p className="pv-muted mt-1">{subtitle}</p>}
   </div>
 );
+
+// Storefront top bar for customer-facing vertical mockups
+export const StoreTopBar = ({ name, tagline, cta }: { name: string; tagline?: string; cta?: ReactNode }) => (
+  <header className="sticky top-12 z-30 border-b pv-border pv-surface2 backdrop-blur-xl">
+    <div className="max-w-6xl mx-auto flex items-center justify-between gap-3 px-4 md:px-6 h-16">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-emerald-600 shrink-0" />
+        <div className="min-w-0">
+          <div className="font-display font-bold pv-strong truncate">{name}</div>
+          {tagline && <div className="text-xs pv-muted truncate">{tagline}</div>}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">{cta}</div>
+    </div>
+  </header>
+);
