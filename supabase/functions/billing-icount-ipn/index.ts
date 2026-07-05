@@ -234,5 +234,25 @@ Deno.serve(async (req) => {
   await admin.from("businesses").update({ is_published: true, updated_at: now }).eq("id", businessId);
   await admin.from("publish_checkout_sessions").update({ status: "completed", payment_verified_at: now, updated_at: now }).eq("id", session.id);
 
+  // Welcome ("your site is live") + payment receipt emails (best effort - never
+  // block publishing). The formal tax invoice itself is issued by iCount per the
+  // merchant's account settings; this receipt confirms the charge to the customer.
+  const to = (session.email as string | null) ?? null;
+  if (to) {
+    const { data: bizRow } = await admin.from("businesses").select("name, slug").eq("id", businessId).maybeSingle();
+    const businessName = (bizRow as any)?.name ?? undefined;
+    const siteUrl = (bizRow as any)?.slug ? `https://siango.app/store/${(bizRow as any).slug}` : "https://siango.app";
+    const sendEmail = (type: string, ctx: Record<string, unknown>) =>
+      fetch(`${url}/functions/v1/send-platform-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
+        body: JSON.stringify({ type, to, ctx }),
+      }).then(() => {}).catch(() => {});
+    await sendEmail("siteReady", { businessName, siteUrl, recipientEmail: to, lang: "he" });
+    if (firstGross > 0) {
+      await sendEmail("paymentReceipt", { businessName, amountIls: firstGross, recipientEmail: to, lang: "he" });
+    }
+  }
+
   return json({ ok: true, published: true, recurringArmed: !!tokenId });
 });
