@@ -49,8 +49,9 @@ const PublishPayment = () => {
   const [showPayment, setShowPayment] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [agreedTerms, setAgreedTerms] = useState(false);
-  // Self-managed billing (iCount token) - flag-gated until tested + live.
-  const selfManaged = import.meta.env.VITE_BILLING_SELF_MANAGED === "true";
+  // Self-managed billing (iCount token) - gated by the build flag OR a ?billing=token
+  // URL override, so we can test the new flow in isolation before flipping it live.
+  const selfManaged = import.meta.env.VITE_BILLING_SELF_MANAGED === "true" || searchParams.get("billing") === "token";
   const [couponCode, setCouponCode] = useState("");
   const [couponInfo, setCouponInfo] = useState<{ discount_type: string; discount_value: number; duration: string } | null>(null);
   const [couponMsg, setCouponMsg] = useState("");
