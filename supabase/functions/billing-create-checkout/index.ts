@@ -98,12 +98,22 @@ Deno.serve(async (req) => {
     updated_at: new Date().toISOString(),
   }, { onConflict: "user_id" });
 
+  // The IPN gates on the shared secret in the URL (?secret=). It MUST be included
+  // here or iCount's callback is rejected 401 and the purchase never completes
+  // (no token stored, store never published, no welcome email/invoice). The IPN
+  // also matches the session by x_order_id, so a paypage-configured callback works
+  // as a fallback, but the per-sale ipn_url is the primary path.
+  const webhookSecret = Deno.env.get("ICOUNT_WEBHOOK_SECRET") ?? "";
+  const ipnUrl =
+    `${url}/functions/v1/billing-icount-ipn?session_token=${sessionToken}` +
+    `&secret=${encodeURIComponent(webhookSecret)}`;
+
   const label = coupon ? `פרסום אתר Siango (מבצע ${body.couponCode!.trim().toUpperCase()})` : "פרסום אתר Siango";
   const sale = await generateSale({
     paypageId,
     sumIls: firstGross,
     description: label,
-    ipnUrl: `${url}/functions/v1/billing-icount-ipn?session_token=${sessionToken}`,
+    ipnUrl,
     successUrl: `${APP_URL}/publish-payment?businessId=${businessId}&paid=1`,
     failureUrl: `${APP_URL}/publish-payment?businessId=${businessId}&failed=1`,
     xOrderId: sessionToken,
