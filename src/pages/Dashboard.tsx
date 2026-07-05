@@ -41,7 +41,6 @@ import DashboardEmail from "@/components/dashboard/DashboardEmail";
 import DashboardUpgrades from "@/components/dashboard/DashboardUpgrades";
 import DashboardLegal from "@/components/dashboard/DashboardLegal";
 import DashboardAdBudget from "@/components/dashboard/DashboardAdBudget";
-import UnpublishedBanner from "@/components/dashboard/UnpublishedBanner";
 import { useMyBusiness, useProfile } from "@/hooks/useBusiness";
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useOrders, useUpdateOrder } from "@/hooks/useOrders";
@@ -337,9 +336,12 @@ const Dashboard = () => {
       return;
     }
     
-    // Allow dashboard access even for unpublished businesses
-    // They will see a banner prompting them to complete payment
-    // No auto-redirect to publish-payment
+    // Unpublished businesses go to the payment page (storefront preview + payment popup).
+    // Only redirect once the business query has resolved to avoid a false redirect.
+    if (!businessLoading && business && !(business as any).is_published) {
+      navigate('/publish-payment', { replace: true });
+      return;
+    }
   }, [user, profile, business, authLoading, profileLoading, businessLoading, navigate]);
 
   // Sync products from database (preserve optimistically added products until DB refetch catches up)
@@ -772,11 +774,6 @@ const Dashboard = () => {
           
           <main className="flex-1 pb-20 md:pb-0">
             <SubscriptionAlert onManage={() => setCurrentView('subscription')} />
-            <div className="container max-w-7xl mx-auto px-4 py-6">
-              {business && !business.is_published && (
-                <UnpublishedBanner businessId={business.id} />
-              )}
-            </div>
             {renderContent()}
           </main>
         </div>
