@@ -145,3 +145,8 @@ verify_jwt = true
 
 [functions.email-automations]
 verify_jwt = true
+
+# resend-webhook receives Resend delivery/open events (no JWT); authenticates via
+# optional ?secret=RESEND_WEBHOOK_SECRET. Updates the platform_email_log audit.
+[functions.resend-webhook]
+verify_jwt = false
