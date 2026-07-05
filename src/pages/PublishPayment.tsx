@@ -375,7 +375,7 @@ const PublishPayment = () => {
   if (publishedSlug !== null) {
     const storeUrl = `${window.location.origin}/store/${publishedSlug}`;
     const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&color=000000&bgcolor=ffffff&data=${encodeURIComponent(storeUrl)}`;
-    const waText = encodeURIComponent(`החנות שלי עלתה לאוויר! בקרו כאן: ${storeUrl}`);
+    const waText = encodeURIComponent(`היי! בניתי אתר חנות חדש בכמה דקות 🛍️\nאפשר לראות ולהזמין מוצרים כאן:\n${storeUrl}\nמה דעתכם? 😊`);
     return (
       <>
         <SEOHead title="החנות שלך חיה! | סיאנגו" noindex={true} />
@@ -394,6 +394,17 @@ const PublishPayment = () => {
               className="rounded-xl border border-border"
             />
             <p className="text-xs text-muted-foreground font-mono break-all" dir="ltr">{storeUrl}</p>
+            {/* Ready-to-paste share message */}
+            <div className="w-full bg-muted/50 rounded-xl p-3 text-right text-sm text-foreground border border-border relative">
+              <p className="leading-relaxed whitespace-pre-line">{`היי! בניתי אתר חנות חדש בכמה דקות 🛍️\nאפשר לראות ולהזמין מוצרים כאן:\n${storeUrl}\nמה דעתכם? 😊`}</p>
+              <button
+                onClick={() => navigator.clipboard.writeText(`היי! בניתי אתר חנות חדש בכמה דקות 🛍️\nאפשר לראות ולהזמין מוצרים כאן:\n${storeUrl}\nמה דעתכם? 😊`).then(() => window.alert("הועתק ✓"))}
+                className="absolute top-2 left-2 text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-lg hover:bg-muted transition-colors"
+                aria-label="העתק הודעה"
+              >
+                העתק
+              </button>
+            </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full">
               <a
                 href={`https://wa.me/?text=${waText}`}
