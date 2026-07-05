@@ -53,6 +53,13 @@ const RedesignDashboard = lazy(() => import("./pages/preview-redesign/DashboardV
 const RedesignOnboarding = lazy(() => import("./pages/preview-redesign/OnboardingV2"));
 const RedesignLogin = lazy(() => import("./pages/preview-redesign/LoginV2"));
 const RedesignAdmin = lazy(() => import("./pages/preview-redesign/AdminV2"));
+const RedesignHomeMulti = lazy(() => import("./pages/preview-redesign/HomeMulti"));
+const RedesignServices = lazy(() => import("./pages/preview-redesign/ServicesStore"));
+const RedesignServicesDash = lazy(() => import("./pages/preview-redesign/ServicesDashboard"));
+const RedesignRealEstate = lazy(() => import("./pages/preview-redesign/RealEstateStore"));
+const RedesignRealEstateDash = lazy(() => import("./pages/preview-redesign/RealEstateDashboard"));
+const RedesignProject = lazy(() => import("./pages/preview-redesign/ProjectSite"));
+const RedesignProjectDash = lazy(() => import("./pages/preview-redesign/ProjectDashboard"));
 const PreviewWhatsApp = lazy(() => import("./pages/PreviewWhatsApp"));
 const PreviewEmail = lazy(() => import("./pages/PreviewEmail"));
 const OnboardingCompleteGate = lazy(() => import("./pages/OnboardingCompleteGate"));
@@ -162,6 +169,13 @@ const App = () => {
                   <Route path="/preview/redesign/onboarding" element={<RedesignOnboarding />} />
                   <Route path="/preview/redesign/login" element={<RedesignLogin />} />
                   <Route path="/preview/redesign/admin" element={<RedesignAdmin />} />
+                  <Route path="/preview/redesign/home-multi" element={<RedesignHomeMulti />} />
+                  <Route path="/preview/redesign/services" element={<RedesignServices />} />
+                  <Route path="/preview/redesign/services-dashboard" element={<RedesignServicesDash />} />
+                  <Route path="/preview/redesign/realestate" element={<RedesignRealEstate />} />
+                  <Route path="/preview/redesign/realestate-dashboard" element={<RedesignRealEstateDash />} />
+                  <Route path="/preview/redesign/project" element={<RedesignProject />} />
+                  <Route path="/preview/redesign/project-dashboard" element={<RedesignProjectDash />} />
                   <Route path="/preview/whatsapp" element={<PreviewWhatsApp />} />
                   <Route path="/preview/email" element={<PreviewEmail />} />
                   <Route path="/store" element={<StoreFront />} />
