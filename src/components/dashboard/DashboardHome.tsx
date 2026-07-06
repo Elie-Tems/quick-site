@@ -34,9 +34,9 @@ const DashboardHome = ({ stats, businessId, isSubscribed, hasAbout, onNavigate }
   ];
 
   const cards = [
-    { id: "orders", label: "הזמנות", value: String(stats.totalOrders), Icon: ShoppingCart, bg: "bg-blue-100", fg: "text-blue-600" },
-    { id: "sales", label: "מכירות", value: formatPrice(stats.totalSales), Icon: DollarSign, bg: "bg-green-100", fg: "text-green-600" },
-    { id: "products", label: "מוצרים", value: String(stats.totalProducts), Icon: Package, bg: "bg-purple-100", fg: "text-purple-600" },
+    { id: "orders", label: "הזמנות", value: String(stats.totalOrders), Icon: ShoppingCart, bg: "bg-blue-500/15", fg: "text-blue-500" },
+    { id: "sales", label: "מכירות", value: formatPrice(stats.totalSales), Icon: DollarSign, bg: "bg-emerald-500/15", fg: "text-emerald-500" },
+    { id: "products", label: "מוצרים", value: String(stats.totalProducts), Icon: Package, bg: "bg-violet-500/15", fg: "text-violet-500" },
   ];
 
   return (
@@ -46,16 +46,16 @@ const DashboardHome = ({ stats, businessId, isSubscribed, hasAbout, onNavigate }
       {/* Subscription banner - the one urgent thing. Without a paid subscription the
           store isn't live. Elegant, not scary; disappears once subscribed. */}
       {!isSubscribed && (
-        <div className="rounded-2xl bg-primary text-primary-foreground p-6 md:p-7 flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="rounded-2xl bg-gradient-to-l from-orange-600 to-amber-500 text-white p-6 md:p-7 flex flex-col sm:flex-row sm:items-center gap-4 shadow-lg">
           <div className="flex-1">
-            <p className="text-lg md:text-xl font-bold">כמעט שם! החנות שלך מוכנה</p>
-            <p className="text-sm text-primary-foreground/80 mt-1">נשאר רק לפתוח אותה לאוויר - והיא עולה מיד.</p>
+            <p className="text-lg md:text-xl font-bold">האתר שלך במצב תצוגה מוקדמת</p>
+            <p className="text-sm text-white/85 mt-1">שדרג ל-69 ₪ לחודש ללא התחייבות כדי שהחנות תעלה לאוויר.</p>
           </div>
           <Button
             onClick={() => onNavigate("subscription")}
-            className="bg-white text-primary hover:bg-white/90 font-semibold gap-2 shrink-0"
+            className="bg-white text-amber-700 hover:bg-white/90 font-bold gap-2 shrink-0"
           >
-            התחל - 69 ₪ לחודש <ChevronLeft className="h-4 w-4" />
+            שדרג עכשיו <ChevronLeft className="h-4 w-4" />
           </Button>
         </div>
       )}
@@ -86,11 +86,11 @@ const DashboardHome = ({ stats, businessId, isSubscribed, hasAbout, onNavigate }
               onClick={() => onNavigate(t.view)}
               className={`w-full flex items-center gap-3 p-3.5 rounded-xl border text-right transition-colors ${
                 t.emphasized
-                  ? "border-emerald-500/50 bg-emerald-50 hover:bg-emerald-100/70"
+                  ? "border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/15"
                   : "border-border bg-card hover:bg-muted/50"
               }`}
             >
-              <span className={`flex-1 font-medium ${t.emphasized ? "text-emerald-800" : "text-foreground"}`}>{t.label}</span>
+              <span className={`flex-1 font-medium ${t.emphasized ? "text-emerald-500" : "text-foreground"}`}>{t.label}</span>
               <span className="flex items-center gap-1 text-sm font-medium text-primary shrink-0">
                 המשך <ChevronLeft className="h-4 w-4" />
               </span>
