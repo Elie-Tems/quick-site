@@ -92,8 +92,32 @@ const AuthCallback = () => {
         
         console.log('✅ Profile found:', profile.id);
 
-        // (Welcome email removed - the "site is live" email already welcomes them,
-        // and a separate welcome a few minutes earlier was redundant.)
+        // One-time welcome email on first landing after sign-up. Fire-and-forget
+        // (never delays the redirect); guarded by welcome_sent so it goes out
+        // exactly once. Gated to genuinely-new accounts (< 24h old) so we never
+        // blast a "you just signed up" note at long-standing users.
+        if (!profile.welcome_sent && user.email) {
+          const acctAgeMs = user.created_at ? Date.now() - new Date(user.created_at).getTime() : 0;
+          const isNewAccount = acctAgeMs > 0 && acctAgeMs < 24 * 60 * 60 * 1000;
+          if (isNewAccount) {
+            const lang = (user.user_metadata?.preferred_language as string) || undefined;
+            supabase.functions
+              .invoke("send-platform-email", {
+                body: {
+                  type: "accountWelcome",
+                  to: user.email,
+                  ctx: { lang, dashboardUrl: `${window.location.origin}/dashboard` },
+                },
+              })
+              .then(({ data, error }) => {
+                // Mark sent only on a real send/skip so a transient failure retries next login.
+                if (!error && (data?.ok || data?.skipped)) {
+                  supabase.from("profiles").update({ welcome_sent: true }).eq("user_id", user.id);
+                }
+              })
+              .catch((e) => console.warn("welcome email failed (non-fatal):", e));
+          }
+        }
 
         // Step 2: Update auth_provider if it's a Google login
         if (user.app_metadata?.provider === "google") {

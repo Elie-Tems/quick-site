@@ -1,6 +1,4 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { PLATFORM_EMAILS } from "../_shared/email/platformEmails.ts";
-import { sendViaResend } from "../_shared/email/resend.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -250,19 +248,29 @@ Deno.serve(async (req) => {
     .update({ status: "completed", updated_at: now })
     .eq("id", session.id);
 
-  // Email the merchant that their site is live (no-ops until RESEND_API_KEY is set).
+  // Tell the merchant their site is live. Route through send-platform-email
+  // (service-role) so the send is audited in platform_email_log and honors
+  // unsubscribe - identical to the paid-publish path in billing-icount-ipn.
   try {
     if (user.email && business) {
       const appUrl = Deno.env.get("VITE_APP_URL") || "https://siango.app";
       // Send in the language the merchant signed up in (captured in user_metadata).
       const lang = (user.user_metadata?.preferred_language as any) || "he";
-      const { subject, html } = PLATFORM_EMAILS.siteReady({
-        businessName: business.name,
-        siteUrl: `${appUrl}/store/${business.slug}`,
-        dashboardUrl: `${appUrl}/dashboard`,
-        lang,
+      await fetch(`${supabaseUrl}/functions/v1/send-platform-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceKey}` },
+        body: JSON.stringify({
+          type: "siteReady",
+          to: user.email,
+          ctx: {
+            businessName: business.name,
+            siteUrl: `${appUrl}/store/${business.slug}`,
+            dashboardUrl: `${appUrl}/dashboard`,
+            recipientEmail: user.email,
+            lang,
+          },
+        }),
       });
-      await sendViaResend({ to: user.email, subject, html });
     }
   } catch (err) {
     console.error("site-ready email failed (non-fatal):", err);
