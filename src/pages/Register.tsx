@@ -131,6 +131,31 @@ const Register = () => {
           setSubmitError(error.message);
         }
       } else {
+        // Email signups go straight to /onboarding (they never pass through
+        // /auth/callback, where the OAuth welcome fires), so send the one-time
+        // welcome here. Fire-and-forget; guarded by welcome_sent so a later
+        // login can't re-welcome them.
+        try {
+          const { data: { user: newUser } } = await supabase.auth.getUser();
+          if (newUser?.email) {
+            supabase.functions
+              .invoke("send-platform-email", {
+                body: {
+                  type: "accountWelcome",
+                  to: newUser.email,
+                  ctx: { lang: language, dashboardUrl: `${window.location.origin}/dashboard` },
+                },
+              })
+              .then(({ data, error: mailErr }) => {
+                if (!mailErr && (data?.ok || data?.skipped)) {
+                  supabase.from("profiles").update({ welcome_sent: true }).eq("user_id", newUser.id);
+                }
+              })
+              .catch((e) => console.warn("welcome email failed (non-fatal):", e));
+          }
+        } catch (e) {
+          console.warn("welcome email dispatch skipped (non-fatal):", e);
+        }
         navigate("/onboarding");
       }
     } catch (err) {
