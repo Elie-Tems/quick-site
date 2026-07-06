@@ -41,6 +41,7 @@ export interface ProductCategory {
 export interface OnboardingData {
   // Step 0: Business Type
   businessType: BusinessType | null;
+  businessSubType?: string;
 
   // Step 1: Brand Style
   brandSource: "website" | "upload" | "auto";
