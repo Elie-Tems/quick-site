@@ -44,7 +44,7 @@ export const StepNavigation = ({
         {reassurance}
       </p>
     )}
-    <div className={`flex items-center justify-between gap-3 ${reassurance ? "pt-4 mt-3" : "pt-6 mt-6"} border-t border-border`}>
+    <div className={`flex items-center justify-between gap-3 ${reassurance ? "pt-4 mt-3" : "pt-6 mt-6"} border-t`} style={{ borderColor: "var(--pv-border)" }}>
       {/* Back button */}
       {showBack && onBack ? (
         <Button

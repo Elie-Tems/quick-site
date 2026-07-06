@@ -132,15 +132,15 @@ const StepTemplate = ({ data, updateData, onNext, onBack }: Props) => {
   };
 
   return (
-    <div className="space-y-8" dir="rtl">
+    <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-medium text-foreground mb-1">איך נראה האתר שלכם?</h1>
-        <p className="text-sm text-muted-foreground">בחרו מבנה + צבעים — הכל ניתן לשינוי אחר כך</p>
+        <h2 className="text-2xl font-display font-bold pv-strong mb-1">איך נראה האתר שלכם?</h2>
+        <p className="text-sm pv-muted">בחרו מבנה + צבעים — הכל ניתן לשינוי אחר כך</p>
       </div>
 
       {/* Layout selection */}
       <div>
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">מבנה האתר</p>
+        <p className="text-xs font-medium pv-faint uppercase tracking-wider mb-3">מבנה האתר</p>
         <div className="grid grid-cols-2 gap-3">
           {LAYOUT_ORDER.map((layoutId, i) => {
             const layout = storeLayouts[layoutId];
@@ -154,23 +154,24 @@ const StepTemplate = ({ data, updateData, onNext, onBack }: Props) => {
                 onClick={() => handleLayoutSelect(layoutId)}
                 className={`rounded-2xl border-2 p-3 text-right transition-all ${
                   isSelected
-                    ? 'border-primary bg-primary/5 shadow-sm'
-                    : 'border-border bg-card hover:border-primary/30'
+                    ? 'border-primary bg-primary/10 shadow-sm'
+                    : 'pv-hover'
                 }`}
+                style={isSelected ? undefined : { borderColor: "var(--pv-border)", background: "var(--pv-surface2)" }}
               >
-                <div className="w-full aspect-[80/56] rounded-lg overflow-hidden bg-muted mb-3">
+                <div className="w-full aspect-[80/56] rounded-lg overflow-hidden mb-3" style={{ background: "var(--pv-surface)" }}>
                   <LayoutWireframe id={layoutId} primaryColor={currentPrimaryColor} />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-foreground">{layout.name}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-sm font-medium pv-strong">{layout.name}</p>
+                    <p className="text-xs pv-muted mt-0.5">
                       {layout.description.split('.')[0]}
                     </p>
                   </div>
                   {isSelected && (
                     <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-primary-foreground" />
+                      <Check className="w-3 h-3 text-white" />
                     </div>
                   )}
                 </div>
@@ -182,7 +183,7 @@ const StepTemplate = ({ data, updateData, onNext, onBack }: Props) => {
 
       {/* Color palette selection */}
       <div>
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">ערכת צבעים</p>
+        <p className="text-xs font-medium pv-faint uppercase tracking-wider mb-3">ערכת צבעים</p>
         <div className="flex flex-wrap gap-2">
           {paletteList.map(palette => {
             const isSelected = selectedPalette === palette.id;
@@ -192,22 +193,21 @@ const StepTemplate = ({ data, updateData, onNext, onBack }: Props) => {
                 onClick={() => handlePaletteSelect(palette.id)}
                 title={palette.name}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
-                  isSelected
-                    ? 'border-primary bg-primary/5 text-foreground shadow-sm'
-                    : 'border-border bg-card text-muted-foreground hover:border-primary/30'
+                  isSelected ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'pv-muted'
                 }`}
+                style={isSelected ? undefined : { borderColor: "var(--pv-border)", background: "var(--pv-surface2)" }}
               >
                 <span className="flex gap-0.5 shrink-0">
                   {palette.swatch.slice(0, 2).map((hex, j) => (
                     <span
                       key={j}
-                      className="w-3 h-3 rounded-full border border-black/10"
+                      className="w-3 h-3 rounded-full border border-black/20"
                       style={{ backgroundColor: hex }}
                     />
                   ))}
                 </span>
                 {palette.name}
-                {isSelected && <Check className="w-3 h-3 text-primary" />}
+                {isSelected && <Check className="w-3 h-3" />}
               </button>
             );
           })}
@@ -216,14 +216,13 @@ const StepTemplate = ({ data, updateData, onNext, onBack }: Props) => {
           <button
             onClick={() => { handlePaletteSelect('custom'); setShowColorPicker(true); }}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
-              selectedPalette === 'custom'
-                ? 'border-primary bg-primary/5 text-foreground shadow-sm'
-                : 'border-dashed border-border bg-card text-muted-foreground hover:border-primary/30'
+              selectedPalette === 'custom' ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'pv-muted'
             }`}
+            style={selectedPalette === 'custom' ? undefined : { borderStyle: "dashed", borderColor: "var(--pv-border)", background: "var(--pv-surface2)" }}
           >
             <Pipette className="w-3.5 h-3.5" />
             צבע חופשי
-            {selectedPalette === 'custom' && <Check className="w-3 h-3 text-primary" />}
+            {selectedPalette === 'custom' && <Check className="w-3 h-3" />}
           </button>
         </div>
 
@@ -237,31 +236,33 @@ const StepTemplate = ({ data, updateData, onNext, onBack }: Props) => {
               type="color"
               value={customColor}
               onChange={e => handleCustomColorChange(e.target.value)}
-              className="w-10 h-10 rounded-xl border border-border cursor-pointer p-0.5"
+              className="w-10 h-10 rounded-xl cursor-pointer p-0.5"
+              style={{ borderColor: "var(--pv-border)", background: "var(--pv-surface2)" }}
             />
             <div>
-              <p className="text-xs font-medium text-foreground">{customColor}</p>
-              <p className="text-xs text-muted-foreground">לחצו לבחירת צבע ראשי</p>
+              <p className="text-xs font-medium pv-text">{customColor}</p>
+              <p className="text-xs pv-faint">לחצו לבחירת צבע ראשי</p>
             </div>
             <div
-              className="w-8 h-8 rounded-full border border-border shrink-0"
-              style={{ backgroundColor: customColor }}
+              className="w-8 h-8 rounded-full shrink-0"
+              style={{ backgroundColor: customColor, border: "1px solid var(--pv-border)" }}
             />
           </motion.div>
         )}
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 pb-2">
+      <div className="flex gap-3 pt-2">
         <button
           onClick={onBack}
-          className="flex-none px-5 h-12 rounded-xl border border-border text-sm hover:bg-muted transition-colors"
+          className="flex-none px-5 h-12 rounded-xl border text-sm pv-muted pv-hover transition-colors"
+          style={{ borderColor: "var(--pv-border)" }}
         >
           חזרה
         </button>
         <button
           onClick={onNext}
-          className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+          className="flex-1 h-12 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
         >
           המשיכו ←
         </button>

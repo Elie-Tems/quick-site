@@ -27,38 +27,38 @@ const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
   const isValid = !!data.businessName.trim();
 
   return (
-    <div className="space-y-8" dir="rtl">
+    <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-medium text-foreground mb-1">ספרו לנו על העסק</h1>
-        <p className="text-sm text-muted-foreground">פרטים בסיסיים — אפשר לשנות בכל עת</p>
+        <h2 className="text-2xl font-display font-bold pv-strong mb-1">ספרו לנו על העסק</h2>
+        <p className="text-sm pv-muted">פרטים בסיסיים — אפשר לשנות בכל עת</p>
       </div>
 
       {/* Business name */}
       <div className="space-y-2">
-        <Label htmlFor="businessName" className="font-medium">שם העסק *</Label>
+        <Label htmlFor="businessName" className="font-medium pv-text">שם העסק *</Label>
         <Input
           id="businessName"
           placeholder="למשל: פרחי שושנה, מאפיית אמא, גאדג׳טס"
           value={data.businessName}
           onChange={e => updateData({ businessName: e.target.value })}
-          className="h-12 text-base rounded-xl"
+          className="h-12 text-base rounded-xl [background:var(--pv-surface2)] [border-color:var(--pv-border)] [color:var(--pv-text)] placeholder:[color:var(--pv-faint)] focus-visible:ring-primary/40"
         />
       </div>
 
       {/* Logo — optional */}
       <div className="space-y-2">
-        <Label className="font-medium">לוגו</Label>
-        <label className="flex items-center gap-4 p-4 rounded-xl border border-dashed border-border hover:border-primary/50 cursor-pointer transition-colors">
+        <Label className="font-medium pv-text">לוגו</Label>
+        <label className="flex items-center gap-4 p-4 rounded-xl border border-dashed cursor-pointer transition-colors hover:border-primary/50" style={{ borderColor: "var(--pv-border)", background: "var(--pv-surface2)" }}>
           {logoPreview ? (
             <img src={logoPreview} alt="logo" className="w-16 h-16 object-contain rounded-lg" />
           ) : (
-            <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
-              <Upload className="w-6 h-6 text-muted-foreground" />
+            <div className="w-16 h-16 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--pv-surface)" }}>
+              <Upload className="w-6 h-6 text-primary/60" />
             </div>
           )}
           <div>
-            <p className="text-sm font-medium">{logoPreview ? "לוגו הועלה" : "העלו לוגו"}</p>
-            <p className="text-xs text-muted-foreground">PNG, JPG, SVG</p>
+            <p className="text-sm font-medium pv-text">{logoPreview ? "לוגו הועלה" : "העלו לוגו"}</p>
+            <p className="text-xs pv-faint">PNG, JPG, SVG</p>
           </div>
           <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
         </label>

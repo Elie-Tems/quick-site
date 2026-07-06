@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import SEOHead from "@/components/SEOHead";
-import { useNavigate, Link } from "react-router-dom";
-import { ArrowRight, Eye, Info } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Eye, Store, Building2, Phone, Package, Palette, Rocket, Check } from "lucide-react";
 import logoDarkBg from "@/assets/logo-dark-bg.png";
-import { Button } from "@/components/ui/button";
-import OnboardingProgress from "@/components/onboarding/OnboardingProgress";
+import { motion, AnimatePresence } from "framer-motion";
+import { AuroraBg, Card, PreviewThemeRoot } from "@/components/preview-redesign/kit";
 import StepBusinessType from "@/components/onboarding/StepBusinessType";
 import StepIdentity from "@/components/onboarding/StepIdentity";
 import StepContact from "@/components/onboarding/StepContact";
-import StepVisuals from "@/components/onboarding/StepVisuals";
 import StepTemplate from "@/components/onboarding/StepTemplate";
 import StepProducts from "@/components/onboarding/StepProducts";
 import StepFinish from "@/components/onboarding/StepFinish";
@@ -22,6 +21,14 @@ import { useMyBusiness } from "@/hooks/useBusiness";
 import { useProducts } from "@/hooks/useProducts";
 import { useBanners } from "@/hooks/useBanners";
 import { useProductCategories } from "@/hooks/useProductCategories";
+
+const ONBOARDING_STEPS = [
+  { id: 1, label: "תחום", icon: Store },
+  { id: 2, label: "פרטים", icon: Building2 },
+  { id: 3, label: "קשר", icon: Phone },
+  { id: 4, label: "מוצרים", icon: Package },
+  { id: 5, label: "תבנית", icon: Palette },
+];
 
 export type { BusinessCategory };
 
@@ -254,46 +261,87 @@ const Onboarding = () => {
     }
   };
 
+  const pct = (Math.min(currentStep, 5) / 5) * 100;
+
   return (
     <>
       <SEOHead title="Onboarding | סיאנגו" noindex={true} />
-    <div className="theme-refined min-h-screen bg-surface-1">
-      {/* Header */}
-      <header className="fixed top-0 right-0 left-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
-        <div className="container flex items-center justify-between h-16 relative">
-          <div className="flex items-center gap-3">
-            {isPreviewMode && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm">
-                <Eye className="w-4 h-4" />
-                <span>מצב תצוגה</span>
+      <PreviewThemeRoot>
+        <AuroraBg />
+        <div className="max-w-2xl mx-auto px-4 py-10 min-h-screen" dir="rtl">
+
+          {/* Logo + preview badge */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="w-24" />
+            <img src={logoDarkBg} alt="Siango" className="h-10 w-auto" />
+            {isPreviewMode ? (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/30 rounded-full text-xs text-primary">
+                <Eye className="w-3.5 h-3.5" />
+                מצב תצוגה
               </div>
-            )}
+            ) : <div className="w-24" />}
           </div>
-          
-          <div className="absolute left-1/2 transform -translate-x-1/2">
-            <img src={logoDarkBg} alt="Siango" className="h-12 w-auto" />
-          </div>
-          
-          <OnboardingProgress currentStep={getDisplayStep()} totalSteps={totalSteps} />
-        </div>
-      </header>
 
-      {/* Content */}
-      <main className="pt-24 pb-12 px-4">
-        <div className="max-w-2xl mx-auto">
-          {renderStep()}
+          {/* Step indicators — only shown for steps 1-5 */}
+          {currentStep <= 5 && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                {ONBOARDING_STEPS.map((s) => {
+                  const done = s.id < currentStep;
+                  const on = s.id === currentStep;
+                  return (
+                    <div key={s.id} className="flex flex-col items-center gap-2 flex-1">
+                      <motion.div
+                        animate={{ scale: on ? 1.1 : 1 }}
+                        className={`w-11 h-11 rounded-2xl flex items-center justify-center border transition-colors ${
+                          done ? "bg-primary border-primary text-white"
+                            : on ? "bg-primary/15 border-primary/50 text-primary"
+                            : "pv-surface2 pv-border pv-faint"
+                        }`}
+                      >
+                        {done ? <Check className="w-5 h-5" /> : <s.icon className="w-5 h-5" />}
+                      </motion.div>
+                      <span className={`text-[11px] md:text-xs text-center ${on ? "text-primary font-medium" : "pv-muted"}`}>{s.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="h-1.5 rounded-full pv-surface2 overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-l from-primary via-emerald-400 to-lime-500"
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+            </div>
+          )}
 
-          {/* Persistent reassurance - shown on every build step so the merchant
-              always knows nothing here is final and everything is editable later. */}
-          <div className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-border bg-muted/30 px-4 py-3 text-center">
-            <Info className="w-4 h-4 text-primary shrink-0" />
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              כל מה שתגדירו כאן - תבנית, צבעים, מוצרים, פרטים - ניתן לשינוי ולעריכה בכל רגע מלוח הניהול. לא מתחייבים לכלום עכשיו.
+          {/* Step content */}
+          {currentStep <= 5 ? (
+            <Card className="p-6 md:p-8">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -30 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {renderStep()}
+                </motion.div>
+              </AnimatePresence>
+            </Card>
+          ) : (
+            renderStep()
+          )}
+
+          {currentStep <= 5 && (
+            <p className="text-center pv-faint text-xs mt-5">
+              כל הפרטים ניתנים לשינוי בכל עת מלוח הניהול
             </p>
-          </div>
+          )}
         </div>
-      </main>
-    </div>
+      </PreviewThemeRoot>
     </>
   );
 };

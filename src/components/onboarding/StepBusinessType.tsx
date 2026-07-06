@@ -58,10 +58,10 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
   const selected = data.businessType ?? null;
 
   return (
-    <div className="space-y-8" dir="rtl">
+    <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-medium text-foreground mb-1">במה עוסק העסק שלכם?</h1>
-        <p className="text-sm text-muted-foreground">נתאים את הכלים ואת החנות בדיוק לצרכים שלכם</p>
+        <h2 className="text-2xl font-display font-bold pv-strong mb-1">במה עוסק העסק שלכם?</h2>
+        <p className="text-sm pv-muted">נתאים את הכלים ואת החנות בדיוק לצרכים שלכם</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -77,24 +77,26 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
               className={`rounded-2xl border-2 p-5 text-right transition-all ${
                 isSelected
                   ? `${t.activeBorder} ${t.activeBg} shadow-md`
-                  : "border-border bg-card hover:border-primary/30 hover:bg-muted/30"
+                  : "pv-border pv-surface pv-hover"
               }`}
+              style={isSelected ? undefined : { borderColor: "var(--pv-border)" }}
             >
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 ${t.iconBg}`}>
                 <t.icon className={`w-5 h-5 ${t.iconColor}`} />
               </div>
-              <p className="text-sm font-medium text-foreground mb-1">{t.title}</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">{t.desc}</p>
+              <p className="text-sm font-semibold pv-strong mb-1">{t.title}</p>
+              <p className="text-xs pv-muted leading-relaxed">{t.desc}</p>
             </motion.button>
           );
         })}
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 pt-2">
         {onBack && (
           <button
             onClick={onBack}
-            className="flex-none px-5 h-12 rounded-xl border border-border text-sm hover:bg-muted transition-colors"
+            className="flex-none px-5 h-12 rounded-xl border text-sm pv-muted pv-hover transition-colors"
+            style={{ borderColor: "var(--pv-border)" }}
           >
             חזרה
           </button>
@@ -102,7 +104,7 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
         <button
           onClick={onNext}
           disabled={!selected}
-          className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex-1 h-12 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           המשיכו ←
         </button>
