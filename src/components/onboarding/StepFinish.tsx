@@ -64,7 +64,15 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
       const colorPalette = branding?.colorPalette || [
         template.theme.accentColor, template.theme.mutedColor, template.theme.cardColor,
       ];
-      const categoryConfig = getCategoryConfig(data.businessCategory);
+      // Map businessType → businessCategory for DB compat when no specific category was chosen
+      const businessTypeLabels: Record<string, string> = {
+        services: "שירותים", realestate: "נדל\"ן", nonprofit: "עמותה",
+      };
+      const effectiveCategory = data.businessCategory !== "other" ? data.businessCategory : "other";
+      const effectiveCustomName = data.customCategoryName
+        || (data.businessType ? businessTypeLabels[data.businessType] : undefined);
+
+      const categoryConfig = getCategoryConfig(effectiveCategory);
       const categoriesToCreate = data.productCategories?.length
         ? data.productCategories.slice()
         : categoryConfig.categories.map((name, idx) => ({ id: `config-${idx}-${name}`, name, description: undefined }));
@@ -79,7 +87,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         colorPalette,
         brandStyle: branding?.brandStyle || "modern",
         businessCategory: data.businessCategory,
-        customCategoryName: data.customCategoryName,
+        customCategoryName: effectiveCustomName,
         isReligiousAudience: data.isReligiousAudience,
         paymentEnabled: false,
         paymentProvider: null,

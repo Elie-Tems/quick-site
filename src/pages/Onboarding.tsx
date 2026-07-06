@@ -5,6 +5,7 @@ import { ArrowRight, Eye, Info } from "lucide-react";
 import logoDarkBg from "@/assets/logo-dark-bg.png";
 import { Button } from "@/components/ui/button";
 import OnboardingProgress from "@/components/onboarding/OnboardingProgress";
+import StepBusinessType from "@/components/onboarding/StepBusinessType";
 import StepIdentity from "@/components/onboarding/StepIdentity";
 import StepContact from "@/components/onboarding/StepContact";
 import StepVisuals from "@/components/onboarding/StepVisuals";
@@ -13,6 +14,7 @@ import StepFinish from "@/components/onboarding/StepFinish";
 import OnboardingComplete from "@/components/onboarding/OnboardingComplete";
 import { StoreTemplateId } from "@/lib/storeTemplates";
 import { BusinessCategory } from "@/lib/categoryConfig";
+import { BusinessType } from "@/components/onboarding/StepBusinessType";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyBusiness } from "@/hooks/useBusiness";
@@ -29,6 +31,9 @@ export interface ProductCategory {
 }
 
 export interface OnboardingData {
+  // Step 0: Business Type
+  businessType: BusinessType | null;
+
   // Step 1: Brand Style
   brandSource: "website" | "upload" | "auto";
   websiteUrl?: string;
@@ -98,6 +103,7 @@ const Onboarding = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
   
   const [data, setData] = useState<OnboardingData>({
+    businessType: null,
     brandSource: "upload",
     storeTemplate: "luxury-boutique", // Default template since step 3 was removed
     businessName: localStorage.getItem("onboarding_business") || "",
@@ -119,8 +125,8 @@ const Onboarding = () => {
     paymentConnected: false,
   });
 
-  // Flow: 1=Identity, 2=Contact, 3=Products, 4=Visuals, 5=Finish
-  const totalSteps = 5;
+  // Flow: 1=BusinessType, 2=Identity, 3=Contact, 4=Products, 5=Visuals, 6=Finish
+  const totalSteps = 6;
 
   // Scroll to top when step changes
   useEffect(() => {
@@ -231,14 +237,16 @@ const Onboarding = () => {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <StepIdentity data={data} updateData={updateData} onNext={nextStep} onBack={() => navigate(-1)} />;
+        return <StepBusinessType data={data} updateData={updateData} onNext={nextStep} onBack={() => navigate(-1)} />;
       case 2:
-        return <StepContact data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+        return <StepIdentity data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 3:
-        return <StepProducts data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+        return <StepContact data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 4:
-        return <StepVisuals data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+        return <StepProducts data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 5:
+        return <StepVisuals data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+      case 6:
         return <StepFinish data={data} updateData={updateData} onBack={prevStep} />;
       default:
         return null;
