@@ -104,7 +104,8 @@ serve(async (req) => {
 
     const res = await billToken({
       ccTokenId: s.cc_token_id, sumIls: amount, description: "מנוי פרסום Siango",
-      clientId: clientId ?? undefined, customClientId: s.user_id,
+      // Only a REAL captured iCount client id; never our Siango UUID (can decline).
+      ...(clientId ? { clientId } : {}),
       email: email ?? undefined, isTest,
     });
 

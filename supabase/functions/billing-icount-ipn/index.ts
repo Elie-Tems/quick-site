@@ -54,7 +54,7 @@ function tokenIdFromList(resp: Record<string, unknown>): string | null {
 // iCount needs the client id alongside the token to charge (cc/bill). Probe the
 // IPN payload (and a get_cc_tokens list) for it.
 function extractClientId(p: Record<string, unknown>): string | null {
-  for (const k of ["client_id", "clientId", "cid", "custom_client_id"]) {
+  for (const k of ["customer_id", "client_id", "clientId", "cid"]) {
     const v = p[k];
     if (typeof v === "number" && isFinite(v)) return String(v);
     if (typeof v === "string" && v.trim() !== "") return v.trim();
@@ -166,7 +166,10 @@ Deno.serve(async (req) => {
   if (firstGross > 0) {
     const res = await billToken({
       ccTokenId: tokenId, sumIls: firstGross,
-      clientId: clientId ?? undefined, customClientId: userId,
+      // Only pass a REAL iCount client id if we captured one; never send our own
+      // Siango UUID as custom_client_id (iCount doesn't know it and it can cause a
+      // decline). The proven-working charges (0567504/0707098) sent cc_token_id alone.
+      ...(clientId ? { clientId } : {}),
       description: "פרסום אתר Siango - חיוב ראשון",
       email: (session.email as string) ?? undefined, isTest,
     });
