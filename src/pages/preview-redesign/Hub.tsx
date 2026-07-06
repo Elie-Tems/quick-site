@@ -36,8 +36,10 @@ const GROUPS: { title: string; items: { to: string; icon: typeof Home; title: st
   {
     title: "תרומות וגיוס המונים",
     items: [
-      { to: "/preview/redesign/nonprofit", icon: Heart, title: "עמותה", desc: "תדמית, סיפור, אלבומים, תרומה כללית + לפרויקטים, סעיף 46", tag: "תרומות", tone: "primary" },
-      { to: "/preview/redesign/crowdfunding", icon: HandHeart, title: "גיוס המונים", desc: "עמוד קמפיין: יעד, מתגייסים, ימים, ומדרגות תמיכה", tag: "קמפיין", tone: "primary" },
+      { to: "/preview/redesign/nonprofit", icon: Heart, title: "עמותה - אתר", desc: "תדמית, סיפור, אלבומים, תרומה כללית + לפרויקטים, סעיף 46", tag: "צד לקוח", tone: "primary" },
+      { to: "/preview/redesign/nonprofit-dashboard", icon: LayoutDashboard, title: "עמותה - ניהול", desc: "תורמים, הוראות קבע, פרויקטים, עדכונים, קבלות 46", tag: "צד ארגון", tone: "primary" },
+      { to: "/preview/redesign/crowdfunding", icon: HandHeart, title: "גיוס המונים - קמפיין", desc: "עמוד קמפיין: יעד, מתגייסים, ימים, ומדרגות תמיכה", tag: "צד לקוח", tone: "primary" },
+      { to: "/preview/redesign/campaign-dashboard", icon: LayoutDashboard, title: "גיוס המונים - ניהול", desc: "תומכים, מדרגות, גיוס לאורך זמן, עדכונים", tag: "צד יוצר", tone: "primary" },
     ],
   },
   {
