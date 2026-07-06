@@ -33,6 +33,10 @@ import { startPayplusPayment } from "@/hooks/usePayplus";
 import { toast } from "sonner";
 import { getTemplate, type StoreTemplateId } from "@/lib/storeTemplates";
 import { getStoreFont, loadStoreFonts } from "@/lib/storeFonts";
+import {
+  ClassicLayout, ServiceLayout, PropertyLayout, MarketLayout,
+  type StorefrontLayoutProps,
+} from "@/components/storefront/layouts";
 
 type ViewState = 'shopping' | 'checkout' | 'thankyou' | 'cart' | 'favorites';
 
@@ -687,6 +691,68 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     sku: p.sku,
   }));
 
+  // Build shared layout props — all 4 layouts receive the same data object
+  const layoutProps: StorefrontLayoutProps = {
+    businessName: business.name,
+    businessSlug: business.slug || slug || '',
+    logoUrl: business.logo_url || undefined,
+    phone: business.phone || undefined,
+    tagline: business.tagline as string | null | undefined,
+    ctaText: business.cta_text as string | null | undefined,
+    heroTitle: business.hero_title as string | null | undefined,
+    heroBadge: b?.hero_badge || undefined,
+    heroImageUrl: b?.hero_image_url || undefined,
+    heroBenefits: b?.hero_benefits ?? undefined,
+    primaryColor: business.primary_color || undefined,
+    promoText: b?.promo_text || undefined,
+    aboutText: b?.about_text || undefined,
+    whatsappEnabled: business.whatsapp_enabled ?? true,
+    whatsappMessage: b?.whatsapp_message || undefined,
+    showMarqueeBar: b?.marquee_bar_enabled ?? true,
+    businessCategory: b?.business_category as BusinessCategory | undefined,
+    // Only pass reviews if the business has paid for the feature and wants them shown
+    reviewsCache: (b?.reviews_paid && (b?.reviews_show_on_store ?? true)) ? b?.google_reviews_cache : null,
+    template,
+    products: categories.length > 0 ? storeProductsFiltered : storeProducts,
+    categories,
+    selectedCategoryId,
+    onSelectCategory: setSelectedCategoryId,
+    banners: storeBanners,
+    campaignPopup: activeCampaign?.popup_enabled ? {
+      enabled: true,
+      campaignId: activeCampaign.id,
+      title: activeCampaign.popup_title || undefined,
+      text: activeCampaign.popup_text || undefined,
+      ctaText: activeCampaign.popup_cta_text || undefined,
+      ctaUrl: activeCampaign.popup_cta_url || undefined,
+      couponCode: activeCampaign.popup_coupon_code || undefined,
+      accent: business.primary_color || undefined,
+    } : undefined,
+    cartItems,
+    favoritesCount: favoriteIds.size,
+    onAddToCart: handleAddToCart,
+    onUpdateQuantity: handleUpdateQuantity,
+    onRemoveFromCart: handleRemoveFromCart,
+    onCheckout: handleCheckout,
+    onNavigateToCart: () => setViewState('cart'),
+    onNavigateToFavorites: () => setViewState('favorites'),
+    onScrollToProducts: scrollToProductsSection,
+    onNavigateHome: goToShopping,
+    favoriteIds,
+    onToggleFavorite: toggleFavorite,
+    hasPayment: business.payment_enabled ?? false,
+  };
+
+  // Pick layout component based on template layoutId
+  const LayoutComponent = (() => {
+    switch (template?.layoutId) {
+      case 'service':   return ServiceLayout;
+      case 'property':  return PropertyLayout;
+      case 'market':    return MarketLayout;
+      default:          return ClassicLayout;
+    }
+  })();
+
   // Main shopping view
   return (
     <>
@@ -699,112 +765,12 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       )}
 
       <StoreSEO
-        business={business} 
-        products={seoProducts} 
-        storeUrl={storeUrl} 
+        business={business}
+        products={seoProducts}
+        storeUrl={storeUrl}
       />
 
-      <StoreHeader
-        businessName={business.name}
-        logoUrl={business.logo_url || undefined}
-        phone={business.phone || undefined}
-        showMarqueeBar={(business as any).marquee_bar_enabled ?? true}
-        whatsappEnabled={business.whatsapp_enabled ?? false}
-        cartItemsCount={totalCartItems}
-        favoritesCount={favoriteIds.size}
-        promoText={business.promo_text || undefined}
-        primaryColor={business.primary_color || undefined}
-        businessCategory={(business as any).business_category as BusinessCategory}
-        storeCategories={categories}
-        selectedCategoryId={selectedCategoryId}
-        onSelectCategory={setSelectedCategoryId}
-        aboutPath={`/store/${business.slug || slug}/about`}
-        onNavigateHome={goToShopping}
-        onScrollToProducts={scrollToProductsSection}
-        onNavigateToFavorites={() => setViewState('favorites')}
-        onNavigateToCart={() => setViewState('cart')}
-      />
-
-      <main>
-        <StoreHero
-          businessName={business.name}
-          // חשוב: לא לנרמל ל-undefined כדי לאפשר "" כמצב "הסתר"
-          tagline={business.tagline as string | null | undefined}
-          ctaText={business.cta_text as string | null | undefined}
-          heroTitle={business.hero_title as string | null | undefined}
-          heroBadge={business.hero_badge || undefined}
-          logoUrl={business.logo_url || undefined}
-          heroImageUrl={business.hero_image_url || undefined}
-          heroBenefits={business.hero_benefits ?? undefined}
-          primaryColor={business.primary_color || undefined}
-          businessCategory={(business as any).business_category as BusinessCategory}
-          heroStyle={template?.heroStyle}
-        />
-
-        {storeBanners.length > 0 && (
-          <StoreBanners banners={storeBanners} />
-        )}
-
-        {activeCampaign?.popup_enabled && (activeCampaign.popup_title || activeCampaign.popup_text) && (
-          <StorePromoPopup
-            campaignId={activeCampaign.id}
-            title={activeCampaign.popup_title}
-            text={activeCampaign.popup_text}
-            ctaText={activeCampaign.popup_cta_text}
-            ctaUrl={activeCampaign.popup_cta_url}
-            couponCode={activeCampaign.popup_coupon_code}
-            accent={business.primary_color || undefined}
-          />
-        )}
-
-        <StoreProducts
-          products={categories.length > 0 ? storeProductsFiltered : storeProducts}
-          onAddToCart={handleAddToCart}
-          favoriteIds={favoriteIds}
-          onToggleFavorite={toggleFavorite}
-          productCardStyle={template?.productCardStyle}
-          productGrid={template?.productGrid}
-        />
-
-        {business.about_text && (
-          <StoreAbout
-            aboutText={business.about_text}
-            businessName={business.name}
-          />
-        )}
-
-        {b?.reviews_paid && (b?.reviews_show_on_store ?? true) && (
-          <StoreReviews cache={b?.google_reviews_cache} primaryColor={business.primary_color || undefined} />
-        )}
-
-        <div className="border-t border-black/10 mt-8 px-4">
-          <NewsletterSignup businessId={business.id} primaryColor={business.primary_color || undefined} />
-        </div>
-      </main>
-
-      <StoreFooter
-        businessName={business.name}
-        phone={business.phone || undefined}
-        email={business.email || undefined}
-        storeSlug={business.slug || slug}
-      />
-
-      <FloatingCart
-        items={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemove={handleRemoveFromCart}
-        onCheckout={handleCheckout}
-        hasPayment={business.payment_enabled ?? false}
-      />
-
-      {/* WhatsApp Floating Button */}
-      {business.phone && (business.whatsapp_enabled ?? true) && (
-        <FloatingWhatsApp
-          phone={business.phone}
-          message={(business as any).whatsapp_message || undefined}
-          businessName={business.name}
-        />
-      )}
+      <LayoutComponent {...layoutProps} />
     </>
   );
 };

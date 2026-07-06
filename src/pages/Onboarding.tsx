@@ -9,6 +9,7 @@ import StepBusinessType from "@/components/onboarding/StepBusinessType";
 import StepIdentity from "@/components/onboarding/StepIdentity";
 import StepContact from "@/components/onboarding/StepContact";
 import StepVisuals from "@/components/onboarding/StepVisuals";
+import StepTemplate from "@/components/onboarding/StepTemplate";
 import StepProducts from "@/components/onboarding/StepProducts";
 import StepFinish from "@/components/onboarding/StepFinish";
 import OnboardingComplete from "@/components/onboarding/OnboardingComplete";
@@ -245,7 +246,7 @@ const Onboarding = () => {
       case 4:
         return <StepProducts data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 5:
-        return <StepVisuals data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+        return <StepTemplate data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 6:
         return <StepFinish data={data} updateData={updateData} onBack={prevStep} />;
       default:

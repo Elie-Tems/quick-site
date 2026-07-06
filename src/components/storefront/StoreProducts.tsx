@@ -458,6 +458,14 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
           </div>
         )}
 
+        {productGrid === '4col' && (
+          <div className="hidden md:grid md:grid-cols-4 gap-4 auto-rows-auto">
+            {paginatedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} variant="normal" />
+            ))}
+          </div>
+        )}
+
         {/* Pagination Controls */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-12 md:mt-16">
