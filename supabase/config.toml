@@ -37,6 +37,11 @@ verify_jwt = false
 [functions.publish-payment-recovery]
 verify_jwt = false
 
+# onboarding-abandoned is an hourly cron (no user JWT) that nudges users who
+# signed up but never finished onboarding. Optional CRON_SECRET guard.
+[functions.onboarding-abandoned]
+verify_jwt = false
+
 # billing-icount-ipn is the iCount IPN for the first self-managed subscription
 # payment (captures the card token). Authenticated by the shared secret in the
 # URL query, not a Supabase JWT.
