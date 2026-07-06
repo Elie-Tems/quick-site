@@ -157,13 +157,30 @@ Deno.serve(async (req) => {
     return json({ ok: true, duplicate: true, published: true });
   }
 
-  // Collect the first month on the stored token. The token page only VALIDATED the
-  // card (₪1); per our self-managed model WE charge the real amount via cc/bill.
+  // Two possible paypage models (iCount confirmed both):
+  //  (A) SALE page with "save card for future" ON: it CHARGES the first amount AND
+  //      saves the token in ONE transaction (no ₪1). Its IPN reports the paid `sum`,
+  //      a confirmation_code, and `docnum` (the auto-issued invoice). -> DON'T
+  //      cc/bill again; just record that charge.
+  //  (B) "טוקן אשראי" page: only J5-validates the card (a ₪1 hold that's released,
+  //      not collected) and saves the token. -> WE collect the first month via cc/bill.
   // A 100%-off coupon makes firstGross 0 -> nothing to charge (still activate/publish).
-  let chargeOk = firstGross <= 0;
-  let confCode: string | null = (payload["confirmation_code"] as string) ?? null;
+  const paidSum = Number(payload["sum"] ?? 0);
+  const paypageConf = (typeof payload["confirmation_code"] === "string" && payload["confirmation_code"])
+    ? (payload["confirmation_code"] as string) : null;
+  const paypageDocnum = payload["docnum"] != null && String(payload["docnum"]).trim() !== ""
+    ? String(payload["docnum"]) : null;
+  // The sale page already collected the first charge if its IPN shows a real payment
+  // (~the expected amount) with a confirmation code.
+  const paypageCharged = firstGross > 0 && !!paypageConf && paidSum >= firstGross - 0.5;
+
+  let chargeOk = firstGross <= 0 || paypageCharged;
+  let confCode: string | null = paypageConf;
   let chargeErr: string | null = null;
-  if (firstGross > 0) {
+  const invoiceByPaypage = paypageCharged && !!paypageDocnum;   // sale page auto-issued the חשבונית
+
+  if (firstGross > 0 && !paypageCharged) {
+    // Model (B): token page only validated - charge the first month via cc/bill.
     const res = await billToken({
       ccTokenId: tokenId, sumIls: firstGross,
       // Only pass a REAL iCount client id if we captured one; never send our own
@@ -268,10 +285,11 @@ Deno.serve(async (req) => {
   await admin.from("businesses").update({ is_published: true, updated_at: now }).eq("id", businessId);
   await admin.from("publish_checkout_sessions").update({ status: "completed", payment_verified_at: now, updated_at: now }).eq("id", session.id);
 
-  // Issue the tax invoice/receipt (חשבונית מס/קבלה) - cc/bill captured the money
-  // but does NOT create a document; doc/create does. Best effort (publish already
-  // happened). Verify the FIRST real doc in iCount for correct amount/VAT.
-  if (firstGross > 0) {
+  // Issue the tax invoice/receipt (חשבונית מס/קבלה). Only needed for the cc/bill
+  // path (model B) - cc/bill captures money but issues no document. When the SALE
+  // page charged (model A) it ALREADY issued the invoice (docnum in the IPN), so we
+  // skip doc/create to avoid a duplicate document. Best effort (publish already done).
+  if (firstGross > 0 && !invoiceByPaypage) {
     try {
       const doc = await createDoc({
         description: "פרסום אתר Siango - מנוי חודשי",
