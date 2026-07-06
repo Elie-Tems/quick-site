@@ -65,6 +65,8 @@ const RedesignCrowdfunding = lazy(() => import("./pages/preview-redesign/Crowdfu
 const RedesignPhotographer = lazy(() => import("./pages/preview-redesign/PhotographerSite"));
 const RedesignHomePro = lazy(() => import("./pages/preview-redesign/HomeProSite"));
 const RedesignCarDealer = lazy(() => import("./pages/preview-redesign/CarDealerSite"));
+const RedesignNonprofitDash = lazy(() => import("./pages/preview-redesign/NonprofitDashboard"));
+const RedesignCampaignDash = lazy(() => import("./pages/preview-redesign/CampaignDashboard"));
 const PreviewWhatsApp = lazy(() => import("./pages/PreviewWhatsApp"));
 const PreviewEmail = lazy(() => import("./pages/PreviewEmail"));
 const OnboardingCompleteGate = lazy(() => import("./pages/OnboardingCompleteGate"));
@@ -186,6 +188,8 @@ const App = () => {
                   <Route path="/preview/redesign/photographer" element={<RedesignPhotographer />} />
                   <Route path="/preview/redesign/home-pro" element={<RedesignHomePro />} />
                   <Route path="/preview/redesign/car-dealer" element={<RedesignCarDealer />} />
+                  <Route path="/preview/redesign/nonprofit-dashboard" element={<RedesignNonprofitDash />} />
+                  <Route path="/preview/redesign/campaign-dashboard" element={<RedesignCampaignDash />} />
                   <Route path="/preview/whatsapp" element={<PreviewWhatsApp />} />
                   <Route path="/preview/email" element={<PreviewEmail />} />
                   <Route path="/store" element={<StoreFront />} />
