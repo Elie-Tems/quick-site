@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Home, LayoutDashboard, Rocket, LogIn, Shield, ArrowLeft, Sparkles,
   Layers, CalendarClock, CalendarCheck, Building2, Inbox, Compass, ClipboardList,
-  Heart, HandHeart,
+  Heart, HandHeart, Camera, Wrench, Car,
 } from "lucide-react";
 import { AuroraBg, Card, PreviewThemeRoot, ThemeToggle } from "@/components/preview-redesign/kit";
 
@@ -38,6 +38,14 @@ const GROUPS: { title: string; items: { to: string; icon: typeof Home; title: st
     items: [
       { to: "/preview/redesign/nonprofit", icon: Heart, title: "עמותה", desc: "תדמית, סיפור, אלבומים, תרומה כללית + לפרויקטים, סעיף 46", tag: "תרומות", tone: "primary" },
       { to: "/preview/redesign/crowdfunding", icon: HandHeart, title: "גיוס המונים", desc: "עמוד קמפיין: יעד, מתגייסים, ימים, ומדרגות תמיכה", tag: "קמפיין", tone: "primary" },
+    ],
+  },
+  {
+    title: "עוד תחומים (צד לקוח)",
+    items: [
+      { to: "/preview/redesign/photographer", icon: Camera, title: "צלם", desc: "היברידי: גלריה + הזמנת סשן + חנות הדפסות", tag: "היברידי", tone: "primary" },
+      { to: "/preview/redesign/home-pro", icon: Wrench, title: "בעל מקצוע / שיפוצים", desc: "שירותים, עבודות, המלצות, בקשת הצעת מחיר", tag: "לידים", tone: "primary" },
+      { to: "/preview/redesign/car-dealer", icon: Car, title: "סוחר רכב", desc: "לוח רכבים + סינון + מפרט + ליד", tag: "לוח", tone: "primary" },
     ],
   },
 ];
