@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Home, LayoutDashboard, Rocket, LogIn, Shield, ArrowLeft, Sparkles,
   Layers, CalendarClock, CalendarCheck, Building2, Inbox, Compass, ClipboardList,
-  Heart, HandHeart, Camera, Wrench, Car, Tent, CalendarDays,
+  Heart, HandHeart, Camera, Wrench, Car, Tent, CalendarDays, Palette,
 } from "lucide-react";
 import { AuroraBg, Card, PreviewThemeRoot, ThemeToggle } from "@/components/preview-redesign/kit";
 
@@ -17,6 +17,7 @@ const GROUPS: { title: string; items: { to: string; icon: typeof Home; title: st
       { to: "/preview/home-v2", icon: Home, title: "דף הבית", desc: "הדף השיווקי - אנימציות, וידאו, אנרגיה צעירה", tag: "לבדיקה", tone: "green" },
       { to: "/preview/redesign/dashboard", icon: LayoutDashboard, title: "דשבורד הסוחר", desc: "ניהול מוצרים, הזמנות, אנליטיקה ולקוחות", tag: "חדש", tone: "primary" },
       { to: "/preview/redesign/onboarding", icon: Rocket, title: "הקמת חנות", desc: "אשף 5 שלבים בסגנון החדש", tag: "חדש", tone: "primary" },
+      { to: "/preview/redesign/templates", icon: Palette, title: "מערכת תבניות", desc: "4 מבנות × 10 ערכות צבע — תצוגה חיה", tag: "חדש", tone: "green" },
       { to: "/preview/redesign/login", icon: LogIn, title: "התחברות / הרשמה", desc: "מסך כניסה עם ויזואל צד", tag: "חדש", tone: "primary" },
       { to: "/preview/redesign/admin", icon: Shield, title: "פאנל אדמין", desc: "מרכז הבקרה של הפלטפורמה", tag: "חדש", tone: "primary" },
     ],
