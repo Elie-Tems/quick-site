@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Home, LayoutDashboard, Rocket, LogIn, Shield, ArrowLeft, Sparkles,
   Layers, CalendarClock, CalendarCheck, Building2, Inbox, Compass, ClipboardList,
-  Heart, HandHeart, Camera, Wrench, Car,
+  Heart, HandHeart, Camera, Wrench, Car, Tent, CalendarDays,
 } from "lucide-react";
 import { AuroraBg, Card, PreviewThemeRoot, ThemeToggle } from "@/components/preview-redesign/kit";
 
@@ -48,6 +48,13 @@ const GROUPS: { title: string; items: { to: string; icon: typeof Home; title: st
       { to: "/preview/redesign/photographer", icon: Camera, title: "צלם", desc: "היברידי: גלריה + הזמנת סשן + חנות הדפסות", tag: "היברידי", tone: "primary" },
       { to: "/preview/redesign/home-pro", icon: Wrench, title: "בעל מקצוע / שיפוצים", desc: "שירותים, עבודות, המלצות, בקשת הצעת מחיר", tag: "לידים", tone: "primary" },
       { to: "/preview/redesign/car-dealer", icon: Car, title: "סוחר רכב", desc: "לוח רכבים + סינון + מפרט + ליד", tag: "לוח", tone: "primary" },
+    ],
+  },
+  {
+    title: "אירוח ונופש",
+    items: [
+      { to: "/preview/redesign/vacation", icon: Tent, title: "צימר / דירת נופש - אתר", desc: "גלריה, יחידות, מתקנים, ובחירת תאריכים עם מחיר ללילה", tag: "צד לקוח", tone: "primary" },
+      { to: "/preview/redesign/vacation-dashboard", icon: CalendarDays, title: "צימר / דירת נופש - ניהול", desc: "תפוסה, הזמנות, יומן זמינות וסנכרון Booking/Airbnb", tag: "צד מארח", tone: "primary" },
     ],
   },
 ];
