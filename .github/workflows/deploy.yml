@@ -42,13 +42,12 @@ jobs:
           # To fully lock it, also set ALLOW_UNVERIFIED_PUBLISH=false on finalize-publish.
           # (Set VITE_PUBLISH_SKIP_PAYMENT back to "true" to revert to free publishing.)
           VITE_PUBLISH_SKIP_PAYMENT: "false"
-          # Self-managed token billing. PAUSED ("false") 2026-07-05: cc/bill returns
-          # success + a confirmation_code but does NOT actually charge the card (verified
-          # against the cardholder statement - no charge), so the store would publish
-          # without collecting money. DO NOT set to "true" until iCount clarifies the
-          # correct charge params + a reliable success/failure signal and it's verified.
-          # (?billing=token still forces this flow for isolated testing.)
-          VITE_BILLING_SELF_MANAGED: "false"
+          # Self-managed token billing is LIVE. The earlier "cc/bill doesn't charge"
+          # scare was WRONG: iCount's own transaction report shows the ₪4.07 cc/bill
+          # charges SUCCEEDED via shva (conf 0567504 / 0707098) - the card just posts a
+          # day later. cc/bill captures the money; the IPN now also issues the invoice
+          # via doc/create. Set to "false" to fall back to the legacy הו"ק page.
+          VITE_BILLING_SELF_MANAGED: "true"
         run: npm run build
 
       - name: Deploy to Cloudflare Pages

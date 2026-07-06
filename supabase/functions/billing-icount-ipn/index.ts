@@ -7,7 +7,7 @@
 // (?secret=). verify_jwt=false in config.toml.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { tokenInfo, getCcTokens, billToken } from "../_shared/icount/api.ts";
+import { tokenInfo, getCcTokens, billToken, createDoc } from "../_shared/icount/api.ts";
 
 const VAT_RATE = 0.18;
 const grossIls = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
@@ -54,7 +54,7 @@ function tokenIdFromList(resp: Record<string, unknown>): string | null {
 // iCount needs the client id alongside the token to charge (cc/bill). Probe the
 // IPN payload (and a get_cc_tokens list) for it.
 function extractClientId(p: Record<string, unknown>): string | null {
-  for (const k of ["client_id", "clientId", "cid", "custom_client_id"]) {
+  for (const k of ["customer_id", "client_id", "clientId", "cid"]) {
     const v = p[k];
     if (typeof v === "number" && isFinite(v)) return String(v);
     if (typeof v === "string" && v.trim() !== "") return v.trim();
@@ -157,23 +157,45 @@ Deno.serve(async (req) => {
     return json({ ok: true, duplicate: true, published: true });
   }
 
-  // Collect the first month on the stored token. The token page only VALIDATED the
-  // card (₪1); per our self-managed model WE charge the real amount via cc/bill.
+  // Two possible paypage models (iCount confirmed both):
+  //  (A) SALE page with "save card for future" ON: it CHARGES the first amount AND
+  //      saves the token in ONE transaction (no ₪1). Its IPN reports the paid `sum`,
+  //      a confirmation_code, and `docnum` (the auto-issued invoice). -> DON'T
+  //      cc/bill again; just record that charge.
+  //  (B) "טוקן אשראי" page: only J5-validates the card (a ₪1 hold that's released,
+  //      not collected) and saves the token. -> WE collect the first month via cc/bill.
   // A 100%-off coupon makes firstGross 0 -> nothing to charge (still activate/publish).
-  let chargeOk = firstGross <= 0;
-  let confCode: string | null = (payload["confirmation_code"] as string) ?? null;
+  const paidSum = Number(payload["sum"] ?? 0);
+  const paypageConf = (typeof payload["confirmation_code"] === "string" && payload["confirmation_code"])
+    ? (payload["confirmation_code"] as string) : null;
+  const paypageDocnum = payload["docnum"] != null && String(payload["docnum"]).trim() !== ""
+    ? String(payload["docnum"]) : null;
+  // The sale page already collected the first charge if its IPN shows a real payment
+  // (~the expected amount) with a confirmation code.
+  const paypageCharged = firstGross > 0 && !!paypageConf && paidSum >= firstGross - 0.5;
+
+  let chargeOk = firstGross <= 0 || paypageCharged;
+  let confCode: string | null = paypageConf;
   let chargeErr: string | null = null;
-  if (firstGross > 0) {
+  const invoiceByPaypage = paypageCharged && !!paypageDocnum;   // sale page auto-issued the חשבונית
+
+  if (firstGross > 0 && !paypageCharged) {
+    // Model (B): token page only validated - charge the first month via cc/bill.
     const res = await billToken({
       ccTokenId: tokenId, sumIls: firstGross,
-      clientId: clientId ?? undefined, customClientId: userId,
+      // Only pass a REAL iCount client id if we captured one; never send our own
+      // Siango UUID as custom_client_id (iCount doesn't know it and it can cause a
+      // decline). The proven-working charges (0567504/0707098) sent cc_token_id alone.
+      ...(clientId ? { clientId } : {}),
       description: "פרסום אתר Siango - חיוב ראשון",
       email: (session.email as string) ?? undefined, isTest,
     });
-    // STRICT: a real charge returns success===true (a fake/simulator or error
-    // response that merely lacks success:false must NOT count as paid).
-    chargeOk = res.ok && (res.data as any).success === true;
+    // A real charge returns a confirmation_code (and success:true). res.ok already
+    // rejects an explicit failure (success:false / error). We accept either the
+    // success flag OR a confirmation_code so a harmless format difference in
+    // iCount's response can't silently make a real, paid charge look declined.
     confCode = res.data.confirmation_code ?? confCode;
+    chargeOk = res.ok && ((res.data as any).success === true || !!res.data.confirmation_code);
     if (!chargeOk) chargeErr = String((res.data as any)?.error || res.error || "declined");
   }
 
@@ -257,9 +279,29 @@ Deno.serve(async (req) => {
     }
   } catch (e) { console.warn("referral reward failed (non-fatal):", e); }
 
-  // Publish the store (service role passes the publish gate).
+  // Publish the store (service role passes the publish gate). Do this BEFORE
+  // issuing the invoice / sending emails so a slow iCount doc/create or email
+  // call can never leave a paid store unpublished.
   await admin.from("businesses").update({ is_published: true, updated_at: now }).eq("id", businessId);
   await admin.from("publish_checkout_sessions").update({ status: "completed", payment_verified_at: now, updated_at: now }).eq("id", session.id);
+
+  // Issue the tax invoice/receipt (חשבונית מס/קבלה). Only needed for the cc/bill
+  // path (model B) - cc/bill captures money but issues no document. When the SALE
+  // page charged (model A) it ALREADY issued the invoice (docnum in the IPN), so we
+  // skip doc/create to avoid a duplicate document. Best effort (publish already done).
+  if (firstGross > 0 && !invoiceByPaypage) {
+    try {
+      const doc = await createDoc({
+        description: "פרסום אתר Siango - מנוי חודשי",
+        sumIls: firstGross,
+        clientId: clientId ?? undefined,
+        email: (session.email as string) ?? undefined,
+        confirmationCode: confCode ?? undefined,
+        ccType, ccLast4: last4,
+      });
+      if (!doc.ok) console.warn("billing-icount-ipn: doc/create failed:", doc.error || JSON.stringify(doc.data));
+    } catch (e) { console.warn("billing-icount-ipn: doc/create threw:", e); }
+  }
 
   // Welcome ("your site is live") + payment receipt emails (best effort - never
   // block publishing). The formal tax invoice itself is issued by iCount per the

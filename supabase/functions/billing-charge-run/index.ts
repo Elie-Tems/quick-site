@@ -9,7 +9,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { billToken } from "../_shared/icount/api.ts";
+import { billToken, createDoc } from "../_shared/icount/api.ts";
 import { chargeAmount, withinChargeCeiling, type CouponInfo } from "../_shared/billing/pricing.ts";
 
 const VAT_RATE = 0.18;
@@ -104,13 +104,15 @@ serve(async (req) => {
 
     const res = await billToken({
       ccTokenId: s.cc_token_id, sumIls: amount, description: "מנוי פרסום Siango",
-      clientId: clientId ?? undefined, customClientId: s.user_id,
+      // Only a REAL captured iCount client id; never our Siango UUID (can decline).
+      ...(clientId ? { clientId } : {}),
       email: email ?? undefined, isTest,
     });
 
-    // STRICT: only success===true counts as a real charge (guards against a
-    // simulator/error response that merely lacks success:false).
-    if (res.ok && res.data.success === true) {
+    // A real charge returns a confirmation_code (and success:true). res.ok already
+    // rejects an explicit failure; accept either the flag or the code so a format
+    // difference can't make a real, paid charge look declined.
+    if (res.ok && (res.data.success === true || !!res.data.confirmation_code)) {
       await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.confirmation_code ?? null }).eq("idempotency_key", idem);
       await admin.from("subscriptions").update({
         paid_until: new Date(nowMs + 31 * 864e5).toISOString(),
@@ -119,6 +121,15 @@ serve(async (req) => {
         last_charge_status: "success",
         updated_at: nowIso,
       }).eq("id", s.id);
+      // Issue the monthly tax invoice/receipt (cc/bill doesn't create one).
+      try {
+        const doc = await createDoc({
+          description: "מנוי פרסום Siango - חיוב חודשי",
+          sumIls: amount, clientId: clientId ?? undefined, email: email ?? undefined,
+          confirmationCode: res.data.confirmation_code ?? undefined,
+        });
+        if (!doc.ok) console.warn("charge-run: doc/create failed for", s.id, doc.error || JSON.stringify(doc.data));
+      } catch (e) { console.warn("charge-run: doc/create threw:", e); }
       charged++;
     } else {
       const errCode = (res.data as any)?.error || res.error || "declined";

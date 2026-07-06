@@ -1,17 +1,62 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Home, LayoutDashboard, Rocket, LogIn, Shield, ArrowLeft, Sparkles } from "lucide-react";
+import {
+  Home, LayoutDashboard, Rocket, LogIn, Shield, ArrowLeft, Sparkles,
+  Layers, CalendarClock, CalendarCheck, Building2, Inbox, Compass, ClipboardList,
+  Heart, HandHeart, Camera, Wrench, Car, Tent, CalendarDays,
+} from "lucide-react";
 import { AuroraBg, Card, PreviewThemeRoot, ThemeToggle } from "@/components/preview-redesign/kit";
 
 /** Hub linking every redesign preview. Route: /preview/redesign */
 
-const SCREENS = [
-  { to: "/preview/home-v2", icon: Home, title: "דף הבית", desc: "הדף השיווקי - אנימציות, וידאו, אנרגיה צעירה", tag: "לבדיקה", tone: "green" },
-  { to: "/preview/redesign/dashboard", icon: LayoutDashboard, title: "דשבורד הסוחר", desc: "ניהול מוצרים, הזמנות, אנליטיקה ולקוחות", tag: "חדש", tone: "primary" },
-  { to: "/preview/redesign/onboarding", icon: Rocket, title: "הקמת חנות", desc: "אשף 5 שלבים בסגנון החדש", tag: "חדש", tone: "primary" },
-  { to: "/preview/redesign/login", icon: LogIn, title: "התחברות / הרשמה", desc: "מסך כניסה עם ויזואל צד", tag: "חדש", tone: "primary" },
-  { to: "/preview/redesign/admin", icon: Shield, title: "פאנל אדמין", desc: "מרכז הבקרה של הפלטפורמה", tag: "חדש", tone: "primary" },
+const GROUPS: { title: string; items: { to: string; icon: typeof Home; title: string; desc: string; tag: string; tone: string }[] }[] = [
+  {
+    title: "המערכת הקיימת - בעיצוב החדש",
+    items: [
+      { to: "/preview/home-v2", icon: Home, title: "דף הבית", desc: "הדף השיווקי - אנימציות, וידאו, אנרגיה צעירה", tag: "לבדיקה", tone: "green" },
+      { to: "/preview/redesign/dashboard", icon: LayoutDashboard, title: "דשבורד הסוחר", desc: "ניהול מוצרים, הזמנות, אנליטיקה ולקוחות", tag: "חדש", tone: "primary" },
+      { to: "/preview/redesign/onboarding", icon: Rocket, title: "הקמת חנות", desc: "אשף 5 שלבים בסגנון החדש", tag: "חדש", tone: "primary" },
+      { to: "/preview/redesign/login", icon: LogIn, title: "התחברות / הרשמה", desc: "מסך כניסה עם ויזואל צד", tag: "חדש", tone: "primary" },
+      { to: "/preview/redesign/admin", icon: Shield, title: "פאנל אדמין", desc: "מרכז הבקרה של הפלטפורמה", tag: "חדש", tone: "primary" },
+    ],
+  },
+  {
+    title: "תחומים חדשים",
+    items: [
+      { to: "/preview/redesign/home-multi", icon: Layers, title: "דף בית לכל התחומים", desc: "מחליף-קהל (מוצרים / שירותים / נדל״ן) + דוגמאות אתרים", tag: "מרכזי", tone: "green" },
+      { to: "/preview/redesign/services", icon: CalendarClock, title: "נותני שירות - הזמנת תור", desc: "צד לקוח: תפריט שירותים + בחירת מועד", tag: "שירותים", tone: "primary" },
+      { to: "/preview/redesign/services-dashboard", icon: CalendarCheck, title: "נותני שירות - יומן", desc: "צד סוחר: יומן שבועי + סנכרון גוגל/Outlook", tag: "שירותים", tone: "primary" },
+      { to: "/preview/redesign/realestate", icon: Building2, title: "נדל״ן מתווך - לוח דירות", desc: "צד לקוח: סינון, מציאות, דף נכס + ליד", tag: "נדל״ן", tone: "primary" },
+      { to: "/preview/redesign/realestate-dashboard", icon: Inbox, title: "נדל״ן מתווך - ניהול", desc: "צד סוחר: נכסים + לידים", tag: "נדל״ן", tone: "primary" },
+      { to: "/preview/redesign/project", icon: Compass, title: "נדל״ן יזם - דף פרויקט", desc: "צד לקוח: הדמיות, 360, תוכניות מכר, מחירון", tag: "נדל״ן", tone: "primary" },
+      { to: "/preview/redesign/project-dashboard", icon: ClipboardList, title: "נדל״ן יזם - ניהול", desc: "צד סוחר: יחידות, לידים, מדיה", tag: "נדל״ן", tone: "primary" },
+    ],
+  },
+  {
+    title: "תרומות וגיוס המונים",
+    items: [
+      { to: "/preview/redesign/nonprofit", icon: Heart, title: "עמותה - אתר", desc: "תדמית, סיפור, אלבומים, תרומה כללית + לפרויקטים, סעיף 46", tag: "צד לקוח", tone: "primary" },
+      { to: "/preview/redesign/nonprofit-dashboard", icon: LayoutDashboard, title: "עמותה - ניהול", desc: "תורמים, הוראות קבע, פרויקטים, עדכונים, קבלות 46", tag: "צד ארגון", tone: "primary" },
+      { to: "/preview/redesign/crowdfunding", icon: HandHeart, title: "גיוס המונים - קמפיין", desc: "עמוד קמפיין: יעד, מתגייסים, ימים, ומדרגות תמיכה", tag: "צד לקוח", tone: "primary" },
+      { to: "/preview/redesign/campaign-dashboard", icon: LayoutDashboard, title: "גיוס המונים - ניהול", desc: "תומכים, מדרגות, גיוס לאורך זמן, עדכונים", tag: "צד יוצר", tone: "primary" },
+    ],
+  },
+  {
+    title: "עוד תחומים (צד לקוח)",
+    items: [
+      { to: "/preview/redesign/photographer", icon: Camera, title: "צלם", desc: "היברידי: גלריה + הזמנת סשן + חנות הדפסות", tag: "היברידי", tone: "primary" },
+      { to: "/preview/redesign/home-pro", icon: Wrench, title: "בעל מקצוע / שיפוצים", desc: "שירותים, עבודות, המלצות, בקשת הצעת מחיר", tag: "לידים", tone: "primary" },
+      { to: "/preview/redesign/car-dealer", icon: Car, title: "סוחר רכב", desc: "לוח רכבים + סינון + מפרט + ליד", tag: "לוח", tone: "primary" },
+    ],
+  },
+  {
+    title: "אירוח ונופש",
+    items: [
+      { to: "/preview/redesign/vacation", icon: Tent, title: "צימר / דירת נופש - אתר", desc: "גלריה, יחידות, מתקנים, ובחירת תאריכים עם מחיר ללילה", tag: "צד לקוח", tone: "primary" },
+      { to: "/preview/redesign/vacation-dashboard", icon: CalendarDays, title: "צימר / דירת נופש - ניהול", desc: "תפוסה, הזמנות, יומן זמינות וסנכרון Booking/Airbnb", tag: "צד מארח", tone: "primary" },
+    ],
+  },
 ];
 
 const Hub = () => {
@@ -37,29 +82,37 @@ const Hub = () => {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 gap-4">
-          {SCREENS.map((s, i) => (
-            <motion.div key={s.to}
-              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: i * 0.08 }}>
-              <Link to={s.to}>
-                <Card hover className="p-6 h-full group relative overflow-hidden">
-                  <div className="absolute -top-10 -left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center">
-                      <s.icon className="w-6 h-6 text-primary" strokeWidth={1.6} />
-                    </div>
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${s.tone === "green" ? "bg-emerald-500/15 text-emerald-500 border-emerald-500/30" : "bg-primary/15 text-primary border-primary/30"}`}>{s.tag}</span>
-                  </div>
-                  <h3 className="relative text-xl font-display font-bold pv-strong mb-1.5 flex items-center gap-2">
-                    {s.title}
-                    <ArrowLeft className="w-4 h-4 text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                  </h3>
-                  <p className="relative text-sm pv-muted leading-relaxed">{s.desc}</p>
-                </Card>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+        {GROUPS.map((g) => (
+          <div key={g.title} className="mb-10">
+            <div className="flex items-center gap-3 mb-4">
+              <h2 className="text-lg font-display font-bold pv-text">{g.title}</h2>
+              <div className="flex-1 h-px" style={{ background: "var(--pv-border)" }} />
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {g.items.map((s, i) => (
+                <motion.div key={s.to}
+                  initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: i * 0.05 }}>
+                  <Link to={s.to}>
+                    <Card hover className="p-6 h-full group relative overflow-hidden">
+                      <div className="absolute -top-10 -left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="relative flex items-start justify-between mb-4">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center">
+                          <s.icon className="w-6 h-6 text-primary" strokeWidth={1.6} />
+                        </div>
+                        <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${s.tone === "green" ? "bg-emerald-500/15 text-emerald-500 border-emerald-500/30" : "bg-primary/15 text-primary border-primary/30"}`}>{s.tag}</span>
+                      </div>
+                      <h3 className="relative text-lg font-display font-bold pv-strong mb-1.5 flex items-center gap-2">
+                        {s.title}
+                        <ArrowLeft className="w-4 h-4 text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all shrink-0" />
+                      </h3>
+                      <p className="relative text-sm pv-muted leading-relaxed">{s.desc}</p>
+                    </Card>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        ))}
 
         <p className="text-center pv-faint text-sm mt-12">
           לחיצה על כל כרטיס פותחת את המסך המלא. יש כפתור "חזרה לכל המסכים" ומתג בהיר/כהה בכל מוקאפ.
