@@ -30,6 +30,12 @@ interface Env {
   BASE_DOMAIN?: string;
 }
 
+// Pre-launch flag: every store in the system today is a test/demo store (no real
+// customers yet), so stores must NOT be indexed by Google. When false, storefront
+// pages are served with noindex and are omitted from the sitemap (kept in sync
+// with functions/sitemap.xml.ts). Flip to true once real merchants go live.
+const STORES_INDEXABLE = false;
+
 // System subdomains that can never be a tenant store (kept in sync with
 // src/lib/subdomain.ts). A tenant subdomain is a single label below BASE_DOMAIN.
 const RESERVED_SUBDOMAINS = new Set<string>([
@@ -187,6 +193,7 @@ function buildHead(
   products: StoreProduct[],
   storeUrl: string,
   isAbout: boolean,
+  indexable: boolean,
 ): string {
   const title = isAbout ? `אודות | ${business.name}` : `${business.name} | הזמנה אונליין`;
   const description =
@@ -243,7 +250,7 @@ function buildHead(
     `<title>${esc(title)}</title>`,
     `<meta name="description" content="${esc(description)}" />`,
     `<link rel="canonical" href="${esc(storeUrl)}" />`,
-    `<meta name="robots" content="index, follow" />`,
+    `<meta name="robots" content="${indexable ? "index, follow" : "noindex, follow"}" />`,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:url" content="${esc(storeUrl)}" />`,
     `<meta property="og:title" content="${esc(title)}" />`,
@@ -479,7 +486,7 @@ export const onRequest = async (context: {
 
     const storeUrl = canonical;
 
-    const headHtml = buildHead(store.business, store.products, storeUrl, route.isAbout);
+    const headHtml = buildHead(store.business, store.products, storeUrl, route.isAbout, STORES_INDEXABLE);
     const bodyHtml = buildBodyContent(store.business, store.products, route.isAbout);
 
     const rewriter = new (globalThis as any).HTMLRewriter()
@@ -487,6 +494,8 @@ export const onRequest = async (context: {
       .on("title", { element: (el: any) => el.remove() })
       .on('meta[name="description"]', { element: (el: any) => el.remove() })
       .on('meta[name="keywords"]', { element: (el: any) => el.remove() })
+      // Drop the static robots meta so our own (index or noindex) is authoritative.
+      .on('meta[name="robots"]', { element: (el: any) => el.remove() })
       .on('meta[property^="og:"]', { element: (el: any) => el.remove() })
       .on('meta[name^="twitter:"]', { element: (el: any) => el.remove() })
       .on('link[rel="canonical"]', { element: (el: any) => el.remove() })

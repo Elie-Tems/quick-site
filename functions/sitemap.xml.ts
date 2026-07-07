@@ -22,6 +22,11 @@ interface Env {
   SITE_URL?: string;
 }
 
+// Pre-launch flag: all stores today are test/demo (no real customers yet), so
+// they are omitted from the sitemap and served with noindex. Kept in sync with
+// STORES_INDEXABLE in functions/_middleware.ts. Flip both to true at launch.
+const STORES_INDEXABLE = false;
+
 const STATIC_ROUTES: Array<{ path: string; changefreq: string; priority: string }> = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
   { path: "/templates", changefreq: "weekly", priority: "0.8" },
@@ -65,7 +70,7 @@ export const onRequest = async (context: { env: Env }): Promise<Response> => {
   }
 
   try {
-    if (env.SUPABASE_URL && env.SUPABASE_ANON_KEY) {
+    if (STORES_INDEXABLE && env.SUPABASE_URL && env.SUPABASE_ANON_KEY) {
       const headers = { apikey: env.SUPABASE_ANON_KEY, Authorization: `Bearer ${env.SUPABASE_ANON_KEY}` };
       const res = await fetch(
         `${env.SUPABASE_URL}/rest/v1/businesses?is_published=eq.true&slug=not.is.null` +
