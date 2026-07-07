@@ -33,7 +33,7 @@ const ENGINES = [
   },
   {
     key: "leads", label: "נדל״ן", icon: Building2,
-    type: "אתר לעסק",
+    type: "אתר לחברה או לפרויקטים",
     subtitle: ["תמיד היו לכם פרויקטים שעלו פה, ירדו שם, בלי מקום מסודר שאפשר להפנות אליו.", "עכשיו כל הנכסים שלכם מוצגים יפה, מעודכנים, זמינים תמיד."],
     to: "/preview/redesign/realestate",
     img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80",
