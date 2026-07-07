@@ -1,3 +1,47 @@
 {
-  "__status": "DRAFT PENDING: real translated copy + local keyword research added in the homepage-copy step (needs approved pricing). Missing keys fall back to Hebrew."
+  "meta": {
+    "homeTitle": "أنشئ موقعاً لنشاطك في 5 دقائق | منصة إنشاء مواقع ومتاجر بسعر رخيص - Siango",
+    "homeDescription": "أنشئ موقعاً احترافياً أو متجراً إلكترونياً لنشاطك في 5 دقائق - بدون مبرمج وبدون مصمم. كل شيء مشمول مقابل 28$ شهرياً. مثالي للأنشطة الصغيرة."
+  },
+  "nav": {
+    "templates": "القوالب",
+    "pricing": "الأسعار",
+    "help": "المساعدة",
+    "login": "تسجيل الدخول",
+    "register": "ابدأ مجاناً"
+  },
+  "home": {
+    "heroTime": "في 5 دقائق",
+    "heroPrice": "مقابل 28$ فقط",
+    "ctaPrimary": "ابدأ الآن",
+    "ctaSecondary": "شاهد مثالاً حياً",
+    "heroNote": "بدون التزام · بدون مهارات تقنية",
+    "engineLabels": {
+      "commerce": "متاجر إلكترونية",
+      "booking": "الخدمات والحجوزات",
+      "leads": "العقارات",
+      "donations": "الجمعيات"
+    },
+    "engineTypes": {
+      "commerce": "متجر إلكتروني",
+      "booking": "موقع حجوزات ومواعيد",
+      "leads": "موقع للنشاط التجاري",
+      "donations": "موقع لجمعية"
+    },
+    "howItWorksTitle": "كيف يعمل",
+    "howItWorksSub": "بسيط مثل A-B-C",
+    "howItWorksSteps": "ثلاث خطوات وأنت على الإنترنت",
+    "examplesTitle": "موقع حقيقي لكل مجال",
+    "valueTitle": "كل الأدوات، لكل مجال",
+    "valueSub": "مهما كان ما تبيعه - نفس النظام، نفس الأدوات القوية",
+    "faqTitle": "الأسئلة الشائعة",
+    "faq": {
+      "q1": "كم يستغرق بناء الموقع؟",
+      "a1": "خمس دقائق - أدخل بيانات نشاطك، أضف المنتجات، وموقعك جاهز.",
+      "q2": "هل أحتاج إلى معرفة برمجية؟",
+      "a2": "لا. لا حاجة لمبرمج أو مصمم.",
+      "q3": "كم التكلفة؟",
+      "a3": "28$ شهرياً، كل شيء مشمول. الميزات المتقدمة مثل CRM بسعر منفصل."
+    }
+  }
 }

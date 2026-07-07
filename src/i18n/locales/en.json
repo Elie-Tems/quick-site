@@ -1,3 +1,47 @@
 {
-  "__status": "DRAFT PENDING: real translated copy + local keyword research added in the homepage-copy step (needs approved pricing). Missing keys fall back to Hebrew."
+  "meta": {
+    "homeTitle": "Build a Business Website in 5 Minutes | Cheap Website & Online Store Builder - Siango",
+    "homeDescription": "Build a professional business website or online store in 5 minutes - no developer, no designer. Everything included for $28/month. Perfect for small businesses."
+  },
+  "nav": {
+    "templates": "Templates",
+    "pricing": "Pricing",
+    "help": "Help",
+    "login": "Log in",
+    "register": "Start free"
+  },
+  "home": {
+    "heroTime": "in 5 minutes",
+    "heroPrice": "for just $28",
+    "ctaPrimary": "Get started now",
+    "ctaSecondary": "See a live example",
+    "heroNote": "No commitment · No technical skills needed",
+    "engineLabels": {
+      "commerce": "Online stores",
+      "booking": "Services & bookings",
+      "leads": "Real estate",
+      "donations": "Nonprofits"
+    },
+    "engineTypes": {
+      "commerce": "Online store",
+      "booking": "Bookings & appointments site",
+      "leads": "Business website",
+      "donations": "Nonprofit website"
+    },
+    "howItWorksTitle": "How it works",
+    "howItWorksSub": "As easy as A-B-C",
+    "howItWorksSteps": "Three steps and you're live",
+    "examplesTitle": "A real website for every field",
+    "valueTitle": "Every tool, for every field",
+    "valueSub": "Whatever you sell - the same system, the same powerful tools",
+    "faqTitle": "Frequently asked questions",
+    "faq": {
+      "q1": "How long does it take to build a site?",
+      "a1": "Five minutes - enter your business details, add products, and you're live.",
+      "q2": "Do I need to know how to code?",
+      "a2": "No. No developer or designer required.",
+      "q3": "How much does it cost?",
+      "a3": "$28/month, everything included. Advanced features like CRM are priced separately."
+    }
+  }
 }
