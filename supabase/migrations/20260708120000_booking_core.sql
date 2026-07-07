@@ -224,7 +224,7 @@ declare t text;
 begin
   foreach t in array array[
     'booking_services','booking_staff','booking_service_staff','booking_working_hours',
-    'booking_blackouts','booking_appointments','calendar_connections','calendar_busy_blocks','calendar_sync_log'
+    'booking_blackouts','booking_appointments','calendar_connections','calendar_busy_blocks'
   ] loop
     execute format('drop policy if exists "owner manages own %1$s" on public.%1$s;', t);
     execute format($p$
