@@ -504,7 +504,8 @@ const Index = () => {
               בלי מתכנתים. בלי מעצבים.{" "}
               <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">בלי כאב ראש.</span>
             </h2>
-            <p className="text-lg pv-muted mb-6">כמה דקות ויש לכם אתר מדהים, בלי התחייבות.</p>
+            <p className="text-lg pv-muted mb-2">כמה דקות ויש לכם אתר מדהים.</p>
+            <p className="text-lg font-semibold pv-strong mb-6">69 ₪ לחודש, ללא התחייבות.</p>
             <Link to="/register" className="inline-flex items-center gap-2 px-9 py-4 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
               התחילו עכשיו <ArrowLeft className="w-5 h-5" />
             </Link>
