@@ -43,7 +43,6 @@ const ENGINES = [
 ];
 
 const EXAMPLES = [
-  { title: "בוטיק אופנה", tag: "מסחר", img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80", to: "/preview/home-v2" },
   { title: "סטודיו יופי", tag: "שירותים", img: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&q=80", to: "/preview/redesign/services" },
   { title: "סטודיו צילום", tag: "שירותים", img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80", to: "/preview/redesign/photographer" },
   { title: "צימר בגליל", tag: "אירוח", img: "https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=600&q=80", to: "/preview/redesign/vacation" },
@@ -146,10 +145,6 @@ const HowItWorks = () => {
       <div className="max-w-6xl mx-auto relative">
         {/* Header */}
         <div className="text-center mb-20">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full pv-surface2 border pv-border mb-5">
-            <Rocket className="w-4 h-4 text-primary" />
-            <span className="text-sm pv-text">פשוט כמו A-B-C</span>
-          </div>
           <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">איך זה עובד?</h2>
           <p className="text-lg pv-muted">שלושה צעדים — ואתם באוויר</p>
         </div>
@@ -437,10 +432,6 @@ const Index = () => {
         <section className="relative py-24 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full pv-surface2 border pv-border mb-5">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm pv-text">דוגמאות אתרים</span>
-              </div>
               <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">אתר אמיתי לכל תחום</h2>
               <p className="text-lg pv-muted">לחצו על דוגמה כדי לראות אותה מלאה</p>
             </div>
