@@ -1,7 +1,21 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ArrowRight } from "lucide-react";
+import { Search, ArrowRight, ChevronDown } from "lucide-react";
 import { OnboardingData } from "@/pages/Onboarding";
+import type { BusinessCategory } from "@/lib/categoryConfig";
+
+const SUB_TYPE_TO_CATEGORY: Record<string, BusinessCategory> = {
+  fashion: 'clothing', bakery: 'bakery', 'general-store': 'other',
+  food: 'restaurant', jewelry: 'jewelry', 'home-decor': 'home',
+  electronics: 'electronics', sports: 'other', cosmetics: 'beauty',
+  pets: 'pets', books: 'books', flowers: 'flowers',
+  beauty: 'beauty', barber: 'beauty', fitness: 'fitness',
+  renovation: 'handmade', photography: 'art', vacation: 'other',
+  broker: 'other', health: 'other', consulting: 'other',
+  legal: 'other', developer: 'other', 'car-dealer': 'automotive',
+  charity: 'other', crowdfunding: 'other', community: 'other',
+  education: 'other', social: 'other', animals: 'pets',
+};
 
 export type BusinessType = "products" | "services" | "realestate" | "nonprofit";
 
@@ -12,132 +26,137 @@ interface Props {
   onBack?: () => void;
 }
 
-// Main categories — photo cards
 const MAIN_CATEGORIES = [
   {
     id: "products" as BusinessType,
     title: "מכירת מוצרים",
     desc: "חנות, בוטיק, מאפייה, מוצרים",
-    img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80",
+    img: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800&q=80",
   },
   {
     id: "services" as BusinessType,
     title: "נותן/ת שירות",
-    desc: "קוסמטיקה, כושר, ייעוץ, טיפולים",
-    img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80",
-  },
-  {
-    id: "realestate" as BusinessType,
-    title: "נדל\"ן",
-    desc: "מתווך, יזם, צימר, אירוח",
-    img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80",
+    desc: "קוסמטיקה, כושר, ייעוץ, נדל\"ן, טיפולים",
+    img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80",
   },
   {
     id: "nonprofit" as BusinessType,
     title: "עמותה / ארגון",
     desc: "תרומות, גיוס המונים, קהילה",
-    img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=600&q=80",
+    img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=800&q=80",
   },
 ];
 
-// Sub-categories per main type
 const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: string }[]> = {
   products: [
-    { id: "general-store", title: "חנות כללית", img: "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=400&q=75" },
-    { id: "bakery", title: "מאפייה / קונדיטוריה", img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=75" },
-    { id: "fashion", title: "אופנה / בוטיק", img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=75" },
-    { id: "home-decor", title: "מוצרי בית / עיצוב", img: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=75" },
-    { id: "jewelry", title: "תכשיטים / עבודות יד", img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&q=75" },
-    { id: "food", title: "מזון ומשקאות", img: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=75" },
+    { id: "fashion",      title: "אופנה / בוטיק",         img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=75" },
+    { id: "bakery",       title: "מאפייה / קונדיטוריה",    img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=75" },
+    { id: "general-store",title: "חנות כללית",              img: "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=400&q=75" },
+    { id: "food",         title: "מזון ומשקאות",            img: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=75" },
+    { id: "jewelry",      title: "תכשיטים / עבודות יד",    img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&q=75" },
+    { id: "home-decor",   title: "מוצרי בית / עיצוב",      img: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=75" },
+    { id: "electronics",  title: "אלקטרוניקה / גאדג'טים",  img: "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=400&q=75" },
+    { id: "sports",       title: "ספורט וציוד",             img: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=400&q=75" },
+    { id: "cosmetics",    title: "קוסמטיקה / טיפוח",        img: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=400&q=75" },
+    { id: "pets",         title: "חיות מחמד",               img: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=75" },
+    { id: "books",        title: "ספרים / לוח",             img: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=400&q=75" },
+    { id: "flowers",      title: "פרחים ומתנות",            img: "https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=400&q=75" },
   ],
   services: [
-    { id: "beauty", title: "קוסמטיקה / יופי", img: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400&q=75" },
-    { id: "barber", title: "מספרה / ברבר", img: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&q=75" },
-    { id: "fitness", title: "כושר / פילאטיס", img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=75" },
-    { id: "consulting", title: "ייעוץ עסקי / קריירה", img: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&q=75" },
-    { id: "renovation", title: "שיפוצים / בנייה", img: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=400&q=75" },
-    { id: "health", title: "בריאות / קליניקה", img: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&q=75" },
-    { id: "photography", title: "צילום", img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=75" },
-    { id: "legal", title: "עו\"ד / רו\"ח", img: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&q=75" },
+    { id: "broker",       title: "מתווך / נדל\"ן",           img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=75" },
+    { id: "developer",    title: "יזם / פרויקט נדל\"ן",      img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&q=75" },
+    { id: "vacation",     title: "צימר / נופש",             img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=75" },
+    { id: "beauty",       title: "קוסמטיקה / יופי",        img: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400&q=75" },
+    { id: "renovation",   title: "שיפוצים / בנייה",         img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=75" },
+    { id: "health",       title: "בריאות / קליניקה",        img: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400&q=75" },
+    { id: "consulting",   title: "ייעוץ עסקי / קריירה",     img: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=75" },
+    { id: "photography",  title: "צילום",                   img: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=400&q=75" },
+    { id: "legal",        title: "עו\"ד / רו\"ח",             img: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&q=75" },
+    { id: "car-dealer",   title: "רכב / מכירת רכבים",       img: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400&q=75" },
+    { id: "barber",       title: "מספרה / ספר",             img: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&q=75" },
+    { id: "fitness",      title: "כושר / פילאטיס",          img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=75" },
   ],
-  realestate: [
-    { id: "broker", title: "מתווך / סוכנות", img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=75" },
-    { id: "developer", title: "יזם / פרויקט", img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&q=75" },
-    { id: "vacation", title: "צימר / נופש", img: "https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=400&q=75" },
-    { id: "commercial", title: "נדל\"ן מסחרי", img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&q=75" },
-  ],
+  realestate: [],
   nonprofit: [
-    { id: "charity", title: "תרומות כלליות", img: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=400&q=75" },
-    { id: "crowdfunding", title: "גיוס המונים", img: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=75" },
-    { id: "community", title: "קהילה / כנסייה", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=75" },
-    { id: "education", title: "חינוך / עמותת ילדים", img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=75" },
+    { id: "charity",      title: "תרומות כלליות",           img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=400&q=75" },
+    { id: "crowdfunding", title: "גיוס המונים",             img: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=75" },
+    { id: "community",    title: "קהילה",                   img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=75" },
+    { id: "education",    title: "חינוך / עמותת ילדים",     img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=75" },
+    { id: "social",       title: "רווחה חברתית",            img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=400&q=75" },
+    { id: "animals",      title: "הגנת בעלי חיים",          img: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=75" },
   ],
 };
+
+const SHOW_INITIAL = 6;
 
 const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
   const [activeMain, setActiveMain] = useState<BusinessType | null>(data.businessType ?? null);
   const [search, setSearch] = useState("");
+  const [showAll, setShowAll] = useState(false);
 
-  const filteredSubs = activeMain
-    ? SUB_CATEGORIES[activeMain].filter(s => s.title.includes(search))
-    : [];
+  const allSubs = activeMain ? SUB_CATEGORIES[activeMain] : [];
+  const filteredSubs = allSubs.filter(s => !search || s.title.includes(search));
+  const visibleSubs = search || showAll ? filteredSubs : filteredSubs.slice(0, SHOW_INITIAL);
+  const hasMore = !search && !showAll && filteredSubs.length > SHOW_INITIAL;
 
   const handleMainSelect = (id: BusinessType) => {
     setActiveMain(id);
     setSearch("");
+    setShowAll(false);
     updateData({ businessType: id, businessSubType: undefined });
   };
 
   const handleSubSelect = (subId: string) => {
-    updateData({ businessSubType: subId });
+    updateData({
+      businessSubType: subId,
+      businessCategory: SUB_TYPE_TO_CATEGORY[subId] || 'other',
+    });
     onNext();
   };
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="text-center">
         <h2 className="text-2xl font-display font-bold pv-strong mb-1">
           {activeMain ? "איזה סוג?" : "במה עוסק העסק שלכם?"}
         </h2>
         <p className="text-sm pv-muted">
-          {activeMain ? "בחרו את הסוג המדויק — נתאים את האתר בהתאם" : "נתאים את הכלים ואת האתר בדיוק לצרכים שלכם"}
+          {activeMain
+            ? "בחרו את הסוג המדויק — נתאים את האתר בהתאם"
+            : "נתאים את הכלים ואת האתר בדיוק לצרכים שלכם"}
         </p>
       </div>
 
       <AnimatePresence mode="wait">
         {!activeMain ? (
-          /* ── Level 1: main categories ── */
           <motion.div key="main" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               {MAIN_CATEGORIES.map((cat, i) => (
                 <motion.button
                   key={cat.id}
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25, delay: i * 0.06 }}
+                  transition={{ duration: 0.25, delay: i * 0.07 }}
                   onClick={() => handleMainSelect(cat.id)}
-                  className="group relative rounded-2xl overflow-hidden text-right focus:outline-none"
-                  style={{ aspectRatio: "4/3" }}
+                  className="group relative rounded-2xl overflow-hidden focus:outline-none"
+                  style={{ height: "300px" }}
                 >
-                  <img src={cat.img} alt={cat.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <img src={cat.img} alt={cat.title} className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-108" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
                   <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
-                  <div className="absolute bottom-0 right-0 left-0 p-4">
-                    <p className="font-bold text-white text-base leading-tight">{cat.title}</p>
-                    <p className="text-xs text-white/70 mt-0.5">{cat.desc}</p>
+                  <div className="absolute bottom-0 right-0 left-0 p-4 text-right">
+                    <p className="font-bold text-white text-xl leading-tight mb-1">{cat.title}</p>
+                    <p className="text-xs text-white/65 leading-snug">{cat.desc}</p>
                   </div>
                 </motion.button>
               ))}
             </div>
           </motion.div>
         ) : (
-          /* ── Level 2: sub-categories ── */
           <motion.div key="sub" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
-            {/* Back + search */}
             <div className="flex items-center gap-2 mb-4">
               <button
-                onClick={() => { setActiveMain(null); setSearch(""); updateData({ businessType: null, businessSubType: undefined }); }}
+                onClick={() => { setActiveMain(null); setSearch(""); setShowAll(false); updateData({ businessType: null, businessSubType: undefined }); }}
                 className="flex items-center gap-1.5 text-sm pv-muted hover:text-primary transition-colors shrink-0"
               >
                 <ArrowRight className="w-4 h-4" />
@@ -147,7 +166,7 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50 pointer-events-none" />
                 <input
                   type="text"
-                  placeholder="חפשו סוג עסק..."
+                  placeholder="חפשו..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="w-full h-10 pr-9 pl-3 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-primary/40"
@@ -157,9 +176,8 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
               </div>
             </div>
 
-            {/* Sub-category photo grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[340px] overflow-y-auto pr-1">
-              {filteredSubs.map((sub, i) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {visibleSubs.map((sub, i) => (
                 <motion.button
                   key={sub.id}
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -170,7 +188,7 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
                   style={{ aspectRatio: "4/3" }}
                 >
                   <img src={sub.img} alt={sub.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
                   <div className="absolute bottom-0 right-0 left-0 p-3">
                     <p className="font-semibold text-white text-sm leading-tight">{sub.title}</p>
@@ -181,11 +199,37 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
                 <div className="col-span-3 text-center pv-faint text-sm py-8">לא נמצאו תוצאות</div>
               )}
             </div>
+
+            {hasMore && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                onClick={() => setShowAll(true)}
+                className="w-full mt-3 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm pv-muted hover:text-primary transition-colors"
+                style={{ border: "1px dashed var(--pv-border)" }}
+              >
+                <ChevronDown className="w-4 h-4" />
+                הצג עוד
+              </motion.button>
+            )}
+
+            {/* Always-visible "אחר" tile */}
+            {filteredSubs.length > 0 && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => handleSubSelect("other")}
+                className="mt-1 w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-colors"
+                style={{ background: "var(--color-primary, #22c55e)", color: "#fff" }}
+              >
+                אחר — לא מצאתי את העסק שלי
+              </motion.button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Back to previous page (only on main level) */}
       {!activeMain && onBack && (
         <button
           onClick={onBack}

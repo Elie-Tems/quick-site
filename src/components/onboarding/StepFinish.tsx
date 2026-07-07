@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { getTemplate } from "@/lib/storeTemplates";
-import { getCategoryConfig } from "@/lib/categoryConfig";
+import { getCategoryConfig, BusinessCategory } from "@/lib/categoryConfig";
 import { getPublishFeeIls } from "@/lib/publishPaymentConfig";
 
 interface Props {
@@ -17,6 +17,38 @@ interface Props {
 }
 
 const skipPublishPayment = import.meta.env.VITE_PUBLISH_SKIP_PAYMENT === "true";
+
+// Map sub-category id → BusinessCategory for getCategoryConfig
+const SUB_TYPE_TO_CATEGORY: Record<string, BusinessCategory> = {
+  // products
+  fashion: 'clothing', bakery: 'bakery', 'general-store': 'other',
+  food: 'restaurant', jewelry: 'jewelry', 'home-decor': 'home',
+  electronics: 'electronics', sports: 'other', cosmetics: 'beauty',
+  pets: 'pets', books: 'books', flowers: 'flowers',
+  // services
+  beauty: 'beauty', barber: 'beauty', fitness: 'fitness',
+  renovation: 'handmade', photography: 'art', vacation: 'other',
+  broker: 'other', health: 'other', consulting: 'other',
+  legal: 'other', developer: 'other', 'car-dealer': 'automotive',
+  // nonprofit
+  charity: 'other', crowdfunding: 'other', community: 'other',
+  education: 'other', social: 'other', animals: 'pets',
+};
+
+// Human-readable Hebrew label for each sub-category
+const SUB_TYPE_LABELS: Record<string, string> = {
+  fashion: 'אופנה / בוטיק', bakery: 'מאפייה / קונדיטוריה', 'general-store': 'חנות כללית',
+  food: 'מזון ומשקאות', jewelry: 'תכשיטים / עבודות יד', 'home-decor': 'מוצרי בית / עיצוב',
+  electronics: 'אלקטרוניקה', sports: 'ספורט וציוד', cosmetics: 'קוסמטיקה / טיפוח',
+  pets: 'חיות מחמד', books: 'ספרים', flowers: 'פרחים ומתנות',
+  beauty: 'קוסמטיקה / יופי', barber: 'מספרה', fitness: 'כושר / פילאטיס',
+  renovation: 'שיפוצים / בנייה', photography: 'צילום', vacation: 'צימר / נופש',
+  broker: 'מתווך / נדל"ן', health: 'בריאות / קליניקה', consulting: 'ייעוץ עסקי',
+  legal: 'עו"ד / רו"ח', developer: 'יזם / פרויקט נדל"ן', 'car-dealer': 'רכב / מכירות',
+  charity: 'תרומות כלליות', crowdfunding: 'גיוס המונים', community: 'קהילה',
+  education: 'חינוך / עמותת ילדים', social: 'רווחה חברתית', animals: 'הגנת בעלי חיים',
+  other: 'אחר',
+};
 
 // Staged publish progress for a reassuring "building your site" experience.
 const PUBLISH_STAGES = [
@@ -64,12 +96,17 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
       const colorPalette = branding?.colorPalette || [
         template.theme.accentColor, template.theme.mutedColor, template.theme.cardColor,
       ];
-      // Map businessType → businessCategory for DB compat when no specific category was chosen
+      // Resolve category: sub-type wins > explicit businessCategory > fallback "other"
       const businessTypeLabels: Record<string, string> = {
-        services: "שירותים", realestate: "נדל\"ן", nonprofit: "עמותה",
+        products: "מוצרים", services: "שירותים", nonprofit: "עמותה",
       };
-      const effectiveCategory = data.businessCategory !== "other" ? data.businessCategory : "other";
+      const resolvedCategory: BusinessCategory =
+        (data.businessSubType ? SUB_TYPE_TO_CATEGORY[data.businessSubType] : null)
+        || (data.businessCategory !== "other" ? data.businessCategory : null)
+        || 'other';
+      const effectiveCategory = resolvedCategory;
       const effectiveCustomName = data.customCategoryName
+        || (data.businessSubType ? SUB_TYPE_LABELS[data.businessSubType] : null)
         || (data.businessType ? businessTypeLabels[data.businessType] : undefined);
 
       const categoryConfig = getCategoryConfig(effectiveCategory);
@@ -86,7 +123,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         primaryColor,
         colorPalette,
         brandStyle: branding?.brandStyle || "modern",
-        businessCategory: data.businessCategory,
+        businessCategory: resolvedCategory,
         customCategoryName: effectiveCustomName,
         isReligiousAudience: data.isReligiousAudience,
         paymentEnabled: false,

@@ -12,7 +12,36 @@ interface Props {
   onBack?: () => void;
 }
 
+const LABELS = {
+  nonprofit: {
+    heading: "ספרו לנו על העמותה",
+    nameLabel: "שם העמותה / הארגון *",
+    namePlaceholder: "למשל: עמותת חלום, ידידי הטבע, קהילה בלב",
+    logoLabel: "לוגו העמותה",
+    reassurance: "אלו רק הפרטים הבסיסיים - תמיד אפשר לערוך ולהרחיב הכל אחר כך מלוח הניהול.",
+  },
+  services: {
+    heading: "ספרו לנו על העסק",
+    nameLabel: "שם העסק *",
+    namePlaceholder: "למשל: סלון היופי של מיכל, קליניקת ד\"ר לוי, צילומי אורן",
+    logoLabel: "לוגו",
+    reassurance: "אלו רק הפרטים הבסיסיים - תמיד אפשר לערוך ולהרחיב הכל אחר כך מלוח הניהול שלכם.",
+  },
+  default: {
+    heading: "ספרו לנו על העסק",
+    nameLabel: "שם העסק *",
+    namePlaceholder: "למשל: פרחי שושנה, מאפיית אמא, גאדג׳טס",
+    logoLabel: "לוגו",
+    reassurance: "אלו רק הפרטים הבסיסיים - תמיד אפשר לערוך ולהרחיב הכל אחר כך מלוח הניהול שלכם.",
+  },
+};
+
 const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
+  const labels = data.businessType === 'nonprofit'
+    ? LABELS.nonprofit
+    : data.businessType === 'services'
+    ? LABELS.services
+    : LABELS.default;
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,16 +58,16 @@ const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-display font-bold pv-strong mb-1">ספרו לנו על העסק</h2>
+        <h2 className="text-2xl font-display font-bold pv-strong mb-1">{labels.heading}</h2>
         <p className="text-sm pv-muted">פרטים בסיסיים — אפשר לשנות בכל עת</p>
       </div>
 
       {/* Business name */}
       <div className="space-y-2">
-        <Label htmlFor="businessName" className="font-medium pv-text">שם העסק *</Label>
+        <Label htmlFor="businessName" className="font-medium pv-text">{labels.nameLabel}</Label>
         <Input
           id="businessName"
-          placeholder="למשל: פרחי שושנה, מאפיית אמא, גאדג׳טס"
+          placeholder={labels.namePlaceholder}
           value={data.businessName}
           onChange={e => updateData({ businessName: e.target.value })}
           className="h-12 text-base rounded-xl [background:var(--pv-surface2)] [border-color:var(--pv-border)] [color:var(--pv-text)] placeholder:[color:var(--pv-faint)] focus-visible:ring-primary/40"
@@ -47,7 +76,7 @@ const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
 
       {/* Logo — optional */}
       <div className="space-y-2">
-        <Label className="font-medium pv-text">לוגו</Label>
+        <Label className="font-medium pv-text">{labels.logoLabel}</Label>
         <label className="flex items-center gap-4 p-4 rounded-xl border border-dashed cursor-pointer transition-colors hover:border-primary/50" style={{ borderColor: "var(--pv-border)", background: "var(--pv-surface2)" }}>
           {logoPreview ? (
             <img src={logoPreview} alt="logo" className="w-16 h-16 object-contain rounded-lg" />
@@ -71,7 +100,7 @@ const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
         nextDisabled={!isValid}
         showPreview={true}
         showSave={false}
-        reassurance="אלו רק הפרטים הבסיסיים - תמיד אפשר לערוך ולהרחיב הכל אחר כך מלוח הניהול שלכם."
+        reassurance={labels.reassurance}
       />
     </div>
   );

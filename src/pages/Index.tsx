@@ -26,17 +26,10 @@ const ENGINES = [
   },
   {
     key: "booking", label: "שירותי מקצוע", icon: CalendarClock,
-    type: "אתר הזמנות שירותים וקביעת תורים",
+    type: "אתר לנותני שירות\nוקביעת תורים",
     subtitle: ["תמיד קיבלתם הזמנות בוואטסאפ ובמייל ולפעמים הדברים נופלים בין הכיסאות.", "עכשיו לקוחות קובעים תור לבד ואפילו משלמים מראש, ממש מהאתר שלכם."],
     to: "/preview/redesign/services",
     img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80",
-  },
-  {
-    key: "leads", label: "נדל״ן", icon: Building2,
-    type: "אתר לחברה\nאו לפרויקטים",
-    subtitle: ["תמיד היו לכם פרויקטים שעלו פה, ירדו שם, בלי מקום מסודר שאפשר להפנות אליו.", "עכשיו כל הנכסים שלכם מוצגים יפה, מעודכנים, זמינים תמיד."],
-    to: "/preview/redesign/realestate",
-    img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80",
   },
   {
     key: "donations", label: "עמותות", icon: Heart,
@@ -48,7 +41,7 @@ const ENGINES = [
 ];
 
 const EXAMPLES = [
-  { title: "חנות בוטיק", tag: "מסחר", img: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=600&q=80", to: "/preview/redesign/home-multi" },
+  { title: "חנות בוטיק", tag: "מסחר", img: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=600&q=80", to: "/preview/redesign/boutique" },
   { title: "סטודיו יופי", tag: "שירותים", img: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&q=80", to: "/preview/redesign/services" },
   { title: "סטודיו צילום", tag: "שירותים", img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80", to: "/preview/redesign/photographer" },
   { title: "צימר בגליל", tag: "אירוח", img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80", to: "/preview/redesign/vacation" },
@@ -116,7 +109,7 @@ const PROCESS_IMGS = [
   { src: "/onboarding/ספרו לנו על העסק.jpeg", caption: "A — בוחרים סוג עסק ומגדירים פרטים" },
   { src: "/onboarding/פרטי יצירתקשר.jpeg", caption: "B — מוסיפים פרטי יצירת קשר" },
   { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80", caption: "C — מוסיפים מוצרים ושירותים" },
-  { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80", caption: "האתר עולה לאוויר תוך דקות" },
+  { src: "/onboarding/דוגמה חיה של האתר.png", caption: "" },
 ];
 
 const HeroBg = () => (
@@ -176,7 +169,7 @@ const HowItWorks = () => {
                     alt={PROCESS_IMGS[imgIdx].caption}
                     initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover object-right-top"
                   />
                 </AnimatePresence>
                 {/* gradient overlay */}
@@ -282,7 +275,7 @@ const HowItWorks = () => {
               </div>
               <div className={`flex-1 text-right transition-all duration-500 ${imgIdx === 3 ? "opacity-100" : "opacity-55"}`}>
                 <p className="text-lg font-bold" style={{ color: imgIdx === 3 ? "#22c55e" : "var(--pv-strong)" }}>
-                  ואופ! האתר עלה לאוויר
+                  והופ! האתר עלה לאוויר
                 </p>
                 <p className="text-sm mt-0.5" style={{ color: "var(--pv-muted)" }}>תוך 5 דקות — ב-69 ₪ בלבד</p>
               </div>
