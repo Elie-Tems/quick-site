@@ -55,12 +55,13 @@ const SEOHead = ({
     "name": siteName,
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
+    // Single real price: 69 ILS/month + VAT. The previous 99/199/299 tiers were
+    // never real. Extra features (e.g. CRM) are priced separately and are not
+    // part of this core offer.
     "offers": {
-      "@type": "AggregateOffer",
+      "@type": "Offer",
       "priceCurrency": "ILS",
-      "lowPrice": "99",
-      "highPrice": "299",
-      "offerCount": "3"
+      "price": "69"
     }
     // aggregateRating removed: it was a fabricated 4.8/150 rating. Google penalizes
     // fake review markup, and the project rule forbids invented numbers. Re-add only
@@ -93,7 +94,7 @@ const SEOHead = ({
         "name": "כמה עולה לבנות אתר מכירות?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "התוכניות מתחילות מ-99 ש״ח לחודש בלבד, כולל אתר מלא, עדכונים ללא הגבלה, ותמיכה."
+          "text": "המחיר הוא 69 ש״ח לחודש + מע״מ, כולל אתר מלא, עדכונים ללא הגבלה, ותמיכה. פיצ׳רים נוספים (כמו CRM) מתומחרים בנפרד."
         }
       },
       {

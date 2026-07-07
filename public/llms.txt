@@ -19,9 +19,8 @@ Siango is an Israeli SaaS platform that enables small and medium business owners
 - Hebrew-first interface (RTL support)
 
 ## Pricing (in Israeli Shekels)
-- Basic Plan: ₪99/month - Full website, unlimited products, AI support
-- Recommended Plan: ₪199/month - Email & WhatsApp support, 24h response time
-- Premium Plan: ₪299/month - Phone support, priority assistance
+- One simple price: ₪69/month + VAT - full platform: complete website, unlimited products, updates, and support.
+- Additional features (e.g. CRM) are priced separately.
 
 ## How It Works
 1. Enter business details (name, logo, contact info)
