@@ -500,10 +500,11 @@ const Index = () => {
             <div className="w-[40rem] h-[40rem] bg-primary/15 rounded-full blur-[140px]" />
           </div>
           <div className="relative max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-5">
-              כל עסק. אתר אחד.{" "}
-              <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">5 דקות.</span>
+            <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-4">
+              בלי מתכנתים. בלי מעצבים.{" "}
+              <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">בלי כאב ראש.</span>
             </h2>
+            <p className="text-lg pv-muted mb-6">כמה דקות ויש לכם אתר מדהים, בלי התחייבות.</p>
             <Link to="/register" className="inline-flex items-center gap-2 px-9 py-4 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
               התחילו עכשיו <ArrowLeft className="w-5 h-5" />
             </Link>
