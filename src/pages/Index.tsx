@@ -159,17 +159,6 @@ const HowItWorks = () => {
           {/* ── LEFT: image carousel ── */}
           <div className="order-1">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{ border: "1px solid var(--pv-border)", background: "var(--pv-surface2)" }}>
-              {/* browser chrome */}
-              <div className="flex items-center gap-2 px-4 h-10 border-b" style={{ borderColor: "var(--pv-border)" }}>
-                <div className="flex gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-red-400/70" />
-                  <span className="w-3 h-3 rounded-full bg-yellow-400/70" />
-                  <span className="w-3 h-3 rounded-full bg-green-400/70" />
-                </div>
-                <div className="mx-auto text-xs rounded-md px-4 py-1" style={{ background: "var(--pv-surface)", border: "1px solid var(--pv-border)", color: "var(--pv-muted)" }}>
-                  siango.app/onboarding
-                </div>
-              </div>
               <div className="relative aspect-[4/3] overflow-hidden">
                 <AnimatePresence mode="wait">
                   <motion.img key={imgIdx}
