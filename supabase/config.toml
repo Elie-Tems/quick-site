@@ -41,6 +41,15 @@ verify_jwt = false
 [functions.contacts-capture]
 verify_jwt = false
 
+# donation-create is called from the PUBLIC storefront by anonymous donors.
+[functions.donation-create]
+verify_jwt = false
+
+# donation-callback is the gateway server-to-server IPN; authenticated by the
+# provider signature check, not a JWT.
+[functions.donation-callback]
+verify_jwt = false
+
 # icount-publish-webhook is the iCount IPN for platform subscription payments (no JWT).
 [functions.icount-publish-webhook]
 verify_jwt = false

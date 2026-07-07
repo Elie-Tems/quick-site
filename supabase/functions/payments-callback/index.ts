@@ -60,6 +60,16 @@ Deno.serve(async (req) => {
       status: "success", provider_transaction_id: parsed.transactionUid, metadata: { callback: payload }, updated_at: now,
     }).eq("order_id", order.id);
 
+    // Booking deposit: if this order is a booking deposit, confirm the held
+    // appointment and clear its hold. Best-effort - a plain product order simply
+    // matches no appointment. (booking_* tables may not exist until the migration
+    // is applied, so any error here is swallowed to not fail a real order.)
+    try {
+      await admin.from("booking_appointments")
+        .update({ status: "confirmed", deposit_status: "paid", hold_expires_at: null, updated_at: now })
+        .eq("order_id", order.id).eq("status", "pending");
+    } catch { /* booking module not present / not a booking order */ }
+
     const webhookUrl = Deno.env.get("VITE_ORDER_WEBHOOK_URL");
     if (webhookUrl) {
       const { data: items } = await admin.from("order_items").select("*").eq("order_id", order.id);

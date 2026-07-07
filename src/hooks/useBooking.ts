@@ -180,6 +180,6 @@ export const useCreateAppointment = () =>
       const { data, error } = await supabase.functions.invoke("booking-create", { body });
       if (error) throw error;
       if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
-      return data as { appointmentId: string; status: string; needsDeposit: boolean; depositAmount: number; cancelToken: string };
+      return data as { appointmentId: string; status: string; needsDeposit: boolean; depositAmount: number; cancelToken: string; paymentUrl?: string; orderId?: string };
     },
   });

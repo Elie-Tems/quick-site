@@ -39,7 +39,12 @@ const BookingWidget = ({ businessId }: { businessId: string }) => {
     create.mutate(
       { businessId, serviceId: service.id, staffId, startsAt: slot, customer },
       {
-        onSuccess: () => setDone(true),
+        onSuccess: (res) => {
+          // Deposit required -> send the customer to the hosted payment page; the
+          // callback confirms the appointment once paid.
+          if (res.paymentUrl) { window.location.href = res.paymentUrl; return; }
+          setDone(true);
+        },
         onError: (e) => toast.error(e.message === "slot_taken" ? "המשבצת נתפסה, בחרו אחרת" : "שגיאה בקביעת התור"),
       },
     );

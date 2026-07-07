@@ -10,6 +10,7 @@
 // once approved (reuse _shared/email + whatsapp-send).
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { getProvider } from "../_shared/payments/registry.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -112,16 +113,78 @@ Deno.serve(async (req) => {
   const cancelToken = await hmac(cancelSecret, appointmentId);
   await admin.from("booking_appointments").update({ cancel_token: cancelToken }).eq("id", appointmentId);
 
-  // Deposit payment: reuse the store's existing order/payment machinery. We return
-  // the amount + appointment id; the storefront initiates payment via the existing
-  // flow, and the payment callback confirms the appointment + clears the hold.
-  // (Exact payment wiring verified during the joint deploy/test.)
+  // Deposit payment: reuse the store's existing order/payment machinery. We create
+  // a pending deposit ORDER, link it to the appointment (order_id), and return a
+  // hosted payment link from the merchant's own gateway. payments-callback marks
+  // the order paid AND confirms the linked appointment (clearing the hold).
+  if (needsDeposit) {
+    const { data: business } = await admin
+      .from("businesses").select("id, slug, payment_enabled, payment_provider").eq("id", businessId).maybeSingle();
+    const provider = business?.payment_enabled ? getProvider(business.payment_provider) : null;
+    let creds: Record<string, unknown> | null = null;
+    if (provider) {
+      const { data } = await admin.from("payment_credentials")
+        .select("api_key, secret_key, page_uid, mode, config")
+        .eq("business_id", businessId).eq("provider", provider.id).maybeSingle();
+      creds = data ?? null;
+    }
+
+    // Merchant configured a deposit but no working gateway -> waive it and confirm
+    // the booking rather than trapping the customer on a dead payment step.
+    if (!provider || !creds) {
+      await admin.from("booking_appointments")
+        .update({ status: "confirmed", deposit_status: "none", hold_expires_at: null })
+        .eq("id", appointmentId);
+      console.warn(`Deposit configured but payment not set up for business ${businessId}; booking confirmed without deposit`);
+      return json({ ok: true, appointmentId, status: "confirmed", needsDeposit: false, depositAmount: 0, cancelToken });
+    }
+
+    const { data: order } = await admin.from("orders").insert({
+      business_id: businessId,
+      customer_name: customer.fullName, customer_phone: customer.phone, customer_email: customer.email || null,
+      notes: `מקדמה לתור: ${service.name}`, total_price: deposit,
+      status: "pending", payment_status: "pending",
+    }).select("id").single();
+
+    if (order) {
+      await admin.from("booking_appointments").update({ order_id: order.id }).eq("id", appointmentId);
+
+      const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
+      const storeUrl = `${siteUrl}/store/${business!.slug}`;
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const result = await provider.createPaymentPage(creds, {
+        amount: deposit, currency: "ILS",
+        customer: { name: customer.fullName, email: customer.email || "", phone: customer.phone },
+        items: [{ name: `מקדמה: ${service.name}`, quantity: 1, price: deposit }],
+        successUrl: `${storeUrl}?payment=success&order=${order.id}`,
+        failureUrl: `${storeUrl}?payment=failed&order=${order.id}`,
+        cancelUrl: `${storeUrl}?payment=cancelled&order=${order.id}`,
+        callbackUrl: `${supabaseUrl}/functions/v1/payments-callback?provider=${provider.id}`,
+      }, Deno.env);
+
+      if (result.ok && result.link) {
+        await admin.from("orders").update({ payment_page_request_uid: result.pageRequestUid }).eq("id", order.id);
+        return json({
+          ok: true, appointmentId, status: "pending", needsDeposit: true,
+          depositAmount: deposit, paymentUrl: result.link, orderId: order.id, cancelToken,
+        });
+      }
+      // Payment page failed to open: drop the dead order, waive, confirm.
+      await admin.from("orders").update({ payment_status: "failed" }).eq("id", order.id);
+    }
+
+    await admin.from("booking_appointments")
+      .update({ status: "confirmed", deposit_status: "none", hold_expires_at: null })
+      .eq("id", appointmentId);
+    return json({ ok: true, appointmentId, status: "confirmed", needsDeposit: false, depositAmount: 0, cancelToken });
+  }
+
   return json({
     ok: true,
     appointmentId,
-    status: needsDeposit ? "pending" : "confirmed",
-    needsDeposit,
-    depositAmount: deposit,
+    status: "confirmed",
+    needsDeposit: false,
+    depositAmount: 0,
     cancelToken,
   });
 });

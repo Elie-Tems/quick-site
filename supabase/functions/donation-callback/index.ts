@@ -1,0 +1,73 @@
+// Generic gateway callback for donations (IPN). Mirrors payments-callback but
+// resolves the pending `transactions` row (kind='donation') by the gateway
+// tracking id stored in details.page_request_uid, marks it paid, and refreshes
+// the campaign's cached totals. verify_jwt = false; authenticated by the
+// adapter's signature check against the merchant's own credentials.
+
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { getProvider } from "../_shared/payments/registry.ts";
+
+const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*" };
+const json = (b: unknown, s = 200) =>
+  new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+
+  const providerId = new URL(req.url).searchParams.get("provider");
+  const provider = getProvider(providerId);
+  if (!provider) return json({ error: "Unknown provider" }, 400);
+
+  const raw = await req.text();
+  let payload: any;
+  try { payload = JSON.parse(raw); } catch { return json({ error: "Invalid JSON" }, 400); }
+
+  const parsed = provider.parseCallback(payload);
+  if (!parsed.pageRequestUid) return json({ error: "Missing payment reference" }, 400);
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+  const { data: txn } = await admin.from("transactions")
+    .select("id, business_id, status, amount, details")
+    .eq("kind", "donation")
+    .eq("details->>page_request_uid", parsed.pageRequestUid).maybeSingle();
+  if (!txn) return json({ error: "Donation not found" }, 404);
+
+  const { data: creds } = await admin.from("payment_credentials")
+    .select("api_key, secret_key, page_uid, mode, config")
+    .eq("business_id", txn.business_id).eq("provider", provider.id).maybeSingle();
+  if (!creds) return json({ error: "Cannot verify callback" }, 401);
+
+  const valid = await provider.verifyCallbackSignature(creds, raw, req.headers, payload);
+  if (!valid) {
+    console.error("Donation callback signature invalid", { provider: provider.id, uid: parsed.pageRequestUid });
+    return json({ error: "Invalid signature" }, 401);
+  }
+
+  if (txn.status === "paid") return json({ ok: true, alreadyPaid: true });
+
+  const now = new Date().toISOString();
+  if (parsed.approved) {
+    const tolerance = 0.01;
+    if (parsed.amount > 0 && Math.abs(parsed.amount - Number(txn.amount)) > tolerance) {
+      console.error(`Donation amount mismatch: callback=${parsed.amount} txn=${txn.amount} id=${txn.id}`);
+      await admin.from("transactions").update({ status: "amount_mismatch" }).eq("id", txn.id);
+      return json({ error: "Amount mismatch" }, 400);
+    }
+    await admin.from("transactions").update({
+      status: "paid",
+      details: { ...(txn.details ?? {}), transaction_uid: parsed.transactionUid, paid_at: now },
+    }).eq("id", txn.id);
+
+    // Refresh the campaign's cached raised/backers totals, if this gift targeted one.
+    const campaignId = (txn.details as { campaign_id?: string } | null)?.campaign_id;
+    if (campaignId) {
+      await admin.rpc("refresh_donation_campaign", { p_campaign_id: campaignId });
+    }
+  } else {
+    await admin.from("transactions").update({ status: "failed" }).eq("id", txn.id);
+  }
+  return json({ ok: true });
+});
