@@ -19,13 +19,13 @@ const PV_CSS = `
 [data-pv="dark"]{
   --pv-bg:#0a0a0a; --pv-surface:rgba(255,255,255,.03); --pv-surface2:rgba(255,255,255,.05);
   --pv-border:rgba(255,255,255,.10); --pv-strong:#ffffff; --pv-text:rgba(255,255,255,.72);
-  --pv-muted:rgba(255,255,255,.50); --pv-faint:rgba(255,255,255,.32); --pv-hover:rgba(255,255,255,.06);
+  --pv-muted:rgba(255,255,255,.52); --pv-faint:rgba(255,255,255,.5); --pv-hover:rgba(255,255,255,.06);
   --pv-grid:hsl(152 44% 60%); --pv-grid-op:.035; --pv-a1:.22; --pv-a2:.18; --pv-shadow:none;
 }
 [data-pv="light"]{
   --pv-bg:#eaf1ed; --pv-surface:#ffffff; --pv-surface2:#f3f7f4;
   --pv-border:rgba(15,30,22,.10); --pv-strong:#0e1a14; --pv-text:rgba(18,30,23,.80);
-  --pv-muted:rgba(18,30,23,.55); --pv-faint:rgba(18,30,23,.40); --pv-hover:rgba(15,30,22,.04);
+  --pv-muted:rgba(18,30,23,.6); --pv-faint:rgba(18,30,23,.52); --pv-hover:rgba(15,30,22,.04);
   --pv-grid:hsl(152 40% 35%); --pv-grid-op:.05; --pv-a1:.16; --pv-a2:.12; --pv-shadow:0 10px 30px rgba(15,30,22,.06);
 }
 .pv-bg{background:var(--pv-bg);}
