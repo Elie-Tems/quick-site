@@ -18,6 +18,18 @@ const AuthCallback = () => {
 
     let cancelled = false;
 
+    // Safety net: never let this screen spin forever. If a Supabase query hangs
+    // (e.g. during a provider incident) the profile checks below can stall
+    // indefinitely, leaving the user on an endless "מפנה אותך..." spinner. If we
+    // haven't routed within 9s, send them to the dashboard and let it resolve the
+    // destination, rather than trapping them here.
+    const safety = window.setTimeout(() => {
+      if (cancelled) return;
+      console.warn("⏱️ AuthCallback: safety timeout - routing to /dashboard");
+      navigate("/dashboard", { replace: true });
+      setCheckDone(true);
+    }, 9000);
+
     const decideRedirect = async () => {
       try {
         console.log('🔍 AuthCallback: Starting profile check for user:', user.id);
@@ -57,10 +69,11 @@ const AuthCallback = () => {
           console.log('👤 User metadata:', user.user_metadata);
           console.log('🔐 User app metadata:', user.app_metadata);
           
-          // Try 5 times with longer delays (1s, 1.5s, 2s, 2.5s, 3s)
-          for (let i = 0; i < 5 && !profile; i++) {
-            const delay = 1000 + (i * 500);
-            console.log(`⏱️ Retry ${i + 1}/5 - waiting ${delay}ms...`);
+          // Try 4 times with short delays (~2.8s total) so we route well before
+          // the 9s safety net - the profile trigger is usually ready in ~1s.
+          for (let i = 0; i < 4 && !profile; i++) {
+            const delay = 700;
+            console.log(`⏱️ Retry ${i + 1}/4 - waiting ${delay}ms...`);
             await new Promise(resolve => setTimeout(resolve, delay));
             
             const { data: retryProfile, error: retryError } = await supabase
@@ -172,6 +185,7 @@ const AuthCallback = () => {
     decideRedirect();
     return () => {
       cancelled = true;
+      window.clearTimeout(safety);
     };
   }, [user, authLoading, navigate]);
 
@@ -182,6 +196,21 @@ const AuthCallback = () => {
       setCheckDone(true);
     }
   }, [authLoading, user, checkDone, navigate]);
+
+  // Absolute backstop: covers the case the other timers miss - when the OAuth
+  // code exchange itself hangs (auth stays "loading" forever, so the guarded
+  // effects above never even schedule their timers). If this screen is still
+  // mounted after 14s, force a full navigation to /dashboard, which re-hydrates
+  // the session from storage; its own auth guard bounces to /login if there's
+  // genuinely no session. A successful earlier route unmounts us first (cleanup
+  // clears this), so it only fires when we're truly stuck.
+  useEffect(() => {
+    const hard = window.setTimeout(() => {
+      console.warn("⏱️ AuthCallback: hard 14s backstop - forcing /dashboard");
+      window.location.replace("/dashboard");
+    }, 14000);
+    return () => window.clearTimeout(hard);
+  }, []);
 
   return (
     <>
