@@ -23,6 +23,20 @@ verify_jwt = false
 [functions.finalize-publish]
 verify_jwt = true
 
+# Booking (storefront visitors are anonymous; holds-sweep is a cron guarded by
+# CRON_SECRET). All server-authoritative - the client never decides availability.
+[functions.booking-availability]
+verify_jwt = false
+
+[functions.booking-create]
+verify_jwt = false
+
+[functions.booking-cancel-public]
+verify_jwt = false
+
+[functions.booking-holds-sweep]
+verify_jwt = false
+
 # icount-publish-webhook is the iCount IPN for platform subscription payments (no JWT).
 [functions.icount-publish-webhook]
 verify_jwt = false
