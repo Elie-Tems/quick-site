@@ -123,10 +123,13 @@ const Index = () => {
         .eq("user_id", user.id)
         .maybeSingle();
       if (cancelled) return;
-      if (profile && !profile.onboarding_completed_at) {
+      // A logged-in user should land in their workspace, never be stranded on the
+      // marketing home (this is exactly where an OAuth Site-URL fallback dumps
+      // them). New / mid-onboarding -> onboarding; finished -> dashboard.
+      if (!profile || !profile.onboarding_completed_at) {
         navigate("/onboarding", { replace: true });
       } else {
-        setResolving(false);
+        navigate("/dashboard", { replace: true });
       }
     })();
     return () => { cancelled = true; };

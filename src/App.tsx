@@ -78,7 +78,24 @@ const StoreLegalPage = lazy(() => import("./pages/StoreLegalPage"));
 const StoreUnsubscribe = lazy(() => import("./pages/StoreUnsubscribe"));
 const PlatformUnsubscribe = lazy(() => import("./pages/PlatformUnsubscribe"));
 
-const queryClient = new QueryClient();
+// Sane React Query defaults. The bare `new QueryClient()` used the library
+// defaults (staleTime 0 + refetchOnWindowFocus + retry 3), which made every
+// component mount and every tab-focus refire ALL queries, and every failed query
+// retry 3x - a request storm that was crushing load times (worse during a
+// Supabase incident). These defaults cache data, stop focus-refetch storms, and
+// cut retries so the app stops "thinking" on every interaction.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,        // data stays fresh 5 min - dedupes remounts
+      gcTime: 10 * 60 * 1000,          // keep cache 10 min
+      refetchOnWindowFocus: false,     // don't refetch everything when the tab regains focus
+      refetchOnReconnect: false,
+      retry: 1,                        // 1 retry instead of 3 (huge under a slow backend)
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
+    },
+  },
+});
 
 /**
  * The /dashboard route, with a safety net for legacy platform emails: older
