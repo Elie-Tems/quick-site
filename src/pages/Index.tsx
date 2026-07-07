@@ -5,6 +5,7 @@ import {
   ShoppingBag, CalendarClock, Building2, Heart, ArrowLeft, Check, Sparkles,
   Palette, CreditCard, BarChart3, Mail, Globe, Share2,
   Camera, Tent, Car, Wrench, Compass, HandHeart, Store, Scissors, Loader2,
+  Package, Upload, Rocket,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -75,6 +76,34 @@ const CORE = [
   { icon: Share2, label: "הפניות ושיווק" },
 ];
 
+const HOW_STEPS = [
+  {
+    num: "01",
+    icon: Upload,
+    title: "מעלים לוגו",
+    desc: "מעלים את הלוגו של העסק - אנחנו מסדרים את המיתוג אוטומטית",
+  },
+  {
+    num: "02",
+    icon: Store,
+    title: "פרטי העסק",
+    desc: "שם, פרטי קשר, שעות פעילות - הכל בכמה שניות",
+  },
+  {
+    num: "03",
+    icon: Package,
+    title: "מוצרים / שירותים",
+    desc: "מוסיפים את מה שמוכרים - מוצרים, שירותים, או נכסים",
+  },
+];
+
+const PROCESS_IMGS = [
+  { src: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=900&q=80", caption: "בוחרים סוג עסק ותחום" },
+  { src: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=900&q=80", caption: "מגדירים פרטי עסק ולוגו" },
+  { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80", caption: "מוסיפים מוצרים ושירותים" },
+  { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80", caption: "האתר עולה לאוויר תוך דקות" },
+];
+
 const HeroBg = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     <motion.div className="absolute -top-40 right-[-10%] w-[45rem] h-[45rem] rounded-full blur-[140px]"
@@ -95,6 +124,100 @@ const hasStoredSession = () => {
     }
   } catch { /* ignore */ }
   return false;
+};
+
+const HowItWorks = () => {
+  const [imgIdx, setImgIdx] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setImgIdx(i => (i + 1) % PROCESS_IMGS.length), 3000);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <section className="relative py-24 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full pv-surface2 border pv-border mb-5">
+            <Rocket className="w-4 h-4 text-primary" />
+            <span className="text-sm pv-text">פשוט כמו 1-2-3</span>
+          </div>
+          <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">איך זה עובד?</h2>
+          <p className="text-lg pv-muted">שלושה צעדים פשוטים - ואתם מוכנים</p>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Steps */}
+          <div className="space-y-6 order-2 lg:order-1">
+            {HOW_STEPS.map((s, i) => (
+              <motion.div key={s.num}
+                initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.12 }}
+                className="flex items-start gap-5 p-5 rounded-2xl pv-surface2 border pv-border">
+                <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center">
+                  <s.icon className="w-6 h-6 text-primary" strokeWidth={1.6} />
+                </div>
+                <div className="flex-1 text-right">
+                  <span className="text-xs font-bold text-primary/60 tracking-widest">{s.num}</span>
+                  <h3 className="text-lg font-bold pv-strong mt-0.5">{s.title}</h3>
+                  <p className="text-sm pv-muted mt-1">{s.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+
+            {/* Finale */}
+            <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }}
+              className="flex items-center gap-4 p-5 rounded-2xl bg-primary/10 border border-primary/30">
+              <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+                <Check className="w-7 h-7 text-white" strokeWidth={2.5} />
+              </div>
+              <div className="flex-1 text-right">
+                <p className="text-lg font-bold text-primary">ואופ! האתר עלה לאוויר</p>
+                <p className="text-sm pv-muted mt-0.5">תוך 5 דקות — ב-69 ₪ בלבד</p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Image carousel */}
+          <div className="order-1 lg:order-2">
+            <div className="relative rounded-2xl overflow-hidden border pv-border shadow-2xl pv-surface2">
+              {/* browser bar */}
+              <div className="flex items-center gap-2 px-4 h-10 border-b pv-border">
+                <div className="flex gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-red-400/70" />
+                  <span className="w-3 h-3 rounded-full bg-yellow-400/70" />
+                  <span className="w-3 h-3 rounded-full bg-green-400/70" />
+                </div>
+                <div className="mx-auto text-xs pv-muted pv-surface border pv-border rounded-md px-4 py-1">siango.app/onboarding</div>
+              </div>
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.img key={imgIdx}
+                    src={PROCESS_IMGS[imgIdx].src}
+                    alt={PROCESS_IMGS[imgIdx].caption}
+                    initial={{ opacity: 0, scale: 1.04 }} animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.5 }}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </AnimatePresence>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 right-4 left-4 flex items-end justify-between">
+                  <span className="text-white font-medium text-sm">{PROCESS_IMGS[imgIdx].caption}</span>
+                  <div className="flex gap-1.5">
+                    {PROCESS_IMGS.map((_, i) => (
+                      <button key={i} onClick={() => setImgIdx(i)}
+                        className={`w-2 h-2 rounded-full transition-all ${i === imgIdx ? "bg-primary w-5" : "bg-white/50"}`} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 };
 
 const Index = () => {
@@ -219,6 +342,9 @@ const Index = () => {
             </div>
           </div>
         </section>
+
+        {/* HOW IT WORKS — 3 steps */}
+        <HowItWorks />
 
         {/* Professions strip */}
         <section className="relative py-10 px-4 border-y pv-border pv-surface2">
