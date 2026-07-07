@@ -358,6 +358,23 @@ const ru: Record<string, string> = {
   'cookie.aria': 'Уведомление о cookie',
   'help.support': 'Помощь и поддержка',
   'help.needHelp': 'Нужна помощь?',
+  // Accessibility widget
+  'a11y.skipToContent': 'Перейти к основному содержимому',
+  'a11y.openMenu': 'Открыть меню доступности',
+  'a11y.menu': 'Меню доступности',
+  'a11y.title': 'Настройки доступности',
+  'a11y.closeMenu': 'Закрыть меню доступности',
+  'a11y.fontSize': 'Размер текста',
+  'a11y.decreaseFont': 'Уменьшить размер текста',
+  'a11y.increaseFont': 'Увеличить размер текста',
+  'a11y.fontNormal': 'Обычный',
+  'a11y.fontLarge': 'Крупный',
+  'a11y.fontXLarge': 'Очень крупный',
+  'a11y.highContrast': 'Высокая контрастность',
+  'a11y.highlightLinks': 'Выделять ссылки',
+  'a11y.stopAnimations': 'Остановить анимацию',
+  'a11y.reset': 'Сбросить настройки',
+  'a11y.compliance': 'Этот сайт соответствует израильскому стандарту доступности 5568 (WCAG 2.1 AA)',
 };
 
 export default ru;

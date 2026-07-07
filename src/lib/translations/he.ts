@@ -362,6 +362,23 @@ const he: Record<string, string> = {
   'cookie.aria': 'הודעת עוגיות',
   'help.support': 'עזרה ותמיכה',
   'help.needHelp': 'צריכים עזרה?',
+  // Accessibility widget
+  'a11y.skipToContent': 'דלג לתוכן הראשי',
+  'a11y.openMenu': 'פתח תפריט נגישות',
+  'a11y.menu': 'תפריט נגישות',
+  'a11y.title': 'הגדרות נגישות',
+  'a11y.closeMenu': 'סגור תפריט נגישות',
+  'a11y.fontSize': 'גודל טקסט',
+  'a11y.decreaseFont': 'הקטן גודל טקסט',
+  'a11y.increaseFont': 'הגדל גודל טקסט',
+  'a11y.fontNormal': 'רגיל',
+  'a11y.fontLarge': 'גדול',
+  'a11y.fontXLarge': 'גדול מאוד',
+  'a11y.highContrast': 'ניגודיות גבוהה',
+  'a11y.highlightLinks': 'הדגשת קישורים',
+  'a11y.stopAnimations': 'עצירת אנימציות',
+  'a11y.reset': 'איפוס הגדרות',
+  'a11y.compliance': 'אתר זה עומד בתקן נגישות ישראלי 5568 (WCAG 2.1 AA)',
 };
 
 export default he;

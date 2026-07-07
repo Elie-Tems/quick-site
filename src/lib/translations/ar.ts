@@ -358,6 +358,23 @@ const ar: Record<string, string> = {
   'cookie.aria': 'إشعار ملفات تعريف الارتباط',
   'help.support': 'المساعدة والدعم',
   'help.needHelp': 'تحتاج مساعدة؟',
+  // Accessibility widget
+  'a11y.skipToContent': 'تخطَّ إلى المحتوى الرئيسي',
+  'a11y.openMenu': 'افتح قائمة إمكانية الوصول',
+  'a11y.menu': 'قائمة إمكانية الوصول',
+  'a11y.title': 'إعدادات إمكانية الوصول',
+  'a11y.closeMenu': 'أغلق قائمة إمكانية الوصول',
+  'a11y.fontSize': 'حجم النص',
+  'a11y.decreaseFont': 'تصغير حجم النص',
+  'a11y.increaseFont': 'تكبير حجم النص',
+  'a11y.fontNormal': 'عادي',
+  'a11y.fontLarge': 'كبير',
+  'a11y.fontXLarge': 'كبير جداً',
+  'a11y.highContrast': 'تباين عالٍ',
+  'a11y.highlightLinks': 'إبراز الروابط',
+  'a11y.stopAnimations': 'إيقاف الحركة',
+  'a11y.reset': 'إعادة ضبط الإعدادات',
+  'a11y.compliance': 'يلتزم هذا الموقع بمعيار إمكانية الوصول الإسرائيلي 5568 (WCAG 2.1 AA)',
 };
 
 export default ar;

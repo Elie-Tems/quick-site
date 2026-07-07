@@ -362,6 +362,23 @@ const en: Record<string, string> = {
   'cookie.aria': 'Cookie notice',
   'help.support': 'Help & support',
   'help.needHelp': 'Need help?',
+  // Accessibility widget
+  'a11y.skipToContent': 'Skip to main content',
+  'a11y.openMenu': 'Open accessibility menu',
+  'a11y.menu': 'Accessibility menu',
+  'a11y.title': 'Accessibility settings',
+  'a11y.closeMenu': 'Close accessibility menu',
+  'a11y.fontSize': 'Text size',
+  'a11y.decreaseFont': 'Decrease text size',
+  'a11y.increaseFont': 'Increase text size',
+  'a11y.fontNormal': 'Normal',
+  'a11y.fontLarge': 'Large',
+  'a11y.fontXLarge': 'Extra large',
+  'a11y.highContrast': 'High contrast',
+  'a11y.highlightLinks': 'Highlight links',
+  'a11y.stopAnimations': 'Stop animations',
+  'a11y.reset': 'Reset settings',
+  'a11y.compliance': 'This site complies with Israeli accessibility standard IS 5568 (WCAG 2.1 AA)',
 };
 
 export default en;

@@ -358,6 +358,23 @@ const fr: Record<string, string> = {
   'cookie.aria': 'Avis relatif aux cookies',
   'help.support': 'Aide & assistance',
   'help.needHelp': "Besoin d'aide ?",
+  // Accessibility widget
+  'a11y.skipToContent': 'Aller au contenu principal',
+  'a11y.openMenu': "Ouvrir le menu d'accessibilité",
+  'a11y.menu': "Menu d'accessibilité",
+  'a11y.title': "Paramètres d'accessibilité",
+  'a11y.closeMenu': "Fermer le menu d'accessibilité",
+  'a11y.fontSize': 'Taille du texte',
+  'a11y.decreaseFont': 'Réduire la taille du texte',
+  'a11y.increaseFont': 'Augmenter la taille du texte',
+  'a11y.fontNormal': 'Normal',
+  'a11y.fontLarge': 'Grand',
+  'a11y.fontXLarge': 'Très grand',
+  'a11y.highContrast': 'Contraste élevé',
+  'a11y.highlightLinks': 'Surligner les liens',
+  'a11y.stopAnimations': 'Arrêter les animations',
+  'a11y.reset': 'Réinitialiser',
+  'a11y.compliance': "Ce site respecte la norme d'accessibilité israélienne 5568 (WCAG 2.1 AA)",
 };
 
 export default fr;
