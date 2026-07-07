@@ -5,6 +5,8 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardNav, { type DashboardView } from "@/components/dashboard/DashboardNav";
+import VerticalModules from "@/components/dashboard/VerticalModules";
+import { getEnabledModules } from "@/lib/businessModules";
 import SubscriptionAlert from "@/components/dashboard/SubscriptionAlert";
 import DashboardHome from "@/components/dashboard/DashboardHome";
 import DashboardProducts, { type Product } from "@/components/dashboard/DashboardProducts";
@@ -455,6 +457,15 @@ const Dashboard = () => {
   // Flags for feature availability (נווט מסתמך עליהם להצגת טאבים מתקדמים)
   const hasProducts = (dbProducts?.length ?? 0) > 0;
 
+  // Per-vertical modules unlocked by business_type (booking / listings / donations).
+  // The nav "יומן ולידים" entry + its dedicated view show only when a non-commerce
+  // module is enabled; the label follows the primary module.
+  const verticalModules = getEnabledModules(business as any).filter((m) => m !== "commerce");
+  const verticalsLabel =
+    verticalModules.includes("booking") ? "יומן ותורים" :
+    verticalModules.includes("listings") ? "לידים ונכסים" :
+    verticalModules.includes("donations") ? "תרומות וקמפיינים" : undefined;
+
   // First-visit guided tour of the dashboard (shown once per merchant).
   const [showTour, setShowTour] = useState(false);
   useEffect(() => {
@@ -495,6 +506,8 @@ const Dashboard = () => {
     switch (currentView) {
       case 'home':
         return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} hasAbout={!!(business as any)?.about_text?.trim()} onNavigate={setCurrentView} />;
+      case 'verticals':
+        return <VerticalModules business={business as any} />;
       case 'products':
       case 'categories':
       case 'sales':
@@ -770,6 +783,8 @@ const Dashboard = () => {
             canUseCoupons={hasProducts}
             // תמונות AI נשאר פתוח, מגבלות שימוש מנוהלות בתוך המסך עצמו
             canUseAIImages={true}
+            showVerticals={verticalModules.length > 0}
+            verticalsLabel={verticalsLabel}
           />
           
           <main className="flex-1 pb-20 md:pb-0">
