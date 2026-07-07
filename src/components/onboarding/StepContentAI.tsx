@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { OnboardingData } from "@/pages/Onboarding";
-import { Loader2, Wand2, Globe, FileText, Mic, MicOff, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Wand2, Globe, FileText, Mic, MicOff, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -40,8 +40,6 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       promoText: data.promoText || "",
     } : null
   );
-  const [showPreview, setShowPreview] = useState(false);
-
   // Voice recording
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -102,7 +100,6 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
 
       setGenerated(content);
       updateData(content);
-      setShowPreview(true);
       toast({ title: "התכנים נוצרו בהצלחה ✨" });
     } catch (err) {
       toast({ title: "שגיאה ביצירת תכנים", description: "נסו שוב", variant: "destructive" });
@@ -305,41 +302,20 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
         )}
       </button>
 
-      {/* Results preview */}
+      {/* Success state — no content preview, surprise reveal in StepTemplate */}
       {generated && !isGenerating && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-primary/30 bg-primary/5 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setShowPreview(p => !p)}
-            className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-primary"
-          >
-            <span className="flex items-center gap-2"><Check className="w-4 h-4" /> התכנים נוצרו בהצלחה</span>
-            {showPreview ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-
-          <AnimatePresence>
-            {showPreview && (
-              <motion.div
-                initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="px-4 pb-4 space-y-3 border-t border-primary/20 pt-3">
-                  {[
-                    { label: "כותרת ראשית", value: generated.heroTitle },
-                    { label: "תגית", value: generated.tagline },
-                    { label: "אודות", value: generated.aboutText },
-                    { label: "יתרונות", value: generated.heroBenefits },
-                    { label: "פרומו", value: generated.promoText },
-                  ].map(({ label, value }) => (
-                    <div key={label}>
-                      <p className="text-[10px] font-medium pv-faint uppercase tracking-wider mb-0.5">{label}</p>
-                      <p className="text-sm pv-text leading-relaxed">{value}</p>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl border border-primary/30 bg-primary/5"
+        >
+          <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+            <Check className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-primary">התכנים מוכנים</p>
+            <p className="text-xs pv-muted">תראו אותם באתר בשלב הבא</p>
+          </div>
         </motion.div>
       )}
 
