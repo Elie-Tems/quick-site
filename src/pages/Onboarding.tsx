@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate } from "react-router-dom";
 import { Eye, Store, Building2, Phone, Package, Palette, Rocket, Check } from "lucide-react";
-import logoDarkBg from "@/assets/logo-dark-bg.png";
+import logoLightBg from "@/assets/logo-light-bg1.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuroraBg, Card, PreviewThemeRoot } from "@/components/preview-redesign/kit";
 import StepBusinessType from "@/components/onboarding/StepBusinessType";
@@ -274,7 +274,7 @@ const Onboarding = () => {
           {/* Logo + preview badge */}
           <div className="flex items-center justify-between mb-8">
             <div className="w-24" />
-            <img src={logoDarkBg} alt="Siango" className="h-10 w-auto" />
+            <img src={logoLightBg} alt="Siango" className="h-10 w-auto" />
             {isPreviewMode ? (
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/30 rounded-full text-xs text-primary">
                 <Eye className="w-3.5 h-3.5" />
