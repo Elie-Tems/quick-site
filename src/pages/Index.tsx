@@ -373,7 +373,7 @@ const Index = () => {
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
                       <span className="block pv-strong" style={{ whiteSpace: "pre-line" }}>{a.type}</span>
                       <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">תוך 5 דקות</span>
-                      <span className="block pv-strong">ב-69 ₪ לחודש</span>
+                      <span className="block pv-strong">ב-69 ₪</span>
                     </h1>
                   </motion.div>
                 </AnimatePresence>
