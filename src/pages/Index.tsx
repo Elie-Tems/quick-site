@@ -18,25 +18,25 @@ import { PreviewThemeRoot, Card } from "@/components/preview-redesign/kit";
 const ENGINES = [
   {
     key: "commerce", label: "חנויות", icon: ShoppingBag,
-    type: "אתר מכירות",
+    type: "אתר מכירות", cta: "ראו חנות לדוגמה",
     to: "/preview/home-v2",
     img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
   },
   {
     key: "booking", label: "תורים", icon: CalendarClock,
-    type: "אתר הזמנות",
+    type: "אתר הזמנות", cta: "ראו אתר תורים",
     to: "/preview/redesign/services",
     img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80",
   },
   {
     key: "leads", label: "נדל״ן", icon: Building2,
-    type: "אתר לעסק",
+    type: "אתר לעסק", cta: "ראו אתר נדל״ן",
     to: "/preview/redesign/realestate",
     img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80",
   },
   {
     key: "donations", label: "עמותות", icon: Heart,
-    type: "אתר לעמותה",
+    type: "אתר לעמותה", cta: "ראו אתר עמותה",
     to: "/preview/redesign/nonprofit",
     img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=900&q=80",
   },
@@ -112,7 +112,7 @@ const HeroBg = () => (
     <motion.div className="absolute top-1/3 left-[-15%] w-[40rem] h-[40rem] rounded-full blur-[150px]"
       style={{ background: "radial-gradient(circle, hsl(170 70% 40% / 0.12), transparent 70%)" }}
       animate={{ x: [0, 60, 0], y: [0, -40, 0], scale: [1, 1.2, 1] }} transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }} />
-    <div className="absolute inset-0" style={{ opacity: 0.04, backgroundImage: "linear-gradient(#3fb950 1px, transparent 1px), linear-gradient(90deg, #3fb950 1px, transparent 1px)", backgroundSize: "64px 64px" }} />
+    <div className="absolute inset-0" style={{ opacity: "var(--pv-grid-op)", backgroundImage: "linear-gradient(var(--pv-grid) 1px, transparent 1px), linear-gradient(90deg, var(--pv-grid) 1px, transparent 1px)", backgroundSize: "64px 64px" }} />
   </div>
 );
 
@@ -290,16 +290,14 @@ const Index = () => {
             <div className="grid lg:grid-cols-2 gap-10 items-center">
               {/* Text */}
               <div className="text-center lg:text-right">
-                <AnimatePresence mode="wait">
-                  <motion.div key={a.key}
-                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35 }}>
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
-                      <span className="block pv-strong">{a.type}</span>
-                      <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">תוך 5 דקות</span>
-                      <span className="block pv-strong">ב-69 ₪ בלבד</span>
-                    </h1>
-                  </motion.div>
-                </AnimatePresence>
+                <motion.div key={a.key}
+                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
+                    <span className="block pv-strong">{a.type}</span>
+                    <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">תוך 5 דקות</span>
+                    <span className="block pv-strong">ב-69 ₪ בלבד</span>
+                  </h1>
+                </motion.div>
                 <div className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start">
                   <Link to="/register" className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
                     התחילו עכשיו <ArrowLeft className="w-5 h-5" />
@@ -312,10 +310,9 @@ const Index = () => {
               </div>
 
               {/* Preview image */}
-              <AnimatePresence mode="wait">
                 <motion.div key={a.key}
                   initial={{ opacity: 0, scale: 0.96, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.4 }} className="relative">
+                  transition={{ duration: 0.4 }} className="relative">
                   <div className="absolute -inset-6 bg-primary/15 rounded-[2rem] blur-3xl" />
                   <div className="relative rounded-2xl overflow-hidden border pv-border shadow-2xl pv-surface2">
                     <div className="flex items-center gap-2 px-4 h-10 border-b pv-border">
@@ -338,7 +335,6 @@ const Index = () => {
                     </div>
                   </div>
                 </motion.div>
-              </AnimatePresence>
             </div>
           </div>
         </section>
