@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, Store, Building2, Phone, Package, Palette, Rocket, Check, ArrowLeft, Clock, CreditCard, Globe, Image, Wand2 } from "lucide-react";
-import logoDarkBg from "@/assets/logo-dark-bg.png";
+import logoLightBg from "@/assets/logo-light-bg1.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuroraBg, Card, PreviewThemeRoot } from "@/components/preview-redesign/kit";
 import StepBusinessType from "@/components/onboarding/StepBusinessType";
@@ -269,7 +269,7 @@ const Onboarding = () => {
         <PreviewThemeRoot>
           <AuroraBg />
           <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16" dir="rtl">
-            <img src={logoDarkBg} alt="Siango" className="h-10 w-auto mb-12" />
+            <img src={logoLightBg} alt="Siango" className="h-10 w-auto mb-12" />
 
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="max-w-lg w-full text-center">
@@ -343,7 +343,7 @@ const Onboarding = () => {
           {/* Logo + preview badge */}
           <div className="flex items-center justify-between mb-8">
             <div className="w-24" />
-            <img src={logoDarkBg} alt="Siango" className="h-10 w-auto" />
+            <img src={logoLightBg} alt="Siango" className="h-10 w-auto" />
             {isPreviewMode ? (
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/30 rounded-full text-xs text-primary">
                 <Eye className="w-3.5 h-3.5" />
