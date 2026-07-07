@@ -473,7 +473,6 @@ const Index = () => {
                       <div className="relative aspect-[16/10] overflow-hidden">
                         <img src={e.img} alt={e.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                        <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-primary/90 text-white text-xs font-medium">{e.tag}</span>
                         <div className="absolute bottom-3 right-3 left-3 flex items-center justify-between">
                           <span className="font-display font-bold text-white text-lg">{e.title}</span>
                           <ArrowLeft className="w-5 h-5 text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
