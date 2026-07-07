@@ -5,7 +5,7 @@ import {
   ShoppingBag, CalendarClock, Building2, Heart, ArrowLeft, Check, Sparkles,
   Palette, CreditCard, BarChart3, Mail, Globe, Share2,
   Camera, Tent, Car, Wrench, Compass, HandHeart, Store, Scissors, Loader2,
-  Package, Upload, Rocket,
+  Package, Upload, Rocket, Tag, Users, ImagePlus,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -72,12 +72,12 @@ const PROFESSIONS = [
 ];
 
 const CORE = [
-  { icon: Palette, label: "מיתוג ועיצוב AI", desc: "צבעים, פונט ולוגו — מותאמים לעסק שלכם" },
-  { icon: CreditCard, label: "סליקה ותשלום מראש", desc: "PayPlus ועוד — ישירות לחשבון שלכם" },
-  { icon: BarChart3, label: "דשבורד ואנליטיקה", desc: "הזמנות, מכירות ולקוחות במקום אחד" },
-  { icon: Mail, label: "מייל ווואטסאפ", desc: "עדכונים אוטומטיים ללקוח ולעסק" },
-  { icon: Globe, label: "דומיין משלכם", desc: "yoursite.co.il — ללא עלות נוספת" },
-  { icon: Share2, label: "הפניות ושיווק", desc: "קישורי שיתוף, פיקסל וגוגל אנליטיקס" },
+  { icon: BarChart3, label: "סטטיסטיקות", desc: "מכירות, הזמנות ולקוחות — הכל בזמן אמת" },
+  { icon: Package, label: "ניהול מוצרים", desc: "הוספה, עריכה וארגון קל של כל הקטלוג" },
+  { icon: Tag, label: "מבצעים וקופונים", desc: "צרו הנחות, מבצעי סוף עונה וקודי קופון" },
+  { icon: Mail, label: "דיוור ללקוחות", desc: "עדכונים אוטומטיים במייל ובוואטסאפ" },
+  { icon: ImagePlus, label: "יצירה ועריכת תמונות", desc: "יצירת תמונות מוצר עם AI בלחיצה אחת" },
+  { icon: Globe, label: "דומיין משלכם", desc: "yoursite.co.il כלול, ללא עלות נוספת" },
 ];
 
 const HOW_STEPS = [
