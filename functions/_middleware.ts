@@ -276,6 +276,156 @@ function buildBodyContent(business: StoreBusiness, products: StoreProduct[], isA
   return `<div id="seo-content" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);"><h1>${heading}</h1>${sub}${about}${productList}</div>`;
 }
 
+// ---- Marketing homepage i18n --------------------------------------------------
+// The marketing site is a client-rendered SPA, so per-language crawler signals
+// (title, meta, hreflang, a translated hero) are injected at the edge - the same
+// pattern as the storefront SSR above. Human visitors still get the SPA (which,
+// until the React UI is translated, currently renders Hebrew regardless).
+//
+// Copy mirrors src/i18n/locales/*.json - keep the two in sync. Prices per market:
+// he ₪69+VAT, en/ar/ru $28, fr €28. Approved by Moti 2026-07-07.
+interface MarketingCopy {
+  htmlLang: string;
+  dir: "rtl" | "ltr";
+  ogLocale: string;
+  title: string;
+  description: string;
+  h1: string;
+  valueSub: string;
+}
+
+const MARKETING_LANGS = ["he", "en", "ar", "fr", "ru"] as const;
+
+const MARKETING: Record<string, MarketingCopy> = {
+  he: {
+    htmlLang: "he",
+    dir: "rtl",
+    ogLocale: "he_IL",
+    title: "בניית אתר לעסק תוך 5 דקות | אתר וחנות אונליין בזול - סיאנגו",
+    description:
+      'בונים לעסק שלך אתר מכירות או חנות אונליין מקצועית תוך 5 דקות, בלי מתכנת ובלי מעצב. הכל כלול ב-69 ₪ לחודש + מע"מ. מושלם לעסקים קטנים בישראל.',
+    h1: "בניית אתר לעסק תוך 5 דקות ב-69 ₪ בלבד",
+    valueSub: "כל הכלים לכל תחום. לא משנה מה אתם מוכרים - אותה מערכת, אותם כלים חזקים.",
+  },
+  en: {
+    htmlLang: "en",
+    dir: "ltr",
+    ogLocale: "en_US",
+    title: "Build a Business Website in 5 Minutes | Cheap Website & Online Store Builder - Siango",
+    description:
+      "Build a professional business website or online store in 5 minutes - no developer, no designer. Everything included for $28/month. Perfect for small businesses.",
+    h1: "Build a business website in 5 minutes for just $28",
+    valueSub: "Every tool for every field. Whatever you sell - the same system, the same powerful tools.",
+  },
+  ar: {
+    htmlLang: "ar",
+    dir: "rtl",
+    ogLocale: "ar_AE",
+    title: "أنشئ موقعاً لنشاطك في 5 دقائق | منصة إنشاء مواقع ومتاجر بسعر رخيص - Siango",
+    description:
+      "أنشئ موقعاً احترافياً أو متجراً إلكترونياً لنشاطك في 5 دقائق - بدون مبرمج وبدون مصمم. كل شيء مشمول مقابل 28$ شهرياً. مثالي للأنشطة الصغيرة.",
+    h1: "أنشئ موقعاً لنشاطك في 5 دقائق مقابل 28$ فقط",
+    valueSub: "كل الأدوات لكل مجال. مهما كان ما تبيعه - نفس النظام، نفس الأدوات القوية.",
+  },
+  fr: {
+    htmlLang: "fr",
+    dir: "ltr",
+    ogLocale: "fr_FR",
+    title: "Créez un site pro en 5 minutes | Créateur de site et boutique en ligne pas cher - Siango",
+    description:
+      "Créez un site web professionnel ou une boutique en ligne en 5 minutes - sans développeur, sans designer. Tout inclus pour 28€/mois. Parfait pour les petites entreprises.",
+    h1: "Créez un site professionnel en 5 minutes pour seulement 28€",
+    valueSub: "Tous les outils pour tous les secteurs. Quoi que vous vendiez - le même système, les mêmes outils puissants.",
+  },
+  ru: {
+    htmlLang: "ru",
+    dir: "ltr",
+    ogLocale: "ru_RU",
+    title: "Сайт для бизнеса за 5 минут | Недорогой конструктор сайтов и интернет-магазинов - Siango",
+    description:
+      "Создайте профессиональный сайт или интернет-магазин за 5 минут - без программиста и дизайнера. Всё включено за $28/мес. Идеально для малого бизнеса.",
+    h1: "Сайт для бизнеса за 5 минут всего за $28",
+    valueSub: "Все инструменты для любой сферы. Что бы вы ни продавали - одна система, одни мощные инструменты.",
+  },
+};
+
+// Match the marketing homepage in a given language: "/" (he), "/en", "/ar", ...
+function matchMarketingHome(pathname: string): string | null {
+  const p = pathname.replace(/\/+$/, "") || "/";
+  if (p === "/") return "he";
+  const m = p.match(/^\/(en|ar|fr|ru)$/);
+  return m ? m[1] : null;
+}
+
+// hreflang alternates - identical on every language variant of the homepage.
+function marketingHreflang(siteUrl: string): string {
+  const href = (l: string) => (l === "he" ? `${siteUrl}/` : `${siteUrl}/${l}`);
+  const links = MARKETING_LANGS.map(
+    (l) => `<link rel="alternate" hreflang="${MARKETING[l].htmlLang}" href="${href(l)}" />`,
+  );
+  links.push(`<link rel="alternate" hreflang="x-default" href="${siteUrl}/" />`);
+  return links.join("\n");
+}
+
+function renderMarketingHome(lang: string, response: Response, siteUrl: string): Response {
+  const c = MARKETING[lang];
+  const canonical = lang === "he" ? `${siteUrl}/` : `${siteUrl}/${lang}`;
+  const hreflang = marketingHreflang(siteUrl);
+  const ogImage = "https://siango.app/og-image.png";
+
+  const HTMLRewriterCtor = (globalThis as any).HTMLRewriter;
+  let rewriter = new HTMLRewriterCtor().on("html", {
+    element: (el: any) => {
+      el.setAttribute("lang", c.htmlLang);
+      el.setAttribute("dir", c.dir);
+    },
+  });
+
+  if (lang === "he") {
+    // Hebrew is the static default: keep its existing meta, only add hreflang so
+    // Google learns about the translated alternates.
+    rewriter = rewriter.on("head", { element: (el: any) => el.append(hreflang, { html: true }) });
+  } else {
+    const head = [
+      `<title>${esc(c.title)}</title>`,
+      `<meta name="description" content="${esc(c.description)}" />`,
+      `<link rel="canonical" href="${canonical}" />`,
+      `<meta name="robots" content="index, follow" />`,
+      `<meta property="og:type" content="website" />`,
+      `<meta property="og:url" content="${canonical}" />`,
+      `<meta property="og:title" content="${esc(c.title)}" />`,
+      `<meta property="og:description" content="${esc(c.description)}" />`,
+      `<meta property="og:image" content="${ogImage}" />`,
+      `<meta property="og:locale" content="${c.ogLocale}" />`,
+      `<meta property="og:site_name" content="Siango" />`,
+      `<meta name="twitter:card" content="summary_large_image" />`,
+      `<meta name="twitter:title" content="${esc(c.title)}" />`,
+      `<meta name="twitter:description" content="${esc(c.description)}" />`,
+      `<meta name="twitter:image" content="${ogImage}" />`,
+      hreflang,
+    ].join("\n");
+    const body = `<div id="seo-content" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);"><h1>${esc(c.h1)}</h1><p>${esc(c.valueSub)}</p></div>`;
+    rewriter = rewriter
+      .on("title", { element: (el: any) => el.remove() })
+      .on('meta[name="description"]', { element: (el: any) => el.remove() })
+      .on('meta[name="keywords"]', { element: (el: any) => el.remove() })
+      .on('meta[property^="og:"]', { element: (el: any) => el.remove() })
+      .on('meta[name^="twitter:"]', { element: (el: any) => el.remove() })
+      .on('link[rel="canonical"]', { element: (el: any) => el.remove() })
+      .on("head", { element: (el: any) => el.append(head, { html: true }) })
+      .on('div[id="root"]', { element: (el: any) => el.append(body, { html: true }) });
+  }
+
+  const rewritten = rewriter.transform(response);
+  const headers = new Headers(rewritten.headers);
+  headers.set("Cache-Control", "public, max-age=300, s-maxage=300");
+  return new Response(rewritten.body, {
+    status: rewritten.status,
+    statusText: rewritten.statusText,
+    headers,
+  });
+}
+
 export const onRequest = async (context: {
   request: Request;
   env: Env;
@@ -306,6 +456,13 @@ export const onRequest = async (context: {
       route = { slug: hostSlug, isAbout };
       canonical = `https://${hostSlug}.${baseDomain}${isAbout ? "/about" : "/"}`;
     } else {
+      // Marketing homepage in a language: "/" (he), "/en", "/ar", "/fr", "/ru".
+      const marketingLang = matchMarketingHome(url.pathname);
+      if (marketingLang) {
+        const ct = response.headers.get("content-type") || "";
+        if (!ct.includes("text/html")) return response;
+        return renderMarketingHome(marketingLang, response, siteUrl);
+      }
       route = matchStoreRoute(url.pathname);
       if (!route) return response;
       // Canonical uses the percent-encoded slug so it is a valid, stable URL even
