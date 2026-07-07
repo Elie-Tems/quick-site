@@ -45,12 +45,12 @@ const ENGINES = [
 const EXAMPLES = [
   { title: "סטודיו יופי", tag: "שירותים", img: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&q=80", to: "/preview/redesign/services" },
   { title: "סטודיו צילום", tag: "שירותים", img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80", to: "/preview/redesign/photographer" },
-  { title: "צימר בגליל", tag: "אירוח", img: "https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=600&q=80", to: "/preview/redesign/vacation" },
+  { title: "צימר בגליל", tag: "אירוח", img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80", to: "/preview/redesign/vacation" },
   { title: "דירות למכירה", tag: "נדל\"ן", img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80", to: "/preview/redesign/realestate" },
   { title: "פרויקט מגורים", tag: "נדל\"ן", img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80", to: "/preview/redesign/project" },
   { title: "סוחר רכב", tag: "רכב", img: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&q=80", to: "/preview/redesign/car-dealer" },
   { title: "שיפוצים ותיקונים", tag: "בעלי מקצוע", img: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=600&q=80", to: "/preview/redesign/home-pro" },
-  { title: "עמותה", tag: "תרומות", img: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=600&q=80", to: "/preview/redesign/nonprofit" },
+  { title: "עמותה", tag: "תרומות", img: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&q=80", to: "/preview/redesign/nonprofit" },
 ];
 
 const PROFESSIONS = [
@@ -449,6 +449,7 @@ const Index = () => {
                           <ArrowLeft className="w-5 h-5 text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                         </div>
                       </div>
+                      <div className="px-4 py-2.5 text-xs pv-muted text-right">69 ₪ לחודש · ללא התחייבות</div>
                     </Card>
                   </Link>
                 </motion.div>
