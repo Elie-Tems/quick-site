@@ -103,8 +103,8 @@ const HOW_STEPS = [
 
 // תמונות שמייצגות את ה-Flow האמיתי
 const PROCESS_IMGS = [
-  { src: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=900&q=80", caption: "A — בוחרים את סוג העסק" },
-  { src: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=900&q=80", caption: "B — מעלים לוגו ומגדירים פרטים" },
+  { src: "/onboarding/ספרו לנו על העסק.jpeg", caption: "A — בוחרים סוג עסק ומגדירים פרטים" },
+  { src: "/onboarding/פרטי יצירתקשר.jpeg", caption: "B — מוסיפים פרטי יצירת קשר" },
   { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80", caption: "C — מוסיפים מוצרים ושירותים" },
   { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80", caption: "האתר עולה לאוויר תוך דקות" },
 ];
