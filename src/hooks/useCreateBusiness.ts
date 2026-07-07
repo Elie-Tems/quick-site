@@ -3,6 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCategoryConfig, type BusinessCategory } from "@/lib/categoryConfig";
+import { DEFAULT_LAYOUT } from "@/lib/businessModules";
+import { getTemplate } from "@/lib/storeTemplates";
 
 export interface CreateBusinessData {
   // Business details
@@ -14,6 +16,9 @@ export interface CreateBusinessData {
   businessCategory?: string;
   customCategoryName?: string;
   isReligiousAudience?: boolean;
+  // Vertical chosen in StepBusinessType. Drives per-vertical modules
+  // (src/lib/businessModules.ts) and the auto-selected storefront layout.
+  businessType?: "products" | "services" | "realestate" | "nonprofit" | null;
   
   // Branding
   primaryColor?: string;
@@ -169,6 +174,17 @@ export function useCreateBusiness() {
         s.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^֐-׿a-z0-9-]/g, "");
       const baseSlug = slugify(data.slug || data.businessName) || "store";
 
+      // Auto-layout by vertical: template selection was removed from onboarding,
+      // so derive the storefront layout from the chosen business_type (services ->
+      // service, realestate -> property, nonprofit -> classic, products -> market/
+      // classic). Keep the palette from whatever template default was carried in.
+      // getTemplate() safely resolves legacy ids; DEFAULT_LAYOUT maps the vertical.
+      let resolvedTemplateId: string | null = data.templateId || null;
+      if (data.businessType) {
+        const paletteId = getTemplate(data.templateId).paletteId;
+        resolvedTemplateId = `${DEFAULT_LAYOUT[data.businessType]}-${paletteId}`;
+      }
+
       let business: { id: string } | null = null;
       let businessError: any = null;
       let slug = "";
@@ -189,7 +205,7 @@ export function useCreateBusiness() {
             primary_color: data.primaryColor || '#7c3aed',
             color_palette: data.colorPalette || [],
             brand_style: data.brandStyle || 'modern',
-            template_id: data.templateId || null,
+            template_id: resolvedTemplateId,
             business_category: data.businessCategory || 'other',
             custom_category_name: data.customCategoryName || null,
             is_religious_audience: data.isReligiousAudience || false,
