@@ -19,24 +19,28 @@ const ENGINES = [
   {
     key: "commerce", label: "חנויות אונליין", icon: ShoppingBag,
     type: "אתר מכירות",
+    subtitle: ["תמיד רציתם אתר — עצרתם בגלל העלויות, הדומיינים וכל הכאב ראש.", "עכשיו אפשר: חנות מקצועית, תשלומים, שיווק — ב-69 ₪ לחודש בלבד."],
     to: "/preview/redesign/home-multi",
     img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
   },
   {
     key: "booking", label: "שירותי מקצוע", icon: CalendarClock,
     type: "אתר הזמנות שירותים וקביעת תורים",
+    subtitle: ["תמיד קיבלתם הזמנות בוואטסאפ ובמייל — ולפעמים הדברים נופלים בין הכיסאות.", "עכשיו לקוחות קובעים תור לבד, 24/7, ממש מהאתר שלכם."],
     to: "/preview/redesign/services",
     img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80",
   },
   {
     key: "leads", label: "נדל״ן", icon: Building2,
     type: "אתר לעסק",
+    subtitle: ["תמיד היו לכם פרויקטים — שעלו פה, ירדו שם, בלי מקום מסודר.", "עכשיו כל הנכסים שלכם מוצגים יפה, מעודכנים, זמינים תמיד."],
     to: "/preview/redesign/realestate",
     img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80",
   },
   {
     key: "donations", label: "עמותות", icon: Heart,
     type: "אתר לעמותה",
+    subtitle: ["רצית להראות מה העמותה עושה, להיראות מכובד, לקבל תרומות — ולא ידעת מאיפה להתחיל.", "עכשיו יש לכם אתר יפה, תרומות אונליין, ואנשים שמגיעים."],
     to: "/preview/redesign/nonprofit",
     img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=900&q=80",
   },
@@ -370,6 +374,11 @@ const Index = () => {
                       <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">תוך 5 דקות</span>
                       <span className="block pv-strong">ב-69 ₪ בלבד</span>
                     </h1>
+                    <div className="mb-7 space-y-1.5 text-right">
+                      {a.subtitle.map((line, i) => (
+                        <p key={i} className="text-base md:text-lg leading-relaxed" style={{ color: "var(--pv-muted)" }}>{line}</p>
+                      ))}
+                    </div>
                   </motion.div>
                 </AnimatePresence>
                 <div className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start">
