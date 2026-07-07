@@ -78,30 +78,31 @@ const CORE = [
 
 const HOW_STEPS = [
   {
-    num: "01",
-    icon: Upload,
-    title: "מעלים לוגו",
-    desc: "מעלים את הלוגו של העסק - אנחנו מסדרים את המיתוג אוטומטית",
-  },
-  {
-    num: "02",
+    letter: "A",
     icon: Store,
-    title: "פרטי העסק",
-    desc: "שם, פרטי קשר, שעות פעילות - הכל בכמה שניות",
+    title: "בוחרים סוג עסק",
+    desc: "מכירת מוצרים, שירותי מקצוע, נדל\"ן, עמותה — בוחרים ואנחנו מתאימים את הכלים",
   },
   {
-    num: "03",
+    letter: "B",
+    icon: Upload,
+    title: "מגדירים שם, לוגו ופרטים",
+    desc: "שם העסק, לוגו, פרטי קשר ושעות פעילות — הכל בכמה שניות",
+  },
+  {
+    letter: "C",
     icon: Package,
-    title: "מוצרים / שירותים",
-    desc: "מוסיפים את מה שמוכרים - מוצרים, שירותים, או נכסים",
+    title: "מוסיפים מוצרים / שירותים",
+    desc: "מוצרים, שירותים, או נכסים — עם תמונה, מחיר ותיאור קצר",
   },
 ];
 
+// תמונות שמייצגות את ה-Flow האמיתי
 const PROCESS_IMGS = [
-  { src: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=900&q=80", caption: "בוחרים סוג עסק ותחום" },
-  { src: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=900&q=80", caption: "מגדירים פרטי עסק ולוגו" },
-  { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80", caption: "מוסיפים מוצרים ושירותים" },
-  { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80", caption: "האתר עולה לאוויר תוך דקות" },
+  { src: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80", caption: "A — בוחרים את סוג העסק" },
+  { src: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=900&q=80", caption: "B — מגדירים שם, לוגו ופרטים" },
+  { src: "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=900&q=80", caption: "C — מוסיפים מוצרים ושירותים" },
+  { src: "https://images.unsplash.com/photo-1556742393-d75f468bfcb0?w=900&q=80", caption: "האתר עולה לאוויר תוך דקות" },
 ];
 
 const HeroBg = () => (
@@ -128,92 +129,167 @@ const hasStoredSession = () => {
 
 const HowItWorks = () => {
   const [imgIdx, setImgIdx] = useState(0);
+  const activeStep = Math.min(imgIdx, HOW_STEPS.length - 1); // 0-2 map to steps A-C; 3 = finale
 
   useEffect(() => {
-    const t = setInterval(() => setImgIdx(i => (i + 1) % PROCESS_IMGS.length), 3000);
+    const t = setInterval(() => setImgIdx(i => (i + 1) % PROCESS_IMGS.length), 3400);
     return () => clearInterval(t);
   }, []);
 
   return (
-    <section className="relative py-24 px-4">
-      <div className="max-w-6xl mx-auto">
+    <section className="relative py-28 px-4 overflow-hidden">
+      {/* subtle bg glow */}
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+        <div className="w-[60rem] h-[30rem] rounded-full blur-[160px]" style={{ background: "radial-gradient(ellipse, hsl(152 60% 45% / 0.07), transparent 70%)" }} />
+      </div>
+
+      <div className="max-w-6xl mx-auto relative">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-20">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full pv-surface2 border pv-border mb-5">
             <Rocket className="w-4 h-4 text-primary" />
-            <span className="text-sm pv-text">פשוט כמו 1-2-3</span>
+            <span className="text-sm pv-text">פשוט כמו A-B-C</span>
           </div>
           <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">איך זה עובד?</h2>
-          <p className="text-lg pv-muted">שלושה צעדים פשוטים - ואתם מוכנים</p>
+          <p className="text-lg pv-muted">שלושה צעדים — ואתם באוויר</p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Steps */}
-          <div className="space-y-6 order-2 lg:order-1">
-            {HOW_STEPS.map((s, i) => (
-              <motion.div key={s.num}
-                initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.12 }}
-                className="flex items-start gap-5 p-5 rounded-2xl pv-surface2 border pv-border">
-                <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center">
-                  <s.icon className="w-6 h-6 text-primary" strokeWidth={1.6} />
-                </div>
-                <div className="flex-1 text-right">
-                  <span className="text-xs font-bold text-primary/60 tracking-widest">{s.num}</span>
-                  <h3 className="text-lg font-bold pv-strong mt-0.5">{s.title}</h3>
-                  <p className="text-sm pv-muted mt-1">{s.desc}</p>
-                </div>
-              </motion.div>
-            ))}
+        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
 
-            {/* Finale */}
-            <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }}
-              className="flex items-center gap-4 p-5 rounded-2xl bg-primary/10 border border-primary/30">
-              <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
-                <Check className="w-7 h-7 text-white" strokeWidth={2.5} />
-              </div>
-              <div className="flex-1 text-right">
-                <p className="text-lg font-bold text-primary">ואופ! האתר עלה לאוויר</p>
-                <p className="text-sm pv-muted mt-0.5">תוך 5 דקות — ב-69 ₪ בלבד</p>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Image carousel */}
-          <div className="order-1 lg:order-2">
-            <div className="relative rounded-2xl overflow-hidden border pv-border shadow-2xl pv-surface2">
-              {/* browser bar */}
-              <div className="flex items-center gap-2 px-4 h-10 border-b pv-border">
+          {/* ── LEFT: image carousel ── */}
+          <div className="order-1">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{ border: "1px solid var(--pv-border)", background: "var(--pv-surface2)" }}>
+              {/* browser chrome */}
+              <div className="flex items-center gap-2 px-4 h-10 border-b" style={{ borderColor: "var(--pv-border)" }}>
                 <div className="flex gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-red-400/70" />
                   <span className="w-3 h-3 rounded-full bg-yellow-400/70" />
                   <span className="w-3 h-3 rounded-full bg-green-400/70" />
                 </div>
-                <div className="mx-auto text-xs pv-muted pv-surface border pv-border rounded-md px-4 py-1">siango.app/onboarding</div>
+                <div className="mx-auto text-xs rounded-md px-4 py-1" style={{ background: "var(--pv-surface)", border: "1px solid var(--pv-border)", color: "var(--pv-muted)" }}>
+                  siango.app/onboarding
+                </div>
               </div>
               <div className="relative aspect-[4/3] overflow-hidden">
                 <AnimatePresence mode="wait">
                   <motion.img key={imgIdx}
                     src={PROCESS_IMGS[imgIdx].src}
                     alt={PROCESS_IMGS[imgIdx].caption}
-                    initial={{ opacity: 0, scale: 1.04 }} animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.5 }}
+                    initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
                 </AnimatePresence>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                {/* gradient overlay */}
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 50%)" }} />
+                {/* step label + dots */}
                 <div className="absolute bottom-4 right-4 left-4 flex items-end justify-between">
-                  <span className="text-white font-medium text-sm">{PROCESS_IMGS[imgIdx].caption}</span>
-                  <div className="flex gap-1.5">
+                  <AnimatePresence mode="wait">
+                    <motion.span key={imgIdx}
+                      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="text-white font-semibold text-sm drop-shadow">
+                      {PROCESS_IMGS[imgIdx].caption}
+                    </motion.span>
+                  </AnimatePresence>
+                  <div className="flex gap-2">
                     {PROCESS_IMGS.map((_, i) => (
                       <button key={i} onClick={() => setImgIdx(i)}
-                        className={`w-2 h-2 rounded-full transition-all ${i === imgIdx ? "bg-primary w-5" : "bg-white/50"}`} />
+                        className="transition-all duration-300 rounded-full"
+                        style={{
+                          width: i === imgIdx ? "20px" : "8px",
+                          height: "8px",
+                          background: i === imgIdx ? "var(--color-primary, #22c55e)" : "rgba(255,255,255,0.45)",
+                        }} />
                     ))}
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* ── RIGHT: vertical timeline ── */}
+          <div className="order-2 flex flex-col gap-0">
+            {HOW_STEPS.map((s, i) => {
+              const isActive = activeStep === i;
+              const isDone = imgIdx > i;
+              return (
+                <motion.div key={s.letter}
+                  initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                  className="flex gap-5 cursor-pointer group"
+                  onClick={() => setImgIdx(i)}>
+
+                  {/* Timeline spine */}
+                  <div className="flex flex-col items-center shrink-0" style={{ width: 52 }}>
+                    {/* Letter circle */}
+                    <div className="relative flex items-center justify-center w-12 h-12 rounded-2xl font-bold text-base transition-all duration-500 shrink-0"
+                      style={{
+                        background: isActive
+                          ? "linear-gradient(135deg, #22c55e, #84cc16)"
+                          : isDone
+                            ? "rgba(34,197,94,0.2)"
+                            : "var(--pv-surface2)",
+                        border: isActive
+                          ? "none"
+                          : "1px solid var(--pv-border)",
+                        color: isActive ? "#fff" : isDone ? "#22c55e" : "var(--pv-faint)",
+                        boxShadow: isActive ? "0 0 24px rgba(34,197,94,0.45)" : "none",
+                      }}>
+                      {isDone && !isActive
+                        ? <Check className="w-5 h-5" strokeWidth={2.5} style={{ color: "#22c55e" }} />
+                        : <span>{s.letter}</span>}
+                    </div>
+                    {/* Connecting line */}
+                    {i < HOW_STEPS.length - 1 && (
+                      <div className="flex-1 w-0.5 my-2 min-h-[2.5rem] rounded-full transition-all duration-700"
+                        style={{ background: isDone || isActive ? "linear-gradient(to bottom, #22c55e, rgba(34,197,94,0.2))" : "var(--pv-border)" }} />
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className={`pb-7 flex-1 text-right transition-all duration-500 ${isActive ? "opacity-100" : "opacity-55 group-hover:opacity-80"}`}>
+                    <div className="flex items-center justify-end gap-3 mb-1.5">
+                      <h3 className="text-lg font-bold" style={{ color: isActive ? "var(--pv-strong)" : "var(--pv-text)" }}>
+                        {s.title}
+                      </h3>
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-500"
+                        style={{
+                          background: isActive ? "rgba(34,197,94,0.18)" : "var(--pv-surface2)",
+                          border: `1px solid ${isActive ? "rgba(34,197,94,0.4)" : "var(--pv-border)"}`,
+                        }}>
+                        <s.icon className="w-4 h-4" style={{ color: isActive ? "#22c55e" : "var(--pv-faint)" }} strokeWidth={1.8} />
+                      </div>
+                    </div>
+                    <p className="text-sm leading-relaxed" style={{ color: "var(--pv-muted)" }}>{s.desc}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
+
+            {/* Finale row */}
+            <motion.div
+              initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }} transition={{ delay: 0.35 }}
+              className="flex gap-5 cursor-pointer"
+              onClick={() => setImgIdx(3)}>
+              <div className="shrink-0 flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-500"
+                style={{
+                  background: imgIdx === 3 ? "linear-gradient(135deg, #22c55e, #84cc16)" : "var(--pv-surface2)",
+                  border: imgIdx === 3 ? "none" : "1px solid var(--pv-border)",
+                  boxShadow: imgIdx === 3 ? "0 0 24px rgba(34,197,94,0.45)" : "none",
+                }}>
+                <Rocket className="w-5 h-5" style={{ color: imgIdx === 3 ? "#fff" : "var(--pv-faint)" }} strokeWidth={1.8} />
+              </div>
+              <div className={`flex-1 text-right transition-all duration-500 ${imgIdx === 3 ? "opacity-100" : "opacity-55"}`}>
+                <p className="text-lg font-bold" style={{ color: imgIdx === 3 ? "#22c55e" : "var(--pv-strong)" }}>
+                  ואופ! האתר עלה לאוויר
+                </p>
+                <p className="text-sm mt-0.5" style={{ color: "var(--pv-muted)" }}>תוך 5 דקות — ב-69 ₪ בלבד</p>
+              </div>
+            </motion.div>
+          </div>
+
         </div>
       </div>
     </section>
