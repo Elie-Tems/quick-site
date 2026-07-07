@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import SEOHead from "@/components/SEOHead";
-import { useNavigate } from "react-router-dom";
-import { Eye, Store, Building2, Phone, Package, Palette, Rocket, Check } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Eye, Store, Building2, Phone, Package, Palette, Rocket, Check, ArrowLeft, Clock, CreditCard, Globe } from "lucide-react";
 import logoDarkBg from "@/assets/logo-dark-bg.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuroraBg, Card, PreviewThemeRoot } from "@/components/preview-redesign/kit";
@@ -105,7 +105,7 @@ const Onboarding = () => {
   const { data: existingBanners } = useBanners(existingBusiness?.id);
   const { categories: existingCategories } = useProductCategories(existingBusiness?.id);
   
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [hasUpdatedStatus, setHasUpdatedStatus] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -241,6 +241,52 @@ const Onboarding = () => {
 
   if (isComplete) {
     return <OnboardingComplete data={data} />;
+  }
+
+  if (currentStep === 0) {
+    return (
+      <>
+        <SEOHead title="בניית אתר לעסק | סיאנגו" />
+        <PreviewThemeRoot>
+          <AuroraBg />
+          <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16" dir="rtl">
+            <img src={logoDarkBg} alt="Siango" className="h-10 w-auto mb-12" />
+
+            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+              className="max-w-lg w-full text-center">
+              <h1 className="text-4xl md:text-5xl font-display font-bold pv-strong leading-tight mb-4">
+                האתר שלכם<br />
+                <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">מוכן תוך 5 דקות</span>
+              </h1>
+              <p className="text-lg pv-muted mb-10">בלי מפתחים, בלי עלויות גבוהות, בלי כאב ראש.</p>
+
+              <div className="flex flex-col gap-3 mb-10 text-right">
+                {[
+                  { icon: Clock, text: "תהליך הקמה של 5 דקות בלבד" },
+                  { icon: CreditCard, text: "69 ₪ לחודש, ללא התחייבות" },
+                  { icon: Globe, text: "דומיין, סליקה ומייל כלולים" },
+                ].map(({ icon: Icon, text }) => (
+                  <div key={text} className="flex items-center gap-3 px-4 py-3 rounded-xl pv-surface2 border pv-border">
+                    <Icon className="w-5 h-5 text-primary shrink-0" />
+                    <span className="pv-text text-sm">{text}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setCurrentStep(1)}
+                className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow mb-4">
+                בואו נתחיל <ArrowLeft className="w-5 h-5" />
+              </button>
+              <p className="text-xs pv-faint">
+                כבר יש לכם חשבון?{" "}
+                <Link to="/login" className="text-primary underline underline-offset-2">כניסה</Link>
+              </p>
+            </motion.div>
+          </div>
+        </PreviewThemeRoot>
+      </>
+    );
   }
 
   const renderStep = () => {
