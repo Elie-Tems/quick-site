@@ -109,13 +109,45 @@ function ldJson(obj: unknown): string {
     .replace(/&/g, "\\u0026");
 }
 
+// Decode a raw path segment into the real slug, robust to how the runtime
+// exposes non-ASCII paths. Two shapes reach us for a Hebrew slug:
+//   1. Percent-encoded:  "%D7%94%D7%91..."  (browsers, Googlebot)  -> decodeURIComponent.
+//   2. Raw UTF-8 bytes:  the runtime hands the bytes back decoded as Latin-1
+//      (one char per byte, U+0080-U+00FF) - e.g. Facebook's scraper or a pasted
+//      Hebrew link. decodeURIComponent is a no-op here, so the byte string never
+//      matched the DB slug and stores with Hebrew names got no SSR at all.
+// Pure widening: ASCII and already-correct Unicode (Hebrew is U+05xx, above the
+// Latin-1 range) are returned untouched, so this can only fix the broken case.
+function decodeSlug(seg: string): string {
+  if (seg.includes("%")) {
+    try {
+      return decodeURIComponent(seg);
+    } catch {
+      /* malformed %-encoding: fall through */
+    }
+  }
+  const hasLatin1HighByte = [...seg].some((c) => {
+    const code = c.charCodeAt(0);
+    return code >= 0x80 && code <= 0xff;
+  });
+  if (hasLatin1HighByte) {
+    try {
+      const bytes = Uint8Array.from(seg, (c) => c.charCodeAt(0) & 0xff);
+      return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    } catch {
+      /* not valid UTF-8 bytes: keep the original segment */
+    }
+  }
+  return seg;
+}
+
 // Matches /store/:slug and /store/:slug/about (V1 only - V2 is not a live route).
 function matchStoreRoute(pathname: string): { slug: string; isAbout: boolean } | null {
   const m = pathname.match(/^\/store\/([^/]+)(\/about)?\/?$/);
   if (!m) return null;
   // Exclude the V2 prototype routes (/store/:slug/v2...) and the bare /store.
   if (m[1] === "v2") return null;
-  return { slug: decodeURIComponent(m[1]), isAbout: !!m[2] };
+  return { slug: decodeSlug(m[1]), isAbout: !!m[2] };
 }
 
 async function fetchStore(env: Env, slug: string): Promise<{ business: StoreBusiness; products: StoreProduct[] } | null> {
@@ -276,7 +308,9 @@ export const onRequest = async (context: {
     } else {
       route = matchStoreRoute(url.pathname);
       if (!route) return response;
-      canonical = `${siteUrl}/store/${route.slug}${route.isAbout ? "/about" : ""}`;
+      // Canonical uses the percent-encoded slug so it is a valid, stable URL even
+      // for Hebrew store names.
+      canonical = `${siteUrl}/store/${encodeURIComponent(route.slug)}${route.isAbout ? "/about" : ""}`;
     }
 
     // Only rewrite HTML documents.

@@ -76,7 +76,10 @@ export const onRequest = async (context: { env: Env }): Promise<Response> => {
         const stores = (await res.json()) as Array<{ slug: string | null; updated_at: string | null }>;
         for (const s of stores) {
           if (!s.slug) continue;
-          const base = `${siteUrl}/store/${s.slug}`;
+          // Percent-encode the slug so Hebrew store names produce valid, canonical
+          // sitemap URLs (raw non-ASCII in <loc> is non-conformant and some crawlers
+          // fetch it as raw bytes, which the SPA/edge renderer then mishandles).
+          const base = `${siteUrl}/store/${encodeURIComponent(s.slug)}`;
           entries.push(urlEntry(base, s.updated_at, "daily", "0.8"));
           entries.push(urlEntry(`${base}/about`, s.updated_at, "monthly", "0.5"));
         }

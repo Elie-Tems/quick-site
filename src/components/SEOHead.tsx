@@ -61,12 +61,10 @@ const SEOHead = ({
       "lowPrice": "99",
       "highPrice": "299",
       "offerCount": "3"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "ratingCount": "150"
     }
+    // aggregateRating removed: it was a fabricated 4.8/150 rating. Google penalizes
+    // fake review markup, and the project rule forbids invented numbers. Re-add only
+    // when computed from real, aggregated customer reviews.
   };
 
   // FAQ Schema
