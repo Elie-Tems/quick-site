@@ -374,11 +374,6 @@ const Index = () => {
                       <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">תוך 5 דקות</span>
                       <span className="block pv-strong">ב-69 ₪ בלבד</span>
                     </h1>
-                    <div className="mb-7 space-y-1.5 text-right">
-                      {a.subtitle.map((line, i) => (
-                        <p key={i} className="text-base md:text-lg leading-relaxed" style={{ color: "var(--pv-muted)" }}>{line}</p>
-                      ))}
-                    </div>
                   </motion.div>
                 </AnimatePresence>
                 <div className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start">
@@ -420,6 +415,23 @@ const Index = () => {
                 </motion.div>
               </AnimatePresence>
             </div>
+          </div>
+        </section>
+
+        {/* PER-TAB SUBTITLE SECTION */}
+        <section className="relative py-16 px-4 overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, var(--pv-bg) 0%, var(--pv-surface2) 40%, var(--pv-surface2) 60%, var(--pv-bg) 100%)" }} />
+          </div>
+          <div className="max-w-3xl mx-auto relative text-center">
+            <AnimatePresence mode="wait">
+              <motion.div key={a.key}
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.4 }}>
+                <p className="text-lg md:text-xl leading-relaxed pv-text mb-3">{a.subtitle[0]}</p>
+                <p className="text-lg md:text-xl leading-relaxed font-semibold" style={{ color: "var(--color-primary, #22c55e)" }}>{a.subtitle[1]}</p>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </section>
 
