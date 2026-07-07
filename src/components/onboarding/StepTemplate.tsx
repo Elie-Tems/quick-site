@@ -46,14 +46,52 @@ const SUB_TYPE_LABELS: Record<string, string> = {
 const LAYOUTS_FOR: Record<string, { id: StoreLayoutId; name: string }[]> = {
   products:  [{ id: 'classic', name: 'חנות קלאסית' }, { id: 'market', name: 'בוטיק / שוק' }],
   services:  [{ id: 'service', name: 'כרטיסי שירות' }, { id: 'classic', name: 'קטלוג' }],
-  nonprofit: [{ id: 'property', name: 'עמותה / פרויקט' }, { id: 'service', name: 'כרטיסי שירות' }],
+  nonprofit: [{ id: 'service', name: 'עמותה / ארגון' }, { id: 'property', name: 'פרויקט / קמפיין' }],
 };
 const DEFAULT_LAYOUTS: { id: StoreLayoutId; name: string }[] = [
   { id: 'classic', name: 'חנות קלאסית' },
   { id: 'service', name: 'כרטיסי שירות' },
-  { id: 'property', name: 'עמותה / פרויקט' },
+  { id: 'property', name: 'נדל״ן / נופש' },
   { id: 'market', name: 'בוטיק / שוק' },
 ];
+
+// Default layout + palette per business sub-type
+const SUB_TYPE_TO_TEMPLATE: Record<string, { layout: StoreLayoutId; palette: ColorPaletteId }> = {
+  // Product stores
+  fashion:         { layout: 'classic',  palette: 'rose-soft' },
+  cosmetics:       { layout: 'classic',  palette: 'rose-soft' },
+  jewelry:         { layout: 'classic',  palette: 'midnight-gold' },
+  bakery:          { layout: 'classic',  palette: 'coral-cream' },
+  flowers:         { layout: 'classic',  palette: 'coral-cream' },
+  'home-decor':    { layout: 'classic',  palette: 'warm-earth' },
+  electronics:     { layout: 'classic',  palette: 'slate-orange' },
+  sports:          { layout: 'classic',  palette: 'dark-lime' },
+  books:           { layout: 'classic',  palette: 'bw-classic' },
+  pets:            { layout: 'market',   palette: 'sage-green' },
+  'general-store': { layout: 'market',   palette: 'sage-green' },
+  food:            { layout: 'market',   palette: 'coral-cream' },
+  // Services
+  beauty:          { layout: 'service',  palette: 'rose-soft' },
+  barber:          { layout: 'service',  palette: 'midnight-gold' },
+  fitness:         { layout: 'service',  palette: 'dark-lime' },
+  renovation:      { layout: 'service',  palette: 'warm-earth' },
+  photography:     { layout: 'service',  palette: 'bw-classic' },
+  health:          { layout: 'service',  palette: 'cool-ocean' },
+  consulting:      { layout: 'service',  palette: 'cool-ocean' },
+  legal:           { layout: 'service',  palette: 'bw-classic' },
+  developer:       { layout: 'service',  palette: 'dark-lime' },
+  'car-dealer':    { layout: 'classic',  palette: 'slate-orange' },
+  // Real estate / vacation
+  broker:          { layout: 'property', palette: 'midnight-gold' },
+  vacation:        { layout: 'property', palette: 'cool-ocean' },
+  // Nonprofits
+  charity:         { layout: 'service',  palette: 'sage-green' },
+  crowdfunding:    { layout: 'service',  palette: 'bold-violet' },
+  community:       { layout: 'service',  palette: 'warm-earth' },
+  education:       { layout: 'service',  palette: 'cool-ocean' },
+  social:          { layout: 'service',  palette: 'sage-green' },
+  animals:         { layout: 'service',  palette: 'sage-green' },
+};
 
 interface Props {
   data: OnboardingData;
@@ -69,18 +107,25 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
 
   const layouts = LAYOUTS_FOR[data.businessType ?? ''] ?? DEFAULT_LAYOUTS;
 
+  const subTypeDefaults = data.businessSubType ? SUB_TYPE_TO_TEMPLATE[data.businessSubType] : undefined;
+
   const [selectedLayout, setSelectedLayout] = useState<StoreLayoutId>(() => {
     const t = data.storeTemplate || '';
     const maybeLayout = t.split('-')[0] as StoreLayoutId;
-    return layouts.find(l => l.id === maybeLayout) ? maybeLayout : layouts[0].id;
+    if (layouts.find(l => l.id === maybeLayout)) return maybeLayout;
+    if (subTypeDefaults && layouts.find(l => l.id === subTypeDefaults.layout)) return subTypeDefaults.layout;
+    return layouts[0].id;
   });
 
   const [selectedPalette, setSelectedPalette] = useState<ColorPaletteId>(() => {
     const t = data.storeTemplate || '';
     const dashIdx = t.indexOf('-');
-    if (dashIdx < 0) return 'bw-classic';
-    const maybePalette = t.slice(dashIdx + 1) as ColorPaletteId;
-    return paletteList.find(p => p.id === maybePalette) ? maybePalette : 'bw-classic';
+    if (dashIdx >= 0) {
+      const maybePalette = t.slice(dashIdx + 1) as ColorPaletteId;
+      if (paletteList.find(p => p.id === maybePalette)) return maybePalette;
+    }
+    if (subTypeDefaults) return subTypeDefaults.palette;
+    return 'bw-classic';
   });
 
   const [customColor, setCustomColor] = useState(data.extractedBranding?.primaryColor || '#22c55e');
