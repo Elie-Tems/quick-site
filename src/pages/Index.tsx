@@ -16,36 +16,28 @@ import { PreviewThemeRoot, Card } from "@/components/preview-redesign/kit";
 // 4 main engines (tabs in the hero)
 const ENGINES = [
   {
-    key: "commerce", label: "מכירת מוצרים", icon: ShoppingBag,
-    accent: "חנות אונליין", headTail: "שמוכרת 24/7",
-    sub: "בוטיקים, מזון, אומנות, כל מי שמוכר מוצרים - קטלוג, עגלה וסליקה.",
-    cta: "ראו דוגמה", to: "/preview/home-v2",
+    key: "commerce", label: "חנויות", icon: ShoppingBag,
+    type: "אתר מכירות",
+    to: "/preview/home-v2",
     img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
-    chips: ["קטלוג מוצרים", "עגלת קניות", "סליקה מיידית"],
   },
   {
-    key: "booking", label: "תורים והזמנות", icon: CalendarClock,
-    accent: "יומן חכם", headTail: "שמתמלא לבד",
-    sub: "מאפרות, ספרים, צלמים, קליניקות, צימרים - יומן שמסתנכרן ותשלום מראש.",
-    cta: "ראו דוגמה", to: "/preview/redesign/services",
+    key: "booking", label: "תורים", icon: CalendarClock,
+    type: "אתר הזמנות",
+    to: "/preview/redesign/services",
     img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80",
-    chips: ["הזמנת תור/תאריך", "סנכרון יומן", "תזכורות אוטומטיות"],
   },
   {
-    key: "leads", label: "לידים ולוחות", icon: Building2,
-    accent: "לוח נכסים", headTail: "שמייצר פניות",
-    sub: "נדל\"ן, רכב, בעלי מקצוע - לוח מסונן, מדיה עשירה ולכידת לידים חכמה.",
-    cta: "ראו דוגמה", to: "/preview/redesign/realestate",
+    key: "leads", label: "נדל״ן", icon: Building2,
+    type: "אתר לעסק",
+    to: "/preview/redesign/realestate",
     img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80",
-    chips: ["לוח עם סינון", "360 ווידאו", "לכידת לידים"],
   },
   {
-    key: "donations", label: "תרומות וקמפיינים", icon: Heart,
-    accent: "גיוס תרומות", headTail: "שמשנה מציאות",
-    sub: "עמותות וגיוס המונים - תרומה חוזרת, קבלות סעיף 46, וקמפיינים עם יעד.",
-    cta: "ראו דוגמה", to: "/preview/redesign/nonprofit",
+    key: "donations", label: "עמותות", icon: Heart,
+    type: "אתר לעמותה",
+    to: "/preview/redesign/nonprofit",
     img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=900&q=80",
-    chips: ["תרומה חוזרת", "סעיף 46", "קמפיין יעד"],
   },
 ];
 
@@ -159,13 +151,6 @@ const Index = () => {
         <section className="relative min-h-screen flex items-center overflow-hidden">
           <HeroBg />
           <div className="container relative z-10 pt-32 pb-16">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 mb-4">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm pv-text">פלטפורמה אחת · כל סוגי העסקים</span>
-              </div>
-            </motion.div>
-
             {/* Engine switcher */}
             <div className="flex justify-center mb-10">
               <div className="inline-flex flex-wrap justify-center gap-1 p-1 rounded-2xl pv-surface2 border pv-border">
@@ -186,18 +171,10 @@ const Index = () => {
                   <motion.div key={a.key}
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35 }}>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
-                      <span className="block pv-strong">האתר שלכם</span>
-                      <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">{a.accent}</span>
-                      <span className="block pv-strong">{a.headTail}</span>
+                      <span className="block pv-strong">{a.type}</span>
+                      <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">תוך 5 דקות</span>
+                      <span className="block pv-strong">ב-69 ₪ בלבד</span>
                     </h1>
-                    <p className="text-lg md:text-xl pv-text mb-6 max-w-lg mx-auto lg:mx-0">{a.sub}</p>
-                    <div className="flex flex-wrap gap-2 justify-center lg:justify-start mb-8">
-                      {a.chips.map((c) => (
-                        <span key={c} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full pv-surface2 border pv-border text-sm pv-text">
-                          <Check className="w-3.5 h-3.5 text-primary" /> {c}
-                        </span>
-                      ))}
-                    </div>
                   </motion.div>
                 </AnimatePresence>
                 <div className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start">
@@ -208,7 +185,7 @@ const Index = () => {
                     {a.cta}
                   </Link>
                 </div>
-                <p className="text-sm pv-muted mt-4">5 דקות · ללא ידע טכני · ללא התחייבות</p>
+                <p className="text-sm pv-muted mt-4">ללא התחייבות · ללא ידע טכני</p>
               </div>
 
               {/* Preview image */}
@@ -231,7 +208,7 @@ const Index = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                       <div className="absolute bottom-4 right-4 left-4 flex items-center justify-between">
                         <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur text-white text-sm border border-white/10">
-                          <a.icon className="w-4 h-4 text-primary" /> {a.label}
+                          <a.icon className="w-4 h-4 text-primary" /> {a.type}
                         </span>
                         <Link to={a.to} className="px-3 py-1.5 rounded-full bg-primary text-white text-sm font-bold">צפו בדוגמה</Link>
                       </div>
