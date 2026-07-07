@@ -24,7 +24,7 @@ const ENGINES = [
   },
   {
     key: "booking", label: "שירותי מקצוע", icon: CalendarClock,
-    type: "אתר הזמנות",
+    type: "אתר הזמנות שירותים וקביעת תורים",
     to: "/preview/redesign/services",
     img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80",
   },
