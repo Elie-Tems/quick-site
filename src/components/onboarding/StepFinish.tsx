@@ -258,7 +258,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         <button
           onClick={handlePublish}
           disabled={isPublishing || !legalAcknowledged || !data.businessName}
-          className="flex-1 h-13 rounded-xl bg-primary text-primary-foreground text-base font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-primary/20"
+          className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground text-base font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-primary/20"
         >
           {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />}
           {isPublishing ? "מפרסם..." : "פרסמו את האתר ←"}
