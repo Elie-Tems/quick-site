@@ -45,6 +45,12 @@ Deno.serve(async (req) => {
     .eq("id", serviceId).eq("business_id", businessId).maybeSingle();
   if (!service || !service.active) return json({ error: "Service not found" }, 404);
 
+  // Shabbat mode: when the business observes Shabbat, never offer Saturday slots.
+  // (Friday is left to the merchant's own working hours, which end before Shabbat;
+  // a business that works Motzei-Shabbat should leave shabbat_mode off.)
+  const { data: bizRow } = await admin.from("businesses").select("shabbat_mode").eq("id", businessId).maybeSingle();
+  const shabbatMode = bizRow?.shabbat_mode === true;
+
   // Which staff can perform it (optionally narrowed to one)
   let staffQ = admin.from("booking_service_staff").select("staff_id").eq("service_id", serviceId);
   if (staffId) staffQ = staffQ.eq("staff_id", staffId);
@@ -65,6 +71,15 @@ Deno.serve(async (req) => {
 
   const slotsByStaff: Record<string, number[]> = {};
 
+  // Weekday of a UTC instant IN the staff timezone (robust for any offset, incl.
+  // negative-offset zones where UTC-midnight lands on the previous local day).
+  const WD: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  const localWeekday = (utcMs: number, tz: string): number => {
+    const wd = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" })
+      .format(new Date(utcMs + DAY / 2)); // sample local noon -> immune to DST/offset edges
+    return WD[wd] ?? new Date(utcMs).getUTCDay();
+  };
+
   for (const st of staff) {
     const tz = st.timezone || "Asia/Jerusalem";
 
@@ -84,7 +99,8 @@ Deno.serve(async (req) => {
     const workingIntervals: Interval[] = [];
     for (let d = fromMs; d < toMs; d += DAY) {
       const date = ymd(d);
-      const weekday = new Date(d).getUTCDay(); // window days are UTC midnights; weekday stable enough for IL
+      const weekday = localWeekday(d, tz);
+      if (shabbatMode && weekday === 6) continue; // closed on Shabbat
       for (const h of hours ?? []) {
         if (h.weekday !== weekday) continue;
         workingIntervals.push({
