@@ -33,7 +33,7 @@ const ENGINES = [
   },
   {
     key: "leads", label: "נדל״ן", icon: Building2,
-    type: "אתר לחברה או לפרויקטים",
+    type: "אתר לחברה\nאו לפרויקטים",
     subtitle: ["תמיד היו לכם פרויקטים שעלו פה, ירדו שם, בלי מקום מסודר שאפשר להפנות אליו.", "עכשיו כל הנכסים שלכם מוצגים יפה, מעודכנים, זמינים תמיד."],
     to: "/preview/redesign/realestate",
     img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80",
@@ -371,7 +371,7 @@ const Index = () => {
                   <motion.div key={a.key}
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35 }}>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
-                      <span className="block pv-strong">{a.type}</span>
+                      <span className="block pv-strong" style={{ whiteSpace: "pre-line" }}>{a.type}</span>
                       <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">תוך 5 דקות</span>
                       <span className="block pv-strong">ב-69 ₪ לחודש</span>
                     </h1>
