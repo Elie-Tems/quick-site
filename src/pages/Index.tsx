@@ -373,7 +373,7 @@ const Index = () => {
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
                       <span className="block pv-strong">{a.type}</span>
                       <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">תוך 5 דקות</span>
-                      <span className="block pv-strong">ב-69 ₪ בלבד</span>
+                      <span className="block pv-strong">ב-69 ₪ לחודש</span>
                     </h1>
                   </motion.div>
                 </AnimatePresence>
@@ -385,7 +385,7 @@ const Index = () => {
                     צפו בדוגמה <ArrowLeft className="w-4 h-4" />
                   </Link>
                 </div>
-                <p className="text-sm pv-muted mt-4">ללא התחייבות · ללא ידע טכני</p>
+                <p className="text-sm pv-muted mt-4">מחיר חודשי · ללא התחייבות · ללא ידע טכני</p>
               </div>
 
               {/* Preview image */}
