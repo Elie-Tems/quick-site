@@ -329,11 +329,10 @@ const Index = () => {
                     <div className="relative aspect-[4/3]">
                       <img src={a.img} alt={a.label} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                      <div className="absolute bottom-4 right-4 left-4 flex items-center justify-between">
+                      <div className="absolute bottom-4 right-4 left-4 flex items-center justify-center">
                         <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur text-white text-sm border border-white/10">
                           <a.icon className="w-4 h-4 text-primary" /> {a.type}
                         </span>
-                        <Link to={a.to} className="px-3 py-1.5 rounded-full bg-primary text-white text-sm font-bold">צפו בדוגמה</Link>
                       </div>
                     </div>
                   </div>
