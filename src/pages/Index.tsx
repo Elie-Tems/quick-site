@@ -186,8 +186,8 @@ const Index = () => {
                   <motion.div key={a.key}
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35 }}>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
-                      <span className="block pv-strong">האתר שלכם עם</span>
-                      <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">{a.accent}</span>
+                      <span className="block pv-strong">האתר שלכם</span>
+                      <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">{a.accent}</span>
                       <span className="block pv-strong">{a.headTail}</span>
                     </h1>
                     <p className="text-lg md:text-xl pv-text mb-6 max-w-lg mx-auto lg:mx-0">{a.sub}</p>
