@@ -266,26 +266,28 @@ const Dashboard = () => {
         price: p.price,
         sku: p.sku || null,
         image_url: p.imageUrl || null,
+        video_url: (p as any).videoUrl || null,
         sort_order: p.sortOrder ?? 0,
         active: p.active,
         category_id: p.categoryId || null,
         customFields: p.customFields || [],
       });
     });
-    
+
     // Update existing products
     existingProducts.forEach(p => {
       const original = products.find(op => op.id === p.id);
-      
+
       // Check if custom fields changed
       const customFieldsChanged = JSON.stringify(original?.customFields || []) !== JSON.stringify(p.customFields || []);
-      
+
       if (original && (
         original.name !== p.name ||
         original.description !== p.description ||
         original.price !== p.price ||
         original.sku !== p.sku ||
         original.imageUrl !== p.imageUrl ||
+        (original as any).videoUrl !== (p as any).videoUrl ||
         original.active !== p.active ||
         original.sortOrder !== p.sortOrder ||
         original.categoryId !== p.categoryId ||
@@ -298,6 +300,7 @@ const Dashboard = () => {
           price: p.price,
           sku: p.sku || null,
           image_url: p.imageUrl || null,
+          video_url: (p as any).videoUrl || null,
           sort_order: p.sortOrder ?? 0,
           active: p.active,
           category_id: p.categoryId ?? null,
@@ -355,6 +358,7 @@ const Dashboard = () => {
       price: p.price,
       sku: (p as any).sku || undefined,
       imageUrl: p.image_url || undefined,
+      videoUrl: (p as any).video_url || undefined,
       active: p.active ?? true,
       sale_price: (p as any).sale_price || null,
       is_on_sale: (p as any).is_on_sale || false,

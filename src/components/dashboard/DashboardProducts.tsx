@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, Fragment } from "react";
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Package, X, Upload, FileSpreadsheet, Download, AlertCircle, Search, Wand2, Loader2, LayoutGrid, List } from "lucide-react";
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Package, X, Upload, FileSpreadsheet, Download, AlertCircle, Search, Wand2, Loader2, LayoutGrid, List, Video, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -75,8 +75,10 @@ const DashboardProducts = ({
   const [showAIUpsell, setShowAIUpsell] = useState(false);
   const [showBlockerDialog, setShowBlockerDialog] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const { data: usageStatus } = useBusinessUsage(businessId);
   const [formData, setFormData] = useState({
@@ -85,6 +87,7 @@ const DashboardProducts = ({
     price: '',
     sku: '',
     imageUrl: '',
+    videoUrl: '',
     sortOrder: '',
     categoryId: '',
   });
@@ -119,11 +122,41 @@ const DashboardProducts = ({
   };
 
   const resetForm = () => {
-    setFormData({ name: '', description: '', price: '', sku: '', imageUrl: '', sortOrder: '', categoryId: '' });
+    setFormData({ name: '', description: '', price: '', sku: '', imageUrl: '', videoUrl: '', sortOrder: '', categoryId: '' });
     setCustomFields([]);
     setEditingProduct(null);
     setIsFormOpen(false);
     setShowAIUpsell(false);
+  };
+
+  const handleVideoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !businessId) return;
+    if (!file.type.startsWith('video/')) {
+      toast.error('נא לבחור קובץ וידאו');
+      return;
+    }
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('הוידאו גדול מדי — מקסימום 100MB');
+      return;
+    }
+    setIsUploadingVideo(true);
+    try {
+      const ext = file.name.split('.').pop() || 'mp4';
+      const filePath = `${businessId}/products/videos/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from('business-assets')
+        .upload(filePath, file, { upsert: true, contentType: file.type });
+      if (error) throw error;
+      const { data } = supabase.storage.from('business-assets').getPublicUrl(filePath);
+      setFormData(prev => ({ ...prev, videoUrl: data.publicUrl }));
+      toast.success('הוידאו הועלה בהצלחה');
+    } catch (err) {
+      toast.error('שגיאה בהעלאת הוידאו');
+    } finally {
+      setIsUploadingVideo(false);
+      if (videoInputRef.current) videoInputRef.current.value = '';
+    }
   };
 
   const handleImageFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,6 +218,7 @@ const DashboardProducts = ({
       price: product.price.toString(),
       sku: product.sku || '',
       imageUrl: product.imageUrl || '',
+      videoUrl: product.videoUrl || '',
       sortOrder: product.sortOrder?.toString() || '',
       categoryId: product.categoryId || '',
     });
@@ -221,6 +255,7 @@ const DashboardProducts = ({
         price: parseFloat(formData.price) || 0,
         sku: formData.sku || undefined,
         imageUrl: formData.imageUrl,
+        videoUrl: formData.videoUrl || undefined,
         active: true,
         sortOrder: formData.sortOrder ? parseInt(formData.sortOrder) : maxSortOrder + 1,
         categoryId: formData.categoryId || undefined,
@@ -909,6 +944,55 @@ const DashboardProducts = ({
                   onDismiss={() => setShowAIUpsell(false)}
                 />
               )}
+
+              {/* Video upload */}
+              <div className="pt-2 border-t border-border space-y-2">
+                <Label className="!text-foreground flex items-center gap-1.5">
+                  <Video className="h-4 w-4 text-muted-foreground" />
+                  וידאו מוצר <span className="text-muted-foreground font-normal text-xs">(אופציונלי)</span>
+                </Label>
+
+                <input
+                  ref={videoInputRef}
+                  type="file"
+                  accept="video/mp4,video/webm,video/quicktime"
+                  onChange={handleVideoFileSelect}
+                  className="hidden"
+                  aria-label="העלאת וידאו"
+                />
+
+                {formData.videoUrl ? (
+                  <div className="relative rounded-lg overflow-hidden border border-border bg-black">
+                    <video
+                      src={formData.videoUrl}
+                      controls
+                      className="w-full max-h-48 object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, videoUrl: '' }))}
+                      className="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
+                      aria-label="הסר וידאו"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    className="border-2 border-dashed border-border hover:border-primary/50 rounded-lg p-5 text-center cursor-pointer transition-colors"
+                    onClick={() => videoInputRef.current?.click()}
+                  >
+                    {isUploadingVideo ? (
+                      <Loader2 className="h-7 w-7 mx-auto mb-1.5 text-primary animate-spin" />
+                    ) : (
+                      <Play className="h-7 w-7 mx-auto mb-1.5 text-muted-foreground" />
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      {isUploadingVideo ? 'מעלה וידאו...' : 'לחץ להעלאת וידאו (MP4, WebM, MOV — עד 100MB)'}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

@@ -913,6 +913,7 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          video_url: string | null
           is_hot: boolean | null
           is_on_sale: boolean | null
           name: string
@@ -931,6 +932,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          video_url?: string | null
           is_hot?: boolean | null
           is_on_sale?: boolean | null
           name: string
@@ -949,6 +951,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          video_url?: string | null
           is_hot?: boolean | null
           is_on_sale?: boolean | null
           name?: string
