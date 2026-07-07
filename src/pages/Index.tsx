@@ -17,26 +17,26 @@ import { PreviewThemeRoot, Card } from "@/components/preview-redesign/kit";
 // 4 main engines (tabs in the hero)
 const ENGINES = [
   {
-    key: "commerce", label: "חנויות", icon: ShoppingBag,
-    type: "אתר מכירות", cta: "ראו חנות לדוגמה",
+    key: "commerce", label: "חנויות אונליין", icon: ShoppingBag,
+    type: "אתר מכירות",
     to: "/preview/home-v2",
     img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
   },
   {
-    key: "booking", label: "תורים", icon: CalendarClock,
-    type: "אתר הזמנות", cta: "ראו אתר תורים",
+    key: "booking", label: "שירותי מקצוע", icon: CalendarClock,
+    type: "אתר הזמנות שירותים וקביעת תורים",
     to: "/preview/redesign/services",
     img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80",
   },
   {
     key: "leads", label: "נדל״ן", icon: Building2,
-    type: "אתר לעסק", cta: "ראו אתר נדל״ן",
+    type: "אתר לעסק",
     to: "/preview/redesign/realestate",
     img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80",
   },
   {
     key: "donations", label: "עמותות", icon: Heart,
-    type: "אתר לעמותה", cta: "ראו אתר עמותה",
+    type: "אתר לעמותה",
     to: "/preview/redesign/nonprofit",
     img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=900&q=80",
   },
@@ -303,7 +303,7 @@ const Index = () => {
                     התחילו עכשיו <ArrowLeft className="w-5 h-5" />
                   </Link>
                   <Link to={a.to} className="inline-flex items-center gap-2 px-6 py-4 rounded-2xl pv-surface2 border pv-border pv-strong font-semibold pv-hover transition-colors">
-                    {a.cta}
+                    צפו בדוגמה <ArrowLeft className="w-4 h-4" />
                   </Link>
                 </div>
                 <p className="text-sm pv-muted mt-4">ללא התחייבות · ללא ידע טכני</p>
