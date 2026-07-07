@@ -301,6 +301,16 @@ const en: Record<string, string> = {
   'home.value': 'Every tool, for every field',
   'home.valueSub': 'Whatever you sell - the same system, the same powerful tools',
   'home.faqTitle': 'Frequently asked questions',
+  'home.howItWorksSub': 'As easy as A-B-C',
+  'home.howItWorksSteps': "Three steps and you're live",
+  'home.step1Title': 'Choose a business type',
+  'home.step1Desc': 'Products, professional services, real estate, nonprofit - pick one and we tailor the tools',
+  'home.step2Title': 'Set your name, logo and details',
+  'home.step2Desc': 'Business name, logo, contact info and hours - all in seconds',
+  'home.step3Title': 'Add products / services',
+  'home.step3Desc': 'Products, services or listings - with an image, price and short description',
+  'home.examplesBadge': 'Website examples',
+  'home.examplesSub': 'Click an example to see it in full',
 };
 
 export default en;

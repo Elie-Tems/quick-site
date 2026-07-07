@@ -297,6 +297,16 @@ const fr: Record<string, string> = {
   'home.value': 'Tous les outils, pour tous les secteurs',
   'home.valueSub': 'Quoi que vous vendiez - le même système, les mêmes outils puissants',
   'home.faqTitle': 'Questions fréquentes',
+  'home.howItWorksSub': 'Simple comme A-B-C',
+  'home.howItWorksSteps': 'Trois étapes et vous êtes en ligne',
+  'home.step1Title': "Choisissez un type d'activité",
+  'home.step1Desc': 'Produits, services, immobilier, association - choisissez et nous adaptons les outils',
+  'home.step2Title': 'Définissez nom, logo et coordonnées',
+  'home.step2Desc': 'Nom, logo, coordonnées et horaires - le tout en quelques secondes',
+  'home.step3Title': 'Ajoutez produits / services',
+  'home.step3Desc': 'Produits, services ou biens - avec image, prix et courte description',
+  'home.examplesBadge': 'Exemples de sites',
+  'home.examplesSub': 'Cliquez sur un exemple pour le voir en entier',
 };
 
 export default fr;

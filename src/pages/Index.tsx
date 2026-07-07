@@ -150,10 +150,10 @@ const HowItWorks = () => {
         <div className="text-center mb-20">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full pv-surface2 border pv-border mb-5">
             <Rocket className="w-4 h-4 text-primary" />
-            <span className="text-sm pv-text">פשוט כמו A-B-C</span>
+            <span className="text-sm pv-text">{t("home.howItWorksSub")}</span>
           </div>
           <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">{t("home.howItWorks")}</h2>
-          <p className="text-lg pv-muted">שלושה צעדים — ואתם באוויר</p>
+          <p className="text-lg pv-muted">{t("home.howItWorksSteps")}</p>
         </div>
 
         <div className="grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
@@ -253,7 +253,7 @@ const HowItWorks = () => {
                   <div className={`pb-7 flex-1 text-right transition-all duration-500 ${isActive ? "opacity-100" : "opacity-55 group-hover:opacity-80"}`}>
                     <div className="flex items-center justify-end gap-3 mb-1.5">
                       <h3 className="text-lg font-bold" style={{ color: isActive ? "var(--pv-strong)" : "var(--pv-text)" }}>
-                        {s.title}
+                        {t(`home.step${i + 1}Title`)}
                       </h3>
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-500"
                         style={{
@@ -263,7 +263,7 @@ const HowItWorks = () => {
                         <s.icon className="w-4 h-4" style={{ color: isActive ? "#22c55e" : "var(--pv-faint)" }} strokeWidth={1.8} />
                       </div>
                     </div>
-                    <p className="text-sm leading-relaxed" style={{ color: "var(--pv-muted)" }}>{s.desc}</p>
+                    <p className="text-sm leading-relaxed" style={{ color: "var(--pv-muted)" }}>{t(`home.step${i + 1}Desc`)}</p>
                   </div>
                 </motion.div>
               );
@@ -438,10 +438,10 @@ const Index = () => {
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full pv-surface2 border pv-border mb-5">
                 <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm pv-text">דוגמאות אתרים</span>
+                <span className="text-sm pv-text">{t("home.examplesBadge")}</span>
               </div>
               <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">{t("home.examples")}</h2>
-              <p className="text-lg pv-muted">לחצו על דוגמה כדי לראות אותה מלאה</p>
+              <p className="text-lg pv-muted">{t("home.examplesSub")}</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {EXAMPLES.map((e, i) => (
@@ -469,7 +469,7 @@ const Index = () => {
         <section className="relative py-24 px-4 pv-surface2 border-y pv-border">
           <div className="max-w-5xl mx-auto text-center">
             <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">{t("home.value")}</h2>
-            <p className="text-lg pv-muted mb-12">לא משנה מה אתם מוכרים - אותה מערכת, אותם כלים חזקים</p>
+            <p className="text-lg pv-muted mb-12">{t("home.valueSub")}</p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {CORE.map((c, i) => (
                 <motion.div key={c.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>

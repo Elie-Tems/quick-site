@@ -297,6 +297,16 @@ const ar: Record<string, string> = {
   'home.value': 'كل الأدوات، لكل مجال',
   'home.valueSub': 'مهما كان ما تبيعه - نفس النظام، نفس الأدوات القوية',
   'home.faqTitle': 'الأسئلة الشائعة',
+  'home.howItWorksSub': 'بسيط مثل A-B-C',
+  'home.howItWorksSteps': 'ثلاث خطوات وأنت على الإنترنت',
+  'home.step1Title': 'اختر نوع النشاط',
+  'home.step1Desc': 'منتجات، خدمات مهنية، عقارات، جمعية - اختر ونحن نهيّئ الأدوات',
+  'home.step2Title': 'حدّد الاسم والشعار والتفاصيل',
+  'home.step2Desc': 'اسم النشاط، الشعار، معلومات التواصل وساعات العمل - كل ذلك في ثوانٍ',
+  'home.step3Title': 'أضف المنتجات / الخدمات',
+  'home.step3Desc': 'منتجات، خدمات أو عقارات - مع صورة وسعر ووصف قصير',
+  'home.examplesBadge': 'أمثلة مواقع',
+  'home.examplesSub': 'انقر على مثال لرؤيته كاملاً',
 };
 
 export default ar;

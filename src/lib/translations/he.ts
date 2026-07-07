@@ -301,6 +301,16 @@ const he: Record<string, string> = {
   'home.value': 'כל הכלים, לכל תחום',
   'home.valueSub': 'לא משנה מה אתם מוכרים - אותה מערכת, אותם כלים חזקים',
   'home.faqTitle': 'שאלות נפוצות',
+  'home.howItWorksSub': 'פשוט כמו A-B-C',
+  'home.howItWorksSteps': 'שלושה צעדים ואתם באוויר',
+  'home.step1Title': 'בוחרים סוג עסק',
+  'home.step1Desc': 'מכירת מוצרים, שירותי מקצוע, נדל״ן, עמותה - בוחרים ואנחנו מתאימים את הכלים',
+  'home.step2Title': 'מגדירים שם, לוגו ופרטים',
+  'home.step2Desc': 'שם העסק, לוגו, פרטי קשר ושעות פעילות - הכל בכמה שניות',
+  'home.step3Title': 'מוסיפים מוצרים / שירותים',
+  'home.step3Desc': 'מוצרים, שירותים, או נכסים - עם תמונה, מחיר ותיאור קצר',
+  'home.examplesBadge': 'דוגמאות אתרים',
+  'home.examplesSub': 'לחצו על דוגמה כדי לראות אותה מלאה',
 };
 
 export default he;
