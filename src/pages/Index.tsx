@@ -67,12 +67,12 @@ const PROFESSIONS = [
 ];
 
 const CORE = [
-  { icon: Palette, label: "מיתוג ועיצוב AI" },
-  { icon: CreditCard, label: "סליקה / תשלום מראש" },
-  { icon: BarChart3, label: "דשבורד ואנליטיקה" },
-  { icon: Mail, label: "מייל ווואטסאפ" },
-  { icon: Globe, label: "דומיין משלכם" },
-  { icon: Share2, label: "הפניות ושיווק" },
+  { icon: Palette, label: "מיתוג ועיצוב AI", desc: "צבעים, פונט ולוגו — מותאמים לעסק שלכם" },
+  { icon: CreditCard, label: "סליקה ותשלום מראש", desc: "PayPlus ועוד — ישירות לחשבון שלכם" },
+  { icon: BarChart3, label: "דשבורד ואנליטיקה", desc: "הזמנות, מכירות ולקוחות במקום אחד" },
+  { icon: Mail, label: "מייל ווואטסאפ", desc: "עדכונים אוטומטיים ללקוח ולעסק" },
+  { icon: Globe, label: "דומיין משלכם", desc: "yoursite.co.il — ללא עלות נוספת" },
+  { icon: Share2, label: "הפניות ושיווק", desc: "קישורי שיתוף, פיקסל וגוגל אנליטיקס" },
 ];
 
 const HOW_STEPS = [
@@ -98,10 +98,10 @@ const HOW_STEPS = [
 
 // תמונות שמייצגות את ה-Flow האמיתי
 const PROCESS_IMGS = [
-  { src: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80", caption: "A — בוחרים את סוג העסק" },
-  { src: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=900&q=80", caption: "B — מגדירים שם, לוגו ופרטים" },
-  { src: "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=900&q=80", caption: "C — מוסיפים מוצרים ושירותים" },
-  { src: "https://images.unsplash.com/photo-1556742393-d75f468bfcb0?w=900&q=80", caption: "האתר עולה לאוויר תוך דקות" },
+  { src: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=900&q=80", caption: "A — בוחרים את סוג העסק" },
+  { src: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=900&q=80", caption: "B — מגדירים שם, לוגו ופרטים" },
+  { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80", caption: "C — מוסיפים מוצרים ושירותים" },
+  { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80", caption: "האתר עולה לאוויר תוך דקות" },
 ];
 
 const HeroBg = () => (
@@ -460,17 +460,20 @@ const Index = () => {
 
         {/* Shared tools */}
         <section className="relative py-24 px-4 pv-surface2 border-y pv-border">
-          <div className="max-w-5xl mx-auto text-center">
-            <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">כל הכלים, לכל תחום</h2>
-            <p className="text-lg pv-muted mb-12">לא משנה מה אתם מוכרים - אותה מערכת, אותם כלים חזקים</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-16 text-center">כלים מותאמים לכל תחום</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {CORE.map((c, i) => (
-                <motion.div key={c.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                  <Card hover className="p-6 flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center">
-                      <c.icon className="w-6 h-6 text-primary" strokeWidth={1.6} />
+                <motion.div key={c.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}>
+                  <Card hover className="p-5 flex items-start gap-4 text-right">
+                    <div className="shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center"
+                      style={{ background: "linear-gradient(135deg, hsl(152 60% 45% / 0.18), hsl(152 60% 45% / 0.06))", border: "1px solid hsl(152 60% 45% / 0.25)" }}>
+                      <c.icon className="w-5 h-5 text-primary" strokeWidth={1.7} />
                     </div>
-                    <span className="pv-text font-medium">{c.label}</span>
+                    <div className="min-w-0">
+                      <p className="font-semibold pv-strong text-sm leading-snug mb-1">{c.label}</p>
+                      <p className="text-xs pv-muted leading-relaxed">{c.desc}</p>
+                    </div>
                   </Card>
                 </motion.div>
               ))}
