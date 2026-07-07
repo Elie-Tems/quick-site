@@ -12,11 +12,11 @@ import { AuroraBg, Card, Pill, PreviewBanner, PreviewThemeRoot, StoreTopBar } fr
  */
 
 const GALLERY = [
-  "https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=800&q=80",
-  "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&q=80",
+  "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80",
   "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80",
   "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=600&q=80",
   "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&q=80",
+  "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80",
 ];
 
 const UNITS = [
@@ -70,7 +70,7 @@ const VacationRentalSite = () => {
 
       {/* HERO */}
       <section className="relative h-[68vh] min-h-[420px] overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=1600&q=80" alt="" className="w-full h-full object-cover" />
+        <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1600&q=80" alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/40" />
         <div className="absolute inset-0 flex items-center">
           <div className="max-w-6xl mx-auto px-4 md:px-6 w-full">
