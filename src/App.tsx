@@ -69,6 +69,7 @@ const RedesignNonprofitDash = lazy(() => import("./pages/preview-redesign/Nonpro
 const RedesignCampaignDash = lazy(() => import("./pages/preview-redesign/CampaignDashboard"));
 const RedesignVacation = lazy(() => import("./pages/preview-redesign/VacationRentalSite"));
 const RedesignVacationDash = lazy(() => import("./pages/preview-redesign/VacationRentalDashboard"));
+const RedesignEmails = lazy(() => import("./pages/preview-redesign/EmailsVertical"));
 const RedesignTemplates = lazy(() => import("./pages/preview-redesign/TemplateShowcase"));
 const RedesignBoutique = lazy(() => import("./pages/preview-redesign/BoutiqueSite"));
 const PreviewWhatsApp = lazy(() => import("./pages/PreviewWhatsApp"));
@@ -214,6 +215,7 @@ const App = () => {
                   <Route path="/preview/redesign/vacation" element={<RedesignVacation />} />
                   <Route path="/preview/redesign/vacation-dashboard" element={<RedesignVacationDash />} />
                   <Route path="/preview/redesign/boutique" element={<RedesignBoutique />} />
+                  <Route path="/preview/redesign/emails" element={<RedesignEmails />} />
                   <Route path="/preview/redesign/templates" element={<RedesignTemplates />} />
                   <Route path="/preview/whatsapp" element={<PreviewWhatsApp />} />
                   <Route path="/preview/email" element={<PreviewEmail />} />

@@ -53,6 +53,11 @@ verify_jwt = false
 [functions.billing-charge-run]
 verify_jwt = false
 
+# charge-addon charges the merchant's saved token for a one-off add-on (AI
+# credits etc.) - server-priced, idempotent. Merchant-authenticated.
+[functions.charge-addon]
+verify_jwt = true
+
 # send-presentation is an admin-triggered one-off (guarded by its own token), called
 # without a JWT.
 [functions.send-presentation]

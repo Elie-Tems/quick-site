@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Home, LayoutDashboard, Rocket, LogIn, Shield, ArrowLeft, Sparkles,
   Layers, CalendarClock, CalendarCheck, Building2, Inbox, Compass, ClipboardList,
-  Heart, HandHeart, Camera, Wrench, Car, Tent, CalendarDays, Palette,
+  Heart, HandHeart, Camera, Wrench, Car, Tent, CalendarDays, Palette, Mail,
 } from "lucide-react";
 import { AuroraBg, Card, PreviewThemeRoot, ThemeToggle } from "@/components/preview-redesign/kit";
 
@@ -20,6 +20,7 @@ const GROUPS: { title: string; items: { to: string; icon: typeof Home; title: st
       { to: "/preview/redesign/templates", icon: Palette, title: "מערכת תבניות", desc: "4 מבנות × 10 ערכות צבע — תצוגה חיה", tag: "חדש", tone: "green" },
       { to: "/preview/redesign/login", icon: LogIn, title: "התחברות / הרשמה", desc: "מסך כניסה עם ויזואל צד", tag: "חדש", tone: "primary" },
       { to: "/preview/redesign/admin", icon: Shield, title: "פאנל אדמין", desc: "מרכז הבקרה של הפלטפורמה", tag: "חדש", tone: "primary" },
+      { to: "/preview/redesign/emails", icon: Mail, title: "מיילים מעוצבים", desc: "מיילים פר-וורטיקל: אישור תור, ליד, תודה על תרומה", tag: "לאישור", tone: "green" },
     ],
   },
   {
