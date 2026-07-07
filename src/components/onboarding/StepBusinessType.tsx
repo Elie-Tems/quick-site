@@ -26,25 +26,24 @@ interface Props {
   onBack?: () => void;
 }
 
+// Local gradient palette - no external image dependency, so the cards always
+// render (offline / blocked CDNs included). Reused for main + sub categories.
+const GRADIENTS = [
+  "linear-gradient(135deg, #10b981 0%, #059669 60%, #065f46 100%)",   // emerald
+  "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 60%, #4c1d95 100%)",   // violet
+  "linear-gradient(135deg, #0ea5e9 0%, #2563eb 60%, #1e3a8a 100%)",   // ocean
+  "linear-gradient(135deg, #f59e0b 0%, #ea580c 60%, #9a3412 100%)",   // amber
+  "linear-gradient(135deg, #ec4899 0%, #be185d 60%, #831843 100%)",   // rose
+  "linear-gradient(135deg, #14b8a6 0%, #0d9488 60%, #115e59 100%)",   // teal
+  "linear-gradient(135deg, #6366f1 0%, #4338ca 60%, #312e81 100%)",   // indigo
+  "linear-gradient(135deg, #84cc16 0%, #4d7c0f 60%, #365314 100%)",   // lime
+];
+const gradientFor = (i: number) => GRADIENTS[i % GRADIENTS.length];
+
 const MAIN_CATEGORIES = [
-  {
-    id: "products" as BusinessType,
-    title: "מכירת מוצרים",
-    desc: "חנות, בוטיק, מאפייה, מוצרים",
-    img: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800&q=80",
-  },
-  {
-    id: "services" as BusinessType,
-    title: "נותן/ת שירות",
-    desc: "קוסמטיקה, כושר, ייעוץ, נדל\"ן, טיפולים",
-    img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80",
-  },
-  {
-    id: "nonprofit" as BusinessType,
-    title: "עמותה / ארגון",
-    desc: "תרומות, גיוס המונים, קהילה",
-    img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=800&q=80",
-  },
+  { id: "products" as BusinessType,  title: "מכירת מוצרים", desc: "חנות, בוטיק, מאפייה, מוצרים",           gradient: GRADIENTS[0] },
+  { id: "services" as BusinessType,  title: "נותן/ת שירות",  desc: "קוסמטיקה, כושר, ייעוץ, נדל\"ן, טיפולים", gradient: GRADIENTS[1] },
+  { id: "nonprofit" as BusinessType, title: "עמותה / ארגון", desc: "תרומות, גיוס המונים, קהילה",             gradient: GRADIENTS[4] },
 ];
 
 const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: string }[]> = {
@@ -141,8 +140,8 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
                   className="group relative rounded-2xl overflow-hidden focus:outline-none"
                   style={{ height: "300px" }}
                 >
-                  <img src={cat.img} alt={cat.title} className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-108" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                  <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-108" style={{ background: cat.gradient }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
                   <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
                   <div className="absolute bottom-0 right-0 left-0 p-4 text-right">
                     <p className="font-bold text-white text-xl leading-tight mb-1">{cat.title}</p>
@@ -187,8 +186,8 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
                   className="group relative rounded-2xl overflow-hidden focus:outline-none"
                   style={{ aspectRatio: "4/3" }}
                 >
-                  <img src={sub.img} alt={sub.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" style={{ background: gradientFor(i) }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
                   <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
                   <div className="absolute bottom-0 right-0 left-0 p-3">
                     <p className="font-semibold text-white text-sm leading-tight">{sub.title}</p>
