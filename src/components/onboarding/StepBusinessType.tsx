@@ -41,9 +41,9 @@ const GRADIENTS = [
 const gradientFor = (i: number) => GRADIENTS[i % GRADIENTS.length];
 
 const MAIN_CATEGORIES = [
-  { id: "products" as BusinessType,  title: "מכירת מוצרים", desc: "חנות, בוטיק, מאפייה, מוצרים",           gradient: GRADIENTS[0] },
-  { id: "services" as BusinessType,  title: "נותן/ת שירות",  desc: "קוסמטיקה, כושר, ייעוץ, נדל\"ן, טיפולים", gradient: GRADIENTS[1] },
-  { id: "nonprofit" as BusinessType, title: "עמותה / ארגון", desc: "תרומות, גיוס המונים, קהילה",             gradient: GRADIENTS[4] },
+  { id: "products" as BusinessType,  title: "מכירת מוצרים", desc: "חנות, בוטיק, מאפייה, מוצרים",           img: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&q=75" },
+  { id: "services" as BusinessType,  title: "נותן/ת שירות",  desc: "קוסמטיקה, כושר, ייעוץ, נדל\"ן, טיפולים", img: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=600&q=75" },
+  { id: "nonprofit" as BusinessType, title: "עמותה / ארגון", desc: "תרומות, גיוס המונים, קהילה",             img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&q=75" },
 ];
 
 const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: string }[]> = {
@@ -140,7 +140,7 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
                   className="group relative rounded-2xl overflow-hidden focus:outline-none"
                   style={{ height: "300px" }}
                 >
-                  <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-108" style={{ background: cat.gradient }} />
+                  <img src={cat.img} alt={cat.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
                   <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
                   <div className="absolute bottom-0 right-0 left-0 p-4 text-right">
