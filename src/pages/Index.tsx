@@ -17,7 +17,7 @@ import { PreviewThemeRoot, Card } from "@/components/preview-redesign/kit";
 // 4 main engines (tabs in the hero)
 const ENGINES = [
   {
-    key: "commerce", label: "חנויות", icon: ShoppingBag,
+    key: "commerce", label: "חנויות אונליין", icon: ShoppingBag,
     type: "אתר מכירות",
     to: "/preview/home-v2",
     img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
@@ -305,7 +305,7 @@ const Index = () => {
                     התחילו עכשיו <ArrowLeft className="w-5 h-5" />
                   </Link>
                   <Link to={a.to} className="inline-flex items-center gap-2 px-6 py-4 rounded-2xl pv-surface2 border pv-border pv-strong font-semibold pv-hover transition-colors">
-                    {a.cta}
+                    צפו בדוגמה <ArrowLeft className="w-4 h-4" />
                   </Link>
                 </div>
                 <p className="text-sm pv-muted mt-4">ללא התחייבות · ללא ידע טכני</p>
