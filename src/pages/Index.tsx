@@ -462,7 +462,7 @@ const Index = () => {
         <section className="relative py-24 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">אתר אמיתי לכל תחום</h2>
+              <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">אתר מדהים בדקות בודדות</h2>
               <p className="text-lg pv-muted">לחצו על דוגמה כדי לראות אותה מלאה</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
