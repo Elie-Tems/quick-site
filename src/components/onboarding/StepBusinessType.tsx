@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Search, ArrowRight, ChevronDown } from "lucide-react";
 import { OnboardingData } from "@/pages/Onboarding";
 import type { BusinessCategory } from "@/lib/categoryConfig";
@@ -126,108 +125,92 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
         </p>
       </div>
 
-      <AnimatePresence mode="wait">
-        {!activeMain ? (
-          <motion.div key="main" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
-            <div className="grid grid-cols-3 gap-3">
-              {MAIN_CATEGORIES.map((cat, i) => (
-                <motion.button
-                  key={cat.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25, delay: i * 0.07 }}
-                  onClick={() => handleMainSelect(cat.id)}
-                  className="group relative rounded-2xl overflow-hidden focus:outline-none"
-                  style={{ height: "300px" }}
-                >
-                  <img src={cat.img} alt={cat.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
-                  <div className="absolute bottom-0 right-0 left-0 p-4 text-right">
-                    <p className="font-bold text-white text-xl leading-tight mb-1">{cat.title}</p>
-                    <p className="text-xs text-white/65 leading-snug">{cat.desc}</p>
-                  </div>
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div key="sub" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
-            <div className="flex items-center gap-2 mb-4">
-              <button
-                onClick={() => { setActiveMain(null); setSearch(""); setShowAll(false); updateData({ businessType: null, businessSubType: undefined }); }}
-                className="flex items-center gap-1.5 text-sm pv-muted hover:text-primary transition-colors shrink-0"
-              >
-                <ArrowRight className="w-4 h-4" />
-                חזרה
-              </button>
-              <div className="flex-1 relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="חפשו..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  className="w-full h-10 pr-9 pl-3 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-primary/40"
-                  style={{ background: "var(--pv-surface2)", border: "1px solid var(--pv-border)", color: "var(--pv-text)" }}
-                  dir="rtl"
-                />
+      {!activeMain ? (
+        <div className="grid grid-cols-3 gap-3">
+          {MAIN_CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => handleMainSelect(cat.id)}
+              className="group relative rounded-2xl overflow-hidden focus:outline-none"
+              style={{ height: "300px" }}
+            >
+              <img src={cat.img} alt={cat.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+              <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
+              <div className="absolute bottom-0 right-0 left-0 p-4 text-right">
+                <p className="font-bold text-white text-xl leading-tight mb-1">{cat.title}</p>
+                <p className="text-xs text-white/65 leading-snug">{cat.desc}</p>
               </div>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <button
+              onClick={() => { setActiveMain(null); setSearch(""); setShowAll(false); updateData({ businessType: null, businessSubType: undefined }); }}
+              className="flex items-center gap-1.5 text-sm pv-muted hover:text-primary transition-colors shrink-0"
+            >
+              <ArrowRight className="w-4 h-4" />
+              חזרה
+            </button>
+            <div className="flex-1 relative">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="חפשו..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full h-10 pr-9 pl-3 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-primary/40"
+                style={{ background: "var(--pv-surface2)", border: "1px solid var(--pv-border)", color: "var(--pv-text)" }}
+                dir="rtl"
+              />
             </div>
+          </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {visibleSubs.map((sub, i) => (
-                <motion.button
-                  key={sub.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.2, delay: i * 0.04 }}
-                  onClick={() => handleSubSelect(sub.id)}
-                  className="group relative rounded-2xl overflow-hidden focus:outline-none"
-                  style={{ aspectRatio: "4/3" }}
-                >
-                  <img src={sub.img} alt={sub.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
-                  <div className="absolute bottom-0 right-0 left-0 p-3">
-                    <p className="font-semibold text-white text-sm leading-tight">{sub.title}</p>
-                  </div>
-                </motion.button>
-              ))}
-              {filteredSubs.length === 0 && (
-                <div className="col-span-3 text-center pv-faint text-sm py-8">לא נמצאו תוצאות</div>
-              )}
-            </div>
-
-            {hasMore && (
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                onClick={() => setShowAll(true)}
-                className="w-full mt-3 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm pv-muted hover:text-primary transition-colors"
-                style={{ border: "1px dashed var(--pv-border)" }}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {visibleSubs.map((sub) => (
+              <button
+                key={sub.id}
+                onClick={() => handleSubSelect(sub.id)}
+                className="group relative rounded-2xl overflow-hidden focus:outline-none"
+                style={{ aspectRatio: "4/3" }}
               >
-                <ChevronDown className="w-4 h-4" />
-                הצג עוד
-              </motion.button>
+                <img src={sub.img} alt={sub.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+                <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
+                <div className="absolute bottom-0 right-0 left-0 p-3">
+                  <p className="font-semibold text-white text-sm leading-tight">{sub.title}</p>
+                </div>
+              </button>
+            ))}
+            {filteredSubs.length === 0 && (
+              <div className="col-span-3 text-center pv-faint text-sm py-8">לא נמצאו תוצאות</div>
             )}
+          </div>
 
-            {/* Always-visible "אחר" tile */}
-            {filteredSubs.length > 0 && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.2 }}
-                onClick={() => handleSubSelect("other")}
-                className="mt-1 w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-colors"
-                style={{ background: "var(--color-primary, #22c55e)", color: "#fff" }}
-              >
-                אחר — לא מצאתי את העסק שלי
-              </motion.button>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {hasMore && (
+            <button
+              onClick={() => setShowAll(true)}
+              className="w-full mt-3 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm pv-muted hover:text-primary transition-colors"
+              style={{ border: "1px dashed var(--pv-border)" }}
+            >
+              <ChevronDown className="w-4 h-4" />
+              הצג עוד
+            </button>
+          )}
+
+          {filteredSubs.length > 0 && (
+            <button
+              onClick={() => handleSubSelect("other")}
+              className="mt-1 w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-colors"
+              style={{ background: "var(--color-primary, #22c55e)", color: "#fff" }}
+            >
+              אחר — לא מצאתי את העסק שלי
+            </button>
+          )}
+        </div>
+      )}
 
       {!activeMain && onBack && (
         <button
