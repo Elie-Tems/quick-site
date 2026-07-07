@@ -247,33 +247,41 @@ Deno.serve(async (req) => {
   // next_charge_at NULL so the cron never charges a null token, and log it so the
   // token can be reconciled (via get_cc_tokens) before the next cycle.
   if (!tokenId) console.warn("billing-icount-ipn: PAID + publishing but no token captured - recurring NOT armed for", userId);
-  await admin.from("subscriptions").upsert({
-    user_id: userId,
-    status: "active",
-    billing_provider: "icount_token",
-    cc_token_id: tokenId ?? null,
-    paid_until: paidUntil,
-    next_charge_at: tokenId ? nextCharge : null,
-    billing_cycle_count: 1,
-    last_charge_status: "success",
-    cancel_type: null,
-    cancel_at: null,
-    updated_at: now,
-  }, { onConflict: "user_id" });
+  // Best effort - a failed activation must not abort the path to publish+emails.
+  try {
+    await admin.from("subscriptions").upsert({
+      user_id: userId,
+      status: "active",
+      billing_provider: "icount_token",
+      cc_token_id: tokenId ?? null,
+      paid_until: paidUntil,
+      next_charge_at: tokenId ? nextCharge : null,
+      billing_cycle_count: 1,
+      last_charge_status: "success",
+      cancel_type: null,
+      cancel_at: null,
+      updated_at: now,
+    }, { onConflict: "user_id" });
+  } catch (e) { console.warn("subscription activation failed (non-fatal):", e); }
 
-  // Redeem the coupon (increment + record), if one was on the subscription.
-  const { data: sub } = await admin.from("subscriptions").select("coupon_code").eq("user_id", userId).maybeSingle();
-  const code = (sub as any)?.coupon_code as string | undefined;
-  if (code) {
-    const { data: coup } = await admin.from("subscription_coupons").select("id, redeemed_count").ilike("code", code).maybeSingle();
-    if (coup) {
-      await admin.from("subscription_coupons").update({ redeemed_count: ((coup as any).redeemed_count ?? 0) + 1 }).eq("id", (coup as any).id);
-      await admin.from("subscription_coupon_redemptions").upsert(
-        { coupon_id: (coup as any).id, user_id: userId, business_id: businessId, code },
-        { onConflict: "coupon_id,user_id", ignoreDuplicates: true },
-      );
+  // Redeem the coupon (best effort). CRITICAL: never let a coupon/DB hiccup throw
+  // here - it runs BEFORE publish+emails, so an unhandled error (e.g. a failing
+  // query during a provider incident) charged the card, crashed, and iCount's
+  // retry then published via the duplicate-path with NO receipt/invoice. Wrapped.
+  try {
+    const { data: sub } = await admin.from("subscriptions").select("coupon_code").eq("user_id", userId).maybeSingle();
+    const code = (sub as any)?.coupon_code as string | undefined;
+    if (code) {
+      const { data: coup } = await admin.from("subscription_coupons").select("id, redeemed_count").ilike("code", code).maybeSingle();
+      if (coup) {
+        await admin.from("subscription_coupons").update({ redeemed_count: ((coup as any).redeemed_count ?? 0) + 1 }).eq("id", (coup as any).id);
+        await admin.from("subscription_coupon_redemptions").upsert(
+          { coupon_id: (coup as any).id, user_id: userId, business_id: businessId, code },
+          { onConflict: "coupon_id,user_id", ignoreDuplicates: true },
+        );
+      }
     }
-  }
+  } catch (e) { console.warn("coupon redemption failed (non-fatal):", e); }
 
   // Referral reward: if this merchant was referred, grant the REFERRER a free
   // month (once per referred merchant - the unique referral_rewards row + the
