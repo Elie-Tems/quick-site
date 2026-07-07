@@ -23,7 +23,7 @@ const ENGINES = [
     img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
   },
   {
-    key: "booking", label: "תורים", icon: CalendarClock,
+    key: "booking", label: "שירותי מקצוע", icon: CalendarClock,
     type: "אתר הזמנות",
     to: "/preview/redesign/services",
     img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80",
