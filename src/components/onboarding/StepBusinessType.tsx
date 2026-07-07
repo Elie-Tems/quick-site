@@ -186,7 +186,7 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
                   className="group relative rounded-2xl overflow-hidden focus:outline-none"
                   style={{ aspectRatio: "4/3" }}
                 >
-                  <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" style={{ background: gradientFor(i) }} />
+                  <img src={sub.img} alt={sub.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
                   <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
                   <div className="absolute bottom-0 right-0 left-0 p-3">
