@@ -6,6 +6,7 @@ import {
   Palette, CreditCard, BarChart3, Mail, Globe, Share2,
   Camera, Tent, Car, Wrench, Compass, HandHeart, Store, Scissors, Loader2,
   Package, Upload, Rocket, Tag, Users, ImagePlus,
+  UtensilsCrossed, Dumbbell, BookOpen, Music2, Baby, Dog, Flower2, Truck, Plus,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -69,6 +70,15 @@ const PROFESSIONS = [
   { icon: Compass, label: "יזמי נדל\"ן" },
   { icon: Heart, label: "עמותות" },
   { icon: HandHeart, label: "גיוס המונים" },
+  { icon: UtensilsCrossed, label: "מסעדות ובתי קפה" },
+  { icon: Dumbbell, label: "כושר ואימונים" },
+  { icon: BookOpen, label: "קורסים והדרכות" },
+  { icon: Music2, label: "מוזיקה ואמנות" },
+  { icon: Baby, label: "טיפול בילדים" },
+  { icon: Dog, label: "חיות מחמד" },
+  { icon: Flower2, label: "פרחים ומתנות" },
+  { icon: Truck, label: "משלוחים ולוגיסטיקה" },
+  { icon: Plus, label: "אחר", highlight: true },
 ];
 
 const CORE = [
@@ -430,12 +440,19 @@ const Index = () => {
         <HowItWorks />
 
         {/* Professions strip */}
-        <section className="relative py-10 px-4 border-y pv-border pv-surface2">
-          <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-2.5">
+        <section className="relative py-12 px-4 border-y pv-border pv-surface2">
+          <p className="text-center text-xs pv-muted mb-5 tracking-widest uppercase">מתאים לכל תחום</p>
+          <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-2">
             {PROFESSIONS.map((p, i) => (
-              <motion.span key={p.label} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.03 }}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full pv-surface border pv-border pv-text text-sm">
-                <p.icon className="w-4 h-4 text-primary" /> {p.label}
+              <motion.span key={p.label}
+                initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.03 }}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${ (p as any).highlight
+                  ? "bg-primary text-white shadow-md shadow-primary/30"
+                  : "pv-surface border pv-border pv-text hover:border-primary/40"
+                }`}>
+                <p.icon className={`w-4 h-4 ${ (p as any).highlight ? "text-white" : "text-primary" }`} />
+                {p.label}
               </motion.span>
             ))}
           </div>
