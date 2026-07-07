@@ -136,13 +136,11 @@ Deno.serve(async (req) => {
     console.warn("billing-icount-ipn: no token id in IPN - recurring not armed. Fields:", Object.keys(payload).join(","));
   }
 
-  // Without a stored token we can neither collect nor arm recurring - do NOT
-  // publish (the hosted page only validated the card; there's nothing to charge on).
-  if (!tokenId) {
-    await admin.from("publish_checkout_sessions").update({ status: "no_token", updated_at: now }).eq("id", session.id);
-    return json({ ok: false, error: "no_token", published: false }, 200);
-  }
-
+  // NOTE: we no longer bail here on a missing token. In the one-transaction model
+  // (A) the page ALREADY charged the customer, so we MUST publish even if we can't
+  // read the token back (recurring just isn't armed - reconciled later). The
+  // "no token" bail now lives only in the cc/bill path (model B) below, where the
+  // token is genuinely required to collect the charge.
   const idem = `${sessionToken}:cycle0`;
   const isTest = Deno.env.get("BILLING_TEST_MODE") === "true";
   // session.amount_ils is the NET (pre-VAT, coupon-applied) first-charge amount.
@@ -180,13 +178,20 @@ Deno.serve(async (req) => {
   const invoiceByPaypage = paypageCharged && !!paypageDocnum;   // sale page auto-issued the חשבונית
 
   if (firstGross > 0 && !paypageCharged) {
-    // Model (B): token page only validated - charge the first month via cc/bill.
+    // Model (B): the page only validated the card - WE collect the first charge via
+    // cc/bill on the token. This REQUIRES a token; without one there's nothing to
+    // charge on (a model-A page that already charged is handled by paypageCharged).
+    if (!tokenId) {
+      await admin.from("publish_checkout_sessions").update({ status: "no_token", updated_at: now }).eq("id", session.id);
+      console.warn("billing-icount-ipn: model B but no token captured. Fields:", Object.keys(payload).join(","));
+      return json({ ok: false, error: "no_token", published: false }, 200);
+    }
     const res = await billToken({
       ccTokenId: tokenId, sumIls: firstGross,
-      // Only pass a REAL iCount client id if we captured one; never send our own
-      // Siango UUID as custom_client_id (iCount doesn't know it and it can cause a
-      // decline). The proven-working charges (0567504/0707098) sent cc_token_id alone.
-      ...(clientId ? { clientId } : {}),
+      // cc_token_id ALONE is the proven-working shape. A mismatched client_id from
+      // the IPN payload can trigger a decline - Daniel's ₪4.07 charge was refused [4]
+      // WITH a client_id, while the card validated fine (J5 OK) WITHOUT one - so we
+      // deliberately do not send it here.
       description: "פרסום אתר Siango - חיוב ראשון",
       email: (session.email as string) ?? undefined, isTest,
     });
@@ -223,14 +228,19 @@ Deno.serve(async (req) => {
   const nextCharge = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString();
 
   // Activate the subscription for token-based recurring billing (cycle 0 done;
-  // the monthly cron picks up cycle 1 at next_charge_at).
+  // the monthly cron picks up cycle 1 at next_charge_at). If we couldn't read the
+  // token back (a paid model-A transaction where iCount didn't echo cc_token_id),
+  // the customer is still paid + published for this cycle - we just leave
+  // next_charge_at NULL so the cron never charges a null token, and log it so the
+  // token can be reconciled (via get_cc_tokens) before the next cycle.
+  if (!tokenId) console.warn("billing-icount-ipn: PAID + publishing but no token captured - recurring NOT armed for", userId);
   await admin.from("subscriptions").upsert({
     user_id: userId,
     status: "active",
     billing_provider: "icount_token",
-    cc_token_id: tokenId,
+    cc_token_id: tokenId ?? null,
     paid_until: paidUntil,
-    next_charge_at: nextCharge,
+    next_charge_at: tokenId ? nextCharge : null,
     billing_cycle_count: 1,
     last_charge_status: "success",
     cancel_type: null,
