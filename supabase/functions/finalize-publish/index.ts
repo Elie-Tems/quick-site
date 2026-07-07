@@ -190,13 +190,13 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Paid publishing is LIVE. A store only goes live after a VERIFIED payment
-  // (payment_verified_at, set by the iCount IPN on a successful charge). The old
-  // ALLOW_UNVERIFIED_PUBLISH env bypass is deliberately removed - it kept leaking
-  // free publishes into tests (stale-secret / redeploy ambiguity even when set to
-  // "false"), so the gate now lives in code and cannot drift. To test without a
-  // real charge, use a 100%-off coupon - it still flows through the payment path.
-  const paid = session.payment_verified_at != null;
+  // TEMPORARY - FREE PUBLISH FOR TESTING. The iCount integration was pulled (it
+  // cannot charge a dynamic amount + save a token in one transaction); the payment
+  // gateway is being re-decided (PayPlus under evaluation). Until a gateway is
+  // wired, publishing is free so Moti can test the product end-to-end. RESTORE the
+  // paid gate when the new gateway is live:
+  //   const paid = session.payment_verified_at != null;
+  const paid = true;
 
   if (!paid) {
     return new Response(

@@ -36,18 +36,12 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cWdlb3Zpb2tneHh3YWxpZWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzMTA0NjYsImV4cCI6MjA4Njg4NjQ2Nn0.jeSSSbTP3CbKVjlzqlYavwoGqooLW7bLV9JQTY9RhD8
           VITE_WEBSITE_URL: siango.app
           VITE_ORDER_WEBHOOK_URL: https://hook.eu2.make.com/09a6csp2wh8vgncyi5q88mcd9brwzdnu
-          # iCount hosted payment page for the publish subscription (הוראת קבע ₪69/mo).
-          VITE_ICOUNT_PAYMENT_BASE_URL: https://app.icount.co.il/m/36af1/c6938b7dp4u6a454dd6
-          # PAID publishing: publish now routes to the iCount payment page.
-          # To fully lock it, also set ALLOW_UNVERIFIED_PUBLISH=false on finalize-publish.
-          # (Set VITE_PUBLISH_SKIP_PAYMENT back to "true" to revert to free publishing.)
-          VITE_PUBLISH_SKIP_PAYMENT: "false"
-          # Self-managed token billing is LIVE. The earlier "cc/bill doesn't charge"
-          # scare was WRONG: iCount's own transaction report shows the ₪4.07 cc/bill
-          # charges SUCCEEDED via shva (conf 0567504 / 0707098) - the card just posts a
-          # day later. cc/bill captures the money; the IPN now also issues the invoice
-          # via doc/create. Set to "false" to fall back to the legacy הו"ק page.
-          VITE_BILLING_SELF_MANAGED: "true"
+          # TEMPORARY: FREE PUBLISH FOR TESTING. iCount pulled (can't charge dynamic +
+          # save token in one transaction); payment gateway being re-decided (PayPlus
+          # under evaluation). skip=true -> onboarding publishes free; self-managed OFF
+          # -> the iCount checkout flow is not used. Flip both back when a gateway is live.
+          VITE_PUBLISH_SKIP_PAYMENT: "true"
+          VITE_BILLING_SELF_MANAGED: "false"
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
