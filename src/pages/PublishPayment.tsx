@@ -33,8 +33,12 @@ const PublishPayment = () => {
   const [resolvedBusinessId, setResolvedBusinessId] = useState<string | null>(null);
   const [sessionResolveFailed, setSessionResolveFailed] = useState(false);
 
-  // Use business from URL param, or from session token, or from useMyBusiness (for unpublished businesses)
-  const effectiveBusinessId = businessIdParam ?? resolvedBusinessId ?? (myBusiness && !myBusiness.is_published ? myBusiness.id : null);
+  // Use business from URL param, or from session token, or from useMyBusiness.
+  // On the payment return (?paid=1) iCount often drops our businessId param AND the
+  // store may have JUST become published - so accept the published business too,
+  // otherwise the page can't identify it and wrongly bounces to onboarding.
+  const effectiveBusinessId = businessIdParam ?? resolvedBusinessId ??
+    (myBusiness && (!myBusiness.is_published || searchParams.get("paid") === "1") ? myBusiness.id : null);
 
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
@@ -179,8 +183,11 @@ const PublishPayment = () => {
       navigate("/login", { replace: true });
       return;
     }
-    // Allow if: has businessId param, has session token, or has unpublished business
-    if (!businessIdParam && !sessionTokenParam && (!myBusiness || myBusiness.is_published)) {
+    // Allow if: has businessId param, has session token, an unpublished business,
+    // OR we're on the payment return (?paid=1) - never bounce a paying customer to
+    // onboarding just because iCount dropped the businessId and the store already
+    // published. The paid-return effect below resolves the business + shows success.
+    if (!businessIdParam && !sessionTokenParam && searchParams.get("paid") !== "1" && (!myBusiness || myBusiness.is_published)) {
       toast({ title: "חסר מזהה עסק", variant: "destructive" });
       navigate("/onboarding", { replace: true });
       return;
