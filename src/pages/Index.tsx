@@ -176,7 +176,7 @@ const HowItWorks = () => {
                 <AnimatePresence mode="wait">
                   <motion.img key={imgIdx}
                     src={PROCESS_IMGS[imgIdx].src}
-                    alt={PROCESS_IMGS[imgIdx].caption}
+                    alt={t(`home.cap${imgIdx + 1}`)}
                     initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
                     className="absolute inset-0 w-full h-full object-cover"
@@ -191,7 +191,7 @@ const HowItWorks = () => {
                       initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
                       className="text-white font-semibold text-sm drop-shadow">
-                      {PROCESS_IMGS[imgIdx].caption}
+                      {t(`home.cap${imgIdx + 1}`)}
                     </motion.span>
                   </AnimatePresence>
                   <div className="flex gap-2">
@@ -285,9 +285,9 @@ const HowItWorks = () => {
               </div>
               <div className={`flex-1 text-right transition-all duration-500 ${imgIdx === 3 ? "opacity-100" : "opacity-55"}`}>
                 <p className="text-lg font-bold" style={{ color: imgIdx === 3 ? "#22c55e" : "var(--pv-strong)" }}>
-                  ואופ! האתר עלה לאוויר
+                  {t("home.finaleTitle")}
                 </p>
-                <p className="text-sm mt-0.5" style={{ color: "var(--pv-muted)" }}>תוך 5 דקות — ב-69 ₪ בלבד</p>
+                <p className="text-sm mt-0.5" style={{ color: "var(--pv-muted)" }}>{t("home.finaleSub")}</p>
               </div>
             </motion.div>
           </div>
@@ -403,11 +403,11 @@ const Index = () => {
                       <div className="mx-auto text-xs pv-muted pv-surface border pv-border rounded-md px-4 py-1">siango.app/{a.key}</div>
                     </div>
                     <div className="relative aspect-[4/3]">
-                      <img src={a.img} alt={a.label} className="w-full h-full object-cover" />
+                      <img src={a.img} alt={t(`home.engine.${a.key}`)} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                       <div className="absolute bottom-4 right-4 left-4 flex items-center justify-center">
                         <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur text-white text-sm border border-white/10">
-                          <a.icon className="w-4 h-4 text-primary" /> {a.type}
+                          <a.icon className="w-4 h-4 text-primary" /> {t(`home.type.${a.key}`)}
                         </span>
                       </div>
                     </div>
@@ -426,7 +426,7 @@ const Index = () => {
             {PROFESSIONS.map((p, i) => (
               <motion.span key={p.label} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.03 }}
                 className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full pv-surface border pv-border pv-text text-sm">
-                <p.icon className="w-4 h-4 text-primary" /> {p.label}
+                <p.icon className="w-4 h-4 text-primary" /> {t(`home.prof${i + 1}`)}
               </motion.span>
             ))}
           </div>
@@ -449,11 +449,11 @@ const Index = () => {
                   <Link to={e.to} className="group block">
                     <Card hover className="overflow-hidden">
                       <div className="relative aspect-[16/10] overflow-hidden">
-                        <img src={e.img} alt={e.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                        <img src={e.img} alt={t(`home.exTitle${i + 1}`)} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                        <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-primary/90 text-white text-xs font-medium">{e.tag}</span>
+                        <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-primary/90 text-white text-xs font-medium">{t(`home.exTag${i + 1}`)}</span>
                         <div className="absolute bottom-3 right-3 left-3 flex items-center justify-between">
-                          <span className="font-display font-bold text-white text-lg">{e.title}</span>
+                          <span className="font-display font-bold text-white text-lg">{t(`home.exTitle${i + 1}`)}</span>
                           <ArrowLeft className="w-5 h-5 text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                         </div>
                       </div>
@@ -477,7 +477,7 @@ const Index = () => {
                     <div className="w-12 h-12 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center">
                       <c.icon className="w-6 h-6 text-primary" strokeWidth={1.6} />
                     </div>
-                    <span className="pv-text font-medium">{c.label}</span>
+                    <span className="pv-text font-medium">{t(`home.core${i + 1}`)}</span>
                   </Card>
                 </motion.div>
               ))}
@@ -492,11 +492,11 @@ const Index = () => {
           </div>
           <div className="relative max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-5">
-              כל עסק. אתר אחד.{" "}
-              <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">5 דקות.</span>
+              {t("home.finalLead")}{" "}
+              <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">{t("home.finalHighlight")}</span>
             </h2>
             <Link to="/register" className="inline-flex items-center gap-2 px-9 py-4 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
-              התחילו עכשיו <ArrowLeft className="w-5 h-5" />
+              {t("home.ctaPrimary")} <ArrowLeft className="w-5 h-5" />
             </Link>
           </div>
         </section>
