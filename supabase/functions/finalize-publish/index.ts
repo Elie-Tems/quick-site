@@ -190,11 +190,13 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Free-publish escape hatch: while paid publishing (iCount) is not wired up,
-  // ALLOW_UNVERIFIED_PUBLISH=true lets sites publish without a verified payment.
-  // Set it back to false (or remove it) to re-enable paid publishing.
-  const allowUnverified = Deno.env.get("ALLOW_UNVERIFIED_PUBLISH") === "true";
-  const paid = session.payment_verified_at != null || allowUnverified;
+  // Paid publishing is LIVE. A store only goes live after a VERIFIED payment
+  // (payment_verified_at, set by the iCount IPN on a successful charge). The old
+  // ALLOW_UNVERIFIED_PUBLISH env bypass is deliberately removed - it kept leaking
+  // free publishes into tests (stale-secret / redeploy ambiguity even when set to
+  // "false"), so the gate now lives in code and cannot drift. To test without a
+  // real charge, use a 100%-off coupon - it still flows through the payment path.
+  const paid = session.payment_verified_at != null;
 
   if (!paid) {
     return new Response(
