@@ -29,9 +29,14 @@ const STORES_INDEXABLE = false;
 
 const STATIC_ROUTES: Array<{ path: string; changefreq: string; priority: string }> = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
+  // Language homepages (multilingual SEO). Hebrew lives at "/".
+  { path: "/en", changefreq: "weekly", priority: "0.9" },
+  { path: "/ar", changefreq: "weekly", priority: "0.9" },
+  { path: "/fr", changefreq: "weekly", priority: "0.9" },
+  { path: "/ru", changefreq: "weekly", priority: "0.9" },
   { path: "/templates", changefreq: "weekly", priority: "0.8" },
   { path: "/register", changefreq: "monthly", priority: "0.9" },
-  { path: "/login", changefreq: "monthly", priority: "0.7" },
+  // /login is intentionally omitted - thin, no SEO value.
   { path: "/contact", changefreq: "monthly", priority: "0.6" },
   { path: "/help", changefreq: "monthly", priority: "0.5" },
   { path: "/terms", changefreq: "yearly", priority: "0.3" },
