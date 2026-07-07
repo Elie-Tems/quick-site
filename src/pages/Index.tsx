@@ -116,6 +116,11 @@ const Index = () => {
     if (loading) return;
     if (!user) { setResolving(false); return; }
     let cancelled = false;
+    // Safety net: if the profile lookup hangs (Supabase incident), don't spin
+    // forever - send the logged-in user to their dashboard after 7s.
+    const safety = window.setTimeout(() => {
+      if (!cancelled) navigate("/dashboard", { replace: true });
+    }, 7000);
     (async () => {
       const { data: profile } = await supabase
         .from("profiles")
@@ -123,6 +128,7 @@ const Index = () => {
         .eq("user_id", user.id)
         .maybeSingle();
       if (cancelled) return;
+      window.clearTimeout(safety);
       // A logged-in user should land in their workspace, never be stranded on the
       // marketing home (this is exactly where an OAuth Site-URL fallback dumps
       // them). New / mid-onboarding -> onboarding; finished -> dashboard.
@@ -132,7 +138,7 @@ const Index = () => {
         navigate("/dashboard", { replace: true });
       }
     })();
-    return () => { cancelled = true; };
+    return () => { cancelled = true; window.clearTimeout(safety); };
   }, [user, loading, navigate]);
 
   if (resolving) {
