@@ -5,6 +5,7 @@ import {
   ShoppingBag, CalendarClock, Building2, Heart, ArrowLeft, Check, Sparkles,
   Palette, CreditCard, BarChart3, Mail, Globe, Share2,
   Camera, Tent, Car, Wrench, Compass, HandHeart, Store, Scissors, Loader2,
+  Package, Upload, Rocket,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -16,36 +17,28 @@ import { PreviewThemeRoot, Card } from "@/components/preview-redesign/kit";
 // 4 main engines (tabs in the hero)
 const ENGINES = [
   {
-    key: "commerce", label: "מכירת מוצרים", icon: ShoppingBag,
-    accent: "חנות אונליין", headTail: "שמוכרת 24/7",
-    sub: "בוטיקים, מזון, אומנות, כל מי שמוכר מוצרים - קטלוג, עגלה וסליקה.",
-    cta: "ראו דוגמה", to: "/preview/home-v2",
+    key: "commerce", label: "חנויות", icon: ShoppingBag,
+    type: "אתר מכירות",
+    to: "/preview/home-v2",
     img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
-    chips: ["קטלוג מוצרים", "עגלת קניות", "סליקה מיידית"],
   },
   {
-    key: "booking", label: "תורים והזמנות", icon: CalendarClock,
-    accent: "יומן חכם", headTail: "שמתמלא לבד",
-    sub: "מאפרות, ספרים, צלמים, קליניקות, צימרים - יומן שמסתנכרן ותשלום מראש.",
-    cta: "ראו דוגמה", to: "/preview/redesign/services",
+    key: "booking", label: "תורים", icon: CalendarClock,
+    type: "אתר הזמנות",
+    to: "/preview/redesign/services",
     img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80",
-    chips: ["הזמנת תור/תאריך", "סנכרון יומן", "תזכורות אוטומטיות"],
   },
   {
-    key: "leads", label: "לידים ולוחות", icon: Building2,
-    accent: "לוח נכסים", headTail: "שמייצר פניות",
-    sub: "נדל\"ן, רכב, בעלי מקצוע - לוח מסונן, מדיה עשירה ולכידת לידים חכמה.",
-    cta: "ראו דוגמה", to: "/preview/redesign/realestate",
+    key: "leads", label: "נדל״ן", icon: Building2,
+    type: "אתר לעסק",
+    to: "/preview/redesign/realestate",
     img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80",
-    chips: ["לוח עם סינון", "360 ווידאו", "לכידת לידים"],
   },
   {
-    key: "donations", label: "תרומות וקמפיינים", icon: Heart,
-    accent: "גיוס תרומות", headTail: "שמשנה מציאות",
-    sub: "עמותות וגיוס המונים - תרומה חוזרת, קבלות סעיף 46, וקמפיינים עם יעד.",
-    cta: "ראו דוגמה", to: "/preview/redesign/nonprofit",
+    key: "donations", label: "עמותות", icon: Heart,
+    type: "אתר לעמותה",
+    to: "/preview/redesign/nonprofit",
     img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=900&q=80",
-    chips: ["תרומה חוזרת", "סעיף 46", "קמפיין יעד"],
   },
 ];
 
@@ -83,6 +76,34 @@ const CORE = [
   { icon: Share2, label: "הפניות ושיווק" },
 ];
 
+const HOW_STEPS = [
+  {
+    num: "01",
+    icon: Upload,
+    title: "מעלים לוגו",
+    desc: "מעלים את הלוגו של העסק - אנחנו מסדרים את המיתוג אוטומטית",
+  },
+  {
+    num: "02",
+    icon: Store,
+    title: "פרטי העסק",
+    desc: "שם, פרטי קשר, שעות פעילות - הכל בכמה שניות",
+  },
+  {
+    num: "03",
+    icon: Package,
+    title: "מוצרים / שירותים",
+    desc: "מוסיפים את מה שמוכרים - מוצרים, שירותים, או נכסים",
+  },
+];
+
+const PROCESS_IMGS = [
+  { src: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=900&q=80", caption: "בוחרים סוג עסק ותחום" },
+  { src: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=900&q=80", caption: "מגדירים פרטי עסק ולוגו" },
+  { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80", caption: "מוסיפים מוצרים ושירותים" },
+  { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80", caption: "האתר עולה לאוויר תוך דקות" },
+];
+
 const HeroBg = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     <motion.div className="absolute -top-40 right-[-10%] w-[45rem] h-[45rem] rounded-full blur-[140px]"
@@ -103,6 +124,100 @@ const hasStoredSession = () => {
     }
   } catch { /* ignore */ }
   return false;
+};
+
+const HowItWorks = () => {
+  const [imgIdx, setImgIdx] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setImgIdx(i => (i + 1) % PROCESS_IMGS.length), 3000);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <section className="relative py-24 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full pv-surface2 border pv-border mb-5">
+            <Rocket className="w-4 h-4 text-primary" />
+            <span className="text-sm pv-text">פשוט כמו 1-2-3</span>
+          </div>
+          <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">איך זה עובד?</h2>
+          <p className="text-lg pv-muted">שלושה צעדים פשוטים - ואתם מוכנים</p>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Steps */}
+          <div className="space-y-6 order-2 lg:order-1">
+            {HOW_STEPS.map((s, i) => (
+              <motion.div key={s.num}
+                initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.12 }}
+                className="flex items-start gap-5 p-5 rounded-2xl pv-surface2 border pv-border">
+                <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center">
+                  <s.icon className="w-6 h-6 text-primary" strokeWidth={1.6} />
+                </div>
+                <div className="flex-1 text-right">
+                  <span className="text-xs font-bold text-primary/60 tracking-widest">{s.num}</span>
+                  <h3 className="text-lg font-bold pv-strong mt-0.5">{s.title}</h3>
+                  <p className="text-sm pv-muted mt-1">{s.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+
+            {/* Finale */}
+            <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }}
+              className="flex items-center gap-4 p-5 rounded-2xl bg-primary/10 border border-primary/30">
+              <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+                <Check className="w-7 h-7 text-white" strokeWidth={2.5} />
+              </div>
+              <div className="flex-1 text-right">
+                <p className="text-lg font-bold text-primary">ואופ! האתר עלה לאוויר</p>
+                <p className="text-sm pv-muted mt-0.5">תוך 5 דקות — ב-69 ₪ בלבד</p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Image carousel */}
+          <div className="order-1 lg:order-2">
+            <div className="relative rounded-2xl overflow-hidden border pv-border shadow-2xl pv-surface2">
+              {/* browser bar */}
+              <div className="flex items-center gap-2 px-4 h-10 border-b pv-border">
+                <div className="flex gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-red-400/70" />
+                  <span className="w-3 h-3 rounded-full bg-yellow-400/70" />
+                  <span className="w-3 h-3 rounded-full bg-green-400/70" />
+                </div>
+                <div className="mx-auto text-xs pv-muted pv-surface border pv-border rounded-md px-4 py-1">siango.app/onboarding</div>
+              </div>
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.img key={imgIdx}
+                    src={PROCESS_IMGS[imgIdx].src}
+                    alt={PROCESS_IMGS[imgIdx].caption}
+                    initial={{ opacity: 0, scale: 1.04 }} animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.5 }}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </AnimatePresence>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 right-4 left-4 flex items-end justify-between">
+                  <span className="text-white font-medium text-sm">{PROCESS_IMGS[imgIdx].caption}</span>
+                  <div className="flex gap-1.5">
+                    {PROCESS_IMGS.map((_, i) => (
+                      <button key={i} onClick={() => setImgIdx(i)}
+                        className={`w-2 h-2 rounded-full transition-all ${i === imgIdx ? "bg-primary w-5" : "bg-white/50"}`} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 };
 
 const Index = () => {
@@ -159,13 +274,6 @@ const Index = () => {
         <section className="relative min-h-screen flex items-center overflow-hidden">
           <HeroBg />
           <div className="container relative z-10 pt-32 pb-16">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 mb-4">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm pv-text">פלטפורמה אחת · כל סוגי העסקים</span>
-              </div>
-            </motion.div>
-
             {/* Engine switcher */}
             <div className="flex justify-center mb-10">
               <div className="inline-flex flex-wrap justify-center gap-1 p-1 rounded-2xl pv-surface2 border pv-border">
@@ -186,18 +294,10 @@ const Index = () => {
                   <motion.div key={a.key}
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35 }}>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
-                      <span className="block pv-strong">האתר שלכם עם</span>
-                      <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">{a.accent}</span>
-                      <span className="block pv-strong">{a.headTail}</span>
+                      <span className="block pv-strong">{a.type}</span>
+                      <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">תוך 5 דקות</span>
+                      <span className="block pv-strong">ב-69 ₪ בלבד</span>
                     </h1>
-                    <p className="text-lg md:text-xl pv-text mb-6 max-w-lg mx-auto lg:mx-0">{a.sub}</p>
-                    <div className="flex flex-wrap gap-2 justify-center lg:justify-start mb-8">
-                      {a.chips.map((c) => (
-                        <span key={c} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full pv-surface2 border pv-border text-sm pv-text">
-                          <Check className="w-3.5 h-3.5 text-primary" /> {c}
-                        </span>
-                      ))}
-                    </div>
                   </motion.div>
                 </AnimatePresence>
                 <div className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start">
@@ -208,7 +308,7 @@ const Index = () => {
                     {a.cta}
                   </Link>
                 </div>
-                <p className="text-sm pv-muted mt-4">5 דקות · ללא ידע טכני · ללא התחייבות</p>
+                <p className="text-sm pv-muted mt-4">ללא התחייבות · ללא ידע טכני</p>
               </div>
 
               {/* Preview image */}
@@ -231,7 +331,7 @@ const Index = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                       <div className="absolute bottom-4 right-4 left-4 flex items-center justify-between">
                         <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur text-white text-sm border border-white/10">
-                          <a.icon className="w-4 h-4 text-primary" /> {a.label}
+                          <a.icon className="w-4 h-4 text-primary" /> {a.type}
                         </span>
                         <Link to={a.to} className="px-3 py-1.5 rounded-full bg-primary text-white text-sm font-bold">צפו בדוגמה</Link>
                       </div>
@@ -242,6 +342,9 @@ const Index = () => {
             </div>
           </div>
         </section>
+
+        {/* HOW IT WORKS — 3 steps */}
+        <HowItWorks />
 
         {/* Professions strip */}
         <section className="relative py-10 px-4 border-y pv-border pv-surface2">
