@@ -37,6 +37,10 @@ verify_jwt = false
 [functions.booking-holds-sweep]
 verify_jwt = false
 
+# Lead capture from public storefront forms (real-estate/car/nonprofit).
+[functions.contacts-capture]
+verify_jwt = false
+
 # icount-publish-webhook is the iCount IPN for platform subscription payments (no JWT).
 [functions.icount-publish-webhook]
 verify_jwt = false
