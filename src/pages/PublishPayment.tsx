@@ -416,6 +416,32 @@ const PublishPayment = () => {
     );
   }
 
+  // ── After returning from the card page (?paid=1): show OUR honest "processing"
+  // screen while the server charges the card (cc/bill) and publishes. This is what
+  // makes the customer's confirmation truthful: they never rest on iCount's
+  // premature "success" (which only means the card was saved). A real charge
+  // navigates away to the success flow; a declined charge flips to the error
+  // screen above; a 90s timeout also flips to that screen. So being here == still
+  // working, honestly. ──
+  if (searchParams.get("paid") === "1") {
+    return (
+      <>
+        <SEOHead title="מעבד תשלום | סיאנגו" noindex={true} />
+        <div className="min-h-screen flex items-center justify-center bg-surface-1 p-4">
+          <div className="w-full max-w-md bg-card border border-border rounded-3xl p-8 flex flex-col items-center gap-5 text-center shadow-xl">
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">מבצעים את התשלום...</h1>
+              <p className="text-muted-foreground mt-2 text-sm">
+                מאמתים את הכרטיס, מחייבים ומפרסמים את האתר. רגע אחד - אל תסגרו את החלון.
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   // Only require onboardingData if we don't have a businessId (i.e., coming from onboarding flow)
   if (!onboardingData && !effectiveBusinessId) {
     return (
