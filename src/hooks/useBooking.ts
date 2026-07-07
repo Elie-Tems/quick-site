@@ -87,15 +87,39 @@ export const useAppointments = (businessId?: string, opts?: { from?: string; to?
   });
 
 // ---- Merchant mutations ----
+/** Ensure a business has at least one bookable staff (single-operator default). */
+async function ensureDefaultStaff(businessId: string): Promise<string> {
+  const { data: existing } = await sb.from("booking_staff")
+    .select("id").eq("business_id", businessId).eq("active", true).limit(1);
+  if (existing?.[0]?.id) return existing[0].id as string;
+  const { data: biz } = await sb.from("businesses").select("name").eq("id", businessId).maybeSingle();
+  const { data, error } = await sb.from("booking_staff")
+    .insert({ business_id: businessId, name: biz?.name || "נותן שירות", timezone: "Asia/Jerusalem" })
+    .select("id").single();
+  if (error) throw error;
+  return data.id as string;
+}
+
 export const useUpsertService = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (s: Partial<BookingService> & { business_id: string }) => {
       const { data, error } = await sb.from("booking_services").upsert(s).select("id").single();
       if (error) throw error;
+      // A new service must be performable by someone, else availability returns
+      // nothing. Ensure a default staff exists and link the service to it.
+      if (!s.id) {
+        const staffId = await ensureDefaultStaff(s.business_id);
+        await sb.from("booking_service_staff")
+          .upsert({ service_id: data.id, staff_id: staffId, business_id: s.business_id },
+            { onConflict: "service_id,staff_id" });
+      }
       return data;
     },
-    onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["booking-services", v.business_id] }),
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ["booking-services", v.business_id] });
+      qc.invalidateQueries({ queryKey: ["booking-staff", v.business_id] });
+    },
   });
 };
 

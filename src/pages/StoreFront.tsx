@@ -8,6 +8,7 @@ import StoreHero from "@/components/storefront/StoreHero";
 import StoreBanners from "@/components/storefront/StoreBanners";
 import StorePromoPopup from "@/components/storefront/StorePromoPopup";
 import StoreProducts from "@/components/storefront/StoreProducts";
+import StorefrontVertical from "@/components/storefront/StorefrontVertical";
 import StoreAbout from "@/components/storefront/StoreAbout";
 import FloatingCart, { type CartItem } from "@/components/storefront/FloatingCart";
 import FloatingWhatsApp from "@/components/storefront/FloatingWhatsApp";
@@ -769,6 +770,11 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         products={seoProducts}
         storeUrl={storeUrl}
       />
+
+      {/* Per-vertical customer experience (booking / listings / donations),
+          rendered above the catalog for businesses whose module set includes
+          them. A commerce-only store renders nothing extra here. */}
+      <StorefrontVertical business={business as any} />
 
       <LayoutComponent {...layoutProps} />
     </>
