@@ -190,6 +190,9 @@ export function useCreateBusiness() {
             color_palette: data.colorPalette || [],
             brand_style: data.brandStyle || 'modern',
             template_id: data.templateId || null,
+            // Persist the vertical chosen at onboarding (was collected but never
+            // saved). Drives per-vertical modules - see src/lib/businessModules.ts.
+            business_type: data.businessType || null,
             business_category: data.businessCategory || 'other',
             custom_category_name: data.customCategoryName || null,
             is_religious_audience: data.isReligiousAudience || false,
