@@ -57,28 +57,34 @@ serve(async (req) => {
 תיאור העסק:
 ${rawText.trim()}`;
 
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    // Use the Lovable AI gateway (OpenAI-compatible). LOVABLE_API_KEY is a GATEWAY
+    // key, not a raw Anthropic key - hitting api.anthropic.com directly with it 401s
+    // (that was the "שגיאה ביצירת תכנים" bug). Matches the working generate-about-text.
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "x-api-key": LOVABLE_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
         max_tokens: 600,
-        system: systemPrompt,
-        messages: [{ role: "user", content: userPrompt }],
+        temperature: 0.7,
       }),
     });
 
     if (!res.ok) {
       const err = await res.text();
-      throw new Error(`Claude API error: ${err}`);
+      console.error("generate-content AI gateway error:", res.status, err);
+      throw new Error(`AI gateway error ${res.status}`);
     }
 
     const aiData = await res.json();
-    const raw = aiData.content?.[0]?.text || "";
+    const raw = aiData.choices?.[0]?.message?.content || "";
 
     let parsed: Record<string, string>;
     try {

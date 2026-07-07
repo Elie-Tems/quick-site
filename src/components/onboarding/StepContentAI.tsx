@@ -302,6 +302,17 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
         )}
       </button>
 
+      {/* Explicit skip — the texts can always be written/edited later in the dashboard. */}
+      {!generated && !isGenerating && (
+        <button
+          type="button"
+          onClick={onNext}
+          className="w-full text-center text-sm pv-muted underline underline-offset-4 hover:text-primary transition-colors"
+        >
+          דלגו לעכשיו - אפשר למלא ולערוך את כל הטקסטים מאזור הניהול
+        </button>
+      )}
+
       {/* Success state — no content preview, surprise reveal in StepTemplate */}
       {generated && !isGenerating && (
         <motion.div
