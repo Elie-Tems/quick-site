@@ -518,7 +518,7 @@ const Index = () => {
           </div>
           <div className="relative max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-4">
-              בלי מתכנתים. בלי מעצבים.{" "}
+              בלי מתכנתים. בלי מעצבים.<br />
               <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">בלי כאב ראש.</span>
             </h2>
             <p className="text-lg pv-muted mb-2">כמה דקות ויש לכם אתר מדהים.</p>
