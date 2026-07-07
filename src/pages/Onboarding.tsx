@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, Link } from "react-router-dom";
-import { Eye, Store, Building2, Phone, Package, Palette, Rocket, Check, ArrowLeft, Clock, CreditCard, Globe } from "lucide-react";
+import { Eye, Store, Building2, Phone, Package, Palette, Rocket, Check, ArrowLeft, Clock, CreditCard, Globe, Image, Wand2 } from "lucide-react";
 import logoDarkBg from "@/assets/logo-dark-bg.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuroraBg, Card, PreviewThemeRoot } from "@/components/preview-redesign/kit";
 import StepBusinessType from "@/components/onboarding/StepBusinessType";
 import StepIdentity from "@/components/onboarding/StepIdentity";
+import StepContentAI from "@/components/onboarding/StepContentAI";
 import StepContact from "@/components/onboarding/StepContact";
 import StepTemplate from "@/components/onboarding/StepTemplate";
 import StepProducts from "@/components/onboarding/StepProducts";
+import StepBannerUpload from "@/components/onboarding/StepBannerUpload";
 import StepFinish from "@/components/onboarding/StepFinish";
 import OnboardingComplete from "@/components/onboarding/OnboardingComplete";
 import { StoreTemplateId } from "@/lib/storeTemplates";
@@ -25,9 +27,11 @@ import { useProductCategories } from "@/hooks/useProductCategories";
 const ONBOARDING_STEPS = [
   { id: 1, label: "תחום", icon: Store },
   { id: 2, label: "פרטים", icon: Building2 },
-  { id: 3, label: "קשר", icon: Phone },
-  { id: 4, label: "מוצרים", icon: Package },
-  { id: 5, label: "תבנית", icon: Palette },
+  { id: 3, label: "תוכן", icon: Wand2 },
+  { id: 4, label: "קשר", icon: Phone },
+  { id: 5, label: "מוצרים", icon: Package },
+  { id: 6, label: "סליידר", icon: Image },
+  { id: 7, label: "תבנית", icon: Palette },
 ];
 
 export type { BusinessCategory };
@@ -92,6 +96,13 @@ export interface OnboardingData {
     categoryId?: string;
   }>;
   
+  // AI-generated content
+  heroTitle?: string;
+  tagline?: string;
+  aboutText?: string;
+  heroBenefits?: string;
+  promoText?: string;
+
   // Step 6: Payments
   paymentProvider?: "payplus" | "icredit" | "cardcom" | "paypal" | null;
   paymentConnected: boolean;
@@ -105,7 +116,7 @@ const Onboarding = () => {
   const { data: existingBanners } = useBanners(existingBusiness?.id);
   const { categories: existingCategories } = useProductCategories(existingBusiness?.id);
   
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(1);
   const [isComplete, setIsComplete] = useState(false);
   const [hasUpdatedStatus, setHasUpdatedStatus] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -134,8 +145,8 @@ const Onboarding = () => {
     paymentConnected: false,
   });
 
-  // Flow: 1=BusinessType, 2=Identity, 3=Contact, 4=Products, 5=Visuals, 6=Finish
-  const totalSteps = 6;
+  // Flow: 1=BusinessType, 2=Identity, 3=Contact, 4=Products, 5=BannerUpload, 6=Template, 7=Finish
+  const totalSteps = 7;
 
   // Scroll to top when step changes
   useEffect(() => {
@@ -196,8 +207,8 @@ const Onboarding = () => {
       setData(prev => ({ ...prev, ...loadedData }));
       setDataLoaded(true);
       
-      // Start from last step (finish) in preview mode
-      setCurrentStep(5);
+      // Start from template step in preview mode
+      setCurrentStep(7);
     } else if (!businessLoading && !existingBusiness) {
       setDataLoaded(true);
     }
@@ -226,11 +237,7 @@ const Onboarding = () => {
   };
 
   const nextStep = () => {
-    if (currentStep === 5) {
-      setIsComplete(true);
-    } else {
-      setCurrentStep(prev => prev + 1);
-    }
+    setCurrentStep(prev => prev + 1);
   };
 
   const prevStep = () => {
@@ -241,6 +248,18 @@ const Onboarding = () => {
 
   if (isComplete) {
     return <OnboardingComplete data={data} />;
+  }
+
+  // Template step gets its own full-screen layout — no card, no progress bar
+  if (currentStep === 7) {
+    return (
+      <>
+        <SEOHead title="בחרו תבנית | סיאנגו" noindex={true} />
+        <PreviewThemeRoot>
+          <StepTemplate data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
+        </PreviewThemeRoot>
+      </>
+    );
   }
 
   if (currentStep === 0) {
@@ -296,19 +315,23 @@ const Onboarding = () => {
       case 2:
         return <StepIdentity data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 3:
-        return <StepContact data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+        return <StepContentAI data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 4:
-        return <StepProducts data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+        return <StepContact data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 5:
-        return <StepTemplate data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+        return <StepProducts data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 6:
+        return <StepBannerUpload data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+      case 7:
+        return <StepTemplate data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+      case 8:
         return <StepFinish data={data} updateData={updateData} onBack={prevStep} />;
       default:
         return null;
     }
   };
 
-  const pct = (Math.min(currentStep, 5) / 5) * 100;
+  const pct = (Math.min(currentStep, 7) / 7) * 100;
 
   return (
     <>
@@ -330,7 +353,7 @@ const Onboarding = () => {
           </div>
 
           {/* Step indicators — only shown for steps 1-5 */}
-          {currentStep <= 5 && (
+          {currentStep <= 7 && (
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 {ONBOARDING_STEPS.map((s) => {
@@ -364,7 +387,7 @@ const Onboarding = () => {
           )}
 
           {/* Step content */}
-          {currentStep <= 5 ? (
+          {currentStep <= 7 ? (
             <Card className="p-6 md:p-8">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -382,7 +405,7 @@ const Onboarding = () => {
             renderStep()
           )}
 
-          {currentStep <= 5 && (
+          {currentStep <= 7 && (
             <p className="text-center pv-faint text-xs mt-5">
               כל הפרטים ניתנים לשינוי בכל עת מלוח הניהול
             </p>
