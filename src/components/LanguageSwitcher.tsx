@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage, LANGUAGES, Language } from "@/contexts/LanguageContext";
 import { Globe } from "lucide-react";
 import {
@@ -12,10 +13,18 @@ import { Button } from "@/components/ui/button";
 const LanguageSwitcher = () => {
   const { language, setLanguage, currentLanguage } = useLanguage();
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  // On the homepage, reflect the language in the URL (/, /en, /ar, ...) so each
+  // language is a distinct, crawlable URL. On other pages there are no
+  // language-prefixed routes yet, so just switch in place (no navigation).
+  const onHomepage = pathname === "/" || /^\/(en|ar|fr|ru)\/?$/.test(pathname);
 
   const handleLanguageChange = (lang: Language) => {
     setLanguage(lang);
     setOpen(false);
+    if (onHomepage) navigate(lang === "he" ? "/" : `/${lang}`);
   };
 
   return (

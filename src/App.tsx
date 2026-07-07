@@ -13,6 +13,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import AccessibilityWidget from "@/components/accessibility/AccessibilityWidget";
 import CookieConsent from "@/components/CookieConsent";
 import FloatingHelpButton from "@/components/FloatingHelpButton";
+import LanguageUrlSync from "@/components/LanguageUrlSync";
 // Kept eager: only the apex landing page (the cold-load entry from Google).
 import Index from "./pages/Index";
 import { useResolvedTenant } from "@/hooks/useResolvedTenant";
@@ -153,6 +154,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <LanguageUrlSync />
               <Suspense fallback={
                 <div className="min-h-screen flex items-center justify-center">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -176,6 +178,12 @@ const App = () => {
               ) : (
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  {/* Language-prefixed homepage URLs for multilingual SEO.
+                      LanguageUrlSync switches the app language from the prefix. */}
+                  <Route path="/en" element={<Index />} />
+                  <Route path="/ar" element={<Index />} />
+                  <Route path="/fr" element={<Index />} />
+                  <Route path="/ru" element={<Index />} />
                   <Route path="/register" element={<ShabbatGate><Register /></ShabbatGate>} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
