@@ -221,6 +221,19 @@ Deno.serve(async (req) => {
       cc_token_id: tokenId, last_charge_status: "failed", updated_at: now,
     }, { onConflict: "user_id" });
     await admin.from("publish_checkout_sessions").update({ status: "charge_failed", updated_at: now }).eq("id", session.id);
+    // Honest heads-up to the customer: the charge did NOT go through (so a rare
+    // decline is never a silent failure after the card page showed "success").
+    const failTo = (session.email as string | null) ?? null;
+    if (failTo) {
+      fetch(`${url}/functions/v1/send-platform-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
+        body: JSON.stringify({
+          type: "publishPaymentFailed", to: failTo,
+          ctx: { continueUrl: `https://siango.app/publish-payment?businessId=${businessId}`, recipientEmail: failTo, lang: "he" },
+        }),
+      }).then(() => {}).catch(() => {});
+    }
     return json({ ok: false, charged: false, error: chargeErr, published: false }, 200);
   }
 
