@@ -353,6 +353,15 @@ const he: Record<string, string> = {
   'home.exTag9': 'תרומות',
   'home.finaleTitle': 'ואופ! האתר עלה לאוויר',
   'home.finaleSub': 'תוך 5 דקות - ב-69 ₪ בלבד',
+  // Shared UI chrome
+  'cookie.title': 'שימוש בעוגיות',
+  'cookie.desc': 'אנו משתמשים בעוגיות חיוניות לתפעול האתר, ובאישורך גם בעוגיות לניתוח ושיווק. באפשרותך לאשר הכל או להסתפק בעוגיות החיוניות בלבד.',
+  'cookie.privacyLink': 'מדיניות פרטיות',
+  'cookie.acceptAll': 'אישור הכל',
+  'cookie.essentialOnly': 'רק חיוניות',
+  'cookie.aria': 'הודעת עוגיות',
+  'help.support': 'עזרה ותמיכה',
+  'help.needHelp': 'צריכים עזרה?',
 };
 
 export default he;

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Cookie } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const COOKIE_CONSENT_KEY = 'cookie_consent';
 export const COOKIE_CONSENT_EVENT = 'cookie-consent-changed';
@@ -19,6 +20,7 @@ interface CookieConsentProps {
 }
 
 const CookieConsent = ({ privacyPolicyPath = '/privacy' }: CookieConsentProps) => {
+  const { t, dir } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -41,9 +43,9 @@ const CookieConsent = ({ privacyPolicyPath = '/privacy' }: CookieConsentProps) =
   return (
     <div
       role="dialog"
-      aria-label="הודעת עוגיות"
+      aria-label={t('cookie.aria')}
       aria-describedby="cookie-consent-description"
-      dir="rtl"
+      dir={dir}
       className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-0 md:bottom-4 md:right-4 md:left-auto md:max-w-md"
     >
       <div className="bg-card border border-border rounded-xl shadow-lg p-4">
@@ -52,15 +54,14 @@ const CookieConsent = ({ privacyPolicyPath = '/privacy' }: CookieConsentProps) =
             <Cookie className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-foreground mb-1">שימוש בעוגיות</h3>
+            <h3 className="font-semibold text-foreground mb-1">{t('cookie.title')}</h3>
             <p id="cookie-consent-description" className="text-sm text-muted-foreground mb-3">
-              אנו משתמשים בעוגיות חיוניות לתפעול האתר, ובאישורך גם בעוגיות לניתוח ושיווק.
-              באפשרותך לאשר הכל או להסתפק בעוגיות החיוניות בלבד.{' '}
-              <Link to={privacyPolicyPath} className="text-primary hover:underline">מדיניות פרטיות</Link>
+              {t('cookie.desc')}{' '}
+              <Link to={privacyPolicyPath} className="text-primary hover:underline">{t('cookie.privacyLink')}</Link>
             </p>
             <div className="flex items-center gap-2">
-              <Button size="sm" onClick={() => choose('accepted')}>אישור הכל</Button>
-              <Button size="sm" variant="outline" onClick={() => choose('rejected')}>רק חיוניות</Button>
+              <Button size="sm" onClick={() => choose('accepted')}>{t('cookie.acceptAll')}</Button>
+              <Button size="sm" variant="outline" onClick={() => choose('rejected')}>{t('cookie.essentialOnly')}</Button>
             </div>
           </div>
         </div>

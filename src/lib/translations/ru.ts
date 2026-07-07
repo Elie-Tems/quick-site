@@ -349,6 +349,15 @@ const ru: Record<string, string> = {
   'home.exTag9': 'Пожертвования',
   'home.finaleTitle': 'И готово! Ваш сайт онлайн',
   'home.finaleSub': 'За 5 минут - всего за $28',
+  // Shared UI chrome
+  'cookie.title': 'Использование cookie',
+  'cookie.desc': 'Мы используем необходимые cookie для работы сайта, а с вашего согласия также аналитические и маркетинговые. Можно принять все или оставить только необходимые.',
+  'cookie.privacyLink': 'Политика конфиденциальности',
+  'cookie.acceptAll': 'Принять все',
+  'cookie.essentialOnly': 'Только необходимые',
+  'cookie.aria': 'Уведомление о cookie',
+  'help.support': 'Помощь и поддержка',
+  'help.needHelp': 'Нужна помощь?',
 };
 
 export default ru;

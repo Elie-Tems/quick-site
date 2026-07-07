@@ -349,6 +349,15 @@ const fr: Record<string, string> = {
   'home.exTag9': 'Dons',
   'home.finaleTitle': 'Et voilà ! Votre site est en ligne',
   'home.finaleSub': 'En 5 minutes - pour seulement 28€',
+  // Shared UI chrome
+  'cookie.title': 'Cookies',
+  'cookie.desc': "Nous utilisons des cookies essentiels au fonctionnement du site, et avec votre accord des cookies d'analyse et de marketing. Vous pouvez tout accepter ou ne garder que les essentiels.",
+  'cookie.privacyLink': 'Politique de confidentialité',
+  'cookie.acceptAll': 'Tout accepter',
+  'cookie.essentialOnly': 'Essentiels uniquement',
+  'cookie.aria': 'Avis relatif aux cookies',
+  'help.support': 'Aide & assistance',
+  'help.needHelp': "Besoin d'aide ?",
 };
 
 export default fr;

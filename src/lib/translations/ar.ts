@@ -349,6 +349,15 @@ const ar: Record<string, string> = {
   'home.exTag9': 'تبرعات',
   'home.finaleTitle': 'وهكذا! موقعك أصبح على الإنترنت',
   'home.finaleSub': 'في 5 دقائق - مقابل 28$ فقط',
+  // Shared UI chrome
+  'cookie.title': 'إشعار ملفات تعريف الارتباط',
+  'cookie.desc': 'نستخدم ملفات تعريف ارتباط أساسية لتشغيل الموقع، وبموافقتك أيضاً ملفات للتحليل والتسويق. يمكنك قبول الكل أو الاكتفاء بالأساسية فقط.',
+  'cookie.privacyLink': 'سياسة الخصوصية',
+  'cookie.acceptAll': 'قبول الكل',
+  'cookie.essentialOnly': 'الأساسية فقط',
+  'cookie.aria': 'إشعار ملفات تعريف الارتباط',
+  'help.support': 'المساعدة والدعم',
+  'help.needHelp': 'تحتاج مساعدة؟',
 };
 
 export default ar;

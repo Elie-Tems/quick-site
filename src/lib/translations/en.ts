@@ -353,6 +353,15 @@ const en: Record<string, string> = {
   'home.exTag9': 'Donations',
   'home.finaleTitle': 'And boom! Your site is live',
   'home.finaleSub': 'In 5 minutes - for just $28',
+  // Shared UI chrome
+  'cookie.title': 'Cookie notice',
+  'cookie.desc': 'We use essential cookies to run the site, and with your consent also analytics and marketing cookies. You can accept all or keep only the essential ones.',
+  'cookie.privacyLink': 'Privacy policy',
+  'cookie.acceptAll': 'Accept all',
+  'cookie.essentialOnly': 'Essential only',
+  'cookie.aria': 'Cookie notice',
+  'help.support': 'Help & support',
+  'help.needHelp': 'Need help?',
 };
 
 export default en;
