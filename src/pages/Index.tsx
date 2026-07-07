@@ -77,7 +77,7 @@ const CORE = [
   { icon: Tag, label: "מבצעים וקופונים", desc: "צרו הנחות, מבצעי סוף עונה וקודי קופון" },
   { icon: Mail, label: "דיוור ללקוחות", desc: "עדכונים אוטומטיים במייל ובוואטסאפ" },
   { icon: ImagePlus, label: "יצירה ועריכת תמונות", desc: "יצירת תמונות מוצר עם AI בלחיצה אחת" },
-  { icon: Globe, label: "דומיין משלכם", desc: "yoursite.co.il כלול, ללא עלות נוספת" },
+  { icon: Globe, label: "דומיין אישי", desc: "חברו דומיין משלכם או רכשו אחד חדש" },
 ];
 
 const HOW_STEPS = [
