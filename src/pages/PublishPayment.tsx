@@ -57,6 +57,9 @@ const PublishPayment = () => {
   const [couponMsg, setCouponMsg] = useState("");
   const [startingCheckout, setStartingCheckout] = useState(false);
   const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
+  // Surfaced when the first charge fails / the card couldn't be saved / no IPN
+  // arrived - so the customer isn't left staring at an endless spinner.
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const fee = getPublishFeeIls();
   const basePaymentUrl = (import.meta.env.VITE_ICOUNT_PAYMENT_BASE_URL || "").trim();
@@ -258,18 +261,35 @@ const PublishPayment = () => {
   // revisiting the page for an already-published store).
   useEffect(() => {
     if (!effectiveBusinessId) return;
+    // Payment failed/cancelled on iCount's own page -> it redirects back ?failed=1.
+    if (searchParams.get("failed") === "1") { setPaymentError("failed"); return; }
     let done = false;
+    let intervalId: number | undefined;
     const paidReturn = searchParams.get("paid") === "1";
+    const finish = () => { done = true; if (intervalId !== undefined) clearInterval(intervalId); };
     const check = async () => {
+      if (done) return;
       const { data: b } = await supabase
         .from("businesses").select("is_published").eq("id", effectiveBusinessId).maybeSingle();
-      if (!done && b?.is_published) { done = true; goToComplete(onboardingData); }
+      if (!done && b?.is_published) { finish(); goToComplete(onboardingData); return; }
+      if (!paidReturn) return;
+      // A declined first charge / a card that couldn't be saved leaves the session
+      // in one of these states. Surface it instead of spinning forever + dying.
+      const { data: s } = await supabase
+        .from("publish_checkout_sessions").select("status")
+        .eq("business_id", effectiveBusinessId)
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (!done && (s?.status === "charge_failed" || s?.status === "no_token")) {
+        finish(); setPaymentError(s!.status as string);
+      }
     };
     check();
     if (!paidReturn) return () => { done = true; };
-    const id = window.setInterval(check, 3000);
-    const stop = window.setTimeout(() => { done = true; clearInterval(id); }, 90000);
-    return () => { done = true; clearInterval(id); clearTimeout(stop); };
+    intervalId = window.setInterval(check, 3000);
+    // Still nothing after 90s: stop the spinner and tell them (IPN may be delayed by
+    // a provider incident, or the charge quietly failed) - don't strand them.
+    const stop = window.setTimeout(() => { if (!done) { finish(); setPaymentError("timeout"); } }, 90000);
+    return () => { done = true; if (intervalId !== undefined) clearInterval(intervalId); clearTimeout(stop); };
   }, [effectiveBusinessId, searchParams, onboardingData, goToComplete]);
 
   const handlePublish = async () => {
@@ -356,6 +376,43 @@ const PublishPayment = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
       </div>
+    );
+  }
+
+  // ── Payment did not complete: never leave the customer on a dead spinner ──
+  if (paymentError) {
+    const msg =
+      paymentError === "charge_failed"
+        ? "החיוב לא עבר - הכרטיס נדחה. לא בוצע חיוב. אפשר לנסות שוב או עם כרטיס אחר."
+        : paymentError === "no_token"
+        ? "לא הצלחנו לשמור את הכרטיס, ולכן לא בוצע חיוב. אפשר לנסות שוב."
+        : paymentError === "failed"
+        ? "התשלום בוטל או נכשל. לא בוצע חיוב."
+        : "עדיין לא קיבלנו אישור תשלום. אם חויבתם - האתר יתפרסם אוטומטית תוך דקות ותקבלו מייל. אפשר לרענן או לנסות שוב.";
+    return (
+      <>
+        <SEOHead title="התשלום לא הושלם | סיאנגו" noindex={true} />
+        <div className="min-h-screen flex items-center justify-center bg-surface-1 p-4">
+          <div className="w-full max-w-md bg-card border border-border rounded-3xl p-8 flex flex-col items-center gap-5 text-center shadow-xl">
+            <div className="text-5xl">😕</div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">התשלום לא הושלם</h1>
+              <p className="text-muted-foreground mt-2 text-sm">{msg}</p>
+            </div>
+            <div className="flex flex-col gap-2 w-full">
+              <Button
+                variant="hero"
+                onClick={() => { setPaymentError(null); window.location.href = `/publish-payment?businessId=${effectiveBusinessId}`; }}
+              >
+                לנסות שוב
+              </Button>
+              <Button asChild variant="ghost">
+                <Link to="/dashboard">חזרה לדשבורד</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
