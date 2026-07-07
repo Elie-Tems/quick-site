@@ -71,9 +71,6 @@ const NonprofitSite = () => {
         <div className="absolute inset-0 flex items-center">
           <div className="max-w-6xl mx-auto px-4 md:px-6 w-full">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white text-sm mb-4">
-                <ShieldCheck className="w-4 h-4 text-primary" /> עמותה מוכרת · אישור סעיף 46
-              </div>
               <h1 className="text-4xl md:text-6xl font-display font-bold text-white leading-[1.05] mb-4">
                 כל תרומה<br /><span className="bg-gradient-to-l from-primary via-emerald-300 to-lime-300 bg-clip-text text-transparent">משנה חיים</span>
               </h1>

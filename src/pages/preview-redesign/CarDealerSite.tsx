@@ -40,9 +40,6 @@ const CarDealerSite = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-black/40" />
         <div className="absolute bottom-6 right-0 left-0 px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white text-sm mb-2">
-              <ShieldCheck className="w-4 h-4 text-primary" /> כל רכב עובר בדיקה במכון מוסמך
-            </div>
             <h1 className="text-3xl md:text-5xl font-display font-bold text-white">הרכב הבא שלכם מחכה</h1>
           </div>
         </div>

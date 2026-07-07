@@ -61,9 +61,6 @@ const HomeProSite = () => (
       </div>
       <div className="relative max-w-6xl mx-auto px-4 md:px-6 py-20 md:py-28">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-xl text-center md:text-right mx-auto md:mx-0">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white text-sm mb-4">
-            <Wrench className="w-4 h-4 text-primary" /> בעל מקצוע מורשה · אחריות מלאה
-          </div>
           <h1 className="text-4xl md:text-6xl font-display font-bold text-white leading-[1.05] mb-4">
             הבית שלכם<br /><span className="bg-gradient-to-l from-primary via-emerald-300 to-lime-300 bg-clip-text text-transparent">בידיים טובות</span>
           </h1>

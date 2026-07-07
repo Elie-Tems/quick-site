@@ -67,9 +67,6 @@ const RealEstateStore = () => {
           </motion.div>
           {/* Text */}
           <motion.div initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="text-center md:text-right">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white text-sm mb-4">
-              <Award className="w-4 h-4 text-primary" /> מתווך מוסמך משרד המשפטים
-            </div>
             <h1 className="text-3xl md:text-5xl font-display font-bold text-white mb-3">ישראל ישראלי</h1>
             <p className="text-lg text-white/80 mb-6 max-w-lg mx-auto md:mx-0">
               מלווה משפחות למצוא את הבית שלהן בגוש דן כבר למעלה מעשור. ליווי אישי, אמין ומקצועי מהחיפוש ועד המסירה.
