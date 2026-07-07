@@ -19,7 +19,7 @@ const ENGINES = [
   {
     key: "commerce", label: "חנויות אונליין", icon: ShoppingBag,
     type: "אתר מכירות",
-    to: "/preview/home-v2",
+    to: "/preview/redesign/home-multi",
     img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
   },
   {
@@ -43,6 +43,7 @@ const ENGINES = [
 ];
 
 const EXAMPLES = [
+  { title: "חנות בוטיק", tag: "מסחר", img: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=600&q=80", to: "/preview/redesign/home-multi" },
   { title: "סטודיו יופי", tag: "שירותים", img: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&q=80", to: "/preview/redesign/services" },
   { title: "סטודיו צילום", tag: "שירותים", img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80", to: "/preview/redesign/photographer" },
   { title: "צימר בגליל", tag: "אירוח", img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80", to: "/preview/redesign/vacation" },
@@ -50,7 +51,7 @@ const EXAMPLES = [
   { title: "פרויקט מגורים", tag: "נדל\"ן", img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80", to: "/preview/redesign/project" },
   { title: "סוחר רכב", tag: "רכב", img: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&q=80", to: "/preview/redesign/car-dealer" },
   { title: "שיפוצים ותיקונים", tag: "בעלי מקצוע", img: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=600&q=80", to: "/preview/redesign/home-pro" },
-  { title: "עמותה", tag: "תרומות", img: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&q=80", to: "/preview/redesign/nonprofit" },
+  { title: "עמותה", tag: "תרומות", img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&q=80", to: "/preview/redesign/nonprofit" },
 ];
 
 const PROFESSIONS = [
@@ -98,9 +99,9 @@ const HOW_STEPS = [
 
 // תמונות שמייצגות את ה-Flow האמיתי
 const PROCESS_IMGS = [
-  { src: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=900&q=80", caption: "A — בוחרים את סוג העסק" },
-  { src: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=900&q=80", caption: "B — מגדירים שם, לוגו ופרטים" },
-  { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80", caption: "C — מוסיפים מוצרים ושירותים" },
+  { src: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=900&q=80", caption: "A — בוחרים את סוג העסק" },
+  { src: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=900&q=80", caption: "B — מעלים לוגו ומגדירים פרטים" },
+  { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80", caption: "C — מוסיפים מוצרים ושירותים" },
   { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80", caption: "האתר עולה לאוויר תוך דקות" },
 ];
 
