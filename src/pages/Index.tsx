@@ -250,7 +250,7 @@ const HowItWorks = () => {
                   </div>
 
                   {/* Content */}
-                  <div className={`pb-7 flex-1 text-right transition-all duration-500 ${isActive ? "opacity-100" : "opacity-55 group-hover:opacity-80"}`}>
+                  <div className={`pb-7 flex-1 text-start transition-all duration-500 ${isActive ? "opacity-100" : "opacity-55 group-hover:opacity-80"}`}>
                     <div className="flex items-center justify-end gap-3 mb-1.5">
                       <h3 className="text-lg font-bold" style={{ color: isActive ? "var(--pv-strong)" : "var(--pv-text)" }}>
                         {t(`home.step${i + 1}Title`)}
@@ -283,7 +283,7 @@ const HowItWorks = () => {
                 }}>
                 <Rocket className="w-5 h-5" style={{ color: imgIdx === 3 ? "#fff" : "var(--pv-faint)" }} strokeWidth={1.8} />
               </div>
-              <div className={`flex-1 text-right transition-all duration-500 ${imgIdx === 3 ? "opacity-100" : "opacity-55"}`}>
+              <div className={`flex-1 text-start transition-all duration-500 ${imgIdx === 3 ? "opacity-100" : "opacity-55"}`}>
                 <p className="text-lg font-bold" style={{ color: imgIdx === 3 ? "#22c55e" : "var(--pv-strong)" }}>
                   {t("home.finaleTitle")}
                 </p>
@@ -368,7 +368,7 @@ const Index = () => {
 
             <div className="grid lg:grid-cols-2 gap-10 items-center">
               {/* Text */}
-              <div className="text-center lg:text-right">
+              <div className="text-center lg:text-start">
                 <motion.div key={a.key}
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
