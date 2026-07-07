@@ -57,40 +57,40 @@ const DEFAULT_LAYOUTS: { id: StoreLayoutId; name: string }[] = [
 
 // Default layout + palette per business sub-type
 const SUB_TYPE_TO_TEMPLATE: Record<string, { layout: StoreLayoutId; palette: ColorPaletteId }> = {
-  // Product stores
-  fashion:         { layout: 'classic',  palette: 'rose-soft' },
-  cosmetics:       { layout: 'classic',  palette: 'rose-soft' },
-  jewelry:         { layout: 'classic',  palette: 'midnight-gold' },
-  bakery:          { layout: 'classic',  palette: 'coral-cream' },
-  flowers:         { layout: 'classic',  palette: 'coral-cream' },
-  'home-decor':    { layout: 'classic',  palette: 'warm-earth' },
-  electronics:     { layout: 'classic',  palette: 'slate-orange' },
-  sports:          { layout: 'classic',  palette: 'dark-lime' },
-  books:           { layout: 'classic',  palette: 'bw-classic' },
-  pets:            { layout: 'market',   palette: 'sage-green' },
-  'general-store': { layout: 'market',   palette: 'sage-green' },
-  food:            { layout: 'market',   palette: 'coral-cream' },
-  // Services
-  beauty:          { layout: 'service',  palette: 'rose-soft' },
-  barber:          { layout: 'service',  palette: 'midnight-gold' },
-  fitness:         { layout: 'service',  palette: 'dark-lime' },
-  renovation:      { layout: 'service',  palette: 'warm-earth' },
-  photography:     { layout: 'service',  palette: 'bw-classic' },
-  health:          { layout: 'service',  palette: 'cool-ocean' },
-  consulting:      { layout: 'service',  palette: 'cool-ocean' },
-  legal:           { layout: 'service',  palette: 'bw-classic' },
-  developer:       { layout: 'service',  palette: 'dark-lime' },
-  'car-dealer':    { layout: 'classic',  palette: 'slate-orange' },
+  // Product stores — boutique layout for fashion/accessories/gifts
+  fashion:         { layout: 'boutique',   palette: 'rose-soft' },
+  cosmetics:       { layout: 'boutique',   palette: 'rose-soft' },
+  jewelry:         { layout: 'boutique',   palette: 'midnight-gold' },
+  bakery:          { layout: 'classic',    palette: 'coral-cream' },
+  flowers:         { layout: 'boutique',   palette: 'coral-cream' },
+  'home-decor':    { layout: 'boutique',   palette: 'warm-earth' },
+  electronics:     { layout: 'classic',    palette: 'slate-orange' },
+  sports:          { layout: 'classic',    palette: 'dark-lime' },
+  books:           { layout: 'classic',    palette: 'bw-classic' },
+  pets:            { layout: 'market',     palette: 'sage-green' },
+  'general-store': { layout: 'market',     palette: 'sage-green' },
+  food:            { layout: 'market',     palette: 'coral-cream' },
+  // Services — beauty-spa for beauty/wellness, home-pro for trades
+  beauty:          { layout: 'beauty-spa', palette: 'rose-soft' },
+  barber:          { layout: 'beauty-spa', palette: 'midnight-gold' },
+  fitness:         { layout: 'service',    palette: 'dark-lime' },
+  renovation:      { layout: 'home-pro',   palette: 'warm-earth' },
+  photography:     { layout: 'service',    palette: 'bw-classic' },
+  health:          { layout: 'beauty-spa', palette: 'cool-ocean' },
+  consulting:      { layout: 'service',    palette: 'cool-ocean' },
+  legal:           { layout: 'service',    palette: 'bw-classic' },
+  developer:       { layout: 'property',   palette: 'midnight-gold' },
+  'car-dealer':    { layout: 'classic',    palette: 'slate-orange' },
   // Real estate / vacation
-  broker:          { layout: 'property', palette: 'midnight-gold' },
-  vacation:        { layout: 'property', palette: 'cool-ocean' },
-  // Nonprofits
-  charity:         { layout: 'service',  palette: 'sage-green' },
-  crowdfunding:    { layout: 'service',  palette: 'bold-violet' },
-  community:       { layout: 'service',  palette: 'warm-earth' },
-  education:       { layout: 'service',  palette: 'cool-ocean' },
-  social:          { layout: 'service',  palette: 'sage-green' },
-  animals:         { layout: 'service',  palette: 'sage-green' },
+  broker:          { layout: 'property',   palette: 'midnight-gold' },
+  vacation:        { layout: 'property',   palette: 'cool-ocean' },
+  // Nonprofits — charity layout for donations/community
+  charity:         { layout: 'charity',    palette: 'sage-green' },
+  crowdfunding:    { layout: 'charity',    palette: 'bold-violet' },
+  community:       { layout: 'charity',    palette: 'warm-earth' },
+  education:       { layout: 'charity',    palette: 'cool-ocean' },
+  social:          { layout: 'charity',    palette: 'sage-green' },
+  animals:         { layout: 'charity',    palette: 'sage-green' },
 };
 
 interface Props {

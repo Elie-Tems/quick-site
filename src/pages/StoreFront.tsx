@@ -35,6 +35,7 @@ import { getTemplate, type StoreTemplateId } from "@/lib/storeTemplates";
 import { getStoreFont, loadStoreFonts } from "@/lib/storeFonts";
 import {
   ClassicLayout, ServiceLayout, PropertyLayout, MarketLayout,
+  BoutiqueLayout, BeautySpaLayout, HomeProLayout, CharityLayout,
   type StorefrontLayoutProps,
 } from "@/components/storefront/layouts";
 
@@ -746,10 +747,14 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   // Pick layout component based on template layoutId
   const LayoutComponent = (() => {
     switch (template?.layoutId) {
-      case 'service':   return ServiceLayout;
-      case 'property':  return PropertyLayout;
-      case 'market':    return MarketLayout;
-      default:          return ClassicLayout;
+      case 'service':    return ServiceLayout;
+      case 'property':   return PropertyLayout;
+      case 'market':     return MarketLayout;
+      case 'boutique':   return BoutiqueLayout;
+      case 'beauty-spa': return BeautySpaLayout;
+      case 'home-pro':   return HomeProLayout;
+      case 'charity':    return CharityLayout;
+      default:           return ClassicLayout;
     }
   })();
 

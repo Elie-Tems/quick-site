@@ -1,6 +1,6 @@
 import { ColorPaletteId, colorPalettes } from './colorPalettes';
 
-export type StoreLayoutId = 'classic' | 'service' | 'property' | 'market';
+export type StoreLayoutId = 'classic' | 'service' | 'property' | 'market' | 'boutique' | 'beauty-spa' | 'home-pro' | 'charity';
 
 /**
  * Backward-compat alias so existing code referencing StoreTemplateId still compiles.

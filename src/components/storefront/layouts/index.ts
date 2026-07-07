@@ -2,4 +2,8 @@ export { default as ClassicLayout } from './ClassicLayout';
 export { default as ServiceLayout } from './ServiceLayout';
 export { default as PropertyLayout } from './PropertyLayout';
 export { default as MarketLayout } from './MarketLayout';
+export { default as BoutiqueLayout } from './BoutiqueLayout';
+export { default as BeautySpaLayout } from './BeautySpaLayout';
+export { default as HomeProLayout } from './HomeProLayout';
+export { default as CharityLayout } from './CharityLayout';
 export type { StorefrontLayoutProps, StorefrontBanner } from './StorefrontLayout.types';

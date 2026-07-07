@@ -2,7 +2,7 @@ import { useMemo, useEffect, useRef, useState } from 'react';
 import { OnboardingData } from '@/pages/Onboarding';
 import { buildTemplate, type StoreLayoutId } from '@/lib/storeTemplates';
 import { type ColorPaletteId } from '@/lib/colorPalettes';
-import { ClassicLayout, ServiceLayout, PropertyLayout, MarketLayout } from '@/components/storefront/layouts';
+import { ClassicLayout, ServiceLayout, PropertyLayout, MarketLayout, BoutiqueLayout, BeautySpaLayout, HomeProLayout, CharityLayout } from '@/components/storefront/layouts';
 import type { StorefrontLayoutProps } from '@/components/storefront/layouts/StorefrontLayout.types';
 import type { Product } from '@/components/storefront/StoreProducts';
 
@@ -142,9 +142,13 @@ const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Pr
   };
 
   const LayoutComponent =
-    layoutId === 'service'  ? ServiceLayout :
-    layoutId === 'property' ? PropertyLayout :
-    layoutId === 'market'   ? MarketLayout :
+    layoutId === 'service'    ? ServiceLayout :
+    layoutId === 'property'   ? PropertyLayout :
+    layoutId === 'market'     ? MarketLayout :
+    layoutId === 'boutique'   ? BoutiqueLayout :
+    layoutId === 'beauty-spa' ? BeautySpaLayout :
+    layoutId === 'home-pro'   ? HomeProLayout :
+    layoutId === 'charity'    ? CharityLayout :
     ClassicLayout;
 
   // Fullscreen mode: render at natural width, no scale
