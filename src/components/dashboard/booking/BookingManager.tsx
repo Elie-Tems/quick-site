@@ -7,6 +7,7 @@ import {
   useUpsertService, useSetWorkingHours, useWorkingHours, useUpdateAppointmentStatus,
   type Appointment,
 } from "@/hooks/useBooking";
+import CalendarConnect from "./CalendarConnect";
 
 /**
  * Merchant-side booking management (services / weekly hours / appointments).
@@ -138,6 +139,9 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
           ))}
         </div>
       </section>
+
+      {/* Google Calendar two-way sync */}
+      <CalendarConnect businessId={businessId} staff={primaryStaff} />
     </div>
   );
 };

@@ -50,6 +50,16 @@ verify_jwt = false
 [functions.donation-callback]
 verify_jwt = false
 
+# calendar-oauth-callback is Google's OAuth redirect target (no JWT); it is
+# authenticated by the signed `state` minted in calendar-oauth-start.
+[functions.calendar-oauth-callback]
+verify_jwt = false
+
+# calendar-sync runs from a scheduled cron (CRON_SECRET header) OR a merchant JWT
+# for a single "sync now"; it checks both itself.
+[functions.calendar-sync]
+verify_jwt = false
+
 # icount-publish-webhook is the iCount IPN for platform subscription payments (no JWT).
 [functions.icount-publish-webhook]
 verify_jwt = false

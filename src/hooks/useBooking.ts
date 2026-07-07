@@ -171,6 +171,52 @@ export const useAvailability = (params?: {
     },
   });
 
+// ---- Calendar connections (Google two-way sync) ----
+export interface CalendarConnection {
+  id: string; business_id: string; staff_id: string; provider: "google" | "microsoft";
+  provider_account_email: string | null; status: "active" | "needs_reauth" | "revoked" | "error";
+  last_synced_at: string | null;
+}
+
+export const useCalendarConnections = (businessId?: string) =>
+  useQuery({
+    queryKey: ["calendar-connections", businessId],
+    enabled: !!businessId,
+    queryFn: async (): Promise<CalendarConnection[]> => {
+      const { data, error } = await sb.from("calendar_connections")
+        .select("id, business_id, staff_id, provider, provider_account_email, status, last_synced_at")
+        .eq("business_id", businessId);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+/** Start the Google connect flow: get a consent URL and send the merchant to it. */
+export const useConnectCalendar = () =>
+  useMutation({
+    mutationFn: async ({ staffId }: { staffId: string }) => {
+      const { data, error } = await supabase.functions.invoke("calendar-oauth-start", {
+        body: { staffId, provider: "google" },
+      });
+      if (error) throw error;
+      if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+      return data as { url: string };
+    },
+    onSuccess: (d) => { if (d?.url) window.location.href = d.url; },
+  });
+
+export const useSyncCalendar = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ connectionId }: { connectionId: string }) => {
+      const { data, error } = await supabase.functions.invoke("calendar-sync", { body: { connectionId } });
+      if (error) throw error;
+      return data as { ok: boolean; inbound: number; outbound: number; error?: string };
+    },
+    onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["calendar-connections"] }),
+  });
+};
+
 export const useCreateAppointment = () =>
   useMutation({
     mutationFn: async (body: {
