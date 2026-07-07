@@ -278,6 +278,25 @@ const fr: Record<string, string> = {
   'ageVerification.confirm': 'J\'ai plus de 18 ans',
   'ageVerification.deny': 'J\'ai moins de 18 ans',
   'ageVerification.denied': 'Désolé, vous ne pouvez pas accéder à cette boutique.',
+  // Homepage (current Index) - multilingual SEO
+  'home.engine.commerce': 'Boutiques en ligne',
+  'home.engine.booking': 'Services et réservations',
+  'home.engine.leads': 'Immobilier',
+  'home.engine.donations': 'Associations',
+  'home.type.commerce': 'Boutique en ligne',
+  'home.type.booking': 'Site de réservations et rendez-vous',
+  'home.type.leads': 'Site vitrine',
+  'home.type.donations': "Site d'association",
+  'home.heroTime': 'en 5 minutes',
+  'home.heroPrice': 'pour seulement 28€',
+  'home.ctaPrimary': 'Commencer maintenant',
+  'home.ctaSecondary': 'Voir un exemple',
+  'home.heroNote': 'Sans engagement · Aucune compétence technique',
+  'home.howItWorks': 'Comment ça marche',
+  'home.examples': 'Un vrai site pour chaque secteur',
+  'home.value': 'Tous les outils, pour tous les secteurs',
+  'home.valueSub': 'Quoi que vous vendiez - le même système, les mêmes outils puissants',
+  'home.faqTitle': 'Questions fréquentes',
 };
 
 export default fr;

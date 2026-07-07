@@ -278,6 +278,25 @@ const ar: Record<string, string> = {
   'ageVerification.confirm': 'أنا فوق 18 عاماً',
   'ageVerification.deny': 'أنا تحت 18 عاماً',
   'ageVerification.denied': 'عذراً، لا يمكنك الوصول لهذا المتجر.',
+  // Homepage (current Index) - multilingual SEO
+  'home.engine.commerce': 'متاجر إلكترونية',
+  'home.engine.booking': 'الخدمات والحجوزات',
+  'home.engine.leads': 'العقارات',
+  'home.engine.donations': 'الجمعيات',
+  'home.type.commerce': 'متجر إلكتروني',
+  'home.type.booking': 'موقع حجوزات ومواعيد',
+  'home.type.leads': 'موقع للنشاط التجاري',
+  'home.type.donations': 'موقع لجمعية',
+  'home.heroTime': 'في 5 دقائق',
+  'home.heroPrice': 'مقابل 28$ فقط',
+  'home.ctaPrimary': 'ابدأ الآن',
+  'home.ctaSecondary': 'شاهد مثالاً حياً',
+  'home.heroNote': 'بدون التزام · بدون مهارات تقنية',
+  'home.howItWorks': 'كيف يعمل',
+  'home.examples': 'موقع حقيقي لكل مجال',
+  'home.value': 'كل الأدوات، لكل مجال',
+  'home.valueSub': 'مهما كان ما تبيعه - نفس النظام، نفس الأدوات القوية',
+  'home.faqTitle': 'الأسئلة الشائعة',
 };
 
 export default ar;

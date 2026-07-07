@@ -282,6 +282,25 @@ const en: Record<string, string> = {
   'ageVerification.confirm': 'I am over 18',
   'ageVerification.deny': 'I am under 18',
   'ageVerification.denied': 'Sorry, you cannot access this store.',
+  // Homepage (current Index) - multilingual SEO
+  'home.engine.commerce': 'Online stores',
+  'home.engine.booking': 'Services & bookings',
+  'home.engine.leads': 'Real estate',
+  'home.engine.donations': 'Nonprofits',
+  'home.type.commerce': 'Online store',
+  'home.type.booking': 'Bookings & appointments site',
+  'home.type.leads': 'Business website',
+  'home.type.donations': 'Nonprofit website',
+  'home.heroTime': 'in 5 minutes',
+  'home.heroPrice': 'for just $28',
+  'home.ctaPrimary': 'Get started now',
+  'home.ctaSecondary': 'See a live example',
+  'home.heroNote': 'No commitment · No technical skills needed',
+  'home.howItWorks': 'How it works',
+  'home.examples': 'A real website for every field',
+  'home.value': 'Every tool, for every field',
+  'home.valueSub': 'Whatever you sell - the same system, the same powerful tools',
+  'home.faqTitle': 'Frequently asked questions',
 };
 
 export default en;

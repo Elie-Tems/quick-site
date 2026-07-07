@@ -11,6 +11,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { PreviewThemeRoot, Card } from "@/components/preview-redesign/kit";
 
@@ -128,6 +129,7 @@ const hasStoredSession = () => {
 };
 
 const HowItWorks = () => {
+  const { t } = useLanguage();
   const [imgIdx, setImgIdx] = useState(0);
   const activeStep = Math.min(imgIdx, HOW_STEPS.length - 1); // 0-2 map to steps A-C; 3 = finale
 
@@ -150,7 +152,7 @@ const HowItWorks = () => {
             <Rocket className="w-4 h-4 text-primary" />
             <span className="text-sm pv-text">פשוט כמו A-B-C</span>
           </div>
-          <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">איך זה עובד?</h2>
+          <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">{t("home.howItWorks")}</h2>
           <p className="text-lg pv-muted">שלושה צעדים — ואתם באוויר</p>
         </div>
 
@@ -298,6 +300,7 @@ const HowItWorks = () => {
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [resolving, setResolving] = useState(hasStoredSession);
   const [eng, setEng] = useState(0);
@@ -357,7 +360,7 @@ const Index = () => {
                   <button key={x.key} onClick={() => setEng(i)}
                     className={`relative px-4 md:px-5 py-2.5 rounded-xl text-sm font-medium transition-colors ${i === eng ? "text-white" : "pv-muted"}`}>
                     {i === eng && <motion.span layoutId="engpill" className="absolute inset-0 rounded-xl bg-primary" />}
-                    <span className="relative flex items-center gap-2"><x.icon className="w-4 h-4" /> {x.label}</span>
+                    <span className="relative flex items-center gap-2"><x.icon className="w-4 h-4" /> {t(`home.engine.${x.key}`)}</span>
                   </button>
                 ))}
               </div>
@@ -369,20 +372,20 @@ const Index = () => {
                 <motion.div key={a.key}
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
-                    <span className="block pv-strong">{a.type}</span>
-                    <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">תוך 5 דקות</span>
-                    <span className="block pv-strong">ב-69 ₪ בלבד</span>
+                    <span className="block pv-strong">{t(`home.type.${a.key}`)}</span>
+                    <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">{t("home.heroTime")}</span>
+                    <span className="block pv-strong">{t("home.heroPrice")}</span>
                   </h1>
                 </motion.div>
                 <div className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start">
                   <Link to="/register" className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
-                    התחילו עכשיו <ArrowLeft className="w-5 h-5" />
+                    {t("home.ctaPrimary")} <ArrowLeft className="w-5 h-5" />
                   </Link>
                   <Link to={a.to} className="inline-flex items-center gap-2 px-6 py-4 rounded-2xl pv-surface2 border pv-border pv-strong font-semibold pv-hover transition-colors">
-                    צפו בדוגמה <ArrowLeft className="w-4 h-4" />
+                    {t("home.ctaSecondary")} <ArrowLeft className="w-4 h-4" />
                   </Link>
                 </div>
-                <p className="text-sm pv-muted mt-4">ללא התחייבות · ללא ידע טכני</p>
+                <p className="text-sm pv-muted mt-4">{t("home.heroNote")}</p>
               </div>
 
               {/* Preview image */}
@@ -437,7 +440,7 @@ const Index = () => {
                 <Sparkles className="w-4 h-4 text-primary" />
                 <span className="text-sm pv-text">דוגמאות אתרים</span>
               </div>
-              <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">אתר אמיתי לכל תחום</h2>
+              <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">{t("home.examples")}</h2>
               <p className="text-lg pv-muted">לחצו על דוגמה כדי לראות אותה מלאה</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -465,7 +468,7 @@ const Index = () => {
         {/* Shared tools */}
         <section className="relative py-24 px-4 pv-surface2 border-y pv-border">
           <div className="max-w-5xl mx-auto text-center">
-            <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">כל הכלים, לכל תחום</h2>
+            <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">{t("home.value")}</h2>
             <p className="text-lg pv-muted mb-12">לא משנה מה אתם מוכרים - אותה מערכת, אותם כלים חזקים</p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {CORE.map((c, i) => (

@@ -278,6 +278,25 @@ const ru: Record<string, string> = {
   'ageVerification.confirm': 'Мне больше 18 лет',
   'ageVerification.deny': 'Мне меньше 18 лет',
   'ageVerification.denied': 'Извините, вы не можете получить доступ к этому магазину.',
+  // Homepage (current Index) - multilingual SEO
+  'home.engine.commerce': 'Интернет-магазины',
+  'home.engine.booking': 'Услуги и запись',
+  'home.engine.leads': 'Недвижимость',
+  'home.engine.donations': 'НКО',
+  'home.type.commerce': 'Интернет-магазин',
+  'home.type.booking': 'Сайт записи и услуг',
+  'home.type.leads': 'Сайт для бизнеса',
+  'home.type.donations': 'Сайт для НКО',
+  'home.heroTime': 'за 5 минут',
+  'home.heroPrice': 'всего за $28',
+  'home.ctaPrimary': 'Начать сейчас',
+  'home.ctaSecondary': 'Смотреть пример',
+  'home.heroNote': 'Без обязательств · Без технических навыков',
+  'home.howItWorks': 'Как это работает',
+  'home.examples': 'Настоящий сайт для любой сферы',
+  'home.value': 'Все инструменты, для любой сферы',
+  'home.valueSub': 'Что бы вы ни продавали - одна система, одни мощные инструменты',
+  'home.faqTitle': 'Частые вопросы',
 };
 
 export default ru;

@@ -282,6 +282,25 @@ const he: Record<string, string> = {
   'ageVerification.confirm': 'אני מעל גיל 18',
   'ageVerification.deny': 'אני מתחת לגיל 18',
   'ageVerification.denied': 'מצטערים, אינך יכול לגשת לחנות זו.',
+  // Homepage (current Index) - multilingual SEO
+  'home.engine.commerce': 'חנויות אונליין',
+  'home.engine.booking': 'שירותי מקצוע',
+  'home.engine.leads': 'נדל״ן',
+  'home.engine.donations': 'עמותות',
+  'home.type.commerce': 'אתר מכירות',
+  'home.type.booking': 'אתר הזמנות שירותים וקביעת תורים',
+  'home.type.leads': 'אתר לעסק',
+  'home.type.donations': 'אתר לעמותה',
+  'home.heroTime': 'תוך 5 דקות',
+  'home.heroPrice': 'ב-69 ₪ בלבד',
+  'home.ctaPrimary': 'התחילו עכשיו',
+  'home.ctaSecondary': 'צפו בדוגמה',
+  'home.heroNote': 'ללא התחייבות · ללא ידע טכני',
+  'home.howItWorks': 'איך זה עובד?',
+  'home.examples': 'אתר אמיתי לכל תחום',
+  'home.value': 'כל הכלים, לכל תחום',
+  'home.valueSub': 'לא משנה מה אתם מוכרים - אותה מערכת, אותם כלים חזקים',
+  'home.faqTitle': 'שאלות נפוצות',
 };
 
 export default he;
