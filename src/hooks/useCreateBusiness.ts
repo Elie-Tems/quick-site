@@ -190,9 +190,6 @@ export function useCreateBusiness() {
             color_palette: data.colorPalette || [],
             brand_style: data.brandStyle || 'modern',
             template_id: data.templateId || null,
-            // Persist the vertical chosen at onboarding (was collected but never
-            // saved). Drives per-vertical modules - see src/lib/businessModules.ts.
-            business_type: data.businessType || null,
             business_category: data.businessCategory || 'other',
             custom_category_name: data.customCategoryName || null,
             is_religious_audience: data.isReligiousAudience || false,
@@ -214,8 +211,24 @@ export function useCreateBusiness() {
       }
 
       if (!business) throw businessError;
-      
+
       const businessId = business.id;
+
+      // Persist the vertical chosen at onboarding (products/services/realestate/
+      // nonprofit) - it was collected in StepBusinessType but never saved, so
+      // nothing could branch on it. Best-effort separate update: if the
+      // business_type column isn't in prod yet (migration 20260707120000 not
+      // applied), this fails silently and the business is still created fine;
+      // the moment the migration is applied it starts persisting automatically.
+      // Drives per-vertical modules - see src/lib/businessModules.ts.
+      if (data.businessType) {
+        try {
+          await supabase
+            .from('businesses')
+            .update({ business_type: data.businessType } as any)
+            .eq('id', businessId);
+        } catch { /* column may not exist until the migration is applied - ignore */ }
+      }
 
       // 3.1 Initialize AI credits for this business (50 free credits on creation)
       try {
