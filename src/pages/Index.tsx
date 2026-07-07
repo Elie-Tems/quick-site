@@ -288,11 +288,13 @@ const HowItWorks = () => {
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [resolving, setResolving] = useState(hasStoredSession);
+  const isPreview = new URLSearchParams(window.location.search).has("preview");
+  const [resolving, setResolving] = useState(!isPreview && hasStoredSession);
   const [eng, setEng] = useState(0);
   const a = ENGINES[eng];
 
   useEffect(() => {
+    if (isPreview) return;
     if (loading) return;
     if (!user) { setResolving(false); return; }
     let cancelled = false;
