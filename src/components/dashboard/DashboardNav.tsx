@@ -30,12 +30,10 @@ const TYPE_CONFIG: Record<BusinessType, {
   itemOverrides?: Partial<Record<DashboardView, { label?: string; shortLabel?: string; icon?: React.ComponentType<{ className?: string }> }>>;
 }> = {
   products: {},
-  services: {
-    hiddenItems: ['shipping'],
-  },
+  services: {},
   nonprofit: {
     managementGroupLabel: "ניהול תרומות",
-    hiddenItems: ['shipping', 'coupons', 'payments'],
+    hiddenItems: ['shipping', 'coupons'],
     itemOverrides: {
       products: { label: "פרויקטים / מיזמים", shortLabel: "פרויקטים", icon: Heart },
       orders: { label: "תרומות", shortLabel: "תרומות", icon: Heart },
