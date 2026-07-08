@@ -169,7 +169,7 @@ const HowItWorks = () => {
                     alt={PROCESS_IMGS[imgIdx].caption}
                     initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
-                    className="absolute inset-0 w-full h-full object-cover object-right-top"
+                    className="absolute inset-0 w-full h-full object-cover object-top"
                   />
                 </AnimatePresence>
                 {/* gradient overlay */}
@@ -386,18 +386,10 @@ const Index = () => {
                   initial={{ opacity: 0, scale: 0.96, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ duration: 0.4 }} className="relative">
                   <div className="absolute -inset-6 bg-primary/15 rounded-[2rem] blur-3xl" />
-                  <div className="relative rounded-2xl overflow-hidden border pv-border shadow-2xl pv-surface2">
-                    <div className="flex items-center gap-2 px-4 h-10 border-b pv-border">
-                      <div className="flex gap-1.5">
-                        <span className="w-3 h-3 rounded-full bg-red-400/70" />
-                        <span className="w-3 h-3 rounded-full bg-yellow-400/70" />
-                        <span className="w-3 h-3 rounded-full bg-green-400/70" />
-                      </div>
-                      <div className="mx-auto text-xs pv-muted pv-surface border pv-border rounded-md px-4 py-1">siango.app/{a.key}</div>
-                    </div>
+                  <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                     <div className="relative aspect-[4/3]">
                       <img src={a.img} alt={a.label} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       <div className="absolute bottom-4 right-4 left-4 flex items-center justify-center">
                         <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur text-white text-sm border border-white/10">
                           <a.icon className="w-4 h-4 text-primary" /> {a.type}
@@ -411,17 +403,18 @@ const Index = () => {
         </section>
 
         {/* PER-TAB SUBTITLE SECTION */}
-        <section className="relative py-16 px-4 overflow-hidden">
+        <section className="relative py-20 px-4 overflow-hidden">
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, var(--pv-bg) 0%, var(--pv-surface2) 40%, var(--pv-surface2) 60%, var(--pv-bg) 100%)" }} />
           </div>
-          <div className="max-w-3xl mx-auto relative text-center">
+          <div className="max-w-2xl mx-auto relative">
             <AnimatePresence mode="wait">
               <motion.div key={a.key}
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.4 }}>
-                <p className="text-lg md:text-xl leading-relaxed pv-text mb-3">{a.subtitle[0]}</p>
-                <p className="text-lg md:text-xl leading-relaxed font-semibold" style={{ color: "var(--color-primary, #22c55e)" }}>{a.subtitle[1]}</p>
+                transition={{ duration: 0.4 }}
+                className="border-r-4 border-primary pr-6 text-right">
+                <p className="text-xl md:text-2xl leading-relaxed pv-text mb-2 font-medium">{a.subtitle[0]}</p>
+                <p className="text-xl md:text-2xl leading-relaxed font-bold" style={{ color: "var(--color-primary, #22c55e)" }}>{a.subtitle[1]}</p>
               </motion.div>
             </AnimatePresence>
           </div>
