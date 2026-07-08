@@ -208,8 +208,7 @@ export const PreviewBanner = ({ title }: { title: string }) => (
   <div className="sticky top-0 z-40 flex items-center justify-between gap-3 px-4 md:px-6 h-12 bg-primary/10 backdrop-blur-xl border-b border-primary/20">
     <div className="flex items-center gap-2 text-sm pv-text">
       <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-      תצוגה מקדימה - {title}
-      <span className="hidden sm:inline pv-faint">· מוקאפ עיצובי, לא המערכת האמיתית</span>
+      {title}
     </div>
     <div className="flex items-center gap-3">
       <ThemeToggle />
