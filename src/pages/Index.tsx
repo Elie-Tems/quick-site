@@ -106,10 +106,10 @@ const HOW_STEPS = [
 
 // תמונות שמייצגות את ה-Flow האמיתי
 const PROCESS_IMGS = [
-  { src: "/onboarding/ספרו לנו על העסק.jpeg", caption: "A — בוחרים סוג עסק ומגדירים פרטים" },
-  { src: "/onboarding/פרטי יצירתקשר.jpeg", caption: "B — מוסיפים פרטי יצירת קשר" },
-  { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80", caption: "C — מוסיפים מוצרים ושירותים" },
-  { src: "/onboarding/דוגמה חיה של האתר.png", caption: "" },
+  { src: "/onboarding/ספרו לנו על העסק.jpeg", caption: "A — בוחרים סוג עסק ומגדירים פרטים", pos: "left top" },
+  { src: "/onboarding/פרטי יצירתקשר.jpeg", caption: "B — מוסיפים פרטי יצירת קשר", pos: "left top" },
+  { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80", caption: "C — מוסיפים מוצרים ושירותים", pos: "center center" },
+  { src: "/onboarding/דוגמה חיה של האתר.png", caption: "", pos: "center top" },
 ];
 
 const HeroBg = () => (
@@ -169,7 +169,8 @@ const HowItWorks = () => {
                     alt={PROCESS_IMGS[imgIdx].caption}
                     initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
-                    className="absolute inset-0 w-full h-full object-cover object-left-top"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    style={{ objectPosition: PROCESS_IMGS[imgIdx].pos }}
                   />
                 </AnimatePresence>
                 {/* gradient overlay */}
