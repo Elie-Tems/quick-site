@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Plus, Pencil, Trash2, X, Upload, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -236,7 +236,7 @@ const CampaignBannersManager = ({ campaignId, businessId, onNavigateToSubscripti
 
           <div className="flex gap-3 pt-2">
             <Button type="submit" className="flex-1" disabled={createBanner.isPending || updateBanner.isPending}>
-              {editingBanner ? 'שמור' : 'הוסף באנר'}
+              {editingBanner ? 'שמרו' : 'הוסיפו באנר'}
             </Button>
             <Button type="button" variant="outline" onClick={resetForm}>
               ביטול

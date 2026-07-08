@@ -1,4 +1,4 @@
-import { OnboardingData } from "@/pages/Onboarding";
+﻿import { OnboardingData } from "@/pages/Onboarding";
 import { Check, Info } from "lucide-react";
 import { StepNavigation } from "./StepNavigation";
 import { providerLogo } from "@/lib/partnerLinks";
@@ -105,7 +105,7 @@ const StepPayments = ({ data, updateData, onNext, onBack }: StepPaymentsProps) =
         onSaveAndContinue={onNext}
         onBack={onBack}
         nextLabel="הבא"
-        saveLabel="שמור והמשך"
+        saveLabel="שמרו והמשיכו"
         showPreview={true}
         showSave={true}
       />

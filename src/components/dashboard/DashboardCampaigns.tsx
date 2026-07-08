@@ -881,7 +881,7 @@ const CampaignDetailsForm = ({ formData, setFormData, onSubmit, onCancel, isEdit
 
       <div className="flex gap-3 pt-4">
         <Button type="submit" className="flex-1" disabled={isSubmitting}>
-          {isSubmitting ? 'שומר...' : isEditing ? 'שמור שינויים' : 'צור פרסום'}
+          {isSubmitting ? 'שומר...' : isEditing ? 'שמרו שינויים' : 'צרו פרסום'}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
           ביטול

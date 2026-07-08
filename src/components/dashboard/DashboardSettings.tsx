@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+﻿import { useState, useRef, useEffect, useCallback } from "react";
 import { Upload, Check, X, CreditCard, Loader2, Palette, Image, Type, Megaphone, RefreshCw, Store, Utensils, Coffee, Shirt, Gem, Smartphone, Dumbbell, Car, PawPrint, Flower2, BookOpen, Home, ShoppingBasket, MoreHorizontal, ImagePlus, MessageCircle, Wine, Gamepad2, Palette as PaletteIcon, Baby, Gift, Pill, Sofa, Refrigerator, Scissors, Truck, ChevronDown, ChevronUp, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -261,7 +261,7 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
       setFormData(prev => ({ ...prev, logoUrl }));
       toast({
         title: "הלוגו הועלה בהצלחה! 🎉",
-        description: "אל תשכח לשמור את ההגדרות כדי לעדכן את החנות.",
+        description: "שמרו את ההגדרות כדי לעדכן את החנות.",
       });
     } catch (err: any) {
       console.error('Failed to upload logo image:', err);

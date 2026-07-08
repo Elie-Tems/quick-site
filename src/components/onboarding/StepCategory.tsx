@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { OnboardingData, BusinessCategory } from "@/pages/Onboarding";
@@ -177,7 +177,7 @@ const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) =
         onSaveAndContinue={onNext}
         onBack={onBack}
         nextLabel="הבא"
-        saveLabel="שמור והמשך"
+        saveLabel="שמרו והמשיכו"
         nextDisabled={!isValid}
         saveDisabled={!isValid}
         showPreview={true}

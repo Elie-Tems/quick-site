@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -53,7 +53,7 @@ export const AIImageUpsellCard = ({ businessId, onNavigateToAI }: AIImageUpsellP
                   </Badge>
                 )}
                 <Button size="sm" onClick={onNavigateToAI}>
-                  {creditsRemaining > 0 || !freeCreditsGranted ? "צור תמונות" : "רכוש קרדיטים"}
+                  {creditsRemaining > 0 || !freeCreditsGranted ? "צרו תמונות" : "רכוש קרדיטים"}
                 </Button>
               </div>
             )}
@@ -116,7 +116,7 @@ export const AIImageSuggestion = ({ businessId, imageUrl, onAccept, onDismiss }:
               לא עכשיו
             </Button>
             <Button size="sm" onClick={handleAccept}>
-              {canGenerate ? "שדרג עכשיו" : "רכוש קרדיטים"}
+              {canGenerate ? "שדרגו עכשיו" : "רכוש קרדיטים"}
             </Button>
           </div>
         </div>

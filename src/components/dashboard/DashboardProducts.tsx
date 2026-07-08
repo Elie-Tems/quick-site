@@ -58,10 +58,10 @@ interface DashboardProductsProps {
 
 // Per-type label overrides for DashboardProducts
 const PRODUCT_LABELS: Record<import("@/lib/businessModules").BusinessType, { title: string; addBtn: string; addForm: string; editForm: string; emptyFirst: string }> = {
-  products:   { title: 'מוצרים',    addBtn: 'הוסף מוצר',    addForm: 'הוספת מוצר',    editForm: 'עריכת מוצר',    emptyFirst: 'הוסף מוצר ראשון' },
-  services:   { title: 'מוצרים',    addBtn: 'הוסף פריט',    addForm: 'הוספת פריט',    editForm: 'עריכת פריט',    emptyFirst: 'הוסף פריט ראשון' },
-  nonprofit:  { title: 'פרויקטים', addBtn: 'הוסף פרויקט', addForm: 'הוספת פרויקט', editForm: 'עריכת פרויקט', emptyFirst: 'הוסף פרויקט ראשון' },
-  realestate: { title: 'נכסים',     addBtn: 'הוסף נכס',     addForm: 'הוספת נכס',     editForm: 'עריכת נכס',     emptyFirst: 'הוסף נכס ראשון' },
+  products:   { title: 'מוצרים',    addBtn: 'הוסיפו מוצר',    addForm: 'הוספת מוצר',    editForm: 'עריכת מוצר',    emptyFirst: 'הוסיפו מוצר ראשון' },
+  services:   { title: 'מוצרים',    addBtn: 'הוסיפו פריט',    addForm: 'הוספת פריט',    editForm: 'עריכת פריט',    emptyFirst: 'הוסיפו פריט ראשון' },
+  nonprofit:  { title: 'פרויקטים', addBtn: 'הוסיפו פרויקט', addForm: 'הוספת פרויקט', editForm: 'עריכת פרויקט', emptyFirst: 'הוסיפו פרויקט ראשון' },
+  realestate: { title: 'נכסים',     addBtn: 'הוסיפו נכס',     addForm: 'הוספת נכס',     editForm: 'עריכת נכס',     emptyFirst: 'הוסיפו נכס ראשון' },
 };
 
 const DashboardProducts = ({
@@ -839,7 +839,7 @@ const DashboardProducts = ({
                     className="w-full gap-2 border-primary/30 hover:bg-primary/10"
                   >
                     <Wand2 className="h-4 w-4" />
-                    {showAIGenerator ? 'הסתר יצירת תמונה AI' : 'צור תמונה באמצעות AI'}
+                    {showAIGenerator ? 'הסתר יצירת תמונה AI' : 'צרו תמונה באמצעות AI'}
                   </Button>
                   
                   {showAIGenerator && (
@@ -997,7 +997,7 @@ const DashboardProducts = ({
                       <Play className="h-7 w-7 mx-auto mb-1.5 text-muted-foreground" />
                     )}
                     <p className="text-sm text-muted-foreground">
-                      {isUploadingVideo ? 'מעלה וידאו...' : 'לחץ להעלאת וידאו (MP4, WebM, MOV — עד 100MB)'}
+                      {isUploadingVideo ? 'מעלה וידאו...' : 'לחצו להעלאת וידאו (MP4, WebM, MOV — עד 100MB)'}
                     </p>
                   </div>
                 )}
@@ -1007,7 +1007,7 @@ const DashboardProducts = ({
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" className="flex-1">
-              {editingProduct ? 'שמור שינויים' : pl.addBtn}
+              {editingProduct ? 'שמרו שינויים' : pl.addBtn}
             </Button>
             <Button type="button" variant="outline" onClick={resetForm}>
               ביטול

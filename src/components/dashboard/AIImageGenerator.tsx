@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Loader2, Wand2, Upload, Image as ImageIcon, Check, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -202,7 +202,7 @@ export const AIImageGenerator = ({
             ) : (
               <label className={`flex flex-col items-center justify-center gap-2 p-5 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${isUploading ? "opacity-60" : "border-muted-foreground/30 hover:border-primary hover:bg-primary/5"}`}>
                 {isUploading ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Upload className="h-6 w-6 text-primary" />}
-                <span className="text-sm text-muted-foreground">{isUploading ? "מעלה..." : "העלה תמונת מוצר לשדרוג"}</span>
+                <span className="text-sm text-muted-foreground">{isUploading ? "מעלה..." : "העלו תמונת מוצר לשדרוג"}</span>
                 <input type="file" accept="image/*" className="hidden" onChange={handleUploadOriginal} disabled={isUploading} />
               </label>
             )}

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 import { OnboardingData } from "@/pages/Onboarding";
 import { Loader2, Wand2, Globe, FileText, Mic, MicOff, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -338,7 +338,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       <StepNavigation
         onNext={onNext}
         onBack={onBack}
-        nextLabel={generated ? "הבא ←" : "דלג"}
+        nextLabel={generated ? "הבא ←" : "דלגו"}
         showPreview={false}
         showSave={false}
       />

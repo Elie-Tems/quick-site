@@ -229,7 +229,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
                 <Upload className={`h-8 w-8 mx-auto mb-2 ${usageStatus?.imageUploadBlocked ? 'text-destructive/50' : 'text-muted-foreground'}`} />
               )}
               <p className={`text-sm ${usageStatus?.imageUploadBlocked ? 'text-destructive' : 'text-muted-foreground'}`}>
-                {usageStatus?.imageUploadBlocked ? 'מכסת התמונות מלאה - לחץ לשדרוג' : 'לחץ להעלאת תמונה או הזן URL למטה'}
+                {usageStatus?.imageUploadBlocked ? 'מכסת התמונות מלאה - לחצו לשדרוג' : 'לחצו להעלאת תמונה או הזינו URL למטה'}
               </p>
               <Input
                 type="url"
@@ -318,7 +318,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" className="flex-1">
-              {editingBanner ? 'שמור שינויים' : 'הוסף באנר'}
+              {editingBanner ? 'שמרו שינויים' : 'הוסיפו באנר'}
             </Button>
             <Button type="button" variant="outline" onClick={resetForm}>
               ביטול

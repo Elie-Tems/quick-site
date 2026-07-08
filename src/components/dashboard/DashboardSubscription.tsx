@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { gtm } from "@/lib/gtm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -284,7 +284,7 @@ const DashboardSubscription = () => {
           <AlertTriangle className="h-4 w-4 text-orange-500" />
           <AlertTitle className="text-orange-700 dark:text-orange-300">אזהרת מקום תמונות</AlertTitle>
           <AlertDescription className="text-orange-600 dark:text-orange-400">
-            הגעת ל-{usageStatus.imageUsagePercent}% ממכסת התמונות שלך. שקול לשדרג את חבילת התמונות.
+            הגעת ל-{usageStatus.imageUsagePercent}% ממכסת התמונות שלך. כדאי לשדרג את חבילת התמונות.
           </AlertDescription>
         </Alert>
       )}
@@ -294,7 +294,7 @@ const DashboardSubscription = () => {
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>מכסת התמונות מלאה</AlertTitle>
           <AlertDescription>
-            הגעת למגבלת התמונות. שדרג את החבילה כדי להמשיך להעלות תמונות.
+            הגעת למגבלת התמונות. שדרגו את החבילה כדי להמשיך להעלות תמונות.
           </AlertDescription>
         </Alert>
       )}
@@ -585,7 +585,7 @@ const DashboardSubscription = () => {
               אישור תשלום ופרסום אתר
             </CardTitle>
             <CardDescription>
-              אם כבר שילמת את התשלום, הזן את מספר האישור כדי לפרסם את האתר
+              אם כבר שילמת את התשלום, הזן את מספר האישור כדי לפרסמו את האתר
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -632,7 +632,7 @@ const DashboardSubscription = () => {
                     ) : (
                       <>
                         <CheckCircle className="w-4 h-4 ml-2" />
-                        פרסם את האתר
+                        פרסמו את האתר
                       </>
                     )}
                   </Button>
@@ -667,7 +667,7 @@ const DashboardSubscription = () => {
               disabled={subscription?.status === 'cancelled'}
             >
               <ArrowUpCircle className="h-4 w-4" />
-              שדרג תוכנית
+              שדרגו תוכנית
             </Button>
             
             <Button 

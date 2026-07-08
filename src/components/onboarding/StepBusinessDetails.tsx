@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -334,7 +334,7 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
         onSaveAndContinue={onNext}
         onBack={onBack}
         nextLabel="הבא"
-        saveLabel="שמור והמשך"
+        saveLabel="שמרו והמשיכו"
         nextDisabled={!isValid}
         saveDisabled={!isValid}
         showPreview={true}

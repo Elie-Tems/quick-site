@@ -207,7 +207,7 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
         </div>
         {selectedTemplate !== currentTemplateId && (
           <Button onClick={handleSaveTemplate} disabled={updateBusiness.isPending}>
-            {updateBusiness.isPending ? 'שומר...' : 'שמור שינויים'}
+            {updateBusiness.isPending ? 'שומר...' : 'שמרו שינויים'}
           </Button>
         )}
       </div>
@@ -311,7 +311,7 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><Type className="h-5 w-5" /> פונטים</h3>
           {fontsChanged && (
-            <Button onClick={saveFonts} disabled={updateBusiness.isPending}>{updateBusiness.isPending ? "שומר..." : "שמור פונטים"}</Button>
+            <Button onClick={saveFonts} disabled={updateBusiness.isPending}>{updateBusiness.isPending ? "שומר..." : "שמרו פונטים"}</Button>
           )}
         </div>
         <p className="text-sm text-muted-foreground mb-4">בחרו פונט נפרד לכותרות ולטקסט - שליטה מדויקת על הסגנון של החנות.</p>

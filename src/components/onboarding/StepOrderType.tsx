@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+﻿import { Button } from "@/components/ui/button";
 import { OnboardingData } from "@/pages/Onboarding";
 import { ArrowLeft, ArrowRight, ShoppingCart, CreditCard, Check } from "lucide-react";
 import { StepNavigation } from "./StepNavigation";
@@ -101,7 +101,7 @@ const StepOrderType = ({ data, updateData, onNext, onBack }: StepOrderTypeProps)
         onSaveAndContinue={onNext}
         onBack={onBack}
         nextLabel="הבא"
-        saveLabel="שמור והמשך"
+        saveLabel="שמרו והמשיכו"
         showPreview={true}
         showSave={true}
       />

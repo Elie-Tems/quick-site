@@ -990,7 +990,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-primary/30 text-xs text-primary hover:bg-primary/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {generatingQuickImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
-                {generatingQuickImage ? "יוצר..." : "צור עם AI"}
+                {generatingQuickImage ? "יוצר..." : "צרו עם AI"}
               </button>
               <div className="flex-1" />
               <button
@@ -998,7 +998,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 disabled={!quickName.trim() || !quickPrice.trim()}
                 className="flex items-center gap-1.5 px-4 h-8 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
               >
-                <Plus className="w-4 h-4" /> {data.businessType === 'nonprofit' ? 'הוסף פרויקט' : data.businessType === 'realestate' ? 'הוסף נכס' : 'הוסף מוצר'}
+                <Plus className="w-4 h-4" /> {data.businessType === 'nonprofit' ? 'הוסיפו פרויקט' : data.businessType === 'realestate' ? 'הוסיפו נכס' : 'הוסיפו מוצר'}
               </button>
             </div>
           </div>
@@ -1150,7 +1150,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
           onClick={handleContinue}
           className="flex items-center gap-2 px-6 h-11 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
         >
-          {data.products.length > 0 ? "המשך" : "דלג עם מוצרי דמו"}
+          {data.products.length > 0 ? "המשיכו" : "דלגו עם מוצרי דמו"}
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
       </div>

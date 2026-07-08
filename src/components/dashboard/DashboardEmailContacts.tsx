@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Users, Upload, Plus, Loader2, Mail, X, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -98,7 +98,7 @@ const DashboardEmailContacts = () => {
             <ShieldCheck className="w-3.5 h-3.5" /> יש לי הסכמה מאיש הקשר לקבל דיוור (חוק הספאם)
           </label>
           <div className="flex gap-2">
-            <button onClick={addOne} disabled={busy} className="text-sm bg-primary text-primary-foreground rounded-lg px-4 py-1.5 disabled:opacity-50">{busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "שמור"}</button>
+            <button onClick={addOne} disabled={busy} className="text-sm bg-primary text-primary-foreground rounded-lg px-4 py-1.5 disabled:opacity-50">{busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "שמרו"}</button>
             <button onClick={() => setShowAdd(false)} className="text-sm text-muted-foreground px-2">ביטול</button>
           </div>
         </div>

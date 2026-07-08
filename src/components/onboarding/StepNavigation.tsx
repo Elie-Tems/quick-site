@@ -26,7 +26,7 @@ export const StepNavigation = ({
   onSaveAndContinue,
   nextLabel = "הבא",
   backLabel = "חזרה",
-  saveLabel = "שמור והמשך",
+  saveLabel = "שמרו והמשיכו",
   saveIcon,
   nextDisabled = false,
   saveDisabled = false,

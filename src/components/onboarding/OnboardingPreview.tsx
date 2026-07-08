@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+﻿import { useState, useMemo } from "react";
 import { Monitor, Smartphone, ChevronDown, ChevronUp, Check, ExternalLink, Maximize2, Palette, Type, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -459,7 +459,7 @@ const OnboardingPreview = ({ data, onEditStep, onUpdateTemplate, onUpdateData }:
                 className="text-xs"
                 onClick={() => setShowTemplateSelector(!showTemplateSelector)}
               >
-                {showTemplateSelector ? 'סגור' : 'שנה תבנית'}
+                {showTemplateSelector ? 'סגרו' : 'שנה תבנית'}
               </Button>
             </div>
 

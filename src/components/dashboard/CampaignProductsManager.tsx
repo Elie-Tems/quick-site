@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Plus, Trash2, X, Package, Check, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,7 +61,7 @@ const CampaignProductsManager = ({ campaignId, businessId }: CampaignProductsMan
 
   const handleBulkAdd = async () => {
     if (selectedProductIds.length === 0) {
-      toast.error("בחר לפחות מוצר אחד");
+      toast.error("בחרו לפחות מוצר אחד");
       return;
     }
 

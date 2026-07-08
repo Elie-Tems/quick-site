@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+﻿import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { OnboardingData } from "@/pages/Onboarding";
@@ -458,7 +458,7 @@ const StepBrandStyle = ({ data, updateData, onNext, onBack }: StepBrandStyleProp
                     className="gap-1.5 text-muted-foreground hover:text-foreground"
                   >
                     <Pencil className="w-4 h-4" />
-                    {isEditingColors ? "סיום עריכה" : "ערוך צבעים"}
+                    {isEditingColors ? "סיום עריכה" : "ערכו צבעים"}
                   </Button>
                 </div>
                 
@@ -674,7 +674,7 @@ const StepBrandStyle = ({ data, updateData, onNext, onBack }: StepBrandStyleProp
         onSaveAndContinue={handleNext}
         nextLabel="הבא"
         backLabel="חזרה"
-        saveLabel="שמור והמשך"
+        saveLabel="שמרו והמשיכו"
         nextDisabled={!canContinue}
         saveDisabled={!canContinue}
         showBack={!!onBack}

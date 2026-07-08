@@ -103,7 +103,7 @@ const DashboardWhatsAppButton = () => {
       </div>
 
       <Button onClick={handleSave} disabled={updateBusiness.isPending} className="w-full">
-        {updateBusiness.isPending ? "שומר..." : "שמור שינויים"}
+        {updateBusiness.isPending ? "שומר..." : "שמרו שינויים"}
       </Button>
     </div>
   );

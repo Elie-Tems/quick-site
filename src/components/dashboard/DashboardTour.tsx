@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
   LayoutDashboard, Package, ShoppingCart, Users, Megaphone, Puzzle, Settings,
   ArrowLeft, ArrowRight, X, Check, Star,
@@ -41,7 +41,7 @@ const DashboardTour = ({ onClose }: { onClose: () => void }) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" dir="rtl">
       <div className="relative w-full max-w-md rounded-2xl bg-card border border-border shadow-2xl p-6 animate-in zoom-in-95 fade-in duration-200">
-        <button onClick={finish} aria-label="דלג" className="absolute top-4 left-4 text-muted-foreground hover:text-foreground transition-colors">
+        <button onClick={finish} aria-label="דלגו" className="absolute top-4 left-4 text-muted-foreground hover:text-foreground transition-colors">
           <X className="w-5 h-5" />
         </button>
 

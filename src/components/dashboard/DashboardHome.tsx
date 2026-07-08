@@ -41,8 +41,8 @@ const TYPE_LABELS: Record<BusinessType, {
     contacts: { label: "לקוחות", icon: Users },
     productsNav: "products",
     ordersNav: "orders",
-    todosProductsLabel: "הוסף מוצרים",
-    todosPaymentLabel: "חבר סליקה לקבלת תשלומים",
+    todosProductsLabel: "הוסיפו מוצרים",
+    todosPaymentLabel: "חברו סליקה לקבלת תשלומים",
   },
   services: {
     items: { label: "מוצרים", shortLabel: "מוצרים", icon: Package },
@@ -51,8 +51,8 @@ const TYPE_LABELS: Record<BusinessType, {
     contacts: { label: "לקוחות", icon: Users },
     productsNav: "products",
     ordersNav: "orders",
-    todosProductsLabel: "הוסף שירותים / מוצרים",
-    todosPaymentLabel: "חבר סליקה לקבלת תשלומים",
+    todosProductsLabel: "הוסיפו שירותים / מוצרים",
+    todosPaymentLabel: "חברו סליקה לקבלת תשלומים",
   },
   nonprofit: {
     items: { label: "פרויקטים", shortLabel: "פרויקטים", icon: Heart },
@@ -61,8 +61,8 @@ const TYPE_LABELS: Record<BusinessType, {
     contacts: { label: "תורמים", icon: Users },
     productsNav: "products",
     ordersNav: "orders",
-    todosProductsLabel: "הוסף פרויקטים / מיזמים",
-    todosPaymentLabel: "הגדר קבלת תרומות אונליין",
+    todosProductsLabel: "הוסיפו פרויקטים / מיזמים",
+    todosPaymentLabel: "הגדירו קבלת תרומות אונליין",
   },
   realestate: {
     items: { label: "נכסים", shortLabel: "נכסים", icon: Building2 },
@@ -71,8 +71,8 @@ const TYPE_LABELS: Record<BusinessType, {
     contacts: { label: "לקוחות", icon: Users },
     productsNav: "products",
     ordersNav: "orders",
-    todosProductsLabel: "הוסף נכסים",
-    todosPaymentLabel: "הגדר קבלת תשלומים / עמלות",
+    todosProductsLabel: "הוסיפו נכסים",
+    todosPaymentLabel: "הגדירו קבלת תשלומים / עמלות",
   },
 };
 
@@ -92,7 +92,7 @@ const DashboardHome = ({
 
   const todos: { id: string; label: string; emphasized?: boolean; view: DashboardView }[] = [
     ...(!stats.paymentEnabled ? [{ id: "payments", label: t.todosPaymentLabel, emphasized: true, view: "payments" as DashboardView }] : []),
-    ...(!hasAbout ? [{ id: "about", label: 'כתוב "אודות"', view: "about" as DashboardView }] : []),
+    ...(!hasAbout ? [{ id: "about", label: 'כתיבת "אודות"', view: "about" as DashboardView }] : []),
     ...(stats.totalProducts === 0 ? [{ id: "products", label: t.todosProductsLabel, view: t.productsNav }] : []),
   ];
 
@@ -144,10 +144,10 @@ const DashboardHome = ({
         <div className="rounded-2xl bg-gradient-to-l from-orange-600 to-amber-500 text-white p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4 shadow">
           <div className="flex-1">
             <p className="text-base font-semibold">האתר שלך במצב תצוגה מוקדמת</p>
-            <p className="text-sm text-white/80 mt-0.5">שדרג ל-69 ₪ לחודש ללא התחייבות כדי שהחנות תעלה לאוויר.</p>
+            <p className="text-sm text-white/80 mt-0.5">שדרגו ל-69 ₪ לחודש ללא התחייבות כדי שהחנות תעלה לאוויר.</p>
           </div>
           <Button onClick={() => onNavigate("subscription")} className="bg-white text-amber-700 hover:bg-white/90 font-semibold gap-2 shrink-0">
-            שדרג עכשיו <ChevronLeft className="h-4 w-4" />
+            שדרגו עכשיו <ChevronLeft className="h-4 w-4" />
           </Button>
         </div>
       )}
@@ -158,10 +158,10 @@ const DashboardHome = ({
           <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
           <div className="flex-1">
             <p className="font-medium text-red-600 dark:text-red-400 text-sm">חיוב החשבון נכשל</p>
-            <p className="text-xs text-muted-foreground mt-0.5">הכרטיס שלך נחסם או סורב בחיוב האחרון. עדכן את פרטי התשלום כדי שהאתר ימשיך לפעול.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">הכרטיס נחסם או סורב בחיוב האחרון. עדכנו את פרטי התשלום כדי שהאתר ימשיך לפעול.</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => onNavigate("subscription")} className="border-red-500/35 text-red-600 hover:bg-red-500/8 shrink-0">
-            עדכן כרטיס <ChevronLeft className="h-4 w-4" />
+            עדכנו כרטיס <ChevronLeft className="h-4 w-4" />
           </Button>
         </div>
       )}
@@ -201,7 +201,7 @@ const DashboardHome = ({
             >
               <span className={`flex-1 text-sm font-medium ${todo.emphasized ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"}`}>{todo.label}</span>
               <span className="flex items-center gap-1 text-xs font-medium text-primary shrink-0">
-                המשך <ChevronLeft className="h-3.5 w-3.5" />
+                המשיכו <ChevronLeft className="h-3.5 w-3.5" />
               </span>
             </button>
           ))}
@@ -215,7 +215,7 @@ const DashboardHome = ({
         className="w-full flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:bg-muted/40 transition-colors text-right"
       >
         <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-          <Eye className="h-4.5 w-4.5 text-primary" /> הכנס לחנות שלך
+          <Eye className="h-4.5 w-4.5 text-primary" /> כניסה לחנות שלך
         </span>
         <ChevronLeft className="h-4.5 w-4.5 text-muted-foreground" />
       </button>

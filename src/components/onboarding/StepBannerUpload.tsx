@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { OnboardingData } from "@/pages/Onboarding";
 import { Loader2, RefreshCw, X, Wand2, Upload, Link } from "lucide-react";
@@ -348,7 +348,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
         onSaveAndContinue={onNext}
         onBack={onBack}
         nextLabel={heroPreview ? "הבא ←" : "דלג"}
-        saveLabel={heroPreview ? 'שמור והמשך' : undefined}
+        saveLabel={heroPreview ? 'שמרו והמשיכו' : undefined}
         showPreview={false}
         showSave={!!heroPreview}
       />

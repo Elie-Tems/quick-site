@@ -247,7 +247,7 @@ const DashboardCoupons = ({ businessId }: DashboardCouponsProps) => {
               </div>
 
               <Button type="submit" className="w-full" disabled={createCoupon.isPending || updateCoupon.isPending}>
-                {editingCoupon ? "עדכן קופון" : "צור קופון"}
+                {editingCoupon ? "עדכנו קופון" : "צרו קופון"}
               </Button>
             </form>
           </DialogContent>

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+﻿import { useState, useRef, useEffect, useCallback } from "react";
 import { Mic, MicOff, Wand2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -238,7 +238,7 @@ const AboutEditor = ({
     if (!textToImprove.trim() || textToImprove.trim().length < 10) {
       toast({
         title: "טקסט קצר מדי",
-        description: "כתוב לפחות כמה מילים לשיפור",
+        description: "כתבו לפחות כמה מילים לשיפור",
         variant: "destructive",
       });
       return;
@@ -285,7 +285,7 @@ const AboutEditor = ({
     if (!rawText.trim() || rawText.trim().length < 10) {
       toast({
         title: "טקסט קצר מדי",
-        description: "כתוב לפחות כמה מילים על העסק שלך",
+        description: "כתבו לפחות כמה מילים על העסק שלך",
         variant: "destructive",
       });
       return;
@@ -332,7 +332,7 @@ const AboutEditor = ({
     if (!generatedText.trim()) {
       toast({
         title: "אין טקסט לשמירה",
-        description: "צור טקסט אודות קודם",
+        description: "צרו טקסט אודות קודם",
         variant: "destructive",
       });
       return;
@@ -404,7 +404,7 @@ const AboutEditor = ({
         <Textarea
           value={rawText + (interimTranscript ? ` ${interimTranscript}` : "")}
           onChange={(e) => { if (!isRecording) setRawText(e.target.value); }}
-          placeholder="כתוב בקצרה - מה אתם עושים, מה מייחד אתכם, למה לקוחות בוחרים בכם... או לחץ על המיקרופון ודבר 🎙️"
+          placeholder="כתבו בקצרה - מה אתם עושים, מה מייחד אתכם, למה לקוחות בוחרים בכם... או לחץ על המיקרופון ודבר 🎙️"
           rows={4}
           className={isRecording ? "border-destructive ring-1 ring-destructive/50" : ""}
           readOnly={isRecording}
