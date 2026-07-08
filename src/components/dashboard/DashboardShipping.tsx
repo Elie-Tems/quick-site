@@ -64,7 +64,7 @@ const DashboardShipping = ({ settings, onSettingsChange }: DashboardShippingProp
       <div className="flex items-center gap-3 mb-6">
         <Truck className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="text-2xl font-bold text-foreground">משלוחים ואיסוף</h1>
+          <h1 className="text-xl font-semibold text-foreground">משלוחים ואיסוף</h1>
           <p className="text-sm text-muted-foreground">
             קבע האם הלקוחות יכולים רק לאסוף מהחנות או גם להזמין משלוח
           </p>
@@ -72,7 +72,7 @@ const DashboardShipping = ({ settings, onSettingsChange }: DashboardShippingProp
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-card rounded-xl border border-border p-5 shadow-soft space-y-4">
+        <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
           <div className="space-y-3">
             <Label>אופן אספקה</Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="אופן אספקה">

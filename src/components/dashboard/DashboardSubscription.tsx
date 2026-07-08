@@ -275,7 +275,7 @@ const DashboardSubscription = () => {
     <div className="p-4 md:p-6 space-y-6" dir="rtl">
       <div className="flex items-center gap-3">
         <Crown className="h-7 w-7 text-primary" />
-        <h1 className="text-2xl font-bold">התוכנית שלי</h1>
+        <h1 className="text-xl font-semibold text-foreground">התוכנית שלי</h1>
       </div>
 
       {/* Usage Warnings */}

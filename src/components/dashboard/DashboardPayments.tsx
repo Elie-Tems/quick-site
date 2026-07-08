@@ -40,7 +40,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
       <div className="flex items-center gap-3 mb-6">
         <CreditCard className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="text-2xl font-bold text-foreground">סליקת אשראי</h1>
+          <h1 className="text-xl font-semibold text-foreground">סליקת אשראי</h1>
           <p className="text-sm text-muted-foreground">חיבור סליקה מאפשר ללקוחות לשלם בכרטיס אשראי ישירות לחשבון שלכם.</p>
         </div>
       </div>

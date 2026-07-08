@@ -147,7 +147,7 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
 
         <div className="space-y-6 max-w-2xl">
           {/* Customer Details */}
-          <div className="bg-card rounded-xl border border-border p-4 shadow-soft">
+          <div className="bg-card rounded-2xl border border-border p-4">
             <h2 className="font-semibold mb-4 flex items-center gap-2">
               <User className="h-5 w-5 text-muted-foreground" />
               {lbl.contact}
@@ -173,7 +173,7 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
           </div>
 
           {/* Order Items */}
-          <div className="bg-card rounded-xl border border-border p-4 shadow-soft">
+          <div className="bg-card rounded-2xl border border-border p-4">
             <h2 className="font-semibold mb-4 flex items-center gap-2">
               <Package className="h-5 w-5 text-muted-foreground" />
               {lbl.items}
@@ -195,7 +195,7 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
           </div>
 
           {/* Status Actions */}
-          <div className="bg-card rounded-xl border border-border p-4 shadow-soft">
+          <div className="bg-card rounded-2xl border border-border p-4">
             <h2 className="font-semibold mb-4">עדכון סטטוס</h2>
             <div className="flex flex-wrap gap-2">
               {Object.entries(statusConfig).map(([key, config]) => (

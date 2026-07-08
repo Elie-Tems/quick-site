@@ -279,11 +279,11 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
 
   return (
     <div className="p-4 md:p-6 space-y-6 w-full">
-      <h1 className="text-2xl font-semibold text-foreground">הגדרות</h1>
+      <h1 className="text-xl font-semibold text-foreground">הגדרות</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Business Info Section */}
-        <div className="bg-card rounded-xl border border-border p-5 shadow-soft space-y-4">
+        <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
           <button
             type="button"
             className="w-full flex items-center justify-between text-right"
@@ -463,7 +463,7 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
         </div>
         
         {/* Business Category Section */}
-        <div className="bg-card rounded-xl border border-border p-5 shadow-soft space-y-4">
+        <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
           <button
             type="button"
             className="w-full flex items-center justify-between text-right"
@@ -540,7 +540,7 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
         </div>
         
         {/* Shipping / Fulfillment Section */}
-        <div className="bg-card rounded-xl border border-border p-5 shadow-soft space-y-4">
+        <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
           <button
             type="button"
             className="w-full flex items-center justify-between text-right"
@@ -627,7 +627,7 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
         </div>
 
         {/* Payments Section */}
-        {/* <div className="bg-card rounded-xl border border-border p-5 shadow-soft space-y-4">
+        {/* <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
           <button
             type="button"
             className="w-full flex items-center justify-between text-right"

@@ -70,13 +70,13 @@ const DashboardAboutPage = ({ businessId }: DashboardAboutPageProps) => {
           <Info className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">אודות</h1>
+          <h1 className="text-xl font-semibold text-foreground">אודות</h1>
           <p className="text-sm text-muted-foreground">ספרו על העסק - נעזור לכם לנסח טקסט מקצועי שיופיע בדף האודות.</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="bg-card rounded-xl border border-border p-5 shadow-soft space-y-5">
+        <div className="bg-card rounded-2xl border border-border p-4 space-y-5">
           <AboutEditor
             businessId={business.id}
             businessName={business.name}

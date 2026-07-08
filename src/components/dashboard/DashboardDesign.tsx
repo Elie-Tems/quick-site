@@ -197,10 +197,10 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
             <Palette className="h-6 w-6" />
             עיצוב החנות
-          </h2>
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
             בחר תבנית עיצוב לחנות שלך
           </p>
@@ -309,7 +309,7 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
       {/* ── Fonts ── */}
       <div className="border-t border-border pt-6">
         <div className="flex items-center justify-between mb-1">
-          <h3 className="text-xl font-bold text-foreground flex items-center gap-2"><Type className="h-5 w-5" /> פונטים</h3>
+          <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><Type className="h-5 w-5" /> פונטים</h3>
           {fontsChanged && (
             <Button onClick={saveFonts} disabled={updateBusiness.isPending}>{updateBusiness.isPending ? "שומר..." : "שמור פונטים"}</Button>
           )}
@@ -351,7 +351,7 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
       {/* Hero Image Section */}
       <div className="border-t border-border pt-6 space-y-4">
         <div>
-          <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
             <ImagePlus className="h-5 w-5" />
             תמונת רקע ראשית
           </h3>

@@ -241,7 +241,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
           <button onClick={resetForm} className="p-2 hover:bg-muted rounded-lg">
             <X className="h-5 w-5" />
           </button>
-          <h1 className="text-xl font-bold text-foreground flex-1">
+          <h1 className="text-xl font-semibold text-foreground flex-1">
             {editingCampaign ? `עריכת פרסום: ${editingCampaign.name}` : 'פרסום חדש'}
           </h1>
           {editingCampaign && (
@@ -317,7 +317,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">פרסום באתר</h1>
+          <h1 className="text-xl font-semibold text-foreground">פרסום באתר</h1>
           <p className="text-sm text-muted-foreground mt-1">
             קדם מוצרים ומבצעים בתוך החנות שלך
           </p>
@@ -409,7 +409,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
           {campaigns?.map((campaign) => (
             <div 
               key={campaign.id}
-              className={`bg-card rounded-xl border shadow-soft overflow-hidden transition-all ${
+              className={`bg-card rounded-2xl border overflow-hidden transition-all ${
                 campaign.is_active 
                   ? 'border-green-500 ring-2 ring-green-500/20' 
                   : 'border-border'
