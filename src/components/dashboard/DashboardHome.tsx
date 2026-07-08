@@ -1,4 +1,4 @@
-import { ShoppingCart, DollarSign, Package, Eye, ChevronLeft } from "lucide-react";
+import { ShoppingCart, DollarSign, Package, Users, Eye, ChevronLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DashboardView } from "./DashboardNav";
 import DashboardAnalytics from "./DashboardAnalytics";
@@ -11,16 +11,18 @@ interface DashboardHomeProps {
     paymentEnabled: boolean;
     totalProducts: number;
     totalCategories: number;
+    totalCustomers: number;
   };
   businessId?: string;
   isPublished?: boolean;
-  /** Has an active, paid Siango subscription (decides if the site is live). */
   isSubscribed?: boolean;
+  /** Last charge attempt failed — card declined/blocked. */
+  hasPaymentFailure?: boolean;
   hasAbout?: boolean;
   onNavigate: (view: DashboardView) => void;
 }
 
-const DashboardHome = ({ stats, businessId, isSubscribed, hasAbout, onNavigate }: DashboardHomeProps) => {
+const DashboardHome = ({ stats, businessId, isSubscribed, hasPaymentFailure, hasAbout, onNavigate }: DashboardHomeProps) => {
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
 
@@ -37,6 +39,7 @@ const DashboardHome = ({ stats, businessId, isSubscribed, hasAbout, onNavigate }
     { id: "orders", label: "הזמנות", value: String(stats.totalOrders), Icon: ShoppingCart, bg: "bg-blue-500/15", fg: "text-blue-500" },
     { id: "sales", label: "מכירות", value: formatPrice(stats.totalSales), Icon: DollarSign, bg: "bg-emerald-500/15", fg: "text-emerald-500" },
     { id: "products", label: "מוצרים", value: String(stats.totalProducts), Icon: Package, bg: "bg-violet-500/15", fg: "text-violet-500" },
+    { id: "customers", label: "לקוחות", value: String(stats.totalCustomers), Icon: Users, bg: "bg-amber-500/15", fg: "text-amber-500" },
   ];
 
   return (
@@ -60,8 +63,26 @@ const DashboardHome = ({ stats, businessId, isSubscribed, hasAbout, onNavigate }
         </div>
       )}
 
+      {/* Failed charge banner — card declined or blocked on the last billing attempt */}
+      {isSubscribed && hasPaymentFailure && (
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+          <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5 sm:mt-0" />
+          <div className="flex-1">
+            <p className="font-semibold text-red-600 dark:text-red-400">חיוב החשבון נכשל</p>
+            <p className="text-sm text-muted-foreground mt-0.5">הכרטיס שלך נחסם או סורב בחיוב האחרון. עדכן את פרטי התשלום כדי שהאתר ימשיך לפעול.</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => onNavigate("subscription")}
+            className="border-red-500/40 text-red-600 hover:bg-red-500/10 shrink-0"
+          >
+            עדכן כרטיס <ChevronLeft className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {cards.map(({ id, label, value, Icon, bg, fg }) => (
           <div key={id} className="bg-card rounded-xl border border-border p-5 shadow-soft">
             <div className="flex items-center gap-3 mb-3">

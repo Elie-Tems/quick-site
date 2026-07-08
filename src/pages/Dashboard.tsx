@@ -87,15 +87,16 @@ const Dashboard = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("subscriptions")
-        .select("paid_until, status")
+        .select("paid_until, status, last_charge_status")
         .eq("user_id", user!.id)
-        .eq("status", "active")
-        .gt("paid_until", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
       return data;
     },
   });
-  const isSubscribed = !!subData;
+  const isSubscribed = !!(subData?.status === "active" && subData?.paid_until && new Date(subData.paid_until) > new Date());
+  const hasPaymentFailure = !!(subData && subData.last_charge_status === "failed");
 
   // Fetch real data from database
   const { data: dbProducts, isLoading: productsLoading } = useProducts(business?.id);
@@ -485,6 +486,7 @@ const Dashboard = () => {
   }
 
   // Calculate stats
+  const totalCustomers = new Set(orders.map(o => o.customerEmail).filter(Boolean)).size;
   const stats = {
     totalOrders: orders.length,
     totalSales: orders
@@ -493,12 +495,13 @@ const Dashboard = () => {
     paymentEnabled: settings.paymentEnabled,
     totalProducts: products.length,
     totalCategories: productCategories?.length ?? 0,
+    totalCustomers,
   };
 
   const renderContent = () => {
     switch (currentView) {
       case 'home':
-        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} hasAbout={!!(business as any)?.about_text?.trim()} onNavigate={setCurrentView} />;
+        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} onNavigate={setCurrentView} />;
       case 'products':
       case 'categories':
       case 'sales':
