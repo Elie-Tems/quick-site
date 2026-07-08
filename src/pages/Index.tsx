@@ -162,7 +162,7 @@ const HowItWorks = () => {
           {/* ── LEFT: image carousel ── */}
           <div className="order-1">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{ border: "1px solid var(--pv-border)", background: "var(--pv-surface2)" }}>
-              <div className="relative aspect-[4/3] overflow-hidden">
+              <div className="relative aspect-[16/9] overflow-hidden">
                 <AnimatePresence mode="wait">
                   <motion.img key={imgIdx}
                     src={PROCESS_IMGS[imgIdx].src}
