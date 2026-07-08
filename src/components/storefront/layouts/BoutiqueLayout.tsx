@@ -12,7 +12,7 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
     logoUrl, phone, products, categories, banners,
     cartItems, onAddToCart, onUpdateQuantity, onRemoveFromCart,
     onCheckout, favoriteIds, onToggleFavorite,
-    selectedCategoryId, onSelectCategory,
+    selectedCategoryId, onSelectCategory, customLabels,
   } = props;
 
   const [cartOpen, setCartOpen] = useState(false);
@@ -91,7 +91,7 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7">
             <div>
-              <h2 className="text-2xl md:text-3xl font-display font-bold">הקולקציה שלנו</h2>
+              <h2 className="text-2xl md:text-3xl font-display font-bold">{customLabels?.productsTitle || "הקולקציה שלנו"}</h2>
               <p className="text-muted-foreground text-sm mt-0.5">{visible.length} פריטים</p>
             </div>
             {cats.length > 1 && (

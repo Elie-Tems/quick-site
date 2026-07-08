@@ -25,7 +25,7 @@ const ServiceLayout = ({
   categories, selectedCategoryId, onSelectCategory, banners, campaignPopup, cartItems,
   favoritesCount, onAddToCart, onUpdateQuantity, onRemoveFromCart, onCheckout,
   onNavigateToCart, onNavigateToFavorites, onScrollToProducts, onNavigateHome,
-  favoriteIds, onToggleFavorite, hasPayment,
+  favoriteIds, onToggleFavorite, hasPayment, customLabels,
 }: StorefrontLayoutProps) => {
   const totalCartItems = cartItems.reduce((s, i) => s + i.quantity, 0);
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
@@ -147,7 +147,7 @@ const ServiceLayout = ({
             <h2
               className="text-2xl font-semibold text-center text-foreground mb-2"
             >
-              השירותים שלנו
+              {customLabels?.productsTitle || "השירותים שלנו"}
             </h2>
             <p className="text-sm text-muted-foreground text-center mb-10">
               {tagline || ''}
@@ -203,7 +203,7 @@ const ServiceLayout = ({
             className="py-12 px-4 text-center"
             style={{ backgroundColor: `${pc}0d` }}
           >
-            <h3 className="text-xl font-semibold text-foreground mb-2">מוכנים להתחיל?</h3>
+            <h3 className="text-xl font-semibold text-foreground mb-2">{customLabels?.ctaTitle || "מוכנים להתחיל?"}</h3>
             <p className="text-sm text-muted-foreground mb-6">צרו קשר ונשמח לעזור</p>
             <div className="flex flex-wrap justify-center gap-3">
               <a

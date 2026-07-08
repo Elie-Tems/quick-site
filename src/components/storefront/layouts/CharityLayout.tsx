@@ -10,7 +10,7 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
   const {
     businessName, tagline, heroTitle, aboutText, heroImageUrl,
     logoUrl, phone, products, banners, heroBenefits,
-    whatsappEnabled, reviewsCache,
+    whatsappEnabled, reviewsCache, customLabels,
   } = props;
 
   const [donationAmt, setDonationAmt] = useState<number | null>(100);
@@ -133,7 +133,7 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div>
-                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">הסיפור שלנו</h2>
+                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">{customLabels?.aboutTitle || "הסיפור שלנו"}</h2>
                 <p className="text-muted-foreground leading-relaxed text-lg">{aboutText}</p>
               </div>
               {albumImgs.length > 0 && (
@@ -171,7 +171,7 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
       {projects.length > 0 && (
         <section className="py-16 px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">הפרויקטים שלנו</h2>
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">{customLabels?.productsTitle || "הפרויקטים שלנו"}</h2>
             <p className="text-muted-foreground text-sm mb-8">כל פרויקט מוצג עם שקיפות מלאה על ההתקדמות</p>
             <div className="grid md:grid-cols-2 gap-5">
               {projects.map((p, i) => {
@@ -234,7 +234,7 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
 
       {/* BOTTOM CTA */}
       <section className="py-16 px-4 text-center">
-        <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">יחד נעשה שינוי</h2>
+        <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{customLabels?.ctaTitle || "יחד נעשה שינוי"}</h2>
         <p className="text-muted-foreground mb-8 text-lg max-w-lg mx-auto">{tagline || "כל תרומה, קטנה כגדולה, עושה הבדל אמיתי"}</p>
         <button onClick={() => document.getElementById("donate")?.scrollIntoView({ behavior: "smooth" })}
           className="inline-flex items-center gap-2 px-10 py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-xl shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-shadow">

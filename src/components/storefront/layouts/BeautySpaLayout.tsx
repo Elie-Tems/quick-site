@@ -17,7 +17,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
     businessName, tagline, heroTitle, aboutText, heroImageUrl,
     logoUrl, phone, products, categories, banners, heroBenefits,
     cartItems, onAddToCart, onUpdateQuantity, onRemoveFromCart, onCheckout,
-    selectedCategoryId, onSelectCategory, whatsappEnabled, reviewsCache,
+    selectedCategoryId, onSelectCategory, whatsappEnabled, reviewsCache, customLabels,
   } = props;
 
   const [cartOpen, setCartOpen] = useState(false);
@@ -108,7 +108,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
       {services.length > 0 && (
         <section className="py-14 px-4 bg-muted/20">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">השירותים שלנו</h2>
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">{customLabels?.productsTitle || "השירותים שלנו"}</h2>
             <p className="text-muted-foreground mb-8 text-sm">כל הטיפולים מבוצעים עם חומרים מקצועיים</p>
             <div className="grid md:grid-cols-2 gap-4">
               {services.map((s) => (
@@ -147,7 +147,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
           <div className="max-w-5xl mx-auto">
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div>
-                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">קצת עלינו</h2>
+                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">{customLabels?.aboutTitle || "קצת עלינו"}</h2>
                 <p className="text-muted-foreground leading-relaxed">{aboutText}</p>
               </div>
               {galleryImgs.length > 0 && (
@@ -176,7 +176,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
       {!aboutText && galleryImgs.length > 1 && (
         <section className="py-14 px-4">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl font-display font-bold mb-6">גלריית עבודות</h2>
+            <h2 className="text-2xl font-display font-bold mb-6">{customLabels?.galleryTitle || "גלריית עבודות"}</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {galleryImgs.slice(0, 8).map((img, i) => (
                 <div key={i} className="aspect-square rounded-xl overflow-hidden">

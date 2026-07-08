@@ -15,7 +15,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
   const {
     businessName, tagline, heroTitle, aboutText, heroImageUrl,
     logoUrl, phone, products, banners, heroBenefits,
-    whatsappEnabled, reviewsCache, onScrollToProducts,
+    whatsappEnabled, reviewsCache, onScrollToProducts, customLabels,
   } = props;
 
   const heroImg = heroImageUrl || banners?.[0]?.imageUrl || FALLBACK_HERO;
@@ -105,7 +105,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
       {products.length > 0 && (
         <section id="services" className="py-16 px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">השירותים שלנו</h2>
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">{customLabels?.productsTitle || "השירותים שלנו"}</h2>
             <p className="text-muted-foreground text-sm mb-8">כל עבודה עם אחריות ושקיפות מלאה</p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
               {products.map((p, i) => (
@@ -142,7 +142,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
       {/* WORK GALLERY */}
       <section className="py-14 px-4 bg-muted/20">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-display font-bold mb-2">עבודות אחרונות</h2>
+          <h2 className="text-2xl font-display font-bold mb-2">{customLabels?.galleryTitle || "עבודות אחרונות"}</h2>
           <p className="text-muted-foreground text-sm mb-6">תוצאות אמיתיות של לקוחות מרוצים</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {displayGallery.slice(0, 8).map((img, i) => (
@@ -160,7 +160,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div>
-                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">קצת עלינו</h2>
+                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">{customLabels?.aboutTitle || "קצת עלינו"}</h2>
                 <p className="text-muted-foreground leading-relaxed mb-6">{aboutText}</p>
                 <div className="space-y-2">
                   {trustItems.map((item, i) => (
@@ -202,7 +202,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
       {/* LEAD FORM CTA */}
       <section className="py-14 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-display font-bold mb-3">מוכנים לקבל הצעת מחיר?</h2>
+          <h2 className="text-2xl md:text-3xl font-display font-bold mb-3">{customLabels?.ctaTitle || "מוכנים לקבל הצעת מחיר?"}</h2>
           <p className="text-muted-foreground mb-7">בלי עלויות נסתרות. מחיר סופי, עבודה מקצועית.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {whatsappEnabled && phone && (

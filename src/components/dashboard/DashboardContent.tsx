@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useBusinessById, useUpdateBusiness } from "@/hooks/useBusiness";
-import { ExternalLink, Loader2, Plus, Trash2, Wand2, FileText, LayoutTemplate } from "lucide-react";
+import { ExternalLink, Loader2, Plus, Trash2, Wand2, FileText, LayoutTemplate, Tags } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import AboutEditor from "./AboutEditor";
@@ -22,7 +22,7 @@ const ABOUT_LABELS: Record<BusinessType, { title: string; desc: string; saveLabe
   realestate: { title: "על המשרד",    desc: "ספרו על משרד הנדל\"ן, הניסיון, ואזורי הפעילות שלכם.",             saveLabel: "שמרו על המשרד"     },
 };
 
-type ContentTab = "hero" | "about";
+type ContentTab = "hero" | "about" | "labels";
 
 const DashboardContent = ({ businessId, businessType = "products" }: DashboardContentProps) => {
   const { data: business, isLoading } = useBusinessById(businessId);
@@ -33,8 +33,19 @@ const DashboardContent = ({ businessId, businessType = "products" }: DashboardCo
   const [heroTitle, setHeroTitle] = useState("");
   const [tagline, setTagline] = useState("");
   const [heroBenefits, setHeroBenefits] = useState<string[]>([]);
+  const [heroBadge, setHeroBadge] = useState("");
+  const [promoText, setPromoText] = useState("");
+  const [ctaText, setCtaText] = useState("");
+  const [whatsappMessage, setWhatsappMessage] = useState("");
   const [isSavingHero, setIsSavingHero] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Section labels (customLabels)
+  const [labelProducts, setLabelProducts] = useState("");
+  const [labelAbout, setLabelAbout] = useState("");
+  const [labelCta, setLabelCta] = useState("");
+  const [labelGallery, setLabelGallery] = useState("");
+  const [isSavingLabels, setIsSavingLabels] = useState(false);
 
   // About fields
   const [aboutBody, setAboutBody] = useState("");
@@ -47,6 +58,15 @@ const DashboardContent = ({ businessId, businessType = "products" }: DashboardCo
     setTagline((business as any).tagline || "");
     const raw = (business as any).hero_benefits;
     setHeroBenefits(Array.isArray(raw) ? raw : []);
+    setHeroBadge((business as any).hero_badge || "");
+    setPromoText((business as any).promo_text || "");
+    setCtaText((business as any).cta_text || "");
+    setWhatsappMessage((business as any).whatsapp_message || "");
+    const cl = (business as any).custom_labels || {};
+    setLabelProducts(cl.productsTitle || "");
+    setLabelAbout(cl.aboutTitle || "");
+    setLabelCta(cl.ctaTitle || "");
+    setLabelGallery(cl.galleryTitle || "");
     // Prefer about_text (storefront inline) but fall back to about_page_body
     setAboutBody((business as any).about_text || (business as any).about_page_body || "");
     setAboutContact((business as any).about_page_contact || "");
@@ -61,6 +81,10 @@ const DashboardContent = ({ businessId, businessType = "products" }: DashboardCo
         hero_title: heroTitle || null,
         tagline: tagline || null,
         hero_benefits: heroBenefits.filter(b => b.trim()),
+        hero_badge: heroBadge || null,
+        promo_text: promoText || null,
+        cta_text: ctaText || null,
+        whatsapp_message: whatsappMessage || null,
       } as any);
       toast.success("הכותרת הראשית עודכנה");
     } catch {
@@ -87,6 +111,27 @@ const DashboardContent = ({ businessId, businessType = "products" }: DashboardCo
       toast.error("שגיאה בשמירה");
     } finally {
       setIsSavingAbout(false);
+    }
+  };
+
+  const handleSaveLabels = async () => {
+    if (!businessId) return;
+    setIsSavingLabels(true);
+    try {
+      await updateBusiness.mutateAsync({
+        id: businessId,
+        custom_labels: {
+          ...(labelProducts ? { productsTitle: labelProducts } : {}),
+          ...(labelAbout ? { aboutTitle: labelAbout } : {}),
+          ...(labelCta ? { ctaTitle: labelCta } : {}),
+          ...(labelGallery ? { galleryTitle: labelGallery } : {}),
+        },
+      } as any);
+      toast.success("כותרות הסקשנים עודכנו");
+    } catch {
+      toast.error("שגיאה בשמירה");
+    } finally {
+      setIsSavingLabels(false);
     }
   };
 
@@ -156,6 +201,7 @@ const DashboardContent = ({ businessId, businessType = "products" }: DashboardCo
         {([
           { id: "hero" as ContentTab, label: "כותרת ראשית", icon: LayoutTemplate },
           { id: "about" as ContentTab, label: aboutLabels.title, icon: FileText },
+          { id: "labels" as ContentTab, label: "כותרות סקשנים", icon: Tags },
         ]).map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -247,6 +293,50 @@ const DashboardContent = ({ businessId, businessType = "products" }: DashboardCo
             </div>
           </div>
 
+          {/* Secondary fields */}
+          <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
+            <div>
+              <h2 className="text-base font-semibold">פרטים נוספים</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">בנר, כפתורים והודעות</p>
+            </div>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label>בנר עליון (סרט)</Label>
+                <Input
+                  value={promoText}
+                  onChange={e => setPromoText(e.target.value)}
+                  placeholder='למשל: "משלוח חינם בהזמנה מעל ₪199 ⭐ הנחה 10% לנרשמים"'
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>תג מעל הכותרת</Label>
+                  <Input
+                    value={heroBadge}
+                    onChange={e => setHeroBadge(e.target.value)}
+                    placeholder='למשל: "חדש בחנות"'
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>טקסט כפתור ראשי</Label>
+                  <Input
+                    value={ctaText}
+                    onChange={e => setCtaText(e.target.value)}
+                    placeholder='למשל: "לקולקציה"'
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>הודעת וואטסאפ (מוכנה מראש)</Label>
+                <Input
+                  value={whatsappMessage}
+                  onChange={e => setWhatsappMessage(e.target.value)}
+                  placeholder="שלום, הגעתי מהאתר שלכם ואשמח לקבל פרטים נוספים"
+                />
+              </div>
+            </div>
+          </div>
+
           <Button onClick={handleSaveHero} disabled={isSavingHero} className="w-full">
             {isSavingHero && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
             שמרו כותרת ראשית
@@ -287,6 +377,65 @@ const DashboardContent = ({ businessId, businessType = "products" }: DashboardCo
           <Button onClick={handleSaveAbout} disabled={isSavingAbout} className="w-full">
             {isSavingAbout && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
             {aboutLabels.saveLabel}
+          </Button>
+        </div>
+      )}
+
+      {/* Labels tab */}
+      {activeTab === "labels" && (
+        <div className="space-y-4 max-w-2xl">
+          <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
+            <div>
+              <h2 className="text-base font-semibold">כותרות סקשנים</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">דרסו את הכותרות הקבועות בתבנית. השאירו ריק כדי לשמור על ברירת המחדל.</p>
+            </div>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label>סקשן מוצרים / שירותים</Label>
+                <Input
+                  value={labelProducts}
+                  onChange={e => setLabelProducts(e.target.value)}
+                  placeholder={
+                    businessType === "nonprofit" ? "הפרויקטים שלנו" :
+                    businessType === "realestate" ? "הנכסים שלנו" :
+                    businessType === "services" ? "השירותים שלנו" :
+                    "הקולקציה שלנו"
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>סקשן אודות</Label>
+                <Input
+                  value={labelAbout}
+                  onChange={e => setLabelAbout(e.target.value)}
+                  placeholder={businessType === "nonprofit" ? "הסיפור שלנו" : "קצת עלינו"}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>כפתור CTA תחתון</Label>
+                <Input
+                  value={labelCta}
+                  onChange={e => setLabelCta(e.target.value)}
+                  placeholder={
+                    businessType === "nonprofit" ? "יחד נעשה שינוי" :
+                    businessType === "realestate" ? "מעוניינים לשמוע עוד?" :
+                    "מוכנים להתחיל?"
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>גלריה / עבודות (אם קיים בתבנית)</Label>
+                <Input
+                  value={labelGallery}
+                  onChange={e => setLabelGallery(e.target.value)}
+                  placeholder={businessType === "services" ? "עבודות אחרונות" : "גלריית עבודות"}
+                />
+              </div>
+            </div>
+          </div>
+          <Button onClick={handleSaveLabels} disabled={isSavingLabels} className="w-full">
+            {isSavingLabels && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+            שמרו כותרות
           </Button>
         </div>
       )}

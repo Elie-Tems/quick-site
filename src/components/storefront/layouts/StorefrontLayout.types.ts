@@ -14,6 +14,13 @@ export interface StorefrontBanner {
   ctaUrl?: string;
 }
 
+export interface CustomLabels {
+  productsTitle?: string;
+  aboutTitle?: string;
+  ctaTitle?: string;
+  galleryTitle?: string;
+}
+
 export interface StorefrontLayoutProps {
   // Business identity
   businessName: string;
@@ -34,6 +41,7 @@ export interface StorefrontLayoutProps {
   showMarqueeBar?: boolean;
   businessCategory?: BusinessCategory;
   reviewsCache?: ReviewsCache | null;
+  customLabels?: CustomLabels;
 
   // Template
   template: StoreTemplate;

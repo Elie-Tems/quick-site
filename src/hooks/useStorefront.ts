@@ -24,6 +24,7 @@ export interface Business {
   cta_text: string | null;
   about_text: string | null;
   about_page_body: string | null;
+  custom_labels: Record<string, string> | null;
 }
 
 export interface ProductCustomField {

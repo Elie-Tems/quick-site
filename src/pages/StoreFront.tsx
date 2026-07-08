@@ -742,6 +742,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     favoriteIds,
     onToggleFavorite: toggleFavorite,
     hasPayment: business.payment_enabled ?? false,
+    customLabels: (b?.custom_labels as Record<string, string> | null) ?? undefined,
   };
 
   // Pick layout component based on template layoutId
