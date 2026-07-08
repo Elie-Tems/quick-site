@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { ShoppingCart, ArrowRight, User, Phone, Mail, Package } from "lucide-react";
+import { ShoppingCart, ArrowRight, User, Phone, Mail, Package, Heart, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import type { BusinessType } from "@/lib/businessModules";
 
 export interface OrderItem {
   productId: string;
@@ -25,18 +26,78 @@ export interface Order {
 interface DashboardOrdersProps {
   orders: Order[];
   onOrdersChange: (orders: Order[]) => void;
-  /** Persist a status change to the DB (parent maps UI status -> DB + saves). */
   onStatusChange?: (orderId: string, status: Order['status']) => void;
+  businessType?: BusinessType;
 }
 
-const statusConfig: Record<Order['status'], { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  received: { label: 'התקבלה', variant: 'secondary' },
-  pending_payment: { label: 'ממתין לתשלום', variant: 'outline' },
-  completed: { label: 'הושלמה', variant: 'default' },
-  cancelled: { label: 'בוטלה', variant: 'destructive' },
+type StatusCfg = Record<Order['status'], { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }>;
+
+const STATUS_BY_TYPE: Record<BusinessType, StatusCfg> = {
+  products: {
+    received: { label: 'התקבלה', variant: 'secondary' },
+    pending_payment: { label: 'ממתין לתשלום', variant: 'outline' },
+    completed: { label: 'הושלמה', variant: 'default' },
+    cancelled: { label: 'בוטלה', variant: 'destructive' },
+  },
+  services: {
+    received: { label: 'התקבלה', variant: 'secondary' },
+    pending_payment: { label: 'ממתין לתשלום', variant: 'outline' },
+    completed: { label: 'הושלמה', variant: 'default' },
+    cancelled: { label: 'בוטלה', variant: 'destructive' },
+  },
+  nonprofit: {
+    received: { label: 'התקבלה', variant: 'secondary' },
+    pending_payment: { label: 'בבדיקה', variant: 'outline' },
+    completed: { label: 'נקלטה', variant: 'default' },
+    cancelled: { label: 'בוטלה', variant: 'destructive' },
+  },
+  realestate: {
+    received: { label: 'ליד חדש', variant: 'secondary' },
+    pending_payment: { label: 'בטיפול', variant: 'outline' },
+    completed: { label: 'נסגר', variant: 'default' },
+    cancelled: { label: 'לא רלוונטי', variant: 'destructive' },
+  },
 };
 
-const DashboardOrders = ({ orders, onOrdersChange, onStatusChange }: DashboardOrdersProps) => {
+// Per-type text labels
+const LABELS: Record<BusinessType, { title: string; single: string; contact: string; items: string; empty: string; emptyDesc: string; listItem: string }> = {
+  products: {
+    title: 'הזמנות', single: 'הזמנה', contact: 'פרטי לקוח', items: 'מוצרים',
+    empty: 'עדיין אין הזמנות',
+    emptyDesc: 'ברגע שלקוח יזמין מהחנות, ההזמנה תופיע כאן.',
+    listItem: 'פריטים',
+  },
+  services: {
+    title: 'הזמנות', single: 'הזמנה', contact: 'פרטי לקוח', items: 'שירותים / מוצרים',
+    empty: 'עדיין אין הזמנות',
+    emptyDesc: 'ברגע שלקוח יזמין, ההזמנה תופיע כאן.',
+    listItem: 'פריטים',
+  },
+  nonprofit: {
+    title: 'תרומות', single: 'תרומה', contact: 'פרטי תורם', items: 'פרויקט / יעד',
+    empty: 'עדיין לא התקבלו תרומות',
+    emptyDesc: 'ברגע שמישהו יתרום דרך האתר, התרומה תופיע כאן.',
+    listItem: 'פריטים',
+  },
+  realestate: {
+    title: 'לידים', single: 'ליד', contact: 'פרטי מתעניין', items: 'נכסים שהתעניין',
+    empty: 'עדיין לא הגיעו לידים',
+    emptyDesc: 'ברגע שמישהו ישאיר פרטים על נכס, הליד יופיע כאן.',
+    listItem: 'נכסים',
+  },
+};
+
+const TYPE_ICON: Record<BusinessType, React.ComponentType<{ className?: string }>> = {
+  products: ShoppingCart,
+  services: ShoppingCart,
+  nonprofit: Heart,
+  realestate: Users,
+};
+
+const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType = 'products' }: DashboardOrdersProps) => {
+  const statusConfig = STATUS_BY_TYPE[businessType];
+  const lbl = LABELS[businessType];
+  const ListIcon = TYPE_ICON[businessType];
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const formatPrice = (price: number) => {
@@ -78,7 +139,7 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange }: DashboardOr
             <ArrowRight className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-foreground">הזמנה #{selectedOrder.id}</h1>
+            <h1 className="text-xl font-bold text-foreground">{lbl.single} #{selectedOrder.id}</h1>
             <p className="text-sm text-muted-foreground">{formatDate(selectedOrder.date)}</p>
           </div>
           <Badge variant={status.variant}>{status.label}</Badge>
@@ -89,7 +150,7 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange }: DashboardOr
           <div className="bg-card rounded-xl border border-border p-4 shadow-soft">
             <h2 className="font-semibold mb-4 flex items-center gap-2">
               <User className="h-5 w-5 text-muted-foreground" />
-              פרטי לקוח
+              {lbl.contact}
             </h2>
             <div className="space-y-2 text-sm">
               <p className="flex items-center gap-2">
@@ -115,7 +176,7 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange }: DashboardOr
           <div className="bg-card rounded-xl border border-border p-4 shadow-soft">
             <h2 className="font-semibold mb-4 flex items-center gap-2">
               <Package className="h-5 w-5 text-muted-foreground" />
-              מוצרים
+              {lbl.items}
             </h2>
             <div className="space-y-3">
               {selectedOrder.items.map((item, index) => (
@@ -157,17 +218,15 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange }: DashboardOr
   // List View
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <h1 className="text-2xl font-bold text-foreground">הזמנות</h1>
+      <h1 className="text-xl font-semibold text-foreground">{lbl.title}</h1>
 
       {orders.length === 0 ? (
         <div className="text-center py-14 bg-muted/30 rounded-xl px-4">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <ShoppingCart className="h-8 w-8 text-primary" />
+            <ListIcon className="h-8 w-8 text-primary" />
           </div>
-          <p className="text-lg font-semibold text-foreground mb-1">עדיין אין הזמנות</p>
-          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-            ברגע שלקוח יזמין מהחנות, ההזמנה תופיע כאן. כדאי לשתף את קישור החנות בוואטסאפ וברשתות כדי להתחיל למכור 🚀
-          </p>
+          <p className="text-lg font-semibold text-foreground mb-1">{lbl.empty}</p>
+          <p className="text-sm text-muted-foreground max-w-sm mx-auto">{lbl.emptyDesc}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -188,7 +247,7 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange }: DashboardOr
                 </div>
                 <div className="text-left">
                   <p className="font-bold text-primary">{formatPrice(order.total)}</p>
-                  <p className="text-xs text-muted-foreground">{order.items.length} פריטים</p>
+                  <p className="text-xs text-muted-foreground">{order.items.length} {lbl.listItem}</p>
                 </div>
               </button>
             );

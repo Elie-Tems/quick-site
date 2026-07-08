@@ -538,6 +538,7 @@ const Dashboard = () => {
                 onNavigateToSubscription={() => setCurrentView('subscription')}
                 initialCategoryFilterId={productsCategoryFilter}
                 onNavigateToCategories={() => setProductsTab('categories')}
+                businessType={getBusinessType(business)}
               />
             )}
 
@@ -578,7 +579,7 @@ const Dashboard = () => {
           />
         );
       case 'orders':
-        return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} />;
+        return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} businessType={getBusinessType(business)} />;
       case 'customers':
       case 'profitability':
         return (

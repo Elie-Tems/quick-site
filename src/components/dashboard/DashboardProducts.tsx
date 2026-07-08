@@ -51,11 +51,18 @@ interface DashboardProductsProps {
   categories?: ProductCategory[];
   onNavigateToAI?: () => void;
   onNavigateToSubscription?: () => void;
-  /** סינון התחלתי לפי קטגוריה (כשמגיעים ממסך הקטגוריות) */
   initialCategoryFilterId?: string | null;
-  /** ניווט חזרה למסך קטגוריות (כשמטפלים במוצרים ללא קטגוריה) */
   onNavigateToCategories?: () => void;
+  businessType?: import("@/lib/businessModules").BusinessType;
 }
+
+// Per-type label overrides for DashboardProducts
+const PRODUCT_LABELS: Record<import("@/lib/businessModules").BusinessType, { title: string; addBtn: string; addForm: string; editForm: string; emptyFirst: string }> = {
+  products:   { title: 'מוצרים',    addBtn: 'הוסף מוצר',    addForm: 'הוספת מוצר',    editForm: 'עריכת מוצר',    emptyFirst: 'הוסף מוצר ראשון' },
+  services:   { title: 'מוצרים',    addBtn: 'הוסף פריט',    addForm: 'הוספת פריט',    editForm: 'עריכת פריט',    emptyFirst: 'הוסף פריט ראשון' },
+  nonprofit:  { title: 'פרויקטים', addBtn: 'הוסף פרויקט', addForm: 'הוספת פרויקט', editForm: 'עריכת פרויקט', emptyFirst: 'הוסף פרויקט ראשון' },
+  realestate: { title: 'נכסים',     addBtn: 'הוסף נכס',     addForm: 'הוספת נכס',     editForm: 'עריכת נכס',     emptyFirst: 'הוסף נכס ראשון' },
+};
 
 const DashboardProducts = ({
   products,
@@ -66,7 +73,9 @@ const DashboardProducts = ({
   onNavigateToSubscription,
   initialCategoryFilterId,
   onNavigateToCategories,
+  businessType = 'products',
 }: DashboardProductsProps) => {
+  const pl = PRODUCT_LABELS[businessType];
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -689,7 +698,7 @@ const DashboardProducts = ({
             <X className="h-5 w-5" />
           </button>
           <h1 className="text-xl font-bold text-foreground">
-            {editingProduct ? 'עריכת מוצר' : 'הוספת מוצר'}
+            {editingProduct ? pl.editForm : pl.addForm}
           </h1>
         </div>
 
@@ -998,7 +1007,7 @@ const DashboardProducts = ({
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" className="flex-1">
-              {editingProduct ? 'שמור שינויים' : 'הוסף מוצר'}
+              {editingProduct ? 'שמור שינויים' : pl.addBtn}
             </Button>
             <Button type="button" variant="outline" onClick={resetForm}>
               ביטול
@@ -1022,7 +1031,7 @@ const DashboardProducts = ({
       />
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-foreground">מוצרים ({products.length})</h1>
+        <h1 className="text-2xl font-bold text-foreground">{pl.title} ({products.length})</h1>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Button 
             variant="outline" 
@@ -1044,7 +1053,7 @@ const DashboardProducts = ({
           </Button>
           <Button onClick={openAddForm} className="gap-1.5 flex-1 sm:flex-none">
             <Plus className="h-4 w-4" />
-            הוסף מוצר
+            {pl.addBtn}
           </Button>
         </div>
       </div>
@@ -1189,7 +1198,7 @@ const DashboardProducts = ({
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button onClick={openAddForm} variant="outline" className="gap-2">
               <Plus className="h-4 w-4" />
-              הוסף מוצר ראשון
+              {pl.emptyFirst}
             </Button>
             <span className="text-muted-foreground text-sm">או</span>
             <Button 
