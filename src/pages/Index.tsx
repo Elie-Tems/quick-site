@@ -397,19 +397,17 @@ const Index = () => {
           </div>
         </section>
 
-        {/* VALUE PROPS STRIP */}
-        <section className="relative py-14 px-4">
-          <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4">
-            {[
-              { icon: "⚡", label: "אתר מוכן תוך 5 דקות" },
-              { icon: "₪", label: "69 ₪ לחודש, ללא התחייבות" },
-              { icon: "🔧", label: "בלי ידע טכני, בלי תלות בסוכנות" },
-            ].map((item) => (
-              <div key={item.label} className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl pv-surface2 border pv-border">
-                <span className="text-xl">{item.icon}</span>
-                <span className="pv-strong font-semibold text-sm">{item.label}</span>
-              </div>
-            ))}
+        {/* PER-TAB SUBTITLE SECTION */}
+        <section className="py-20 px-4 pv-surface2 border-y pv-border">
+          <div className="max-w-xl mx-auto text-center">
+            <AnimatePresence mode="wait">
+              <motion.div key={a.key}
+                initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4 }}>
+                <p className="text-xl md:text-2xl leading-relaxed pv-muted mb-4">{a.subtitle[0]}</p>
+                <p className="text-xl md:text-2xl font-bold leading-snug" style={{ color: "var(--color-primary, #22c55e)" }}>{a.subtitle[1]}</p>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </section>
 
