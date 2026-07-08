@@ -22,7 +22,7 @@ const ENGINES = [
     type: "אתר מכירות",
     subtitle: ["תמיד רציתם אתר מכירות, אבל העלויות, הדומיינים והבלגן עצרו אתכם.", "עם סיאנגו זה אפשרי במהירות ובקלות: חנות מקצועית תוך כמה דקות ב-69 ₪ לחודש בלבד."],
     to: "/preview/redesign/home-multi",
-    img: "/onboarding/דוגמה חיה של האתר.png",
+    img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
   },
   {
     key: "booking", label: "שירותי מקצוע", icon: CalendarClock,
