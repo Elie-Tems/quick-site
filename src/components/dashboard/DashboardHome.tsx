@@ -92,7 +92,7 @@ const DashboardHome = ({
 
   const todos: { id: string; label: string; emphasized?: boolean; view: DashboardView }[] = [
     ...(!stats.paymentEnabled ? [{ id: "payments", label: t.todosPaymentLabel, emphasized: true, view: "payments" as DashboardView }] : []),
-    ...(!hasAbout ? [{ id: "about", label: 'כתבו "אודות"', view: "about" as DashboardView }] : []),
+    ...(!hasAbout ? [{ id: "about", label: 'כתבו "אודות"', view: "content" as DashboardView }] : []),
     ...(stats.totalProducts === 0 ? [{ id: "products", label: t.todosProductsLabel, view: t.productsNav }] : []),
   ];
 
@@ -215,11 +215,7 @@ const DashboardHome = ({
         className="w-full flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:bg-muted/40 transition-colors text-right"
       >
         <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-<<<<<<< HEAD
-          <Eye className="h-4.5 w-4.5 text-primary" /> כניסה לחנות שלך
-=======
           <Eye className="h-4.5 w-4.5 text-primary" /> הכניסו לחנות שלך
->>>>>>> 960c742 (fix(i18n): use gender-neutral plural forms throughout UI)
         </span>
         <ChevronLeft className="h-4.5 w-4.5 text-muted-foreground" />
       </button>

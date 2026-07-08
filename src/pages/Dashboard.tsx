@@ -19,6 +19,7 @@ import DashboardSales from "@/components/dashboard/DashboardSales";
 import DashboardCampaigns from "@/components/dashboard/DashboardCampaigns";
 import DashboardSettings, { type BusinessSettings } from "@/components/dashboard/DashboardSettings";
 import DashboardAboutPage from "@/components/dashboard/DashboardAboutPage";
+import DashboardContent from "@/components/dashboard/DashboardContent";
 import DashboardPreview from "@/components/dashboard/DashboardPreview";
 import DashboardCategories from "@/components/dashboard/DashboardCategories";
 import DashboardDesign from "@/components/dashboard/DashboardDesign";
@@ -671,7 +672,8 @@ const Dashboard = () => {
           </div>
         );
       case 'about':
-        return <DashboardAboutPage businessId={business?.id} />;
+      case 'content':
+        return <DashboardContent businessId={business?.id} businessType={getBusinessType(business)} />;
       case 'shipping':
         return (
           <DashboardShipping settings={settings} onSettingsChange={setSettings} />

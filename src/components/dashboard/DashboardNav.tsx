@@ -1,10 +1,10 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2 } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2, FileText } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 import type { BusinessType } from "@/lib/businessModules";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -20,7 +20,7 @@ interface DashboardNavProps {
 
 // Sidebar groups (desktop shows these as section headers). Order here = display order.
 // Redesigned IA: 6 focused groups instead of the old sprawling list.
-const NAV_GROUPS = ["בית", "חנות פיצ'רים", "עריכה ועיצוב", "ניהול מכירות", "שיווק", "הגדרות"] as const;
+const NAV_GROUPS = ["בית", "חנות פיצ'רים", "תוכן", "עריכה ועיצוב", "ניהול מכירות", "שיווק", "הגדרות"] as const;
 type NavGroup = (typeof NAV_GROUPS)[number];
 
 // Per-business-type overrides: which nav items to hide, and label/icon overrides.
@@ -60,6 +60,9 @@ const navItems: {
   // בית
   { id: "home", label: "סקירה", icon: LayoutDashboard, group: "בית" },
 
+  // תוכן - עריכת כותרת ראשית + אודות
+  { id: "content", label: "תוכן", icon: FileText, group: "תוכן" },
+
   // עריכה ועיצוב - כל מה שבונה את תוכן ומראה החנות
   // (קטגוריות + מבצעים הם עכשיו טאבים בתוך "מוצרים")
   { id: "products", label: "מוצרים", icon: Package, group: "עריכה ועיצוב" },
@@ -81,7 +84,6 @@ const navItems: {
   { id: "campaigns", label: "פרסום באתר", icon: Megaphone, group: "שיווק" },
   { id: "discounts", label: "מבצעים ומובילים", icon: Tag, group: "שיווק" },
   { id: "whatsapp-button", label: "כפתור וואטסאפ", shortLabel: "וואטסאפ", icon: MessageCircle, group: "שיווק" },
-  { id: "about", label: "אודות", icon: Info, group: "שיווק" },
 
   // הגדרות
   { id: "settings", label: "פרטי העסק", shortLabel: "הגדרות", icon: Settings, group: "הגדרות" },
