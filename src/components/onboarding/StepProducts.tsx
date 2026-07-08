@@ -807,7 +807,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                   onClick={() => { setMicHelp(null); startRecording(); }}
                   className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
                 >
-                  <Mic className="w-4 h-4" /> אפשר מיקרופון ונסה שוב
+                  <Mic className="w-4 h-4" /> אפשרו מיקרופון ונסה שוב
                 </button>
               </>
             )}

@@ -202,7 +202,7 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
             עיצוב החנות
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            בחר תבנית עיצוב לחנות שלך
+            בחרו תבנית עיצוב לחנות שלך
           </p>
         </div>
         {selectedTemplate !== currentTemplateId && (

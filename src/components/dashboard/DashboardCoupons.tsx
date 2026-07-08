@@ -265,7 +265,7 @@ const DashboardCoupons = ({ businessId }: DashboardCouponsProps) => {
             <p className="text-lg font-semibold text-foreground mb-1">קופונים מגדילים מכירות</p>
             <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">צרו קוד הנחה שלקוחות יזינו בקופה - דרך מצוינת לעודד רכישות.</p>
             <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
-              צור קופון ראשון
+              צרו קופון ראשון
             </Button>
           </CardContent>
         </Card>

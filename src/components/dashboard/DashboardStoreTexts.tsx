@@ -253,7 +253,7 @@ const DashboardStoreTexts = () => {
 
       <Button size="lg" className="w-full gap-2" onClick={handleSave} disabled={isSaving}>
         {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-        שמור שינויים
+        שמרו שינויים
       </Button>
     </div>
   );

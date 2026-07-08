@@ -776,7 +776,7 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
         {/* Save Button */}
         <Button type="submit" size="lg" className="w-full gap-2" disabled={isSaving}>
           {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-          שמור הגדרות
+          שמרו הגדרות
         </Button>
 
         {/* Dev: reset onboarding */}

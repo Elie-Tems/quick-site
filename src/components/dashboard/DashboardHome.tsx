@@ -92,7 +92,7 @@ const DashboardHome = ({
 
   const todos: { id: string; label: string; emphasized?: boolean; view: DashboardView }[] = [
     ...(!stats.paymentEnabled ? [{ id: "payments", label: t.todosPaymentLabel, emphasized: true, view: "payments" as DashboardView }] : []),
-    ...(!hasAbout ? [{ id: "about", label: 'כתיבת "אודות"', view: "about" as DashboardView }] : []),
+    ...(!hasAbout ? [{ id: "about", label: 'כתבו "אודות"', view: "about" as DashboardView }] : []),
     ...(stats.totalProducts === 0 ? [{ id: "products", label: t.todosProductsLabel, view: t.productsNav }] : []),
   ];
 
@@ -158,7 +158,7 @@ const DashboardHome = ({
           <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
           <div className="flex-1">
             <p className="font-medium text-red-600 dark:text-red-400 text-sm">חיוב החשבון נכשל</p>
-            <p className="text-xs text-muted-foreground mt-0.5">הכרטיס נחסם או סורב בחיוב האחרון. עדכנו את פרטי התשלום כדי שהאתר ימשיך לפעול.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">הכרטיס שלך נחסם או סורב בחיוב האחרון. עדכנו את פרטי התשלום כדי שהאתר ימשיך לפעול.</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => onNavigate("subscription")} className="border-red-500/35 text-red-600 hover:bg-red-500/8 shrink-0">
             עדכנו כרטיס <ChevronLeft className="h-4 w-4" />
@@ -215,7 +215,11 @@ const DashboardHome = ({
         className="w-full flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:bg-muted/40 transition-colors text-right"
       >
         <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+<<<<<<< HEAD
           <Eye className="h-4.5 w-4.5 text-primary" /> כניסה לחנות שלך
+=======
+          <Eye className="h-4.5 w-4.5 text-primary" /> הכניסו לחנות שלך
+>>>>>>> 960c742 (fix(i18n): use gender-neutral plural forms throughout UI)
         </span>
         <ChevronLeft className="h-4.5 w-4.5 text-muted-foreground" />
       </button>

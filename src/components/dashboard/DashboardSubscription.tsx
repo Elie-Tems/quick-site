@@ -434,7 +434,7 @@ const DashboardSubscription = () => {
               </div>
             ) : (
               <Button variant="outline" size="sm" className="w-full">
-                שדרג חבילה
+                שדרגו חבילה
               </Button>
             )}
           </CardContent>

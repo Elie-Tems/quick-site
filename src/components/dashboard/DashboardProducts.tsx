@@ -783,7 +783,7 @@ const DashboardProducts = ({
                   <Label className="!text-foreground">שדות מותאמים אישית</Label>
                   <Button type="button" variant="ghost" size="sm" onClick={addCustomField} className="gap-1.5">
                     <Plus className="h-4 w-4" />
-                    הוסף שדה
+                    הוסיפו שדה
                   </Button>
                 </div>
                 
@@ -819,7 +819,7 @@ const DashboardProducts = ({
                 
                 {customFields.length === 0 && (
                   <p className="text-sm text-muted-foreground">
-                    הוסף שדות מותאמים כמו צבע, מידה, חומר וכו'
+                    הוסיפו שדות מותאמים כמו צבע, מידה, חומר וכו'
                   </p>
                 )}
               </div>
@@ -917,7 +917,7 @@ const DashboardProducts = ({
                   <Upload className={`h-8 w-8 mx-auto mb-2 ${usageStatus?.imageUploadBlocked ? 'text-destructive/50' : 'text-muted-foreground'}`} />
                 )}
                 <p className={`text-sm ${usageStatus?.imageUploadBlocked ? 'text-destructive' : 'text-muted-foreground'}`}>
-                  {isUploadingImage ? 'מעלה תמונה...' : usageStatus?.imageUploadBlocked ? 'מכסת התמונות מלאה - לחץ לשדרוג' : 'גרור תמונה או לחץ להעלאה'}
+                  {isUploadingImage ? 'מעלה תמונה...' : usageStatus?.imageUploadBlocked ? 'מכסת התמונות מלאה - לחצו לשדרוג' : 'גרור תמונה או לחצו להעלאה'}
                 </p>
                 <Input
                   id="imageUrl"

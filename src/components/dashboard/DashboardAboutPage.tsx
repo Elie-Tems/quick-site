@@ -104,7 +104,7 @@ const DashboardAboutPage = ({ businessId }: DashboardAboutPageProps) => {
           </Button>
           <Button type="submit" size="lg" className="flex-1 gap-2" disabled={isSaving}>
             {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-            שמור דף אודות
+            שמרו דף אודות
           </Button>
         </div>
       </form>

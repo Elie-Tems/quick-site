@@ -134,7 +134,7 @@ const DashboardShipping = ({ settings, onSettingsChange }: DashboardShippingProp
 
         <Button type="submit" size="lg" className="w-full gap-2" disabled={isSaving}>
           {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-          שמור הגדרות משלוחים
+          שמרו הגדרות משלוחים
         </Button>
       </form>
     </div>
