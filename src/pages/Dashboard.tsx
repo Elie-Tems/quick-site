@@ -42,6 +42,7 @@ import DashboardUpgrades from "@/components/dashboard/DashboardUpgrades";
 import DashboardLegal from "@/components/dashboard/DashboardLegal";
 import DashboardAdBudget from "@/components/dashboard/DashboardAdBudget";
 import { useMyBusiness, useProfile } from "@/hooks/useBusiness";
+import { getBusinessType } from "@/lib/businessModules";
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useOrders, useUpdateOrder } from "@/hooks/useOrders";
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner } from "@/hooks/useBanners";
@@ -770,9 +771,10 @@ const Dashboard = () => {
         />
         
         <div className="flex">
-          <DashboardNav 
-            currentView={currentView} 
+          <DashboardNav
+            currentView={currentView}
             onViewChange={setCurrentView}
+            businessType={getBusinessType(business)}
             canUseCampaigns={hasProducts}
             canUseCoupons={hasProducts}
             // תמונות AI נשאר פתוח, מגבלות שימוש מנוהלות בתוך המסך עצמו

@@ -1,13 +1,15 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
+import type { BusinessType } from "@/lib/businessModules";
 
 export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button';
 
 interface DashboardNavProps {
   currentView: DashboardView;
   onViewChange: (view: DashboardView) => void;
+  businessType?: BusinessType;
   /** האם לאפשר טאב קמפיינים (למשל רק כשיש מוצרים) */
   canUseCampaigns?: boolean;
   /** האם לאפשר טאב קופונים (למשל רק כשיש מוצרים) */
@@ -20,6 +22,34 @@ interface DashboardNavProps {
 // Redesigned IA: 6 focused groups instead of the old sprawling list.
 const NAV_GROUPS = ["בית", "חנות פיצ'רים", "עריכה ועיצוב", "ניהול מכירות", "שיווק", "הגדרות"] as const;
 type NavGroup = (typeof NAV_GROUPS)[number];
+
+// Per-business-type overrides: which nav items to hide, and label/icon overrides.
+const TYPE_CONFIG: Record<BusinessType, {
+  hiddenItems?: DashboardView[];
+  managementGroupLabel?: string;
+  itemOverrides?: Partial<Record<DashboardView, { label?: string; shortLabel?: string; icon?: React.ComponentType<{ className?: string }> }>>;
+}> = {
+  products: {},
+  services: {
+    hiddenItems: ['shipping'],
+  },
+  nonprofit: {
+    managementGroupLabel: "ניהול תרומות",
+    hiddenItems: ['shipping', 'coupons', 'payments'],
+    itemOverrides: {
+      products: { label: "פרויקטים / מיזמים", shortLabel: "פרויקטים", icon: Heart },
+      orders: { label: "תרומות", shortLabel: "תרומות", icon: Heart },
+    },
+  },
+  realestate: {
+    managementGroupLabel: "ניהול לידים",
+    hiddenItems: ['shipping', 'coupons'],
+    itemOverrides: {
+      products: { label: "נכסים", shortLabel: "נכסים", icon: Building2 },
+      orders: { label: "לידים", shortLabel: "לידים", icon: Users },
+    },
+  },
+};
 
 const navItems: {
   id: DashboardView;
@@ -64,20 +94,33 @@ const navItems: {
 const DashboardNav = ({
   currentView,
   onViewChange,
+  businessType = "products",
   canUseCampaigns = true,
   canUseCoupons = true,
   canUseAIImages = true,
 }: DashboardNavProps) => {
+  const typeConfig = TYPE_CONFIG[businessType] ?? {};
+  const hiddenItems = new Set(typeConfig.hiddenItems ?? []);
+  const itemOverrides = typeConfig.itemOverrides ?? {};
+  const managementGroupLabel = typeConfig.managementGroupLabel;
+
   // WhatsApp + Email are built but not live yet: show them as "בקרוב" (clearly
   // upcoming) instead of hiding them, so they read as a roadmap, not as missing.
   const itemsToRender = navItems
-    .map((item) => ({
-      ...item,
-      comingSoon:
-        (item.id === "whatsapp" && !whatsappEnabled()) ||
-        (item.id === "email" && !emailEnabled()),
-    }))
+    .map((item) => {
+      const override = itemOverrides[item.id] ?? {};
+      return {
+        ...item,
+        label: override.label ?? item.label,
+        shortLabel: override.shortLabel ?? item.shortLabel,
+        icon: override.icon ?? item.icon,
+        comingSoon:
+          (item.id === "whatsapp" && !whatsappEnabled()) ||
+          (item.id === "email" && !emailEnabled()),
+      };
+    })
     .filter((item) => {
+      if (hiddenItems.has(item.id)) return false;
       if (item.id === "campaigns" && !canUseCampaigns) return false;
       if (item.id === "coupons" && !canUseCoupons) return false;
       if (item.id === "ai-images" && !canUseAIImages) return false;
@@ -89,6 +132,10 @@ const DashboardNav = ({
     Object.fromEntries(NAV_GROUPS.map((g) => [g, g === activeGroup])),
   );
   const toggleGroup = (g: NavGroup) => setOpenGroups((s) => ({ ...s, [g]: !s[g] }));
+
+  // Resolve the display label for a group (may be overridden for certain business types)
+  const groupLabel = (group: NavGroup) =>
+    group === "ניהול מכירות" && managementGroupLabel ? managementGroupLabel : group;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border md:sticky md:top-14 md:border-t-0 md:border-l md:w-56 md:h-[calc(100vh-3.5rem)] md:overflow-y-auto">
@@ -129,6 +176,7 @@ const DashboardNav = ({
           const open = openGroups[group];
           // Single-item group: clicking the header navigates directly, no accordion
           const singleItemId = groupItems.length === 1 ? groupItems[0].id : null;
+          const displayGroupLabel = groupLabel(group);
           return (
             <div key={group} className="mb-1">
               <button
@@ -140,7 +188,7 @@ const DashboardNav = ({
                     : "text-muted-foreground/70 hover:text-foreground"
                 )}
               >
-                <span className={group === "חנות פיצ'רים" ? "font-bold text-[12px]" : ""}>{group}</span>
+                <span className={group === "חנות פיצ'רים" ? "font-bold text-[12px]" : ""}>{displayGroupLabel}</span>
                 {!singleItemId && <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open ? "" : "-rotate-90")} />}
               </button>
               {open && groupItems.map((item) => {
