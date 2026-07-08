@@ -22,7 +22,7 @@ const ENGINES = [
     type: "אתר מכירות",
     subtitle: ["תמיד רציתם אתר מכירות, אבל העלויות, הדומיינים והבלגן עצרו אתכם.", "עם סיאנגו זה אפשרי במהירות ובקלות: חנות מקצועית תוך כמה דקות ב-69 ₪ לחודש בלבד."],
     to: "/preview/redesign/home-multi",
-    img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
+    img: "/onboarding/דוגמה חיה של האתר.png",
   },
   {
     key: "booking", label: "שירותי מקצוע", icon: CalendarClock,
@@ -169,7 +169,7 @@ const HowItWorks = () => {
                     alt={PROCESS_IMGS[imgIdx].caption}
                     initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
-                    className="absolute inset-0 w-full h-full object-cover object-top"
+                    className="absolute inset-0 w-full h-full object-cover object-left-top"
                   />
                 </AnimatePresence>
                 {/* gradient overlay */}
@@ -388,13 +388,7 @@ const Index = () => {
                   <div className="absolute -inset-6 bg-primary/15 rounded-[2rem] blur-3xl" />
                   <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                     <div className="relative aspect-[4/3]">
-                      <img src={a.img} alt={a.label} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      <div className="absolute bottom-4 right-4 left-4 flex items-center justify-center">
-                        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur text-white text-sm border border-white/10">
-                          <a.icon className="w-4 h-4 text-primary" /> {a.type}
-                        </span>
-                      </div>
+                      <img src={a.img} alt={a.label} className="w-full h-full object-cover object-left-top" />
                     </div>
                   </div>
                 </motion.div>
@@ -402,21 +396,19 @@ const Index = () => {
           </div>
         </section>
 
-        {/* PER-TAB SUBTITLE SECTION */}
-        <section className="relative py-20 px-4 overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, var(--pv-bg) 0%, var(--pv-surface2) 40%, var(--pv-surface2) 60%, var(--pv-bg) 100%)" }} />
-          </div>
-          <div className="max-w-2xl mx-auto relative">
-            <AnimatePresence mode="wait">
-              <motion.div key={a.key}
-                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.4 }}
-                className="border-r-4 border-primary pr-6 text-right">
-                <p className="text-xl md:text-2xl leading-relaxed pv-text mb-2 font-medium">{a.subtitle[0]}</p>
-                <p className="text-xl md:text-2xl leading-relaxed font-bold" style={{ color: "var(--color-primary, #22c55e)" }}>{a.subtitle[1]}</p>
-              </motion.div>
-            </AnimatePresence>
+        {/* VALUE PROPS STRIP */}
+        <section className="relative py-14 px-4">
+          <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4">
+            {[
+              { icon: "⚡", label: "אתר מוכן תוך 5 דקות" },
+              { icon: "₪", label: "69 ₪ לחודש, ללא התחייבות" },
+              { icon: "🔧", label: "בלי ידע טכני, בלי תלות בסוכנות" },
+            ].map((item) => (
+              <div key={item.label} className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl pv-surface2 border pv-border">
+                <span className="text-xl">{item.icon}</span>
+                <span className="pv-strong font-semibold text-sm">{item.label}</span>
+              </div>
+            ))}
           </div>
         </section>
 
