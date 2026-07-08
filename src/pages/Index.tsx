@@ -398,7 +398,7 @@ const Index = () => {
         </section>
 
         {/* PER-TAB SUBTITLE SECTION */}
-        <section className="py-20 px-4 pv-surface2 border-y pv-border">
+        <section className="py-20 px-4 border-y pv-border" style={{ background: "rgba(34,197,94,0.06)" }}>
           <div className="max-w-xl mx-auto text-center">
             <AnimatePresence mode="wait">
               <motion.div key={a.key}
