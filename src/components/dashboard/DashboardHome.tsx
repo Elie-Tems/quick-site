@@ -32,6 +32,7 @@ const TYPE_LABELS: Record<BusinessType, {
   productsNav: DashboardView;
   ordersNav: DashboardView;
   todosProductsLabel: string;
+  todosPaymentLabel: string;
 }> = {
   products: {
     items: { label: "מוצרים", shortLabel: "מוצרים", icon: Package },
@@ -41,6 +42,7 @@ const TYPE_LABELS: Record<BusinessType, {
     productsNav: "products",
     ordersNav: "orders",
     todosProductsLabel: "הוסף מוצרים",
+    todosPaymentLabel: "חבר סליקה לקבלת תשלומים",
   },
   services: {
     items: { label: "מוצרים", shortLabel: "מוצרים", icon: Package },
@@ -50,6 +52,7 @@ const TYPE_LABELS: Record<BusinessType, {
     productsNav: "products",
     ordersNav: "orders",
     todosProductsLabel: "הוסף שירותים / מוצרים",
+    todosPaymentLabel: "חבר סליקה לקבלת תשלומים",
   },
   nonprofit: {
     items: { label: "פרויקטים", shortLabel: "פרויקטים", icon: Heart },
@@ -59,6 +62,7 @@ const TYPE_LABELS: Record<BusinessType, {
     productsNav: "products",
     ordersNav: "orders",
     todosProductsLabel: "הוסף פרויקטים / מיזמים",
+    todosPaymentLabel: "הגדר קבלת תרומות אונליין",
   },
   realestate: {
     items: { label: "נכסים", shortLabel: "נכסים", icon: Building2 },
@@ -68,6 +72,7 @@ const TYPE_LABELS: Record<BusinessType, {
     productsNav: "products",
     ordersNav: "orders",
     todosProductsLabel: "הוסף נכסים",
+    todosPaymentLabel: "הגדר קבלת תשלומים / עמלות",
   },
 };
 
@@ -86,7 +91,7 @@ const DashboardHome = ({
     new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
 
   const todos: { id: string; label: string; emphasized?: boolean; view: DashboardView }[] = [
-    ...(!stats.paymentEnabled ? [{ id: "payments", label: "חבר סליקה לקבלת תשלומים", emphasized: true, view: "payments" as DashboardView }] : []),
+    ...(!stats.paymentEnabled ? [{ id: "payments", label: t.todosPaymentLabel, emphasized: true, view: "payments" as DashboardView }] : []),
     ...(!hasAbout ? [{ id: "about", label: 'כתוב "אודות"', view: "about" as DashboardView }] : []),
     ...(stats.totalProducts === 0 ? [{ id: "products", label: t.todosProductsLabel, view: t.productsNav }] : []),
   ];

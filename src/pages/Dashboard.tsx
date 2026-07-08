@@ -511,8 +511,8 @@ const Dashboard = () => {
             {/* One product hub: list / categories as tabs */}
             <div className="flex gap-1 border-b border-border overflow-x-auto">
               {([
-                { id: 'list', label: 'רשימת מוצרים' },
-                { id: 'categories', label: 'קטגוריות' },
+                { id: 'list', label: { products: 'רשימת מוצרים', services: 'רשימת פריטים', nonprofit: 'רשימת פרויקטים', realestate: 'רשימת נכסים' }[getBusinessType(business)] ?? 'רשימת מוצרים' },
+                { id: 'categories', label: { products: 'קטגוריות', services: 'קטגוריות', nonprofit: 'סוגי פרויקטים', realestate: 'סוגי נכסים' }[getBusinessType(business)] ?? 'קטגוריות' },
               ] as const).map((t) => (
                 <button
                   key={t.id}

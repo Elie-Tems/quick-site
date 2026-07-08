@@ -837,10 +837,17 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       )}
 
       {/* Header */}
-      <div className="text-center">
-        <h1 className="text-2xl font-medium text-foreground mb-1">המוצרים שלך</h1>
-        <p className="text-sm text-muted-foreground">הוסיפו מוצרים — אפשר לשלב כמה שיטות</p>
-      </div>
+      {(() => {
+        const bt = data.businessType;
+        const title = bt === 'nonprofit' ? 'הפרויקטים שלך' : bt === 'realestate' ? 'הנכסים שלך' : 'המוצרים שלך';
+        const sub = bt === 'nonprofit' ? 'הוסיפו פרויקטים ומיזמים — אפשר לשלב כמה שיטות' : bt === 'realestate' ? 'הוסיפו נכסים — אפשר לשלב כמה שיטות' : 'הוסיפו מוצרים — אפשר לשלב כמה שיטות';
+        return (
+          <div className="text-center">
+            <h1 className="text-2xl font-medium text-foreground mb-1">{title}</h1>
+            <p className="text-sm text-muted-foreground">{sub}</p>
+          </div>
+        );
+      })()}
 
       {/* Organization toggle */}
       <div className="grid grid-cols-2 gap-3">
@@ -887,7 +894,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       {/* Method selector */}
       <div className="grid grid-cols-3 gap-3">
         {([
-          { id: "quick" as Method, icon: Plus, title: "הוספה מהירה", desc: "שורה אחת לכל מוצר" },
+          { id: "quick" as Method, icon: Plus, title: "הוספה מהירה", desc: `שורה אחת לכל ${data.businessType === 'nonprofit' ? 'פרויקט' : data.businessType === 'realestate' ? 'נכס' : 'מוצר'}` },
           { id: "catalog" as Method, icon: FileSpreadsheet, title: "ייבוא אקסל", desc: "העלו קובץ או הורידו תבנית" },
           { id: "voice" as Method, icon: Mic, title: "הכתבה קולית", desc: "דברו, אנחנו נרשום" },
         ] as const).map(({ id, icon: Icon, title, desc }) => (
@@ -991,7 +998,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 disabled={!quickName.trim() || !quickPrice.trim()}
                 className="flex items-center gap-1.5 px-4 h-8 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
               >
-                <Plus className="w-4 h-4" /> הוסף מוצר
+                <Plus className="w-4 h-4" /> {data.businessType === 'nonprofit' ? 'הוסף פרויקט' : data.businessType === 'realestate' ? 'הוסף נכס' : 'הוסף מוצר'}
               </button>
             </div>
           </div>
@@ -1015,7 +1022,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             >
               <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
               <p className="text-sm font-medium">גררו קובץ אקסל לכאן או לחצו לבחירה</p>
-              <p className="text-xs text-muted-foreground mt-1">.xlsx · .csv · עד 500 מוצרים</p>
+              <p className="text-xs text-muted-foreground mt-1">.xlsx · .csv · עד 500 {data.businessType === 'nonprofit' ? 'פרויקטים' : data.businessType === 'realestate' ? 'נכסים' : 'מוצרים'}</p>
             </button>
           ) : (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border">
