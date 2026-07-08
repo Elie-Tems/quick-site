@@ -105,8 +105,9 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
   };
 
   const handleSubSelect = (subId: string) => {
+    const effectiveSubType = subId === 'other' && activeMain ? `other-${activeMain}` : subId;
     updateData({
-      businessSubType: subId,
+      businessSubType: effectiveSubType,
       businessCategory: SUB_TYPE_TO_CATEGORY[subId] || 'other',
     });
     onNext();

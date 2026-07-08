@@ -91,6 +91,11 @@ const SUB_TYPE_TO_TEMPLATE: Record<string, { layout: StoreLayoutId; palette: Col
   education:       { layout: 'charity',    palette: 'cool-ocean' },
   social:          { layout: 'charity',    palette: 'sage-green' },
   animals:         { layout: 'charity',    palette: 'sage-green' },
+  // "אחר" fallback — per main category
+  'other-products':  { layout: 'classic',  palette: 'warm-earth' },
+  'other-services':  { layout: 'service',  palette: 'cool-ocean' },
+  'other-nonprofit': { layout: 'charity',  palette: 'sage-green' },
+  'other-realestate':{ layout: 'property', palette: 'midnight-gold' },
 };
 
 interface Props {
