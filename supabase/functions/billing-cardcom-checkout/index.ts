@@ -111,6 +111,12 @@ Deno.serve(async (req) => {
     return json({ error: "cardcom_create_failed", detail: res.error || res.data }, 502);
   }
 
+  // Store the LowProfileId so the webhook can verify (GetLpResult) even if Cardcom's
+  // callback body doesn't echo it back.
+  await admin.from("publish_checkout_sessions")
+    .update({ external_transaction_id: res.data.LowProfileId })
+    .eq("session_token", sessionToken);
+
   return json({
     ok: true,
     saleUrl: res.data.Url,
