@@ -1,16 +1,20 @@
-// Step 1 of the domain buy flow (payment-first). The customer fills the
+// Domain buy flow (payment-first, Cardcom token). The customer fills the
 // registrant details + consent and clicks buy; this function:
 //   1. authenticates the user and verifies they own the business,
 //   2. re-checks availability + price at Openprovider SERVER-SIDE (never trust
 //      the client's price),
 //   3. records a pending order in domain_orders with the registrant + consent,
-//   4. returns a session_token + the authoritative price.
-// The frontend then sends the customer to the iCount payment page. Only after
-// iCount confirms (domain-purchase-webhook) do we actually register the domain,
-// so we never spend reseller balance before being paid.
+//   4. charges the merchant's ALREADY-SAVED Cardcom token for the price, issuing a
+//      tax invoice in the same call (no hosted page / redirect), and only THEN
+//   5. registers the domain (registerPaidDomainOrder) - so reseller balance is
+//      never spent before we're paid.
+// Requires a saved card (captured on the publish subscription); returns
+// { needsCard:true } if the merchant has none yet.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { opCheckOne } from "../_shared/domains/openprovider.ts";
 import { priceDomain } from "../_shared/domains/pricing.ts";
+import { chargeToken, toMMYY } from "../_shared/cardcom/api.ts";
+import { registerPaidDomainOrder } from "../_shared/domains/register.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -134,5 +138,59 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "לא הצלחנו ליצור את ההזמנה" }, 500);
   }
 
-  return json({ ok: true, sessionToken, orderId: order.id, priceIls: priced.customerIls, domain: `${name}.${extension}` });
+  // The merchant's saved Cardcom token + card expiry (captured on the publish sub).
+  const { data: tok } = await admin.from("billing_tokens")
+    .select("cc_token_id, cc_exp_month, cc_exp_year").eq("user_id", user.id).eq("provider", "cardcom")
+    .not("cc_token_id", "is", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
+  const ccTokenId = (tok as { cc_token_id?: string } | null)?.cc_token_id;
+  const expMonth = (tok as { cc_exp_month?: number } | null)?.cc_exp_month;
+  const expYear = (tok as { cc_exp_year?: number } | null)?.cc_exp_year;
+  if (!ccTokenId || !expMonth || !expYear) {
+    await admin.from("domain_orders").update({ status: "failed", error: "no_card", updated_at: new Date().toISOString() }).eq("id", order.id);
+    return json({ ok: false, needsCard: true, message: "אין כרטיס שמור. יש לפרסם אתר (מנוי) כדי לשמור כרטיס תחילה." });
+  }
+
+  // Charge the token for the domain price (customerIls is the final, VAT-inclusive
+  // amount) and issue the tax invoice in the SAME call. Idempotent per order.
+  const amount = priced.customerIls;
+  const idem = `domain:${order.id}`;
+  const isTest = Deno.env.get("BILLING_TEST_MODE") === "true";
+  await admin.from("billing_charges").insert({
+    user_id: user.id, business_id: businessId, amount_ils: amount, status: "pending",
+    is_test: isTest, idempotency_key: idem, payment_description: `רכישת דומיין ${name}.${extension}`,
+  });
+
+  const charge = await chargeToken({
+    token: ccTokenId, expMMYY: toMMYY(expMonth, expYear), amountIls: amount, externalUniqId: idem,
+    doc: {
+      docType: "TaxInvoiceAndReceipt", email: reg.email || undefined, sendByEmail: true, vatFree: false,
+      products: [{ description: `רכישת דומיין ${name}.${extension} (שנה)`, quantity: 1, unitCost: amount }],
+    },
+  });
+  if (!charge.ok) {
+    const errCode = charge.error || (charge.data as { Description?: string })?.Description || "declined";
+    await admin.from("billing_charges").update({ status: "failed", error_code: String(errCode) }).eq("idempotency_key", idem);
+    await admin.from("domain_orders").update({ status: "failed", error: `charge: ${errCode}`, updated_at: new Date().toISOString() }).eq("id", order.id);
+    return json({ ok: false, declined: true, error: "התשלום נדחה. בדקו את הכרטיס ונסו שוב." });
+  }
+
+  const confirmation = (charge.data as { ApprovalNumber?: string }).ApprovalNumber ?? null;
+  const invoiceUrl = (charge.data as { DocumentUrl?: string; DocumentInfo?: { DocumentUrl?: string } })?.DocumentUrl
+    ?? (charge.data as { DocumentInfo?: { DocumentUrl?: string } })?.DocumentInfo?.DocumentUrl ?? null;
+  await admin.from("billing_charges").update({ status: "success", confirmation_code: confirmation, invoice_url: invoiceUrl }).eq("idempotency_key", idem);
+  await admin.from("domain_orders").update({ status: "paid", updated_at: new Date().toISOString() }).eq("id", order.id);
+
+  // Payment confirmed -> register the domain (spends reseller balance).
+  const result = await registerPaidDomainOrder(admin, {
+    id: order.id, business_id: businessId, user_id: user.id,
+    domain: `${name}.${extension}`, extension,
+    price_ils: amount, cost_usd: check.data.costUsd, auto_renew: body.autoRenew !== false,
+    reg_name: reg.name ?? null, reg_email: reg.email ?? null, reg_phone: reg.phone ?? null,
+    reg_address: reg.address ?? null, reg_city: reg.city ?? null, reg_zip: reg.zip ?? null, reg_country: "IL",
+  });
+  if (!result.ok) {
+    // Paid, but registration needs manual handling (admin already alerted).
+    return json({ ok: true, paid: true, registrationPending: true, domain: `${name}.${extension}`, invoiceUrl });
+  }
+  return json({ ok: true, domain: result.domain, orderId: result.orderId, invoiceUrl });
 });

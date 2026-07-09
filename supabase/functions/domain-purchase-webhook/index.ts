@@ -8,9 +8,7 @@
 // flagged failed_funds and an urgent admin alert is sent - the customer already
 // paid, so it needs manual handling (top up + register, or refund).
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { PLATFORM_EMAILS } from "../_shared/email/platformEmails.ts";
-import { sendViaResend } from "../_shared/email/resend.ts";
-import { opCreateCustomer, opRegisterDomain, opSetDnsToHost } from "../_shared/domains/openprovider.ts";
+import { registerPaidDomainOrder } from "../_shared/domains/register.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,11 +25,6 @@ function safeEqual(a: string, b: string): boolean {
   for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return r === 0;
 }
-
-const APP_URL = () => Deno.env.get("VITE_APP_URL") || "https://siango.app";
-// Urgent admin alerts go to both founders (same list as report-error / uptime-check).
-const ALERT_RECIPIENTS = ["moti4384@gmail.com", "furmand713@gmail.com"];
-const FALLBACK_EMAIL = "office@siango.app";
 
 interface DomainOrder {
   id: string;
@@ -116,109 +109,8 @@ Deno.serve(async (req) => {
   const now = new Date().toISOString();
   await admin.from("domain_orders").update({ status: "paid", external_transaction_id: externalId, updated_at: now }).eq("id", order.id);
 
-  const [name, ...rest] = order.domain.split(".");
-  const extension = order.extension || rest.join(".");
-
-  const fail = async (status: "failed_funds" | "failed", reason: string) => {
-    await admin.from("domain_orders").update({ status, error: reason, updated_at: new Date().toISOString() }).eq("id", order.id);
-    // Look up business name for the alert.
-    let businessName: string | undefined;
-    if (order.business_id) {
-      const { data: b } = await admin.from("businesses").select("name").eq("id", order.business_id).maybeSingle();
-      businessName = (b as any)?.name;
-    }
-    const alert = PLATFORM_EMAILS.domainFundsAlert({ domainName: order.domain, businessName, amountIls: order.price_ils, reason });
-    await sendViaResend({ to: ALERT_RECIPIENTS, subject: alert.subject, html: alert.html, fromName: "Siango" });
-    // Reassure the customer their money is safe and we're on it.
-    if (order.reg_email) {
-      await sendViaResend({
-        to: order.reg_email,
-        subject: `אנחנו משלימים את רישום הדומיין ${order.domain}`,
-        html: `<div dir="rtl" style="font-family:Arial,sans-serif;font-size:15px;line-height:1.7;color:#222">היי,<br/>קיבלנו את התשלום על הדומיין <b>${order.domain}</b> 🙏. נתקלנו בעיכוב טכני קצר בהשלמת הרישום - הצוות שלנו כבר מטפל בזה ידנית, והכסף שלכם בטוח. נעדכן אתכם ברגע שהדומיין מוכן. מצטערים על אי הנוחות!<br/><br/>צוות Siango</div>`,
-        fromName: "Siango",
-      });
-    }
-  };
-
-  // Register on the customer's name: create an Openprovider customer handle.
-  const cust = await opCreateCustomer({
-    name: order.reg_name || "Siango Customer",
-    email: order.reg_email || FALLBACK_EMAIL,
-    phone: order.reg_phone || "+972500000000",
-    address: order.reg_address || "-",
-    city: order.reg_city || "-",
-    zip: order.reg_zip || "0000000",
-    country: order.reg_country || "IL",
-  });
-  if (!cust.ok || !cust.data) {
-    await fail("failed", `customer handle: ${cust.error || "unknown"}`);
-    return json({ ok: false, handled: true });
-  }
-
-  // Register the domain (1 year). Insufficient funds -> urgent alert, no retry.
-  const reg = await opRegisterDomain({ name, extension, ownerHandle: cust.data.handle, period: 1 });
-  if (!reg.ok || !reg.data) {
-    await fail(reg.insufficientFunds ? "failed_funds" : "failed", reg.error || "register failed");
-    return json({ ok: false, handled: true });
-  }
-
-  // Point DNS at the store host (best-effort; serving via Cloudflare is finalised separately).
-  let siteHost: string | undefined;
-  if (order.business_id) {
-    const { data: b } = await admin.from("businesses").select("slug").eq("id", order.business_id).maybeSingle();
-    const slug = (b as any)?.slug;
-    if (slug) {
-      siteHost = `${slug}.siango.app`;
-      try { await opSetDnsToHost(name, extension, siteHost); } catch (e) { console.error("DNS set failed (non-fatal):", e); }
-    }
-  }
-
-  const expiresAt = reg.data.expiresAt || new Date(Date.now() + 365 * 86400000).toISOString();
-
-  // Record the live domain.
-  await admin.from("domains").insert({
-    business_id: order.business_id,
-    domain: order.domain,
-    status: "active",
-    registered_at: now,
-    expires_at: expiresAt,
-    price_ils: order.price_ils,
-    cost_usd: order.cost_usd,
-    auto_renew: order.auto_renew,
-    op_order_id: reg.data.orderId,
-    op_owner_handle: cust.data.handle,
-    order_id: order.id,
-  });
-  await admin.from("domain_orders").update({
-    status: "registered", op_order_id: reg.data.orderId, op_owner_handle: cust.data.handle, updated_at: new Date().toISOString(),
-  }).eq("id", order.id);
-
-  // Email the buyer: ownership + connection guide + renewal.
-  if (order.reg_email) {
-    let businessName: string | undefined;
-    if (order.business_id) {
-      const { data: b } = await admin.from("businesses").select("name").eq("id", order.business_id).maybeSingle();
-      businessName = (b as any)?.name;
-    }
-    // Send in the buyer's signup language (captured in user_metadata).
-    let lang: any = "he";
-    if (order.user_id) {
-      const { data: u } = await admin.auth.admin.getUserById(order.user_id);
-      lang = (u?.user?.user_metadata?.preferred_language as any) || "he";
-    }
-    const localeMap: Record<string, string> = { he: "he-IL", en: "en-US", ar: "ar", fr: "fr-FR", ru: "ru-RU" };
-    const mail = PLATFORM_EMAILS.domainPurchased({
-      businessName,
-      domainName: order.domain,
-      registrantName: order.reg_name || undefined,
-      expiryDate: new Date(expiresAt).toLocaleDateString(localeMap[lang] || "he-IL"),
-      autoRenew: order.auto_renew,
-      siteHost,
-      dashboardUrl: `${APP_URL()}/dashboard`,
-      lang,
-    });
-    await sendViaResend({ to: order.reg_email, subject: mail.subject, html: mail.html, fromName: "Siango" });
-  }
-
-  return json({ ok: true, domain: order.domain, orderId: reg.data.orderId });
+  // Register (spends reseller balance) - shared with the Cardcom token flow.
+  const result = await registerPaidDomainOrder(admin, order);
+  if (!result.ok) return json({ ok: false, handled: result.handled }, 200);
+  return json({ ok: true, domain: result.domain, orderId: result.orderId });
 });

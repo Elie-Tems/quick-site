@@ -10,9 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import {
-  getDomainPaymentBaseUrl, buildIcountDomainCheckoutUrl,
-} from "@/lib/publishPaymentConfig";
 
 // Bump when the legal terms below change - stored with the order as proof of
 // exactly which terms the customer agreed to.
@@ -67,24 +64,30 @@ const DomainPurchaseDialog = ({ open, onOpenChange, domain, priceIls, businessId
         },
       });
       if (error) throw error;
-      if (!data?.ok) throw new Error(data?.error || "purchase failed");
-
-      const base = getDomainPaymentBaseUrl();
-      if (!base) {
-        toast.error("התשלום עדיין לא מחובר. נשמח אם תנסו שוב בקרוב.");
+      // No saved card -> the merchant must publish (save a card) first.
+      if (data?.needsCard) {
+        toast.error(data.message || "אין כרטיס שמור. יש לפרסם אתר תחילה כדי לשמור כרטיס.");
         setSubmitting(false);
         return;
       }
-      const url = buildIcountDomainCheckoutUrl(base, {
-        sessionToken: data.sessionToken,
-        orderId: data.orderId,
-        businessId,
-        sumIls: data.priceIls,
-      });
-      // Off to the hosted payment page; the IPN finishes the registration.
-      window.location.href = url;
+      if (data?.declined) {
+        toast.error(data.error || "התשלום נדחה. בדקו את הכרטיס ונסו שוב.");
+        setSubmitting(false);
+        return;
+      }
+      if (!data?.ok) throw new Error(data?.error || "purchase failed");
+
+      // Charged on the saved card + registered, all server-side. No redirect.
+      if (data.registrationPending) {
+        toast.success("התשלום התקבל! אנחנו משלימים את רישום הדומיין ותקבלו מייל ברגע שהוא מוכן.");
+      } else {
+        toast.success(`הדומיין ${domain} נרכש ונרשם על שמכם! 🎉`);
+      }
+      onOpenChange(false);
+      // Refresh so the new domain appears in the dashboard list.
+      setTimeout(() => window.location.reload(), 1200);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "לא הצלחנו להתחיל את הרכישה. נסו שוב.");
+      toast.error(e instanceof Error ? e.message : "לא הצלחנו להשלים את הרכישה. נסו שוב.");
       setSubmitting(false);
     }
   };
