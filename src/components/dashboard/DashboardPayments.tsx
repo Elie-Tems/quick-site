@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CreditCard, ExternalLink, Mail, Clock } from "lucide-react";
+import { CreditCard, ExternalLink, Mail, Clock, ShieldCheck, CircleCheck, Sparkles, ArrowRight } from "lucide-react";
 import PayplusConnectForm from "@/components/payments/PayplusConnectForm";
 import PaymentApprovalKit from "@/components/payments/PaymentApprovalKit";
 import type { BusinessSettings } from "@/components/dashboard/DashboardSettings";
@@ -37,12 +37,21 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
 
   return (
     <div className="p-4 md:p-6 max-w-xl" dir="rtl">
-      <div className="flex items-center gap-3 mb-6">
-        <CreditCard className="h-8 w-8 text-primary" />
-        <div>
-          <h1 className="text-xl font-semibold text-foreground">סליקת אשראי</h1>
-          <p className="text-sm text-muted-foreground">חיבור סליקה מאפשר ללקוחות לשלם בכרטיס אשראי ישירות לחשבון שלכם.</p>
+      {/* Section header - polished with green accents; the bold green "secure"
+          band is reserved for the connect step (the climax) so it isn't diluted. */}
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#eaf3de] flex items-center justify-center shrink-0">
+            <CreditCard className="w-5 h-5 text-[#3b6d11]" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-foreground">סליקת אשראי</h1>
+            <p className="text-sm text-muted-foreground">קבלו תשלומים בכרטיס ישירות לחשבון הבנק שלכם</p>
+          </div>
         </div>
+        <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-[#085041] bg-[#e1f5ee] rounded-full px-3 py-1.5">
+          <ShieldCheck className="w-3.5 h-3.5" /> מאובטח
+        </span>
       </div>
 
       {/* Step 0 - the only thing on screen at entry: one simple question. */}
@@ -53,16 +62,20 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
             <button
               type="button"
               onClick={() => setHasAccount(true)}
-              className="rounded-xl bg-primary text-primary-foreground font-semibold py-4 px-5 hover:bg-primary/90 transition-colors"
+              className="group text-right rounded-2xl border-2 border-[#639922] bg-[#eaf3de]/60 p-4 hover:bg-[#eaf3de] transition-colors"
             >
-              כן, יש לי חשבון
+              <CircleCheck className="w-6 h-6 text-[#3b6d11] mb-2" />
+              <p className="font-semibold text-foreground">כן, יש לי חשבון</p>
+              <p className="text-xs text-muted-foreground mt-0.5">נחבר אותו לאתר תוך 2 דקות</p>
             </button>
             <button
               type="button"
               onClick={() => setHasAccount(false)}
-              className="rounded-xl border-2 border-border bg-card font-semibold py-4 px-5 hover:border-primary/40 transition-colors"
+              className="group text-right rounded-2xl border border-border bg-card p-4 hover:border-[#639922]/50 transition-colors"
             >
-              לא, אני מתחיל
+              <Sparkles className="w-6 h-6 text-muted-foreground mb-2" />
+              <p className="font-semibold text-foreground">לא, אני מתחיל</p>
+              <p className="text-xs text-muted-foreground mt-0.5">נעזור לפתוח חשבון סליקה</p>
             </button>
           </div>
           <p className="text-xs text-muted-foreground text-center">אפשר גם לקבל הזמנות בלי סליקה ולגבות תשלום ישירות מול הלקוח.</p>
@@ -74,24 +87,24 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-foreground">בחרו ספק ופתחו חשבון</h2>
-            <button type="button" onClick={() => setHasAccount(true)} className="text-xs text-primary hover:underline">
-              כבר יש לי חשבון ←
+            <button type="button" onClick={() => setHasAccount(true)} className="inline-flex items-center gap-1 text-xs text-[#3b6d11] hover:underline">
+              כבר יש לי חשבון <ArrowRight className="w-3 h-3" />
             </button>
           </div>
           <p className="text-xs text-muted-foreground">כל הספקים שאנחנו עובדים איתם. פתיחת חשבון דרכנו לרוב מזכה בתנאים מועדפים. בוחרים מי שנוח לכם.</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {PARTNER_LINKS.map((p) => (
-              <div key={p.id} className="rounded-xl border border-border bg-card p-4 flex flex-col">
+              <div key={p.id} className="rounded-2xl border border-border bg-card p-4 flex flex-col hover:border-[#639922]/40 transition-colors">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <img src={providerLogo(p.domain)} alt={p.name} className="h-5 w-5 rounded" loading="lazy" />
+                  <img src={providerLogo(p.domain)} alt={p.name} className="h-6 w-6 rounded" loading="lazy" />
                   <p className="font-bold text-foreground">{p.name}</p>
                   <span className="text-[10px] font-medium text-muted-foreground bg-muted rounded-full px-1.5 py-0.5">{p.category}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1 flex-1">{p.blurb}</p>
+                <p className="text-xs text-muted-foreground mt-1.5 flex-1 leading-relaxed">{p.blurb}</p>
                 <button
                   type="button"
                   onClick={() => goToPartner(p.id, p.url)}
-                  className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium px-3 py-2 hover:bg-primary/15 transition-colors"
+                  className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#eaf3de] text-[#3b6d11] text-sm font-medium px-3 py-2 hover:bg-[#dcebc7] transition-colors"
                 >
                   {p.url ? (<>פתח חשבון <ExternalLink className="h-3.5 w-3.5" /></>) : (<>קבל הצעה <Mail className="h-3.5 w-3.5" /></>)}
                 </button>
@@ -107,8 +120,8 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-foreground">באיזה ספק החשבון שלך?</h2>
-            <button type="button" onClick={() => { setHasAccount(null); setProvider(null); }} className="text-xs text-muted-foreground hover:text-foreground">
-              חזרה
+            <button type="button" onClick={() => { setHasAccount(null); setProvider(null); }} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+              חזרה <ArrowRight className="w-3 h-3" />
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -117,8 +130,8 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
                 key={p.id}
                 type="button"
                 onClick={() => setProvider(p.id)}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm transition-colors ${
-                  provider === p.id ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"
+                className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
+                  provider === p.id ? "border-[#639922] bg-[#eaf3de] text-[#27500a]" : "border-border text-muted-foreground hover:border-[#639922]/40"
                 }`}
               >
                 <img src={providerLogo(p.domain)} alt={p.name} className="h-4 w-4 rounded" loading="lazy" />
@@ -131,9 +144,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           {provider === "payplus" && (
             settings.id ? (
               <div className="space-y-5">
-                <div className="rounded-xl border border-border bg-card p-5">
-                  <PayplusConnectForm businessId={settings.id} />
-                </div>
+                <PayplusConnectForm businessId={settings.id} />
                 {/* Only surfaced here (after the merchant chose to connect) - never a
                     scary checklist on the entry screen. */}
                 <div>
@@ -147,13 +158,13 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           )}
 
           {provider && provider !== "payplus" && (
-            <div className="rounded-xl border border-border bg-muted/30 p-4 flex items-start gap-3">
-              <Clock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div className="rounded-2xl border border-border bg-muted/30 p-4 flex items-start gap-3">
+              <Clock className="h-5 w-5 text-[#3b6d11] shrink-0 mt-0.5" />
               <div className="text-sm text-muted-foreground">
                 <p className="text-foreground font-medium mb-1">חיבור ישיר ל-{providerName(provider)} - בקרוב</p>
                 <p>
                   בינתיים אפשר לקבל הזמנות באתר ולגבות דרך {providerName(provider)} מול הלקוח, או לחבר עכשיו את <b>PayPlus</b> לסליקה אוטומטית באתר.
-                  נשמח לעזור - <a href={`mailto:${SUPPORT_EMAIL}`} className="text-primary hover:underline">{SUPPORT_EMAIL}</a>.
+                  נשמח לעזור - <a href={`mailto:${SUPPORT_EMAIL}`} className="text-[#3b6d11] hover:underline">{SUPPORT_EMAIL}</a>.
                 </p>
               </div>
             </div>
