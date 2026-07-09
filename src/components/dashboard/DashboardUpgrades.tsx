@@ -22,6 +22,7 @@ const products: {
   category: Category;
   show: boolean;
   badge?: string;
+  comingSoon?: boolean;
 }[] = [
   {
     id: "customers", icon: Users, color: "#7c3aed", gradient: "from-violet-500 to-purple-600",
@@ -45,7 +46,7 @@ const products: {
     id: "tracking", icon: Star, color: "#db2777", gradient: "from-pink-500 to-rose-600",
     title: "תגי שיווק ומעקב", price: 'חד-פעמי ₪149 + מע"מ',
     pitch: "חברו Google Ads, פיקסל פייסבוק וטיקטוק לחנות - מדדו המרות ובנו קהלי ריטרגטינג.",
-    bullets: ["מדידת המרות מדויקת", "קהלי ריטרגטינג", "כל הפלטפורמות"], category: "שיווק", show: true, badge: "חד-פעמי",
+    bullets: ["מדידת המרות מדויקת", "קהלי ריטרגטינג", "כל הפלטפורמות"], category: "שיווק", show: true, badge: "חד-פעמי", comingSoon: true,
   },
   {
     id: "reviews", icon: Star, color: "#f59e0b", gradient: "from-amber-400 to-orange-500",
@@ -57,13 +58,13 @@ const products: {
     id: "whatsapp", icon: MessageCircle, color: "#075E54", gradient: "from-green-600 to-emerald-700",
     title: "וואטסאפ עסקי", price: '₪89/חודש + מע"מ',
     pitch: "התראות הזמנה אוטומטיות, דיוור שיווקי לרשימת לקוחות, ובוט AI שעונה 24/7.",
-    bullets: ["יותר לקוחות חוזרים", "פחות עבודה ידנית", "בוט שירות חכם"], category: "תקשורת", show: whatsappEnabled(),
+    bullets: ["יותר לקוחות חוזרים", "פחות עבודה ידנית", "בוט שירות חכם"], category: "תקשורת", show: whatsappEnabled(), comingSoon: true,
   },
   {
     id: "email", icon: Mail, color: "#0f766e", gradient: "from-teal-500 to-cyan-700",
     title: "מייל עסקי", price: '₪19/חודש + מע"מ',
     pitch: "כתובת מייל מקצועית על הדומיין שלכם - info@your-brand.co.il. הרבה יותר אמין מ-Gmail אישי.",
-    bullets: ["אמון ומקצועיות", "עובד בכל מכשיר", "תיבות לפי מחלקה"], category: "תקשורת", show: emailEnabled(),
+    bullets: ["אמון ומקצועיות", "עובד בכל מכשיר", "תיבות לפי מחלקה"], category: "תקשורת", show: emailEnabled(), comingSoon: true,
   },
   {
     id: "domains", icon: Globe, color: "#2563eb", gradient: "from-blue-500 to-indigo-600",
@@ -151,7 +152,9 @@ const DashboardUpgrades = ({ onNavigate }: Props) => {
                     </div>
                     <div>
                       <h3 className="font-bold text-foreground leading-tight">{p.title}</h3>
-                      {p.badge && (
+                      {p.comingSoon ? (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">בקרוב</span>
+                      ) : p.badge && (
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${p.color}18`, color: p.color }}>
                           {p.badge}
                         </span>
@@ -173,13 +176,22 @@ const DashboardUpgrades = ({ onNavigate }: Props) => {
                   ))}
                 </ul>
 
-                <button
-                  onClick={() => onNavigate(p.id)}
-                  className="mt-auto w-full rounded-xl py-2.5 font-semibold text-white text-sm inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                  style={{ background: `linear-gradient(135deg, ${p.color}, ${p.color}cc)` }}
-                >
-                  הפעל עכשיו <ArrowLeft className="w-4 h-4" />
-                </button>
+                {p.comingSoon ? (
+                  <button
+                    disabled
+                    className="mt-auto w-full rounded-xl py-2.5 font-semibold text-sm bg-muted text-muted-foreground cursor-not-allowed"
+                  >
+                    בקרוב
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onNavigate(p.id)}
+                    className="mt-auto w-full rounded-xl py-2.5 font-semibold text-white text-sm inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                    style={{ background: `linear-gradient(135deg, ${p.color}, ${p.color}cc)` }}
+                  >
+                    הפעל עכשיו <ArrowLeft className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </motion.div>
           );
