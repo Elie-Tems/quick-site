@@ -58,6 +58,12 @@ verify_jwt = false
 [functions.charge-addon]
 verify_jwt = true
 
+# addon-subscribe enables a RECURRING add-on (Google Reviews, email, WhatsApp) as a
+# subscription line-item: prorated first charge on the saved Cardcom token, then
+# consolidated into the monthly invoice. Server-priced, idempotent. Merchant-auth.
+[functions.addon-subscribe]
+verify_jwt = true
+
 # send-presentation is an admin-triggered one-off (guarded by its own token), called
 # without a JWT.
 [functions.send-presentation]

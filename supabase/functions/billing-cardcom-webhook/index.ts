@@ -150,6 +150,39 @@ Deno.serve(async (req) => {
     }
   } catch (e) { console.warn("cardcom webhook: coupon redemption failed (non-fatal):", e); }
 
+  // Referral / affiliate link (best effort). If this buyer signed up via someone's
+  // link (profiles.referred_by), then on their FIRST paid month we:
+  //   (a) grant the REFERRER a free month, and
+  //   (b) grant the BUYER a free month too - the automatic affiliate-link discount
+  //       ("a free month, subscription only"). Both are free_months_credit consumed
+  //       by the monthly cron. Idempotent per referred user via referral_rewards.
+  try {
+    const { data: me } = await admin.from("profiles").select("referred_by").eq("user_id", userId).maybeSingle();
+    const refCode = (me as { referred_by?: string })?.referred_by;
+    if (refCode) {
+      const grantFreeMonth = async (targetUserId: string) => {
+        const { data: rs } = await admin.from("subscriptions").select("free_months_credit").eq("user_id", targetUserId).maybeSingle();
+        await admin.from("subscriptions").upsert(
+          { user_id: targetUserId, free_months_credit: (((rs as { free_months_credit?: number })?.free_months_credit ?? 0) + 1), updated_at: now },
+          { onConflict: "user_id" });
+      };
+      // (a) referrer reward - once per referred buyer.
+      const { data: refProf } = await admin.from("profiles").select("user_id").eq("referral_code", refCode).maybeSingle();
+      const referrerId = (refProf as { user_id?: string })?.user_id;
+      if (referrerId && referrerId !== userId) {
+        const { data: reward } = await admin.from("referral_rewards")
+          .upsert({ referrer_user_id: referrerId, referred_user_id: userId, reward_type: "free_month" }, { onConflict: "referred_user_id,reward_type", ignoreDuplicates: true })
+          .select("id");
+        if (reward && reward.length > 0) await grantFreeMonth(referrerId);
+      }
+      // (b) buyer's automatic free month (affiliate-link discount) - once per buyer.
+      const { data: buyerReward } = await admin.from("referral_rewards")
+        .upsert({ referrer_user_id: referrerId ?? userId, referred_user_id: userId, reward_type: "buyer_free_month" }, { onConflict: "referred_user_id,reward_type", ignoreDuplicates: true })
+        .select("id");
+      if (buyerReward && buyerReward.length > 0) await grantFreeMonth(userId);
+    }
+  } catch (e) { console.warn("cardcom webhook: referral reward failed (non-fatal):", e); }
+
   // Publish (invoice already issued by Cardcom on the charge).
   await admin.from("businesses").update({ is_published: true, updated_at: now }).eq("id", businessId);
   await admin.from("publish_checkout_sessions").update({ status: "completed", payment_verified_at: now, updated_at: now }).eq("id", session.id);

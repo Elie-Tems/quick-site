@@ -79,17 +79,33 @@ serve(async (req) => {
       console.error(`charge-run: amount ${net} over ceiling for sub ${s.id} - skipped`);
       skipped++; continue;
     }
-    const amount = gross(net);
+    const baseAmount = gross(net);
     const idem = `${s.id}:cycle${cycle}`;
 
     // Idempotency: if this cycle was already charged, skip (unique key backs this up).
     const { data: existing } = await admin.from("billing_charges").select("id, status").eq("idempotency_key", idem).maybeSingle();
     if (existing && (existing as any).status === "success") { skipped++; continue; }
 
+    // Consolidated invoice: base subscription + any active recurring add-ons, each as
+    // its OWN line, in ONE Document. Defensive: if the add-ons table is missing/empty
+    // the charge is base-only (identical to before). price_ils is the gross per line.
+    const invLines: { description: string; quantity: number; unitCost: number }[] =
+      [{ description: "מנוי פרסום אתר Siango - חיוב חודשי", quantity: 1, unitCost: baseAmount }];
+    let addonsTotal = 0;
+    try {
+      const { data: addons } = await admin.from("subscription_addons")
+        .select("description, price_ils").eq("user_id", s.user_id).eq("active", true);
+      for (const a of (addons ?? [])) {
+        const p = Math.round(Number((a as any).price_ils) * 100) / 100;
+        if (p > 0) { invLines.push({ description: `${(a as any).description} - חיוב חודשי`, quantity: 1, unitCost: p }); addonsTotal += p; }
+      }
+    } catch (_e) { /* add-ons not enabled yet - base only */ }
+    const amount = Math.round((baseAmount + addonsTotal) * 100) / 100;
+
     // Reserve the charge row first (unique idempotency_key blocks a concurrent double).
     const { error: insErr } = await admin.from("billing_charges").insert({
       user_id: s.user_id, subscription_id: s.id, amount_ils: amount, status: "pending",
-      is_test: isTest, idempotency_key: idem, payment_description: "מנוי פרסום Siango",
+      is_test: isTest, idempotency_key: idem, payment_description: addonsTotal > 0 ? "מנוי פרסום Siango + תוספות" : "מנוי פרסום Siango",
     });
     if (insErr) { skipped++; continue; } // another runner grabbed it
 
@@ -107,11 +123,10 @@ serve(async (req) => {
       failed++; continue;
     }
 
-    // Charge the stored Cardcom token for the (dynamic, coupon-aware) amount, issuing
-    // the monthly tax invoice/receipt in the SAME call. Cardcom requires the Document
-    // total to EQUAL the charged Amount and treats UnitCost as VAT-INCLUSIVE, so the
-    // invoice line is the GROSS `amount` (IsVatFree=false breaks the 18% VAT out of it).
-    // Idempotent via ExternalUniqTranId (= our per-cycle idem key). Success = ResponseCode 0.
+    // Charge the stored Cardcom token for the total (base + add-ons), issuing ONE
+    // multi-line tax invoice/receipt. Cardcom requires the Document total to EQUAL the
+    // charged Amount and treats UnitCost as VAT-INCLUSIVE, so each line is GROSS.
+    // Idempotent via ExternalUniqTranId (= our per-cycle idem key). Success = RC 0.
     const res = await chargeToken({
       token: s.cc_token_id as string,
       expMMYY: toMMYY(expMonth, expYear),
@@ -119,7 +134,7 @@ serve(async (req) => {
       externalUniqId: idem,
       doc: {
         docType: "TaxInvoiceAndReceipt", email: email ?? undefined, sendByEmail: true, vatFree: false,
-        products: [{ description: "מנוי פרסום אתר Siango - חיוב חודשי", quantity: 1, unitCost: amount }],
+        products: invLines,
       },
     });
 

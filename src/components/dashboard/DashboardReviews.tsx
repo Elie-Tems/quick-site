@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Star, Check, Loader2, Lock, Search, RefreshCw, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
-import { getReviewsPaymentUrl, REVIEWS_ADDON_PRICE_ILS } from "@/lib/publishPaymentConfig";
+import { REVIEWS_ADDON_PRICE_ILS } from "@/lib/publishPaymentConfig";
 import { toast } from "sonner";
 
 /**
@@ -63,13 +63,30 @@ const DashboardReviews = ({ businessId }: Props) => {
   const connected = !!data?.google_place_id;
   const cache = data?.google_reviews_cache;
 
-  const startPayment = () => {
-    const url = getReviewsPaymentUrl();
-    if (!url) {
-      toast.info("התשלום ייפתח כאן בקרוב. נציג ייצור איתך קשר להפעלה 🙏");
-      return;
+  // Enable Google Reviews as a recurring subscription add-on: a prorated first
+  // charge on the saved Cardcom card now, then ₪14+VAT/mo consolidated into the
+  // subscription invoice. No redirect - charged server-side on the saved token.
+  const startPayment = async () => {
+    if (!businessId) return;
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("addon-subscribe", { body: { addon: "reviews", businessId } });
+      if (error) throw error;
+      if (data?.needsSubscription) { toast.error(data.message || "צריך מנוי פרסום פעיל כדי להוסיף ביקורות."); return; }
+      if (data?.needsCard) { toast.error(data.message || "אין כרטיס שמור. יש לפרסם אתר תחילה."); return; }
+      if (data?.declined) { toast.error(data.error || "התשלום נדחה. בדקו את הכרטיס ונסו שוב."); return; }
+      if (!data?.ok) throw new Error(data?.error || "failed");
+      toast.success(
+        data.alreadyActive || data.alreadyCharged
+          ? "ביקורות Google פעילות 🎉"
+          : `ביקורות Google הופעלו! חויב חלק יחסי (₪${data.proratedIls ?? ""}) ומהחודש הבא ₪14+מע"מ יצטרף לחשבונית המנוי.`,
+      );
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "לא הצלחנו להפעיל כרגע. נסו שוב.");
+    } finally {
+      setBusy(false);
     }
-    window.location.href = url;
   };
 
   const doSearch = async () => {
