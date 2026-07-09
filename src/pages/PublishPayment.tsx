@@ -365,7 +365,7 @@ const PublishPayment = () => {
     if (!selfManaged) { setConfirmed(true); return; }
     setStartingCheckout(true);
     try {
-      const { data, error } = await supabase.functions.invoke("billing-create-checkout", {
+      const { data, error } = await supabase.functions.invoke("billing-cardcom-checkout", {
         body: { businessId: effectiveBusinessId, couponCode: couponInfo ? couponCode.trim() : undefined },
       });
       if (error) throw error;

@@ -63,6 +63,16 @@ verify_jwt = true
 [functions.send-presentation]
 verify_jwt = false
 
+# billing-cardcom-checkout starts a publish subscription via Cardcom (LowProfile/
+# Create - charge + save token + invoice in one). Merchant-authenticated.
+[functions.billing-cardcom-checkout]
+verify_jwt = true
+
+# billing-cardcom-webhook is the Cardcom result callback (no JWT); it authenticates
+# via the shared secret in ?secret= and re-verifies via LowProfile/GetLpResult.
+[functions.billing-cardcom-webhook]
+verify_jwt = false
+
 # orders-create is the COD/no-payment checkout, called from the PUBLIC storefront
 # by anonymous end-customers (prices are recomputed server-side).
 [functions.orders-create]
