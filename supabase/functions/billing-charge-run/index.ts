@@ -108,9 +108,10 @@ serve(async (req) => {
     }
 
     // Charge the stored Cardcom token for the (dynamic, coupon-aware) amount, issuing
-    // the monthly tax invoice/receipt in the SAME call. Invoice line is NET; Cardcom
-    // adds 18% VAT so the document total == the charged gross. Idempotent via
-    // ExternalUniqTranId (= our per-cycle idem key). Success = ResponseCode 0.
+    // the monthly tax invoice/receipt in the SAME call. Cardcom requires the Document
+    // total to EQUAL the charged Amount and treats UnitCost as VAT-INCLUSIVE, so the
+    // invoice line is the GROSS `amount` (IsVatFree=false breaks the 18% VAT out of it).
+    // Idempotent via ExternalUniqTranId (= our per-cycle idem key). Success = ResponseCode 0.
     const res = await chargeToken({
       token: s.cc_token_id as string,
       expMMYY: toMMYY(expMonth, expYear),
@@ -118,7 +119,7 @@ serve(async (req) => {
       externalUniqId: idem,
       doc: {
         docType: "TaxInvoiceAndReceipt", email: email ?? undefined, sendByEmail: true, vatFree: false,
-        products: [{ description: "מנוי פרסום אתר Siango - חיוב חודשי", quantity: 1, unitCost: net }],
+        products: [{ description: "מנוי פרסום אתר Siango - חיוב חודשי", quantity: 1, unitCost: amount }],
       },
     });
 

@@ -97,13 +97,15 @@ Deno.serve(async (req) => {
     successUrl: `${APP_URL}/publish-payment?businessId=${businessId}&paid=1`,
     failureUrl: `${APP_URL}/publish-payment?businessId=${businessId}&failed=1`,
     productName: label,
-    // Invoice line is NET; Cardcom adds 18% VAT so the document total == the charged gross.
+    // Cardcom requires the Document total to EQUAL the charged Amount, and treats
+    // UnitCost as VAT-INCLUSIVE (Israeli invoice) - so the line is the GROSS amount.
+    // With IsVatFree=false it breaks the 18% VAT out of that gross on the invoice.
     doc: {
       docType: "TaxInvoiceAndReceipt",
       email: user.email ?? undefined,
       sendByEmail: true,
       vatFree: false,
-      products: [{ description: "מנוי פרסום אתר Siango - חודשי", quantity: 1, unitCost: firstNet }],
+      products: [{ description: "מנוי פרסום אתר Siango - חודשי", quantity: 1, unitCost: firstGross }],
     },
   });
 
