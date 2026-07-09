@@ -9,7 +9,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { billToken, createDoc } from "../_shared/icount/api.ts";
+import { chargeToken, toMMYY } from "../_shared/cardcom/api.ts";
 import { chargeAmount, withinChargeCeiling, type CouponInfo } from "../_shared/billing/pricing.ts";
 
 const VAT_RATE = 0.18;
@@ -35,7 +35,7 @@ serve(async (req) => {
   const { data: subs, error } = await admin
     .from("subscriptions")
     .select("id, user_id, status, cc_token_id, base_amount_ils, coupon_duration, coupon_discount_type, coupon_discount_value, billing_cycle_count, next_charge_at, cancel_type, free_months_credit")
-    .eq("billing_provider", "icount_token")
+    .eq("billing_provider", "cardcom_token")
     .eq("status", "active")
     .not("cc_token_id", "is", null)
     .lte("next_charge_at", nowIso)
@@ -93,27 +93,37 @@ serve(async (req) => {
     });
     if (insErr) { skipped++; continue; } // another runner grabbed it
 
-    // Look up the payer email for the invoice/receipt.
+    // Look up the payer email + the stored card expiry (Cardcom needs MMYY to charge a token).
     const { data: u } = await admin.auth.admin.getUserById(s.user_id);
     const email = u?.user?.email;
-    // iCount needs the client id alongside the token to charge.
     const { data: tok } = await admin.from("billing_tokens")
-      .select("icount_client_id").eq("user_id", s.user_id).eq("cc_token_id", s.cc_token_id)
+      .select("cc_exp_month, cc_exp_year").eq("user_id", s.user_id).eq("cc_token_id", s.cc_token_id)
       .order("created_at", { ascending: false }).limit(1).maybeSingle();
-    const clientId = (tok as any)?.icount_client_id as string | undefined;
+    const expMonth = (tok as any)?.cc_exp_month;
+    const expYear = (tok as any)?.cc_exp_year;
+    if (!expMonth || !expYear) {
+      await admin.from("billing_charges").update({ status: "failed", error_code: "no_card_expiry" }).eq("idempotency_key", idem);
+      console.error("charge-run: missing card expiry for sub", s.id);
+      failed++; continue;
+    }
 
-    const res = await billToken({
-      ccTokenId: s.cc_token_id, sumIls: amount, description: "מנוי פרסום Siango",
-      // Only a REAL captured iCount client id; never our Siango UUID (can decline).
-      ...(clientId ? { clientId } : {}),
-      email: email ?? undefined, isTest,
+    // Charge the stored Cardcom token for the (dynamic, coupon-aware) amount, issuing
+    // the monthly tax invoice/receipt in the SAME call. Invoice line is NET; Cardcom
+    // adds 18% VAT so the document total == the charged gross. Idempotent via
+    // ExternalUniqTranId (= our per-cycle idem key). Success = ResponseCode 0.
+    const res = await chargeToken({
+      token: s.cc_token_id as string,
+      expMMYY: toMMYY(expMonth, expYear),
+      amountIls: amount,
+      externalUniqId: idem,
+      doc: {
+        docType: "TaxInvoiceAndReceipt", email: email ?? undefined, sendByEmail: true, vatFree: false,
+        products: [{ description: "מנוי פרסום אתר Siango - חיוב חודשי", quantity: 1, unitCost: net }],
+      },
     });
 
-    // A real charge returns a confirmation_code (and success:true). res.ok already
-    // rejects an explicit failure; accept either the flag or the code so a format
-    // difference can't make a real, paid charge look declined.
-    if (res.ok && (res.data.success === true || !!res.data.confirmation_code)) {
-      await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.confirmation_code ?? null }).eq("idempotency_key", idem);
+    if (res.ok) {
+      await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.ApprovalNumber ?? null }).eq("idempotency_key", idem);
       await admin.from("subscriptions").update({
         paid_until: new Date(nowMs + 31 * 864e5).toISOString(),
         next_charge_at: new Date(nowMs + 30 * 864e5).toISOString(),
@@ -121,18 +131,9 @@ serve(async (req) => {
         last_charge_status: "success",
         updated_at: nowIso,
       }).eq("id", s.id);
-      // Issue the monthly tax invoice/receipt (cc/bill doesn't create one).
-      try {
-        const doc = await createDoc({
-          description: "מנוי פרסום Siango - חיוב חודשי",
-          sumIls: amount, clientId: clientId ?? undefined, email: email ?? undefined,
-          confirmationCode: res.data.confirmation_code ?? undefined,
-        });
-        if (!doc.ok) console.warn("charge-run: doc/create failed for", s.id, doc.error || JSON.stringify(doc.data));
-      } catch (e) { console.warn("charge-run: doc/create threw:", e); }
       charged++;
     } else {
-      const errCode = (res.data as any)?.error || res.error || "declined";
+      const errCode = res.error || (res.data as any)?.Description || "declined";
       await admin.from("billing_charges").update({ status: "failed", error_code: String(errCode) }).eq("idempotency_key", idem);
       // Dunning: retry in RETRY_DAYS; after MAX_FAILURES consecutive fails, past_due.
       const { count } = await admin.from("billing_charges")
