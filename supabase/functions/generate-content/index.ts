@@ -34,8 +34,8 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
 
     const categoryHint = businessCategory && businessCategory !== "other"
       ? `תחום העסק: ${businessCategory}.`
@@ -57,30 +57,31 @@ serve(async (req) => {
 תיאור העסק:
 ${rawText.trim()}`;
 
-    // Use the Lovable AI gateway (OpenAI-compatible). LOVABLE_API_KEY is a GATEWAY
-    // key, not a raw Anthropic key - hitting api.anthropic.com directly with it 401s
-    // (that was the "שגיאה ביצירת תכנים" bug). Matches the working generate-about-text.
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // OpenAI (the provider the rest of the app migrated to - the old Lovable
+    // gateway key is dead and 401s, which was the "שגיאה ביצירת תכנים" bug).
+    // Matches analyze-website / improve-about-text / help-center.
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
         max_tokens: 600,
         temperature: 0.7,
+        response_format: { type: "json_object" },
       }),
     });
 
     if (!res.ok) {
       const err = await res.text();
-      console.error("generate-content AI gateway error:", res.status, err);
-      throw new Error(`AI gateway error ${res.status}`);
+      console.error("generate-content OpenAI error:", res.status, err);
+      throw new Error(`AI error ${res.status}`);
     }
 
     const aiData = await res.json();
