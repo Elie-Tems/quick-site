@@ -190,13 +190,10 @@ Deno.serve(async (req) => {
     });
   }
 
-  // TEMPORARY - FREE PUBLISH FOR TESTING. The iCount integration was pulled (it
-  // cannot charge a dynamic amount + save a token in one transaction); the payment
-  // gateway is being re-decided (PayPlus under evaluation). Until a gateway is
-  // wired, publishing is free so Moti can test the product end-to-end. RESTORE the
-  // paid gate when the new gateway is live:
-  //   const paid = session.payment_verified_at != null;
-  const paid = true;
+  // Paid gate restored (2026-07-09): Cardcom is live. This legacy path (approval-
+  // number / sessionToken finalize) only publishes once a payment is verified. The
+  // primary Cardcom flow publishes via billing-cardcom-webhook, not here.
+  const paid = session.payment_verified_at != null;
 
   if (!paid) {
     return new Response(

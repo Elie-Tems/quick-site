@@ -36,12 +36,12 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cWdlb3Zpb2tneHh3YWxpZWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzMTA0NjYsImV4cCI6MjA4Njg4NjQ2Nn0.jeSSSbTP3CbKVjlzqlYavwoGqooLW7bLV9JQTY9RhD8
           VITE_WEBSITE_URL: siango.app
           VITE_ORDER_WEBHOOK_URL: https://hook.eu2.make.com/09a6csp2wh8vgncyi5q88mcd9brwzdnu
-          # TEMPORARY: FREE PUBLISH FOR TESTING. iCount pulled (can't charge dynamic +
-          # save token in one transaction); payment gateway being re-decided (PayPlus
-          # under evaluation). skip=true -> onboarding publishes free; self-managed OFF
-          # -> the iCount checkout flow is not used. Flip both back when a gateway is live.
-          VITE_PUBLISH_SKIP_PAYMENT: "true"
-          VITE_BILLING_SELF_MANAGED: "false"
+          # LIVE (2026-07-09): Cardcom is the gateway. skip=false -> onboarding routes
+          # to the publish-payment page instead of publishing free; self-managed ON ->
+          # that page runs the Cardcom checkout (charge + save token + invoice) and the
+          # store publishes via billing-cardcom-webhook after a verified charge.
+          VITE_PUBLISH_SKIP_PAYMENT: "false"
+          VITE_BILLING_SELF_MANAGED: "true"
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
