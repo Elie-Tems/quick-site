@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import AdminSiangoRevenue from "./AdminSiangoRevenue";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -194,7 +195,11 @@ const AdminPayments = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
+      {/* Siango's OWN revenue (subscriptions / add-ons / domains) - separate from the
+          merchants' storefront sales listed below. This is where the publish charge shows. */}
+      <AdminSiangoRevenue />
+
+      {/* Storefront payment stats (customers paying merchants) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">

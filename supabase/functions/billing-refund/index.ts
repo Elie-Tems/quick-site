@@ -41,6 +41,15 @@ Deno.serve(async (req) => {
   if (!charge) return json({ error: "charge not found" }, 404);
   if ((charge as any).status !== "success") return json({ error: "only successful charges can be refunded" }, 400);
 
+  // Provider-aware: charges taken via Cardcom can't be refunded through iCount's API.
+  // In-app Cardcom refund isn't wired yet (needs the verified refund endpoint), so
+  // guide the admin to the Cardcom panel instead of firing a wrong iCount refund.
+  const { data: subRow } = await admin.from("subscriptions").select("billing_provider").eq("user_id", (charge as any).user_id).maybeSingle();
+  const provider = String((subRow as { billing_provider?: string } | null)?.billing_provider || "");
+  if (provider.startsWith("cardcom")) {
+    return json({ error: "החיוב בוצע ב-Cardcom. בצעו זיכוי בפאנל Cardcom (עסקאות ← זיכוי). זיכוי מתוך האפליקציה ל-Cardcom יתווסף בקרוב.", provider: "cardcom" }, 400);
+  }
+
   // Attempt the refund at iCount. Exact cc/refund params can vary by account;
   // we pass the confirmation code + amount. Failures are surfaced, not swallowed.
   const res = await refundCharge({
