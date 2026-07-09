@@ -4,38 +4,44 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
- * The merchant's invoices/receipts, pulled live from iCount via the
- * icount-invoices edge function (server-side, token-protected). Shows nothing
- * sensitive until there are real documents.
+ * The merchant's Siango invoices/receipts. Source of truth = billing_charges
+ * (every successful platform charge - publish subscription, add-ons), which now
+ * carries the tax-invoice/receipt URL issued by the gateway (Cardcom Document).
+ * RLS restricts the rows to the logged-in merchant's own charges. Rows from
+ * before invoice URLs were captured still show (amount + date) without a download.
  */
 
-type Invoice = {
-  doctype: string;
-  doctype_name: string;
-  docnum: string;
-  date: string;
-  total: number;
-  url: string;
+type Charge = {
+  id: string;
+  amount_ils: number | null;
+  payment_description: string | null;
+  created_at: string;
+  invoice_url: string | null;
 };
 
 const fmtDate = (s: string) => {
   if (!s) return "";
-  const d = new Date(s.replace(/-/g, "/"));
+  const d = new Date(s);
   return isNaN(d.getTime()) ? s : d.toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "numeric" });
 };
 
 const DashboardInvoices = () => {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["icount-invoices"],
+    queryKey: ["billing-invoices"],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("icount-invoices", { body: {} });
+      const { data, error } = await supabase
+        .from("billing_charges")
+        .select("id, amount_ils, payment_description, created_at, invoice_url")
+        .eq("status", "success")
+        .order("created_at", { ascending: false })
+        .limit(60);
       if (error) throw error;
-      return data as { ok: boolean; configured: boolean; clientFound: boolean; docs: Invoice[] };
+      return (data || []) as Charge[];
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  const docs = data?.docs || [];
+  const charges = data || [];
 
   return (
     <Card>
@@ -43,48 +49,50 @@ const DashboardInvoices = () => {
         <CardTitle className="flex items-center gap-2">
           <ReceiptText className="w-5 h-5 text-primary" /> חשבוניות וקבלות
         </CardTitle>
-        <CardDescription>החשבוניות שלך מ-iCount - לצפייה והורדה בכל עת.</CardDescription>
+        <CardDescription>החשבוניות והקבלות שלך - לצפייה והורדה בכל עת.</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <div className="flex items-center justify-center py-10">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
-        ) : isError || data?.configured === false ? (
+        ) : isError ? (
           <p className="text-sm text-muted-foreground py-6 text-center">
             החשבוניות יופיעו כאן לאחר החיוב הראשון. אם יש בעיה, פנו לתמיכה.
           </p>
-        ) : !docs.length ? (
+        ) : !charges.length ? (
           <div className="py-10 text-center text-muted-foreground">
             <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">אין עדיין חשבוניות. הן יופיעו כאן אוטומטית לאחר החיוב הראשון.</p>
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {docs.map((inv, i) => (
-              <div key={`${inv.docnum}-${i}`} className="flex items-center justify-between py-3 gap-3">
+            {charges.map((c) => (
+              <div key={c.id} className="flex items-center justify-between py-3 gap-3">
                 <div className="min-w-0">
                   <div className="font-medium text-foreground truncate">
-                    {inv.doctype_name || "חשבונית"} {inv.docnum ? `#${inv.docnum}` : ""}
+                    {c.payment_description || "חשבונית / קבלה"}
                   </div>
-                  <div className="text-xs text-muted-foreground">{fmtDate(inv.date)}</div>
+                  <div className="text-xs text-muted-foreground">{fmtDate(c.created_at)}</div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  {inv.total ? (
+                  {c.amount_ils ? (
                     <span className="font-semibold text-foreground whitespace-nowrap">
-                      ₪{inv.total.toLocaleString("he-IL")}
+                      ₪{Number(c.amount_ils).toLocaleString("he-IL")}
                     </span>
                   ) : null}
-                  {inv.url ? (
+                  {c.invoice_url ? (
                     <a
-                      href={inv.url}
+                      href={c.invoice_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
                     >
                       <Download className="w-4 h-4" /> הורדה
                     </a>
-                  ) : null}
+                  ) : (
+                    <span className="text-xs text-muted-foreground">נשלח למייל</span>
+                  )}
                 </div>
               </div>
             ))}

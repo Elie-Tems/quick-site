@@ -13,7 +13,7 @@
 // verify_jwt=true: only the authenticated merchant can charge their own token.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { billToken, createDoc } from "../_shared/icount/api.ts";
+import { chargeToken, toMMYY } from "../_shared/cardcom/api.ts";
 
 const VAT_RATE = 0.18;
 const gross = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
@@ -77,19 +77,17 @@ Deno.serve(async (req) => {
   const { data: existing } = await admin.from("billing_charges").select("status").eq("idempotency_key", idem).maybeSingle();
   if (existing && (existing as { status?: string }).status === "success") return json({ ok: true, alreadyDone: true });
 
-  // The merchant's saved card token (captured on the publish subscription).
-  const { data: sub } = await admin.from("subscriptions")
-    .select("cc_token_id").eq("user_id", user.id).eq("billing_provider", "icount_token")
+  // The merchant's saved Cardcom token + card expiry (captured on the publish
+  // subscription). One saved token covers every add-on - no hosted page needed.
+  const { data: tok } = await admin.from("billing_tokens")
+    .select("cc_token_id, cc_exp_month, cc_exp_year").eq("user_id", user.id).eq("provider", "cardcom")
     .not("cc_token_id", "is", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
-  const ccTokenId = (sub as { cc_token_id?: string } | null)?.cc_token_id;
-  if (!ccTokenId) {
+  const ccTokenId = (tok as { cc_token_id?: string } | null)?.cc_token_id;
+  const expMonth = (tok as { cc_exp_month?: number } | null)?.cc_exp_month;
+  const expYear = (tok as { cc_exp_year?: number } | null)?.cc_exp_year;
+  if (!ccTokenId || !expMonth || !expYear) {
     return json({ ok: false, needsCard: true, message: "אין כרטיס שמור. יש לפרסם אתר (מנוי) כדי לשמור כרטיס תחילה." });
   }
-
-  const { data: tok } = await admin.from("billing_tokens")
-    .select("icount_client_id").eq("user_id", user.id).eq("cc_token_id", ccTokenId)
-    .order("created_at", { ascending: false }).limit(1).maybeSingle();
-  const clientId = (tok as { icount_client_id?: string } | null)?.icount_client_id;
 
   const { data: u } = await admin.auth.admin.getUserById(user.id);
   const email = u?.user?.email ?? undefined;
@@ -104,37 +102,32 @@ Deno.serve(async (req) => {
   });
   if (insErr) return json({ ok: false, error: "duplicate request in flight" }, 409);
 
-  // Charge the stored token.
-  const res = await billToken({
-    ccTokenId, sumIls: amount, description: product.description,
-    ...(clientId ? { clientId } : {}), email, isTest,
+  // Charge the stored Cardcom token; the tax invoice/receipt is issued in the SAME
+  // call (Document). unitCost is the GROSS amount - Cardcom treats it VAT-inclusive
+  // and requires the document total == the charge. Idempotent via ExternalUniqTranId.
+  const res = await chargeToken({
+    token: ccTokenId, expMMYY: toMMYY(expMonth, expYear), amountIls: amount, externalUniqId: idem,
+    doc: {
+      docType: "TaxInvoiceAndReceipt", email, sendByEmail: true, vatFree: false,
+      products: [{ description: product.description, quantity: 1, unitCost: amount }],
+    },
   });
-  const charged = res.ok && ((res.data as { success?: boolean }).success === true || !!res.data.confirmation_code);
-  if (!charged) {
-    const errCode = (res.data as { error?: string })?.error || res.error || "declined";
+  if (!res.ok) {
+    const errCode = res.error || (res.data as { Description?: string })?.Description || "declined";
     await admin.from("billing_charges").update({ status: "failed", error_code: String(errCode) }).eq("idempotency_key", idem);
     return json({ ok: false, declined: true, error: String(errCode) });
   }
 
-  const confirmation = res.data.confirmation_code ?? null;
-  await admin.from("billing_charges").update({ status: "success", confirmation_code: confirmation }).eq("idempotency_key", idem);
+  const confirmation = (res.data as { ApprovalNumber?: string }).ApprovalNumber ?? null;
+  const invoiceUrl = (res.data as { DocumentUrl?: string; DocumentInfo?: { DocumentUrl?: string } })?.DocumentUrl
+    ?? (res.data as { DocumentInfo?: { DocumentUrl?: string } })?.DocumentInfo?.DocumentUrl ?? null;
+  await admin.from("billing_charges").update({ status: "success", confirmation_code: confirmation, invoice_url: invoiceUrl }).eq("idempotency_key", idem);
 
   // Grant the entitlement ONLY after a confirmed charge.
   if (product.grant.kind === "credits") {
     const { error: grantErr } = await admin.rpc("add_ai_credits", { p_business_id: businessId, p_amount: product.grant.credits });
     if (grantErr) console.error("charge-addon: add_ai_credits failed (charge succeeded!)", businessId, grantErr);
   }
-
-  // Issue the tax invoice/receipt (cc/bill does not create one).
-  let invoiceUrl: string | null = null;
-  try {
-    const doc = await createDoc({
-      description: product.description, sumIls: amount,
-      clientId: clientId ?? undefined, email, confirmationCode: confirmation ?? undefined,
-    });
-    if (doc.ok) invoiceUrl = (doc.data as { doc_url?: string }).doc_url ?? null;
-    else console.warn("charge-addon: doc/create failed", doc.error || JSON.stringify(doc.data));
-  } catch (e) { console.warn("charge-addon: doc/create threw", e); }
 
   return json({ ok: true, confirmation, invoiceUrl });
 });

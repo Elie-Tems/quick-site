@@ -124,7 +124,8 @@ serve(async (req) => {
     });
 
     if (res.ok) {
-      await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.ApprovalNumber ?? null }).eq("idempotency_key", idem);
+      const invoiceUrl = (res.data as any)?.DocumentUrl ?? (res.data as any)?.DocumentInfo?.DocumentUrl ?? null;
+      await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.ApprovalNumber ?? null, invoice_url: invoiceUrl }).eq("idempotency_key", idem);
       await admin.from("subscriptions").update({
         paid_until: new Date(nowMs + 31 * 864e5).toISOString(),
         next_charge_at: new Date(nowMs + 30 * 864e5).toISOString(),

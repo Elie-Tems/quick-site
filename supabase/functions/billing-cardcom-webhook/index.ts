@@ -73,6 +73,8 @@ Deno.serve(async (req) => {
   const last4 = rd.TranzactionInfo?.Last4CardDigitsString ?? undefined;
   const ccName = rd.TranzactionInfo?.CardName ?? undefined;
   const chargedAmount = rd.TranzactionInfo?.Amount ?? (Number(session.amount_ils) || 0);
+  // The tax-invoice/receipt URL (so the dashboard can list + download it).
+  const invoiceUrl = rd.DocumentInfo?.DocumentUrl ?? null;
 
   const idem = `${sessionToken}:cycle0`;
   const isTest = Deno.env.get("BILLING_TEST_MODE") === "true";
@@ -118,7 +120,7 @@ Deno.serve(async (req) => {
   await admin.from("billing_charges").insert({
     user_id: userId, business_id: businessId, amount_ils: chargedAmount, status: "success",
     is_test: isTest, confirmation_code: approval, idempotency_key: idem,
-    payment_description: "פרסום אתר Siango - חיוב ראשון",
+    payment_description: "פרסום אתר Siango - חיוב ראשון", invoice_url: invoiceUrl,
   }).then(() => {}).catch(() => {});
 
   const paidUntil = new Date(Date.now() + 31 * 864e5).toISOString();
