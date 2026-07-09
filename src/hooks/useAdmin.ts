@@ -182,24 +182,22 @@ export function useAllOrders() {
         .limit(100);
       
       if (error) throw error;
-      
-      // Get business names for each order
-      const ordersWithBusiness: OrderWithBusiness[] = await Promise.all(
-        (orders || []).map(async (order) => {
-          const { data: business } = await supabase
-            .from('businesses')
-            .select('name, slug')
-            .eq('id', order.business_id)
-            .maybeSingle();
-          
-          return {
-            ...order,
-            business_name: business?.name || 'לא ידוע',
-            business_slug: business?.slug || null,
-          };
-        })
-      );
-      
+
+      // Bulk: one businesses query for all the orders' stores (was N+1 - a lookup
+      // per order, up to 100 queries).
+      const bizIds = [...new Set((orders || []).map((o) => o.business_id).filter(Boolean))];
+      const { data: bizList } = await supabase
+        .from("businesses").select("id, name, slug")
+        .in("id", bizIds.length ? bizIds : ["00000000-0000-0000-0000-000000000000"]);
+      const bizMap: Record<string, { name?: string; slug?: string | null }> = {};
+      (bizList || []).forEach((b) => { bizMap[b.id] = b; });
+
+      const ordersWithBusiness: OrderWithBusiness[] = (orders || []).map((order) => ({
+        ...order,
+        business_name: bizMap[order.business_id]?.name || "לא ידוע",
+        business_slug: bizMap[order.business_id]?.slug || null,
+      }));
+
       return ordersWithBusiness;
     },
   });
@@ -443,23 +441,27 @@ export function useTopPerformers(limit = 10) {
         .select("id, name, slug");
       if (error) throw error;
 
-      const results = await Promise.all(
-        (businesses || []).map(async (biz) => {
-          const [{ data: orders }, { count: views }] = await Promise.all([
-            supabase.from("orders").select("total_price").eq("business_id", biz.id),
-            supabase.from("page_views").select("*", { count: "exact", head: true }).eq("business_id", biz.id),
-          ]);
-          const revenue = (orders || []).reduce((s, o) => s + (o.total_price || 0), 0);
-          return {
-            id: biz.id,
-            name: biz.name,
-            slug: biz.slug,
-            orders_count: orders?.length ?? 0,
-            revenue,
-            page_views: views ?? 0,
-          };
-        })
-      );
+      // Bulk: one orders query for ALL businesses (was N+1 - a query per business,
+      // plus a page_views count per business, which crawled with many stores).
+      const ids = (businesses || []).map((b) => b.id);
+      const safeIds = ids.length ? ids : ["00000000-0000-0000-0000-000000000000"];
+      const { data: allOrders } = await supabase
+        .from("orders").select("business_id, total_price").in("business_id", safeIds);
+      const rev: Record<string, number> = {};
+      const cnt: Record<string, number> = {};
+      (allOrders || []).forEach((o) => {
+        rev[o.business_id] = (rev[o.business_id] || 0) + (o.total_price || 0);
+        cnt[o.business_id] = (cnt[o.business_id] || 0) + 1;
+      });
+
+      const results: TopBusiness[] = (businesses || []).map((biz) => ({
+        id: biz.id,
+        name: biz.name,
+        slug: biz.slug,
+        orders_count: cnt[biz.id] || 0,
+        revenue: rev[biz.id] || 0,
+        page_views: 0, // per-store view counts omitted here to avoid an N+1 on a huge table
+      }));
 
       return results.sort((a, b) => b.revenue - a.revenue).slice(0, limit);
     },
@@ -487,35 +489,31 @@ export function useDormantBusinesses() {
         .select("id, name, slug, email, created_at, is_published");
       if (error) throw error;
 
-      const threshold = new Date();
-      threshold.setDate(threshold.getDate() - 30);
+      // Bulk: one orders query (newest-first) instead of a per-business "latest order"
+      // lookup (was N+1). First seen per business_id = its latest order.
+      const ids = (businesses || []).map((b) => b.id);
+      const safeIds = ids.length ? ids : ["00000000-0000-0000-0000-000000000000"];
+      const { data: allOrders } = await supabase
+        .from("orders").select("business_id, created_at")
+        .in("business_id", safeIds).order("created_at", { ascending: false });
+      const lastOrderAt: Record<string, string> = {};
+      (allOrders || []).forEach((o) => { if (!lastOrderAt[o.business_id]) lastOrderAt[o.business_id] = o.created_at; });
 
-      const results = await Promise.all(
-        (businesses || []).map(async (biz) => {
-          const { data: lastOrder } = await supabase
-            .from("orders")
-            .select("created_at")
-            .eq("business_id", biz.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          const lastAt = lastOrder?.created_at ?? null;
-          const refDate = lastAt ? new Date(lastAt) : new Date(biz.created_at);
-          const daysInactive = Math.floor((Date.now() - refDate.getTime()) / 86400000);
-
-          return {
-            id: biz.id,
-            name: biz.name,
-            slug: biz.slug,
-            owner_email: biz.email ?? null,
-            created_at: biz.created_at,
-            is_published: biz.is_published ?? false,
-            last_order_at: lastAt,
-            days_inactive: daysInactive,
-          };
-        })
-      );
+      const results = (businesses || []).map((biz) => {
+        const lastAt = lastOrderAt[biz.id] ?? null;
+        const refDate = lastAt ? new Date(lastAt) : new Date(biz.created_at);
+        const daysInactive = Math.floor((Date.now() - refDate.getTime()) / 86400000);
+        return {
+          id: biz.id,
+          name: biz.name,
+          slug: biz.slug,
+          owner_email: biz.email ?? null,
+          created_at: biz.created_at,
+          is_published: biz.is_published ?? false,
+          last_order_at: lastAt,
+          days_inactive: daysInactive,
+        };
+      });
 
       return results
         .filter((b) => b.days_inactive >= 30)
@@ -603,7 +601,8 @@ export function useActivityFeed() {
 
       return events.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 50);
     },
-    refetchInterval: 30000,
+    staleTime: 60000,
+    refetchInterval: 120000, // was 30s - eased to cut constant background load on the admin
   });
 }
 
