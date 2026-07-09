@@ -27,15 +27,15 @@ function jwtRole(authHeader: string | null): string {
 }
 
 // Marketing/nudge emails (suppressed if the recipient unsubscribed from Siango).
-// Transactional emails (receipts, freeze/deletion, order, domain alerts) are
-// service messages and always send, as permitted under Chok HaSpam.
+// Transactional emails (receipts, "your site is live", payment-failed/dunning,
+// freeze/deletion, order, domain alerts) are service messages and ALWAYS send, as
+// permitted under Chok HaSpam - a paying customer must get the confirmation of the
+// service they paid for even if they opted out of promotional email.
+// Only genuine promotion/re-engagement stays here.
 const MARKETING_TYPES = new Set([
   "accountWelcome",
   "onboardingAbandoned1",
   "onboardingAbandoned2",
-  "publishPaymentFailed",
-  "siteReady",
-  "siteReactivated",
 ]);
 
 // Fail-open suppression check via the anon-callable, SECURITY DEFINER RPC.

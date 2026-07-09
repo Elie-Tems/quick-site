@@ -369,7 +369,11 @@ const PublishPayment = () => {
         body: { businessId: effectiveBusinessId, couponCode: couponInfo ? couponCode.trim() : undefined },
       });
       if (error) throw error;
-      if ((data as any)?.saleUrl) { setCheckoutUrl((data as any).saleUrl); setConfirmed(true); }
+      // Cardcom returns a full hosted-page URL. Redirect the top window straight to
+      // it (verified working) instead of embedding in an iframe - the old iframe path
+      // was gated on the legacy iCount basePaymentUrl and never rendered for Cardcom.
+      // Cardcom sends the customer back to ?paid=1, where we poll is_published.
+      if ((data as any)?.saleUrl) { window.location.href = (data as any).saleUrl; return; }
       else throw new Error((data as any)?.error || "לא ניתן להתחיל תשלום");
     } catch (e: unknown) {
       toast({ title: "לא ניתן להתחיל תשלום", description: e instanceof Error ? e.message : "נסו שוב", variant: "destructive" });
@@ -627,8 +631,8 @@ const PublishPayment = () => {
       },
       {
         icon: ShieldCheck,
-        title: "תשלום מאובטח דרך iCount",
-        body: "הסליקה מתבצעת בעמוד המאובטח של חברת הסליקה (iCount). סיאנגו לא רואה ולא שומרת את פרטי כרטיס האשראי שלכם.",
+        title: "תשלום מאובטח דרך Cardcom",
+        body: "הסליקה מתבצעת בעמוד המאובטח של חברת הסליקה (Cardcom). סיאנגו לא רואה ולא שומרת את פרטי כרטיס האשראי שלכם.",
       },
     ];
     return (
@@ -710,7 +714,7 @@ const PublishPayment = () => {
               {startingCheckout ? <><Loader2 className="w-5 h-5 animate-spin" /> מכינים תשלום...</> : <>אישור - המשך לתשלום <ArrowRight className="w-5 h-5 rotate-180" /></>}
             </Button>
             <p className="text-center text-xs text-muted-foreground -mt-2">
-              תעברו לעמוד הסליקה המאובטח של iCount רק אחרי האישור.
+              תעברו לעמוד הסליקה המאובטח של Cardcom רק אחרי האישור.
             </p>
           </div>
         </div>
@@ -758,10 +762,10 @@ const PublishPayment = () => {
               <>
                 <div className="px-4 py-3 border-b border-border bg-gradient-to-r from-primary/10 to-accent/10 text-sm font-medium text-foreground text-center flex items-center justify-center gap-2">
                   <CreditCard className="w-4 h-4" />
-                  תשלום מאובטח - iCount
+                  תשלום מאובטח - Cardcom
                 </div>
                 <iframe
-                  title="תשלום מאובטח iCount"
+                  title="תשלום מאובטח Cardcom"
                   src={checkoutUrl}
                   className="w-full grow min-h-[min(80vh,800px)] border-0 bg-background"
                   allow="payment *"
