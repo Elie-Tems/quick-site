@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
   const approval = rd.TokenInfo?.TokenApprovalNumber ?? rd.TranzactionInfo?.ApprovalNumber ?? null;
   const last4 = rd.TranzactionInfo?.Last4CardDigitsString ?? undefined;
   const ccName = rd.TranzactionInfo?.CardName ?? undefined;
-  const chargedAmount = rd.TranzactionInfo?.Amount ?? Number(session.amount_ils) || 0;
+  const chargedAmount = rd.TranzactionInfo?.Amount ?? (Number(session.amount_ils) || 0);
 
   const idem = `${sessionToken}:cycle0`;
   const isTest = Deno.env.get("BILLING_TEST_MODE") === "true";
