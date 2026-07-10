@@ -3,6 +3,7 @@ import BookingManager from "./booking/BookingManager";
 import LeadsBoard from "./crm/LeadsBoard";
 import ListingsManager from "./listings/ListingsManager";
 import DonationsManager from "./donations/DonationsManager";
+import LifecycleEmailsManager from "./LifecycleEmailsManager";
 
 /**
  * Feature-gate consumption: given the current business, render only the vertical
@@ -29,6 +30,9 @@ const VerticalModules = ({ business }: { business: (BusinessLike & { id: string 
         </>
       )}
       {modules.includes("donations") && <DonationsManager businessId={business.id} />}
+
+      {/* Edit / toggle the automatic customer emails for this vertical. */}
+      <LifecycleEmailsManager business={business} />
     </div>
   );
 };
