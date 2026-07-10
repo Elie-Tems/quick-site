@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import {
   CalendarCheck, Clock, MapPin, Phone, User, Heart, Bell, Check, X,
   Building2, Sparkles, Repeat, FileText, ShoppingBag, ShoppingCart, Star,
-  Rocket, CreditCard, AlertTriangle, PartyPopper, Package,
+  Rocket, CreditCard, AlertTriangle, Package, Copy, MessageCircle, HelpCircle,
 } from "lucide-react";
 import { AuroraBg, PreviewBanner, PreviewThemeRoot } from "@/components/preview-redesign/kit";
 
@@ -268,27 +268,47 @@ const EmailsVertical = () => {
           {/* ═══════════ Platform (Siango) emails ═══════════ */}
           <SectionTitle sub="נשלחים בשם Siango, בסגנון תואם">המיילים שלנו כפלטפורמה</SectionTitle>
 
-          {/* Welcome */}
-          <Email from="Siango" subject="ברוך הבא ל-Siango 👋 בוא נבנה לך אתר">
-            <Header name="Siango" tag="האתר שלך במרחק דקות" platform />
+          {/* Onboarding abandonment - the platform's version of "cart abandon":
+              the merchant started building a site and stopped mid-way. */}
+          <Email from="Siango" subject="התחלתם לבנות אתר ועצרתם - נעזור? 🙂">
+            <Header name="Siango" tag="נשארתם באמצע" platform />
             <Body>
-              <Hero icon={PartyPopper} title="ברוך הבא! 👋" sub={<>שמחים שהצטרפת. תוך כמה דקות יהיה לך אתר מכירתי מלא. בוא נתחיל:</>} />
-              <div style={{ textAlign: "center", marginBottom: 12 }}><Button>המשך בניית האתר</Button></div>
-              <p style={{ fontSize: 13, color: MUTED, textAlign: "center", margin: 0 }}>צריך עזרה? אנחנו כאן במרכז השירות.</p>
+              <Hero icon={Rocket} title="כמעט שם 🙂" sub={<>התחלתם לבנות את האתר ועצרתם באמצע. נשאר רק צעד קטן כדי לעלות לאוויר - אפשר להמשיך בדיוק מאיפה שעצרתם.</>} />
+              <div style={{ textAlign: "center", marginBottom: 14 }}><Button>המשך מאיפה שעצרתם</Button></div>
+              <div style={{ background: "hsl(152 44% 41% / 0.06)", border: `1px solid hsl(152 44% 41% / 0.2)`, borderRadius: 14, padding: 16, textAlign: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 6 }}>
+                  <HelpCircle style={{ width: 18, height: 18, color: GREEN_DARK }} />
+                  <span style={{ fontSize: 15, fontWeight: 700, color: INK }}>יש משהו שנוכל לעזור בו?</span>
+                </div>
+                <p style={{ fontSize: 13, color: MUTED, margin: "0 0 12px" }}>הסוכן החכם שלנו יענה על כל שאלה וילווה אתכם עד שהאתר באוויר.</p>
+                <Button ghost>שיחה עם סוכן ה-AI שלנו</Button>
+              </div>
             </Body>
           </Email>
 
           {/* Site published */}
-          <Email from="Siango" subject="🎉 האתר שלך עלה לאוויר!">
-            <Header name="Siango" tag="מזל טוב, אתה באוויר" platform />
+          <Email from="Siango" subject="🎉 האתר שלכם עלה לאוויר!">
+            <Header name="Siango" tag="מזל טוב, אתם באוויר" platform />
             <Body>
-              <Hero icon={Rocket} title="האתר שלך פורסם! 🎉" sub={<>האתר חי וזמין ללקוחות. הגיע הזמן לשתף אותו ולהתחיל למכור.</>} />
-              <Box>
-                <Row icon={Building2} label="הכתובת שלך" value="siango.app/store/your-shop" />
-              </Box>
-              <div style={{ textAlign: "center", display: "flex", gap: 10, justifyContent: "center" }}>
-                <Button>צפייה באתר</Button><Button ghost>שיתוף בוואטסאפ</Button>
+              <Hero icon={Rocket} title="האתר שלכם פורסם! 🎉" sub={<>האתר חי וזמין ללקוחות. הגיע הזמן לשתף אותו ולהתחיל למכור.</>} />
+
+              {/* Ready-to-share message the merchant can copy as-is to email / WhatsApp. */}
+              <div style={{ background: "#fafbfa", border: `1px solid ${LINE}`, borderRadius: 14, padding: 16, marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: INK }}>הודעה מוכנה לשיתוף</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: GREEN_DARK, fontWeight: 600 }}><Copy style={{ width: 14, height: 14 }} /> העתקה</span>
+                </div>
+                <div style={{ background: "#fff", border: `1px solid ${LINE}`, borderRadius: 10, padding: "12px 14px", fontSize: 14, color: INK, lineHeight: 1.8 }}>
+                  🎉 השקנו אתר חדש! אפשר לעיין ולהזמין אונליין ישירות כאן:<br />
+                  <span style={{ color: GREEN_DARK, fontWeight: 600 }} dir="ltr">siango.app/store/your-shop</span>
+                </div>
+                <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                  <a style={{ flex: 1, textAlign: "center", background: GREEN, color: "#fff", fontWeight: 700, fontSize: 13, padding: "10px", borderRadius: 10, textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}><MessageCircle style={{ width: 15, height: 15 }} /> שיתוף בוואטסאפ</a>
+                  <a style={{ flex: 1, textAlign: "center", background: "#fff", color: GREEN_DARK, fontWeight: 700, fontSize: 13, padding: "10px", borderRadius: 10, textDecoration: "none", border: `1.5px solid ${GREEN}`, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Copy style={{ width: 14, height: 14 }} /> העתקת ההודעה</a>
+                </div>
               </div>
+
+              <div style={{ textAlign: "center" }}><Button ghost>צפייה באתר</Button></div>
             </Body>
           </Email>
 
