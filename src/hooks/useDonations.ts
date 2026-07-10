@@ -54,28 +54,34 @@ export const useSection46Enabled = (businessId?: string) =>
   });
 
 // ---- תרומות ישראל (Tax Authority) reporting config ----
-export interface DonationReporting { number46: string; enabled: boolean; hasToken: boolean; }
+// Provider-agnostic: iCount auto-issues today; Morning/ריווחית/SUMIT/self run in
+// record mode (Siango stores the donor ID, the nonprofit issues the receipt).
+export type ReceiptProvider = "icount" | "morning" | "rivhit" | "sumit" | "self";
+export interface DonationReporting { number46: string; enabled: boolean; hasToken: boolean; provider: ReceiptProvider; }
 export const useDonationReporting = (businessId?: string) =>
   useQuery({
     queryKey: ["donation-reporting", businessId],
     enabled: !!businessId,
     queryFn: async (): Promise<DonationReporting> => {
       const { data: b } = await sb.from("businesses")
-        .select("nonprofit_46_number, donation_reporting_enabled").eq("id", businessId).maybeSingle();
+        .select("nonprofit_46_number, donation_reporting_enabled, donation_receipt_provider").eq("id", businessId).maybeSingle();
       const { data: c } = await sb.from("donation_receipt_credentials")
         .select("business_id").eq("business_id", businessId).maybeSingle();
-      return { number46: b?.nonprofit_46_number || "", enabled: !!b?.donation_reporting_enabled, hasToken: !!c };
+      return {
+        number46: b?.nonprofit_46_number || "", enabled: !!b?.donation_reporting_enabled, hasToken: !!c,
+        provider: (b?.donation_receipt_provider as ReceiptProvider) || "icount",
+      };
     },
   });
 
 export const useSaveDonationReporting = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (v: { businessId: string; number46: string; icountToken?: string; companyId?: string; enabled: boolean }) => {
+    mutationFn: async (v: { businessId: string; number46: string; provider: ReceiptProvider; apiToken?: string; companyId?: string; enabled: boolean }) => {
       const { data, error } = await supabase.functions.invoke("donation-reporting-settings", { body: v });
       if (error) throw error;
       if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
-      return data as { ok: boolean; enabled: boolean; hasToken: boolean; blocked: string | null };
+      return data as { ok: boolean; enabled: boolean; hasToken: boolean; provider: string; mode: string; blocked: string | null };
     },
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["donation-reporting", v.businessId] }),
   });

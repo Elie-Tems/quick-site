@@ -68,7 +68,12 @@ Deno.serve(async (req) => {
       const { data: biz } = await admin.from("businesses")
         .select("donation_reporting_enabled, donation_receipt_provider, nonprofit_46_number")
         .eq("id", txn.business_id).maybeSingle();
-      if (biz?.donation_reporting_enabled && biz?.donation_receipt_provider === "icount") {
+      if (biz?.donation_reporting_enabled && biz?.donation_receipt_provider && biz.donation_receipt_provider !== "icount") {
+        // Record mode (Morning / ריווחית / SUMIT / self): Siango captured the donor
+        // ID; the nonprofit issues the allocation-numbered receipt in its own system.
+        paidDetails.reporting_mode = "self";
+        paidDetails.receipt_provider = biz.donation_receipt_provider;
+      } else if (biz?.donation_reporting_enabled && biz?.donation_receipt_provider === "icount") {
         const { data: creds } = await admin.from("donation_receipt_credentials")
           .select("api_token_enc, company_id").eq("business_id", txn.business_id).maybeSingle();
         const d = (txn.details ?? {}) as Record<string, any>;

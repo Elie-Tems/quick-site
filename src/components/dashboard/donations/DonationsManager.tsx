@@ -5,7 +5,17 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useDonationCampaigns, useUpsertCampaign, useSection46Enabled, useDonationReporting, useSaveDonationReporting } from "@/hooks/useDonations";
+import { useDonationCampaigns, useUpsertCampaign, useSection46Enabled, useDonationReporting, useSaveDonationReporting, type ReceiptProvider } from "@/hooks/useDonations";
+
+// Israeli receipt providers - all implement the same Tax Authority "מודל תרומות" API.
+// iCount is fully automated today; the rest run in record mode until we add their adapter.
+const PROVIDERS: { id: ReceiptProvider; label: string; auto: boolean }[] = [
+  { id: "icount", label: "iCount (אוטומטי מלא)", auto: true },
+  { id: "morning", label: "מורנינג / חשבונית ירוקה", auto: false },
+  { id: "rivhit", label: "ריווחית", auto: false },
+  { id: "sumit", label: "SUMIT (סאמיט)", auto: false },
+  { id: "self", label: "אחר / דיווח עצמאי", auto: false },
+];
 
 /**
  * Merchant-side donations management: campaigns + the Section 46 toggle
@@ -25,15 +35,17 @@ const DonationsManager = ({ businessId }: { businessId: string }) => {
 
   const { data: reporting } = useDonationReporting(businessId);
   const saveReporting = useSaveDonationReporting();
-  const [rep, setRep] = useState({ number46: "", icountToken: "", companyId: "" });
+  const [rep, setRep] = useState<{ number46: string; provider?: ReceiptProvider; apiToken: string; companyId: string }>({ number46: "", provider: undefined, apiToken: "", companyId: "" });
   const number46 = rep.number46 || reporting?.number46 || "";
+  const provider: ReceiptProvider = rep.provider ?? reporting?.provider ?? "icount";
+  const isAuto = provider === "icount"; // only iCount auto-issues today
 
   const submitReporting = (enabled: boolean) => {
     saveReporting.mutate(
-      { businessId, number46, icountToken: rep.icountToken.trim() || undefined, companyId: rep.companyId.trim() || undefined, enabled },
+      { businessId, number46, provider, apiToken: rep.apiToken.trim() || undefined, companyId: rep.companyId.trim() || undefined, enabled },
       {
         onSuccess: (r) => {
-          setRep((s) => ({ ...s, icountToken: "" }));
+          setRep((s) => ({ ...s, apiToken: "" }));
           if (r.blocked) toast.error(r.blocked);
           else toast.success(r.enabled ? "דיווח לתרומות ישראל הופעל" : "נשמר");
         },
@@ -86,11 +98,22 @@ const DonationsManager = ({ businessId }: { businessId: string }) => {
               {reporting?.enabled ? "פעיל" : "כבוי"}
             </span>
           </div>
-          <div className="grid sm:grid-cols-3 gap-2">
+          <div className="grid sm:grid-cols-2 gap-2">
             <Input placeholder="מספר מוסד (46)" value={number46} onChange={(e) => setRep({ ...rep, number46: e.target.value })} />
-            <Input placeholder={reporting?.hasToken ? "טוקן iCount (שמור)" : "טוקן API של iCount"} type="password" value={rep.icountToken} onChange={(e) => setRep({ ...rep, icountToken: e.target.value })} />
-            <Input placeholder="מזהה חברה ב-iCount (אופציונלי)" value={rep.companyId} onChange={(e) => setRep({ ...rep, companyId: e.target.value })} />
+            <select
+              value={provider}
+              onChange={(e) => setRep({ ...rep, provider: e.target.value as ReceiptProvider })}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm text-foreground">
+              {PROVIDERS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+            </select>
           </div>
+          {/* iCount = full automation: we need its API token to issue + report. */}
+          {isAuto && (
+            <div className="grid sm:grid-cols-2 gap-2">
+              <Input placeholder={reporting?.hasToken ? "טוקן iCount (שמור)" : "טוקן API של iCount"} type="password" value={rep.apiToken} onChange={(e) => setRep({ ...rep, apiToken: e.target.value })} />
+              <Input placeholder="מזהה חברה ב-iCount (אופציונלי)" value={rep.companyId} onChange={(e) => setRep({ ...rep, companyId: e.target.value })} />
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <Button size="sm" onClick={() => submitReporting(true)} disabled={saveReporting.isPending}>
               {saveReporting.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "הפעל דיווח"}
@@ -99,7 +122,11 @@ const DonationsManager = ({ businessId }: { businessId: string }) => {
               <Button size="sm" variant="outline" onClick={() => submitReporting(false)} disabled={saveReporting.isPending}>כבה</Button>
             )}
           </div>
-          <p className="text-[11px] text-muted-foreground">הטוקן מ-iCount (הגדרות ← API). iCount מפיק את קבלת התרומה ומדווח לרשות. מומלץ לבצע תרומת בדיקה קטנה לפני הפעלה מלאה.</p>
+          {isAuto ? (
+            <p className="text-[11px] text-muted-foreground">הטוקן מ-iCount (הגדרות ← API). iCount מפיק את קבלת התרומה, מדווח לרשות המסים ומחזיר מספר הקצאה - הכל אוטומטית. מומלץ לבצע תרומת בדיקה קטנה לפני הפעלה מלאה.</p>
+          ) : (
+            <p className="text-[11px] text-muted-foreground">אוטומציה מלאה לספק הזה בקרוב. בינתיים: המערכת שומרת את פרטי התורם (כולל ת״ז), <b>ואתם מפיקים את הקבלה עם מספר ההקצאה דרך {PROVIDERS.find((p) => p.id === provider)?.label} שכבר מחובר לרשות המסים.</b> ייצוא התרומות לטובת ההפקה זמין בכל עת.</p>
+          )}
         </div>
       )}
 
