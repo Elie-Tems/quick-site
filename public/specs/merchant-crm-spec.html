@@ -1,0 +1,284 @@
+<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><title>אפיון: דשבורד המוכר כ-CRM</title>
+<style>
+  :root{
+    --page:#f6f8f4; --panel:#ffffff; --soft:#eef1ea;
+    --ink:#18211d; --ink2:#586159; --ink3:#8b938c;
+    --line:#e4e8e0; --line2:#cfd6cb;
+    --g1:#1d9e75; --g2:#0f6e56; --g3:#3b6d11; --g-soft:#eaf3de; --g-soft2:#e1f5ee;
+    --font:"Assistant","Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif;
+    --mono:"SF Mono",ui-monospace,"Menlo",monospace;
+    --maxw:920px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --page:#0e1512; --panel:#161f1a; --soft:#141c18;
+      --ink:#eef2ee; --ink2:#a6b0a9; --ink3:#717c75; --line:#28322c; --line2:#38443d; }
+  }
+  :root[data-theme="dark"]{ --page:#0e1512; --panel:#161f1a; --soft:#141c18;
+    --ink:#eef2ee; --ink2:#a6b0a9; --ink3:#717c75; --line:#28322c; --line2:#38443d; }
+  :root[data-theme="light"]{ --page:#f6f8f4; --panel:#ffffff; --soft:#eef1ea;
+    --ink:#18211d; --ink2:#586159; --ink3:#8b938c; --line:#e4e8e0; --line2:#cfd6cb; }
+
+  *{box-sizing:border-box;}
+  body,.wrap{margin:0;}
+  .wrap{background:var(--page); color:var(--ink); font-family:var(--font); direction:rtl; padding:0 20px 80px; line-height:1.75;}
+  .inner{max-width:var(--maxw); margin:0 auto;}
+
+  .hero{padding:56px 0 34px; border-bottom:1px solid var(--line);}
+  .kicker{display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:600; letter-spacing:.04em; color:var(--g2); background:var(--g-soft2); border-radius:20px; padding:5px 13px;}
+  .hero h1{font-size:clamp(28px,5vw,42px); font-weight:700; line-height:1.15; margin:18px 0 10px; text-wrap:balance; letter-spacing:-.01em;}
+  .hero p{font-size:17px; color:var(--ink2); max-width:60ch; margin:0;}
+  .meta{margin-top:20px; display:flex; gap:8px; flex-wrap:wrap; font-size:12.5px; color:var(--ink3);}
+  .meta span{background:var(--soft); border-radius:8px; padding:5px 11px;}
+
+  section{padding:38px 0; border-bottom:1px solid var(--line);}
+  .eyebrow{font-size:12px; font-weight:600; letter-spacing:.08em; color:var(--g3); text-transform:uppercase;}
+  h2{font-size:24px; font-weight:700; margin:8px 0 6px; letter-spacing:-.01em;}
+  h3{font-size:16px; font-weight:600; margin:22px 0 8px;}
+  p.lead{font-size:16px; color:var(--ink2); margin:6px 0 0; max-width:64ch;}
+
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px;}
+  @media(max-width:640px){ .cols{grid-template-columns:1fr;} }
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px;}
+  .card h4{margin:0 0 5px; font-size:14.5px; font-weight:600; display:flex; align-items:center; gap:8px;}
+  .card p{margin:0; font-size:13.5px; color:var(--ink2); line-height:1.65;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--g1);flex-shrink:0;}
+
+  .arealist{display:flex; flex-direction:column; gap:9px; margin-top:20px; counter-reset:a;}
+  .area{display:flex; gap:14px; align-items:flex-start; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:13px 16px;}
+  .area.hi{border-color:var(--g1); background:linear-gradient(0deg,var(--g-soft2),var(--panel));}
+  .num{counter-increment:a; width:26px;height:26px;border-radius:8px; background:var(--soft); color:var(--ink2); display:flex;align-items:center;justify-content:center; font-size:13px;font-weight:600; flex-shrink:0;}
+  .area.hi .num{background:var(--g1); color:#fff;}
+  .area .t{font-size:15px; font-weight:600;}
+  .area .s{font-size:13px; color:var(--ink2); margin-top:2px;}
+  .badge-new{font-size:10.5px; font-weight:700; color:var(--g2); background:var(--g-soft); border-radius:6px; padding:2px 7px; margin-inline-start:6px;}
+
+  .screen{margin:22px 0 4px; background:#eef1ea; border:1px solid var(--line2); border-radius:16px; padding:16px;
+    --surface-2:#ffffff; --surface-1:#f1f4ec; --surface-0:#eef1ea;
+    --text-primary:#18211d; --text-secondary:#586159; --text-muted:#8b938c;
+    --border:#e4e8e0; --border-strong:#cfd6cb; --font-sans:var(--font); --font-mono:var(--mono);}
+  .caption{font-size:12.5px; color:var(--ink3); text-align:center; margin-top:2px;}
+
+  table{width:100%; border-collapse:collapse; margin-top:16px; font-size:13px; display:block; overflow-x:auto;}
+  th,td{text-align:right; padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap;}
+  th{font-weight:600; color:var(--ink2); font-size:12px; letter-spacing:.02em;}
+  td b{color:var(--g3);}
+  .tag{font-size:11px; font-weight:600; border-radius:6px; padding:2px 8px; background:var(--g-soft); color:var(--g2);}
+
+  .phase{display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--line);}
+  .phase:last-child{border-bottom:0;}
+  .pk{font-size:12px; font-weight:700; color:var(--g2); background:var(--g-soft2); border-radius:8px; padding:6px 10px; height:fit-content; white-space:nowrap;}
+  .phase .pt{font-size:14.5px; font-weight:600;}
+  .phase .ps{font-size:13px; color:var(--ink2); margin-top:2px;}
+
+  .note{background:var(--g-soft); border:1px solid #cfe3ad; border-radius:12px; padding:14px 16px; font-size:13.5px; color:var(--g3); margin-top:18px;}
+  @media (prefers-color-scheme:dark){ .note{background:#13251a; border-color:#1f4a2e; color:#9fe1cb;} }
+  :root[data-theme="dark"] .note{background:#13251a; border-color:#1f4a2e; color:#9fe1cb;}
+  footer{padding:30px 0 0; font-size:12.5px; color:var(--ink3); text-align:center;}
+</style>
+
+<div class="wrap"><div class="inner">
+
+  <header class="hero">
+    <span class="kicker">אפיון מוצר · Siango</span>
+    <h1>הפיכת הדשבורד למערכת CRM</h1>
+    <p>מעבר מדשבורד מבוסס-חנות עם 35 מסכים מפוזרים, למערכת עם הלקוח במרכז ואזור דוחות ותובנות ייעודי - בלי להוריד אף פיצ'ר קיים.</p>
+    <div class="meta"><span>דשבורד המוכר</span><span>7 אזורים</span><span>33 מסכים ממופים</span><span>בונים על הקיים</span></div>
+  </header>
+
+  <section>
+    <span class="eyebrow">החזון</span>
+    <h2>הלקוח במרכז, לא החנות</h2>
+    <p class="lead">היום הדשבורד בנוי סביב החנות (מוצרים, הזמנות, עיצוב) והלקוח קבור עמוק ונעול מאחורי פרימיום. המעבר: הדשבורד נבנה מחדש סביב מערכת יחסים עם הלקוח - איש הקשר, הליד והצנרת הם הישות המרכזית, וסביבם מסודרים מכירות, דוחות, האתר ושיווק.</p>
+    <div class="cols">
+      <div class="card"><h4><span class="dot"></span> שום דבר לא נמחק</h4><p>כל 35 המסכים ממשיכים לעבוד - רק עוברים למקום הגיוני. טבלת מיפוי מוכיחה אחד-לאחד.</p></div>
+      <div class="card"><h4><span class="dot"></span> פחות בלגן</h4><p>מ-6 קבוצות עם מסכים כפולים ונסתרים - ל-7 אזורים ברורים בהיררכיה עקבית.</p></div>
+      <div class="card"><h4><span class="dot"></span> בונים על הקיים</h4><p>כבר יש CRM, אנליטיקס, ומודל נתונים אמיתי שנבנה (contacts/pipelines). מחברים, לא בונים מאפס.</p></div>
+      <div class="card"><h4><span class="dot"></span> סיכון נמוך</h4><p>עלייה מדורגת בשלבים - כל שלב עומד בפני עצמו וניתן לפרוס בנפרד.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">הבעיה היום</span>
+    <h2>למה זה מבולגן</h2>
+    <p class="lead">35 תצוגות ב-6 קבוצות; חלק גדול נסתר לגמרי מהתפריט (לקוחות, תובנות, מקורות, תקציב) ומגיעים אליהן רק דרך "כל הפיצ'רים". ה-CRM קבור מאחורי פרימיום, האנליטיקס מפוזר ב-4 מקומות, ושתי נעילות פרימיום חופפות.</p>
+  </section>
+
+  <section>
+    <span class="eyebrow">המבנה החדש</span>
+    <h2>7 אזורים ברורים</h2>
+    <p class="lead">ה-CRM עולה לאזור-על עצמאי; נפתח אזור "דוחות ותובנות" שמאחד את כל האנליטיקס.</p>
+    <div class="arealist">
+      <div class="area"><div class="num"></div><div><div class="t">בית</div><div class="s">מרכז שליטה: הפעולות של היום + KPI מרכזיים</div></div></div>
+      <div class="area hi"><div class="num"></div><div><div class="t">לקוחות ולידים · CRM <span class="badge-new">הליבה</span></div><div class="s">אנשי קשר · לידים וצנרת (Pipeline) · פילוחים · ספקים · פעולות ותקשורת</div></div></div>
+      <div class="area"><div class="num"></div><div><div class="t">מכירות</div><div class="s">הזמנות/תרומות/לידים · מוצרים · קופונים · מבצעים · משלוחים · סליקה</div></div></div>
+      <div class="area hi"><div class="num"></div><div><div class="t">דוחות ותובנות <span class="badge-new">חדש</span></div><div class="s">סקירת KPI · משפך המרה · מקורות תנועה · תקציב פרסום · רווחיות · דוחות וייצוא</div></div></div>
+      <div class="area"><div class="num"></div><div><div class="t">האתר שלי</div><div class="s">עיצוב · תוכן · טקסטים · באנרים · גלריית תמונות · תצוגה מקדימה</div></div></div>
+      <div class="area"><div class="num"></div><div><div class="t">שיווק</div><div class="s">קמפיינים באתר · וואטסאפ · מייל עסקי · תגי מעקב · ביקורות Google</div></div></div>
+      <div class="area"><div class="num"></div><div><div class="t">הגדרות</div><div class="s">פרטי עסק · התוכנית שלי · דומיין · מסמכים משפטיים</div></div></div>
+    </div>
+
+    <div class="screen"><h2 class="sr-only"></h2>
+      <div dir="rtl" style="font-family:var(--font-sans); border:0.5px solid var(--border); border-radius:14px; overflow:hidden; display:grid; grid-template-columns:168px 1fr;">
+        <div style="background:var(--surface-1); border-left:0.5px solid var(--border); padding:14px 10px;">
+          <div style="display:flex; align-items:center; gap:7px; padding:2px 6px 14px;"><div style="width:22px;height:22px;border-radius:6px;background:#1d9e75;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">S</div><span style="font-size:14px;font-weight:500;color:var(--text-primary);">siango</span></div>
+          <div style="display:flex;flex-direction:column;gap:1px;">
+            <div style="padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);">בית</div>
+            <div style="padding:7px 8px;border-radius:8px;background:#eaf3de;font-size:12.5px;font-weight:500;color:#27500a;">לקוחות ולידים</div>
+            <div style="margin-right:14px;border-right:1.5px solid #c0dd97;padding-right:10px;display:flex;flex-direction:column;gap:1px;padding-top:2px;padding-bottom:3px;">
+              <span style="font-size:11.5px;color:#3b6d11;padding:3px 6px;border-radius:6px;background:#f2f8e8;">אנשי קשר</span>
+              <span style="font-size:11.5px;color:var(--text-secondary);padding:3px 6px;">לידים וצנרת</span>
+              <span style="font-size:11.5px;color:var(--text-secondary);padding:3px 6px;">פילוחים</span>
+              <span style="font-size:11.5px;color:var(--text-secondary);padding:3px 6px;">ספקים</span>
+            </div>
+            <div style="padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);">מכירות</div>
+            <div style="padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);">דוחות ותובנות</div>
+            <div style="padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);">האתר שלי</div>
+            <div style="padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);">שיווק</div>
+            <div style="padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);">הגדרות</div>
+          </div>
+        </div>
+        <div style="background:var(--surface-2);padding:16px 18px;">
+          <div style="font-size:16px;font-weight:500;color:var(--text-primary);">בוקר טוב, ישראל</div>
+          <div style="font-size:12.5px;color:var(--text-secondary);margin-bottom:14px;">3 פעולות מחכות לך היום</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
+            <div style="background:var(--surface-1);border-radius:10px;padding:10px;"><div style="font-size:11px;color:var(--text-secondary);">הכנסה החודש</div><div style="font-size:19px;font-weight:500;">₪12,400</div><div style="font-size:10.5px;color:#0f6e56;">+18%</div></div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:10px;"><div style="font-size:11px;color:var(--text-secondary);">לקוחות חדשים</div><div style="font-size:19px;font-weight:500;">27</div><div style="font-size:10.5px;color:#0f6e56;">+6</div></div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:10px;"><div style="font-size:11px;color:var(--text-secondary);">לידים פתוחים</div><div style="font-size:19px;font-weight:500;">9</div><div style="font-size:10.5px;color:var(--text-muted);">3 חדשים</div></div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:10px;"><div style="font-size:11px;color:var(--text-secondary);">שיעור המרה</div><div style="font-size:19px;font-weight:500;">3.4%</div><div style="font-size:10.5px;color:#0f6e56;">+0.5%</div></div>
+          </div>
+          <div style="font-size:13px;font-weight:500;margin-bottom:8px;">הפעולות של היום</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <div style="display:flex;align-items:center;gap:10px;background:var(--surface-1);border-radius:10px;padding:10px 12px;"><span style="color:#3b6d11;">↻</span><span style="flex:1;font-size:12.5px;color:var(--text-primary);">4 לקוחות בשלים לרכישה חוזרת</span><span style="font-size:11px;color:#3b6d11;">שלח הצעה ←</span></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--surface-1);border-radius:10px;padding:10px 12px;"><span style="color:#185fa5;">＋</span><span style="flex:1;font-size:12.5px;color:var(--text-primary);">3 לידים חדשים ממתינים לטיפול</span><span style="font-size:11px;color:#3b6d11;">לצנרת ←</span></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--surface-1);border-radius:10px;padding:10px 12px;"><span style="color:#ba7517;">⚠</span><span style="flex:1;font-size:12.5px;color:var(--text-primary);">6 לקוחות בסיכון לנטישה</span><span style="font-size:11px;color:#3b6d11;">win-back ←</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">מוקאפ 1 · שלד הדשבורד + תפריט 7-האזורים + מרכז שליטה</div>
+  </section>
+
+  <section>
+    <span class="eyebrow">הליבה</span>
+    <h2>ה-CRM במרכז</h2>
+    <p class="lead">אזור "לקוחות ולידים" מרכז את כל מה שקשור לאדם: אנשי קשר (מאוחדים מהזמנות + טבלת contacts אמיתית), לוח לידים וצנרת מכירה (Kanban - נבנה כבר), פילוחים (קיים), ספקים (קיים), וציר פעילות ותקשורת.</p>
+
+    <div class="screen">
+      <div dir="rtl" style="font-family:var(--font-sans);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface-2);">
+        <div style="padding:14px 16px 0;">
+          <div style="font-size:16px;font-weight:500;margin-bottom:12px;color:var(--text-primary);">לקוחות ולידים</div>
+          <div style="display:flex;gap:20px;border-bottom:0.5px solid var(--border);">
+            <span style="font-size:13px;color:var(--text-secondary);padding-bottom:9px;">אנשי קשר</span>
+            <span style="font-size:13px;font-weight:500;color:#3b6d11;padding-bottom:9px;border-bottom:2px solid #639922;margin-bottom:-1px;">לידים וצנרת</span>
+            <span style="font-size:13px;color:var(--text-secondary);padding-bottom:9px;">פילוחים</span>
+            <span style="font-size:13px;color:var(--text-secondary);padding-bottom:9px;">ספקים</span>
+          </div>
+        </div>
+        <div style="padding:12px 16px;font-size:12px;color:var(--text-secondary);">9 לידים פתוחים · 3 חדשים · שווי צפוי <b style="color:var(--text-primary);">₪48,000</b></div>
+        <div style="padding:0 16px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div style="background:var(--surface-1);border-radius:12px;padding:10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:9px;"><span style="font-size:12.5px;font-weight:500;color:var(--text-primary);">חדש</span><span style="font-size:11px;color:var(--text-secondary);background:var(--surface-2);border-radius:10px;padding:1px 7px;">3</span></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="background:var(--surface-2);border:0.5px solid var(--border);border-radius:9px;padding:9px;"><div style="font-size:12.5px;font-weight:500;color:var(--text-primary);">דנה לוי</div><div style="font-size:11px;color:var(--text-secondary);margin:2px 0;">דירת 4 חד' ברמת גן</div><div style="display:flex;justify-content:space-between;"><span style="font-size:10.5px;color:#185fa5;background:#e6f1fb;border-radius:8px;padding:1px 6px;">אתר</span><span style="font-size:11px;color:var(--text-primary);">₪2.1M</span></div></div>
+              <div style="background:var(--surface-2);border:0.5px solid var(--border);border-radius:9px;padding:9px;"><div style="font-size:12.5px;font-weight:500;color:var(--text-primary);">אבי כהן</div><div style="font-size:11px;color:var(--text-secondary);margin:2px 0;">מאזדה 3 2021</div><div style="display:flex;justify-content:space-between;"><span style="font-size:10.5px;color:#0f6e56;background:#e1f5ee;border-radius:8px;padding:1px 6px;">וואטסאפ</span><span style="font-size:11px;color:var(--text-primary);">₪89K</span></div></div>
+            </div>
+          </div>
+          <div style="background:var(--surface-1);border-radius:12px;padding:10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:9px;"><span style="font-size:12.5px;font-weight:500;color:var(--text-primary);">בטיפול</span><span style="font-size:11px;color:var(--text-secondary);background:var(--surface-2);border-radius:10px;padding:1px 7px;">4</span></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="background:var(--surface-2);border:0.5px solid var(--border);border-radius:9px;padding:9px;"><div style="font-size:12.5px;font-weight:500;color:var(--text-primary);">מיכל ברק</div><div style="font-size:11px;color:var(--text-secondary);margin:2px 0;">פגישה נקבעה למחר</div><div style="display:flex;justify-content:space-between;"><span style="font-size:10.5px;color:#5f5e5a;background:#f1efe8;border-radius:8px;padding:1px 6px;">הפניה</span><span style="font-size:11px;color:var(--text-primary);">₪1.4M</span></div></div>
+              <div style="background:var(--surface-2);border:0.5px solid var(--border);border-radius:9px;padding:9px;"><div style="font-size:12.5px;font-weight:500;color:var(--text-primary);">יוסי מזרחי</div><div style="font-size:11px;color:var(--text-secondary);margin:2px 0;">שלחתי הצעת מחיר</div><div style="display:flex;justify-content:space-between;"><span style="font-size:10.5px;color:#185fa5;background:#e6f1fb;border-radius:8px;padding:1px 6px;">אתר</span><span style="font-size:11px;color:var(--text-primary);">₪320K</span></div></div>
+            </div>
+          </div>
+          <div style="background:var(--surface-1);border-radius:12px;padding:10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:9px;"><span style="font-size:12.5px;font-weight:500;color:var(--text-primary);">נסגר</span><span style="font-size:11px;color:#0f6e56;background:#e1f5ee;border-radius:10px;padding:1px 7px;">2</span></div>
+            <div style="background:var(--surface-2);border:0.5px solid var(--border);border-radius:9px;padding:9px;"><div style="font-size:12.5px;font-weight:500;color:var(--text-primary);">✓ רונית שגב</div><div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">עסקה נסגרה · ₪1.8M</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">מוקאפ 2 · לוח לידים וצנרת מכירה (Kanban)</div>
+  </section>
+
+  <section>
+    <span class="eyebrow">אזור חדש</span>
+    <h2>דוחות ותובנות</h2>
+    <p class="lead">מאחד ל-מקום אחד את פאנל האנליטיקס שבבית, משפך ההמרה, מקורות התנועה, תקציב הפרסום, והרווחיות. הלב הוא "סקירת KPI" - כרטיסי מדד עם השוואת תקופות, מגמה, ומשפך.</p>
+
+    <div class="screen">
+      <div dir="rtl" style="font-family:var(--font-sans);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface-2);">
+        <div style="padding:14px 16px 0;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;"><span style="font-size:16px;font-weight:500;color:var(--text-primary);">דוחות ותובנות</span><span style="font-size:11.5px;color:var(--text-secondary);border:0.5px solid var(--border-strong);border-radius:8px;padding:4px 10px;">30 ימים אחרונים</span></div>
+          <div style="display:flex;gap:16px;border-bottom:0.5px solid var(--border);overflow-x:auto;">
+            <span style="font-size:12.5px;font-weight:500;color:#3b6d11;padding-bottom:9px;border-bottom:2px solid #639922;margin-bottom:-1px;white-space:nowrap;">סקירת KPI</span>
+            <span style="font-size:12.5px;color:var(--text-secondary);padding-bottom:9px;white-space:nowrap;">משפך המרה</span>
+            <span style="font-size:12.5px;color:var(--text-secondary);padding-bottom:9px;white-space:nowrap;">מקורות תנועה</span>
+            <span style="font-size:12.5px;color:var(--text-secondary);padding-bottom:9px;white-space:nowrap;">תקציב פרסום</span>
+            <span style="font-size:12.5px;color:var(--text-secondary);padding-bottom:9px;white-space:nowrap;">רווחיות</span>
+          </div>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
+            <div style="background:var(--surface-1);border-radius:10px;padding:11px;"><div style="font-size:11px;color:var(--text-secondary);">הכנסה</div><div style="font-size:20px;font-weight:500;color:var(--text-primary);">₪12,400</div><div style="font-size:10.5px;color:#0f6e56;">▲ 18% מהחודש שעבר</div></div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:11px;"><div style="font-size:11px;color:var(--text-secondary);">הזמנות</div><div style="font-size:20px;font-weight:500;color:var(--text-primary);">86</div><div style="font-size:10.5px;color:#0f6e56;">▲ 12%</div></div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:11px;"><div style="font-size:11px;color:var(--text-secondary);">לקוחות חדשים</div><div style="font-size:20px;font-weight:500;color:var(--text-primary);">27</div><div style="font-size:10.5px;color:#0f6e56;">▲ 9%</div></div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:11px;"><div style="font-size:11px;color:var(--text-secondary);">LTV ממוצע</div><div style="font-size:20px;font-weight:500;color:var(--text-primary);">₪460</div><div style="font-size:10.5px;color:var(--text-muted);">יציב</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:12px;">
+            <div style="background:var(--surface-1);border-radius:10px;padding:12px;">
+              <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">הכנסה לפי שבוע</div>
+              <div style="display:flex;align-items:flex-end;gap:10px;height:78px;">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:38px;background:#c0dd97;border-radius:4px 4px 0 0;"></div><span style="font-size:10px;color:var(--text-muted);">ש1</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:52px;background:#97c459;border-radius:4px 4px 0 0;"></div><span style="font-size:10px;color:var(--text-muted);">ש2</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:46px;background:#97c459;border-radius:4px 4px 0 0;"></div><span style="font-size:10px;color:var(--text-muted);">ש3</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:70px;background:#639922;border-radius:4px 4px 0 0;"></div><span style="font-size:10px;color:var(--text-muted);">ש4</span></div>
+              </div>
+            </div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:12px;">
+              <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">משפך המרה</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div><div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-secondary);"><span>מבקרים</span><span>2,400</span></div><div style="height:8px;border-radius:4px;background:#639922;width:100%;"></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-secondary);"><span>עגלה</span><span>410</span></div><div style="height:8px;border-radius:4px;background:#97c459;width:52%;"></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-secondary);"><span>צ'קאאוט</span><span>120</span></div><div style="height:8px;border-radius:4px;background:#c0dd97;width:28%;"></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-secondary);"><span>רכישה</span><span>86</span></div><div style="height:8px;border-radius:4px;background:#3b6d11;width:18%;"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">מוקאפ 3 · סקירת KPI (מאחד את כל האנליטיקס המפוזר)</div>
+  </section>
+
+  <section>
+    <span class="eyebrow">הוכחה</span>
+    <h2>לאן עובר כל דבר קיים</h2>
+    <p class="lead">33 מסכים - כולם ממופים למיקום חדש. אף אחד לא נמחק. (תמצית; הטבלה המלאה באפיון בריפו.)</p>
+    <table>
+      <tr><th>מסך קיים</th><th>היום</th><th>מיקום חדש</th></tr>
+      <tr><td>לקוחות / CRM</td><td>נסתר (פרימיום)</td><td><b>CRM ← אנשי קשר</b></td></tr>
+      <tr><td>לידים (Pipeline)</td><td>—</td><td><b>CRM ← לידים וצנרת</b> <span class="tag">חדש</span></td></tr>
+      <tr><td>ספקים · פילוחים</td><td>תת-טאב CRM</td><td><b>CRM ← ספקים / פילוחים</b></td></tr>
+      <tr><td>הזמנות · מוצרים · קופונים · מבצעים · משלוחים · סליקה</td><td>מפוזר</td><td><b>מכירות</b></td></tr>
+      <tr><td>משפך · מקורות · תקציב · רווחיות</td><td>נסתר / תת-טאב</td><td><b>דוחות ותובנות</b></td></tr>
+      <tr><td>עיצוב · תוכן · טקסטים · באנרים · גלריה · תצוגה</td><td>עריכה ועיצוב</td><td><b>האתר שלי</b></td></tr>
+      <tr><td>קמפיינים · וואטסאפ · מייל · תגים · ביקורות</td><td>שיווק / נסתר</td><td><b>שיווק</b></td></tr>
+      <tr><td>פרטי עסק · תוכנית · דומיין · מסמכים</td><td>הגדרות / נסתר</td><td><b>הגדרות</b></td></tr>
+    </table>
+  </section>
+
+  <section>
+    <span class="eyebrow">ביצוע</span>
+    <h2>תוכנית מדורגת</h2>
+    <div class="phase"><div class="pk">שלב 0</div><div><div class="pt">שלד ניווט</div><div class="ps">בונים את מבנה 7-האזורים + מיפוי כל מסך למיקום חדש. שום מסך לא משתנה בפנים - רק המיקום. סיכון נמוך, שינוי מיידי במראה.</div></div></div>
+    <div class="phase"><div class="pk">שלב 1</div><div><div class="pt">CRM לאזור-על</div><div class="ps">מוציאים את ה-CRM מ"כל הפיצ'רים" לאזור עצמאי; מוסיפים "לידים וצנרת" (פריסת מודל הנתונים שנבנה).</div></div></div>
+    <div class="phase"><div class="pk">שלב 2</div><div><div class="pt">דוחות ותובנות</div><div class="ps">מאחדים את 4 מסכי האנליטיקס + רווחיות; בונים "סקירת KPI" + "דוחות וייצוא".</div></div></div>
+    <div class="phase"><div class="pk">שלב 3</div><div><div class="pt">איחוד נתונים</div><div class="ps">מחברים contacts/transactions לתוך מסכי הלקוחות; מאחדים order-derived + contacts לרשומה אחת.</div></div></div>
+    <div class="phase"><div class="pk">שלב 4</div><div><div class="pt">ליטוש ותמחור</div><div class="ps">מיישבים את נעילות הפרימיום; מוסיפים דיוור אוטומטי כשמודולי וואטסאפ/מייל חיים.</div></div></div>
+    <div class="note">התובנה המרכזית: רוב ה-CRM כבר בנוי בקוד (מערכת לקוחות + אנליטיקס קיימים, ומודל contacts/pipelines שנבנה). האפיון בעיקר מסדר ומחבר - לא בונה מאפס. זה מקטין דרמטית את הסיכון והעבודה.</div>
+  </section>
+
+  <footer>אפיון מוצר · Siango · דשבורד המוכר כ-CRM · להתייעצות עם דניאל</footer>
+
+</div></div>
+</body></html>

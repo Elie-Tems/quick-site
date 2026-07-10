@@ -1,0 +1,271 @@
+<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><title>אפיון: דשבורד העל (אדמין) כ-CRM סוחרים</title>
+<style>
+  :root{
+    --page:#f6f8f4; --panel:#ffffff; --soft:#eef1ea;
+    --ink:#18211d; --ink2:#586159; --ink3:#8b938c;
+    --line:#e4e8e0; --line2:#cfd6cb;
+    --g1:#1d9e75; --g2:#0f6e56; --g3:#3b6d11; --g-soft:#eaf3de; --g-soft2:#e1f5ee;
+    --font:"Assistant","Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif;
+    --mono:"SF Mono",ui-monospace,"Menlo",monospace;
+    --maxw:920px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --page:#0e1512; --panel:#161f1a; --soft:#141c18;
+      --ink:#eef2ee; --ink2:#a6b0a9; --ink3:#717c75; --line:#28322c; --line2:#38443d; }
+  }
+  :root[data-theme="dark"]{ --page:#0e1512; --panel:#161f1a; --soft:#141c18;
+    --ink:#eef2ee; --ink2:#a6b0a9; --ink3:#717c75; --line:#28322c; --line2:#38443d; }
+  :root[data-theme="light"]{ --page:#f6f8f4; --panel:#ffffff; --soft:#eef1ea;
+    --ink:#18211d; --ink2:#586159; --ink3:#8b938c; --line:#e4e8e0; --line2:#cfd6cb; }
+
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  .wrap{background:var(--page); color:var(--ink); font-family:var(--font); direction:rtl; padding:0 20px 80px; line-height:1.75;}
+  .inner{max-width:var(--maxw); margin:0 auto;}
+  .hero{padding:56px 0 34px; border-bottom:1px solid var(--line);}
+  .kicker{display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:600; letter-spacing:.04em; color:var(--g2); background:var(--g-soft2); border-radius:20px; padding:5px 13px;}
+  .hero h1{font-size:clamp(28px,5vw,42px); font-weight:700; line-height:1.15; margin:18px 0 10px; text-wrap:balance; letter-spacing:-.01em;}
+  .hero p{font-size:17px; color:var(--ink2); max-width:62ch; margin:0;}
+  .meta{margin-top:20px; display:flex; gap:8px; flex-wrap:wrap; font-size:12.5px; color:var(--ink3);}
+  .meta span{background:var(--soft); border-radius:8px; padding:5px 11px;}
+  section{padding:38px 0; border-bottom:1px solid var(--line);}
+  .eyebrow{font-size:12px; font-weight:600; letter-spacing:.08em; color:var(--g3); text-transform:uppercase;}
+  h2{font-size:24px; font-weight:700; margin:8px 0 6px; letter-spacing:-.01em;}
+  p.lead{font-size:16px; color:var(--ink2); margin:6px 0 0; max-width:66ch;}
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px;}
+  @media(max-width:640px){ .cols{grid-template-columns:1fr;} }
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px;}
+  .card h4{margin:0 0 5px; font-size:14.5px; font-weight:600; display:flex; align-items:center; gap:8px;}
+  .card p{margin:0; font-size:13.5px; color:var(--ink2); line-height:1.65;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--g1);flex-shrink:0;}
+  .arealist{display:flex; flex-direction:column; gap:9px; margin-top:20px;}
+  .area{display:flex; gap:14px; align-items:flex-start; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:13px 16px;}
+  .area.hi{border-color:var(--g1); background:linear-gradient(0deg,var(--g-soft2),var(--panel));}
+  .num{width:26px;height:26px;border-radius:8px; background:var(--soft); color:var(--ink2); display:flex;align-items:center;justify-content:center; font-size:13px;font-weight:600; flex-shrink:0;}
+  .area.hi .num{background:var(--g1); color:#fff;}
+  .area .t{font-size:15px; font-weight:600;}
+  .area .s{font-size:13px; color:var(--ink2); margin-top:2px;}
+  .badge-new{font-size:10.5px; font-weight:700; color:var(--g2); background:var(--g-soft); border-radius:6px; padding:2px 7px; margin-inline-start:6px;}
+  .screen{margin:22px 0 4px; background:#eef1ea; border:1px solid var(--line2); border-radius:16px; padding:16px;
+    --surface-2:#ffffff; --surface-1:#f1f4ec; --surface-0:#eef1ea;
+    --text-primary:#18211d; --text-secondary:#586159; --text-muted:#8b938c;
+    --border:#e4e8e0; --border-strong:#cfd6cb; --font-sans:var(--font); --font-mono:var(--mono);}
+  .caption{font-size:12.5px; color:var(--ink3); text-align:center; margin-top:2px;}
+  table{width:100%; border-collapse:collapse; margin-top:16px; font-size:13px; display:block; overflow-x:auto;}
+  th,td{text-align:right; padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap;}
+  th{font-weight:600; color:var(--ink2); font-size:12px;}
+  td b{color:var(--g3);}
+  .tag{font-size:11px; font-weight:600; border-radius:6px; padding:2px 8px; background:var(--g-soft); color:var(--g2);}
+  .phase{display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--line);}
+  .phase:last-child{border-bottom:0;}
+  .pk{font-size:12px; font-weight:700; color:var(--g2); background:var(--g-soft2); border-radius:8px; padding:6px 10px; height:fit-content; white-space:nowrap;}
+  .phase .pt{font-size:14.5px; font-weight:600;}
+  .phase .ps{font-size:13px; color:var(--ink2); margin-top:2px;}
+  .note{background:var(--g-soft); border:1px solid #cfe3ad; border-radius:12px; padding:14px 16px; font-size:13.5px; color:var(--g3); margin-top:18px;}
+  @media (prefers-color-scheme:dark){ .note{background:#13251a; border-color:#1f4a2e; color:#9fe1cb;} }
+  :root[data-theme="dark"] .note{background:#13251a; border-color:#1f4a2e; color:#9fe1cb;}
+  footer{padding:30px 0 0; font-size:12.5px; color:var(--ink3); text-align:center;}
+</style>
+
+<div class="wrap"><div class="inner">
+  <header class="hero">
+    <span class="kicker">אפיון מוצר · Siango · אדמין</span>
+    <h1>דשבורד העל כ-CRM של סוחרים</h1>
+    <p>ארגון מחדש של מרכז השליטה הפנימי (8 קבוצות, ~30 מסכים מפוזרים) למערכת שבה הסוחר הוא הלקוח - עם כרטיס 360 לכל סוחר ואזור הכנסות ודוחות מאוחד. בלי להוריד אף יכולת.</p>
+    <div class="meta"><span>דשבורד אדמין</span><span>7 אזורים</span><span>כל המסכים ממופים</span><span>מקור-אמת אחד ל-MRR</span></div>
+  </header>
+
+  <section>
+    <span class="eyebrow">החזון</span>
+    <h2>הסוחרים הם הלקוחות שלנו</h2>
+    <p class="lead">היום המידע על כל סוחר מפוזר: לקוחות במסך אחד, חנויות באחר, חיובים בשלישי, רדומים ברביעי. אין מקום אחד שמראה "מי הסוחר, כמה הוא שווה לנו, מה מצב הבריאות שלו ומה לעשות". המעבר: CRM של סוחרים עם כרטיס 360 אחד, ואזור הכנסות ודוחות מאוחד עם מקור-אמת יחיד.</p>
+    <div class="cols">
+      <div class="card"><h4><span class="dot"></span> שום יכולת לא נמחקת</h4><p>כל ~30 המסכים ממשיכים לעבוד. קוד מת מחובר, כפילויות מתמזגות, מדדים מתאחדים.</p></div>
+      <div class="card"><h4><span class="dot"></span> מקור-אמת אחד</h4><p>היום MRR מחושב ב-3 מקומות עם לוגיקה שונה. מאחדים ל-hook יחיד שכולם צורכים.</p></div>
+      <div class="card"><h4><span class="dot"></span> סוגרים פערים</h4><p>קוד מת (AdminUsersList בנוי ולא מחובר), הגדרות ריקות, ייצוא מפוזר - כולם מטופלים.</p></div>
+      <div class="card"><h4><span class="dot"></span> כרטיס סוחר 360</h4><p>זהות + חנות + MRR + חיובים + בריאות + סיכון נטישה + ציר זמן + הערות - במקום אחד.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">המבנה החדש</span>
+    <h2>7 אזורים</h2>
+    <div class="arealist">
+      <div class="area"><div class="num">1</div><div><div class="t">מרכז שליטה</div><div class="s">דופק · KPI · התראות חכמות · פעילות חיה</div></div></div>
+      <div class="area hi"><div class="num">2</div><div><div class="t">סוחרים · CRM <span class="badge-new">הליבה</span></div><div class="s">כל הסוחרים (directory) · כרטיס סוחר 360 · בסיכון/רדומים · הזמנות</div></div></div>
+      <div class="area hi"><div class="num">3</div><div><div class="t">הכנסות ודוחות <span class="badge-new">מאוחד</span></div><div class="s">MRR/ARR (מקור אחד) · Funnel · נטישה · Cohort · סיאנגו מול GMV · Marketplace · דוחות וייצוא</div></div></div>
+      <div class="area"><div class="num">4</div><div><div class="t">תשלומים</div><div class="s">תשלומים · ביטולים · שגיאות תשלום · החזרים</div></div></div>
+      <div class="area"><div class="num">5</div><div><div class="t">תמחור ושותפים</div><div class="s">דומיינים · מייל · קופוני מנוי · רווחי שותפים · שיווק (רכישת לקוחות)</div></div></div>
+      <div class="area"><div class="num">6</div><div><div class="t">תקשורת ודיוור</div><div class="s">וואטסאפ · הבוט שלנו · רשימת הסרות · לוג מיילים</div></div></div>
+      <div class="area hi"><div class="num">7</div><div><div class="t">מערכת <span class="badge-new">נבנה</span></div><div class="s">הגדרות · feature-flags · הרשאות ואדמינים · MFA (מה-placeholder הריק)</div></div></div>
+    </div>
+
+    <div class="screen">
+      <div dir="rtl" style="font-family:var(--font-sans);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;display:grid;grid-template-columns:172px 1fr;">
+        <div style="background:var(--surface-1);border-left:0.5px solid var(--border);padding:14px 10px;">
+          <div style="display:flex;align-items:center;gap:7px;padding:2px 6px 14px;"><div style="width:22px;height:22px;border-radius:6px;background:#0f6e56;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">A</div><span style="font-size:13px;font-weight:500;color:var(--text-primary);">אדמין · סיאנגו</span></div>
+          <div style="display:flex;flex-direction:column;gap:1px;">
+            <div style="padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);">מרכז שליטה</div>
+            <div style="padding:7px 8px;border-radius:8px;background:#eaf3de;font-size:12.5px;font-weight:500;color:#27500a;">סוחרים · CRM</div>
+            <div style="padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);">הכנסות ודוחות</div>
+            <div style="padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);">תשלומים</div>
+            <div style="padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);">תמחור ושותפים</div>
+            <div style="padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);">תקשורת ודיוור</div>
+            <div style="padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);">מערכת</div>
+          </div>
+        </div>
+        <div style="background:var(--surface-2);padding:16px 18px;">
+          <div style="font-size:16px;font-weight:500;color:var(--text-primary);">מרכז שליטה</div>
+          <div style="font-size:12.5px;color:var(--text-secondary);margin-bottom:14px;">הדופק של הפלטפורמה · עדכון חי</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">
+            <div style="background:var(--surface-1);border-radius:10px;padding:10px;"><div style="font-size:11px;color:var(--text-secondary);">MRR</div><div style="font-size:19px;font-weight:500;color:var(--text-primary);">₪18,240</div><div style="font-size:10.5px;color:#0f6e56;">+7%</div></div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:10px;"><div style="font-size:11px;color:var(--text-secondary);">ARR</div><div style="font-size:19px;font-weight:500;color:var(--text-primary);">₪219K</div><div style="font-size:10.5px;color:var(--text-muted);">צפי</div></div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:10px;"><div style="font-size:11px;color:var(--text-secondary);">חנויות פעילות</div><div style="font-size:19px;font-weight:500;color:var(--text-primary);">312</div><div style="font-size:10.5px;color:#0f6e56;">+9</div></div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:10px;"><div style="font-size:11px;color:var(--text-secondary);">משתמשים</div><div style="font-size:19px;font-weight:500;color:var(--text-primary);">1,847</div><div style="font-size:10.5px;color:#0f6e56;">+23</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <div style="font-size:12.5px;font-weight:500;margin-bottom:8px;color:var(--text-primary);">הדופק היום</div>
+              <div style="background:var(--surface-1);border-radius:10px;padding:11px;display:flex;flex-direction:column;gap:7px;">
+                <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text-secondary);">הרשמות</span><span style="color:var(--text-primary);font-weight:500;">6</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text-secondary);">אתרים שפורסמו</span><span style="color:var(--text-primary);font-weight:500;">4</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text-secondary);">GMV היום</span><span style="color:var(--text-primary);font-weight:500;">₪9,120</span></div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:12.5px;font-weight:500;margin-bottom:8px;color:var(--text-primary);">התראות חכמות</div>
+              <div style="display:flex;flex-direction:column;gap:7px;">
+                <div style="display:flex;align-items:center;gap:9px;background:#faeeda;border-radius:10px;padding:9px 11px;"><span style="color:#854f0b;">⚠</span><span style="font-size:11.5px;color:#633806;">יתרת Openprovider נמוכה</span></div>
+                <div style="display:flex;align-items:center;gap:9px;background:#fcecec;border-radius:10px;padding:9px 11px;"><span style="color:#a32d2d;">✕</span><span style="font-size:11.5px;color:#791f1f;">2 רכישות דומיין נכשלו</span></div>
+                <div style="display:flex;align-items:center;gap:9px;background:var(--surface-1);border-radius:10px;padding:9px 11px;"><span style="color:var(--text-secondary);">◷</span><span style="font-size:11.5px;color:var(--text-secondary);">3 ביטולים עתידיים</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">מוקאפ 1 · שלד האדמין + תפריט 7-האזורים + מרכז שליטה</div>
+  </section>
+
+  <section>
+    <span class="eyebrow">הליבה</span>
+    <h2>סוחרים · CRM - כרטיס 360</h2>
+    <p class="lead">מאחד את AdminCustomers + AdminBusinesses + הקוד-המת AdminUsersList + AdminDormant + החיובים-פר-לקוח לכרטיס-על אחד: זהות, חנות, MRR, חיובים, ציון בריאות, שלב מחזור-חיים, סיכון נטישה, ציר זמן, והערות פנימיות.</p>
+
+    <div class="screen">
+      <div dir="rtl" style="font-family:var(--font-sans);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface-2);">
+        <div style="padding:14px 16px 0;">
+          <div style="font-size:16px;font-weight:500;margin-bottom:12px;color:var(--text-primary);">סוחרים · CRM</div>
+          <div style="display:flex;gap:18px;border-bottom:0.5px solid var(--border);">
+            <span style="font-size:12.5px;font-weight:500;color:#3b6d11;padding-bottom:9px;border-bottom:2px solid #639922;margin-bottom:-1px;">כל הסוחרים · 312</span>
+            <span style="font-size:12.5px;color:var(--text-secondary);padding-bottom:9px;">בסיכון / רדומים · 24</span>
+            <span style="font-size:12.5px;color:var(--text-secondary);padding-bottom:9px;">הזמנות</span>
+          </div>
+        </div>
+        <div style="padding:12px 16px 4px;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;display:table;">
+            <tr style="color:var(--text-secondary);font-size:11px;"><td style="padding:6px 4px;border:0;">סוחר</td><td style="border:0;">תוכנית</td><td style="border:0;">MRR</td><td style="border:0;">שלב</td><td style="border:0;">בריאות</td></tr>
+            <tr style="background:#eaf3de;"><td style="padding:8px 4px;font-weight:500;color:var(--text-primary);border:0;border-radius:8px 0 0 8px;">בוטיק רוני</td><td style="color:var(--text-secondary);border:0;">פרו</td><td style="color:var(--text-primary);border:0;">₪99</td><td style="border:0;"><span style="font-size:10.5px;color:#0f6e56;background:#e1f5ee;border-radius:8px;padding:1px 7px;">פעיל</span></td><td style="border:0;border-radius:0 8px 8px 0;"><span style="color:#3b6d11;font-weight:500;">92</span></td></tr>
+            <tr><td style="padding:8px 4px;color:var(--text-primary);border:0;">מאפיית לחם</td><td style="color:var(--text-secondary);border:0;">קלאסי</td><td style="color:var(--text-primary);border:0;">₪59</td><td style="border:0;"><span style="font-size:10.5px;color:#854f0b;background:#faeeda;border-radius:8px;padding:1px 7px;">בסיכון</span></td><td style="border:0;"><span style="color:#854f0b;font-weight:500;">54</span></td></tr>
+            <tr><td style="padding:8px 4px;color:var(--text-primary);border:0;">רהיטי דן</td><td style="color:var(--text-secondary);border:0;">קלאסי</td><td style="color:var(--text-muted);border:0;">₪0</td><td style="border:0;"><span style="font-size:10.5px;color:#791f1f;background:#fcecec;border-radius:8px;padding:1px 7px;">רדום</span></td><td style="border:0;"><span style="color:#a32d2d;font-weight:500;">21</span></td></tr>
+          </table>
+        </div>
+        <div style="margin:6px 16px 16px;background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;"><div style="width:38px;height:38px;border-radius:10px;background:#eaf3de;display:flex;align-items:center;justify-content:center;font-weight:500;color:#3b6d11;">ב</div><div><div style="font-size:14px;font-weight:500;color:var(--text-primary);">בוטיק רוני</div><div style="font-size:11.5px;color:var(--text-secondary);">פרו · הצטרף לפני 8 חודשים</div></div></div>
+            <div style="text-align:center;background:var(--surface-2);border:1px solid #c0dd97;border-radius:10px;padding:5px 12px;"><div style="font-size:20px;font-weight:600;color:#3b6d11;line-height:1;">92</div><div style="font-size:9.5px;color:var(--text-secondary);">בריאות</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
+            <div style="background:var(--surface-2);border-radius:9px;padding:9px;"><div style="font-size:10.5px;color:var(--text-secondary);">MRR</div><div style="font-size:15px;font-weight:500;color:var(--text-primary);">₪99</div></div>
+            <div style="background:var(--surface-2);border-radius:9px;padding:9px;"><div style="font-size:10.5px;color:var(--text-secondary);">LTV</div><div style="font-size:15px;font-weight:500;color:var(--text-primary);">₪792</div></div>
+            <div style="background:var(--surface-2);border-radius:9px;padding:9px;"><div style="font-size:10.5px;color:var(--text-secondary);">סיכון נטישה</div><div style="font-size:15px;font-weight:500;color:#0f6e56;">נמוך</div></div>
+          </div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;">
+            <span style="font-size:11.5px;color:var(--text-primary);background:var(--surface-2);border:0.5px solid var(--border-strong);border-radius:8px;padding:6px 11px;">שלח מייל</span>
+            <span style="font-size:11.5px;color:var(--text-primary);background:var(--surface-2);border:0.5px solid var(--border-strong);border-radius:8px;padding:6px 11px;">היסטוריית חיובים</span>
+            <span style="font-size:11.5px;color:var(--text-primary);background:var(--surface-2);border:0.5px solid var(--border-strong);border-radius:8px;padding:6px 11px;">הוסף הערה</span>
+            <span style="font-size:11.5px;color:#791f1f;background:#fcecec;border-radius:8px;padding:6px 11px;">השהה</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">מוקאפ 2 · directory + כרטיס סוחר 360</div>
+  </section>
+
+  <section>
+    <span class="eyebrow">מאוחד</span>
+    <h2>הכנסות ודוחות</h2>
+    <p class="lead">מאחד את קבוצות "הכנסות" ו"תובנות ושוק" הנפרדות; מקור-אמת אחד ל-MRR (מבטל 3 חישובים סותרים); מציג הכנסות סיאנגו מול GMV הסוחרים; מרכז ייצוא אחד.</p>
+
+    <div class="screen">
+      <div dir="rtl" style="font-family:var(--font-sans);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface-2);">
+        <div style="padding:14px 16px 0;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;"><span style="font-size:16px;font-weight:500;color:var(--text-primary);">הכנסות ודוחות</span><span style="font-size:11.5px;color:var(--text-secondary);border:0.5px solid var(--border-strong);border-radius:8px;padding:4px 10px;">ייצוא</span></div>
+          <div style="display:flex;gap:15px;border-bottom:0.5px solid var(--border);overflow-x:auto;">
+            <span style="font-size:12.5px;font-weight:500;color:#3b6d11;padding-bottom:9px;border-bottom:2px solid #639922;margin-bottom:-1px;white-space:nowrap;">MRR / ARR</span>
+            <span style="font-size:12.5px;color:var(--text-secondary);padding-bottom:9px;white-space:nowrap;">Funnel</span>
+            <span style="font-size:12.5px;color:var(--text-secondary);padding-bottom:9px;white-space:nowrap;">נטישה</span>
+            <span style="font-size:12.5px;color:var(--text-secondary);padding-bottom:9px;white-space:nowrap;">Cohort</span>
+            <span style="font-size:12.5px;color:var(--text-secondary);padding-bottom:9px;white-space:nowrap;">Marketplace</span>
+          </div>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">
+            <div style="background:var(--surface-1);border-radius:10px;padding:11px;"><div style="font-size:11px;color:var(--text-secondary);">MRR</div><div style="font-size:20px;font-weight:500;color:var(--text-primary);">₪18,240</div><div style="font-size:10.5px;color:#0f6e56;">▲ 7%</div></div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:11px;"><div style="font-size:11px;color:var(--text-secondary);">ARR</div><div style="font-size:20px;font-weight:500;color:var(--text-primary);">₪219K</div><div style="font-size:10.5px;color:var(--text-muted);">צפי</div></div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:11px;"><div style="font-size:11px;color:var(--text-secondary);">נטישה</div><div style="font-size:20px;font-weight:500;color:var(--text-primary);">3.1%</div><div style="font-size:10.5px;color:#0f6e56;">▼ 0.4%</div></div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:11px;"><div style="font-size:11px;color:var(--text-secondary);">שימור D30</div><div style="font-size:20px;font-weight:500;color:var(--text-primary);">71%</div><div style="font-size:10.5px;color:var(--text-muted);">Cohort</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:12px;">
+            <div style="background:var(--surface-1);border-radius:10px;padding:12px;">
+              <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">מגמת MRR · 6 חודשים <span style="color:var(--text-muted);">(מקור אחד)</span></div>
+              <div style="display:flex;align-items:flex-end;gap:8px;height:76px;">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:34px;background:#c0dd97;border-radius:4px 4px 0 0;"></div><span style="font-size:10px;color:var(--text-muted);">פבר</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:42px;background:#c0dd97;border-radius:4px 4px 0 0;"></div><span style="font-size:10px;color:var(--text-muted);">מרץ</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:48px;background:#97c459;border-radius:4px 4px 0 0;"></div><span style="font-size:10px;color:var(--text-muted);">אפר</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:55px;background:#97c459;border-radius:4px 4px 0 0;"></div><span style="font-size:10px;color:var(--text-muted);">מאי</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:62px;background:#639922;border-radius:4px 4px 0 0;"></div><span style="font-size:10px;color:var(--text-muted);">יונ</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:72px;background:#3b6d11;border-radius:4px 4px 0 0;"></div><span style="font-size:10px;color:var(--text-muted);">יול</span></div>
+              </div>
+            </div>
+            <div style="background:var(--surface-1);border-radius:10px;padding:12px;display:flex;flex-direction:column;justify-content:center;gap:12px;">
+              <div style="font-size:12px;color:var(--text-secondary);">סיאנגו מול הסוחרים</div>
+              <div><div style="font-size:11px;color:var(--text-secondary);">הכנסות סיאנגו</div><div style="font-size:18px;font-weight:500;color:#3b6d11;">₪18,240</div></div>
+              <div><div style="font-size:11px;color:var(--text-secondary);">GMV סוחרים</div><div style="font-size:18px;font-weight:500;color:var(--text-primary);">₪240,600</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">מוקאפ 3 · הכנסות ודוחות מאוחד</div>
+  </section>
+
+  <section>
+    <span class="eyebrow">הוכחה</span>
+    <h2>לאן עובר כל מסך אדמין</h2>
+    <table>
+      <tr><th>מסך אדמין קיים</th><th>היום</th><th>מיקום חדש</th></tr>
+      <tr><td>לקוחות · חנויות · (UsersList קוד-מת) · רדומים · הזמנות</td><td>מפוזר ב-3 קבוצות</td><td><b>סוחרים · CRM</b> (מתמזג לכרטיס 360)</td></tr>
+      <tr><td>MRR · Funnel · נטישה · Cohort</td><td>הכנסות</td><td><b>הכנסות ודוחות</b> <span class="tag">MRR מקור אחד</span></td></tr>
+      <tr><td>צפיות · Marketplace · Top · קטגוריות · SiangoRevenue</td><td>תובנות ושוק</td><td><b>הכנסות ודוחות</b></td></tr>
+      <tr><td>תשלומים · ביטולים · שגיאות תשלום</td><td>הזמנות ותשלומים</td><td><b>תשלומים</b></td></tr>
+      <tr><td>דומיינים · מייל · קופונים · שותפים · שיווק · הפניות</td><td>תמחור ושותפים</td><td><b>תמחור ושותפים</b></td></tr>
+      <tr><td>וואטסאפ · בוט · הסרות · לוג מיילים</td><td>תקשורת ודיוור</td><td><b>תקשורת ודיוור</b></td></tr>
+      <tr><td>הגדרות (placeholder ריק)</td><td>הגדרות</td><td><b>מערכת</b> <span class="tag">נבנה</span></td></tr>
+    </table>
+  </section>
+
+  <section>
+    <span class="eyebrow">ביצוע</span>
+    <h2>תוכנית מדורגת</h2>
+    <div class="phase"><div class="pk">שלב 0</div><div><div class="pt">שלד ניווט</div><div class="ps">מבנה 7-האזורים + מיפוי כל view. סיכון נמוך.</div></div></div>
+    <div class="phase"><div class="pk">שלב 1</div><div><div class="pt">סוחרים · CRM</div><div class="ps">מאחדים לקוחות+חנויות+UsersList+רדומים לכרטיס 360; ציון בריאות + מחזור-חיים + הערות; pagination בצד-שרת.</div></div></div>
+    <div class="phase"><div class="pk">שלב 2</div><div><div class="pt">הכנסות ודוחות</div><div class="ps">מאחדים את שתי קבוצות האנליטיקס; מקור-אמת אחד ל-MRR; מרכז ייצוא.</div></div></div>
+    <div class="phase"><div class="pk">שלב 3</div><div><div class="pt">מערכת</div><div class="ps">בונים feature-flags + הרשאות + MFA מה-placeholder הריק.</div></div></div>
+    <div class="phase"><div class="pk">שלב 4</div><div><div class="pt">ליטוש</div><div class="ps">מבטלים fallback-ים קשיחים; מחברים קופונים ל-checkout.</div></div></div>
+    <div class="note">התובנה: האדמין כבר עשיר מאוד ביכולות (~30 מסכים). הבעיה היא ארגון, לא חוסר. האפיון מאחד, מחבר קוד מת, ומיישב מדדים כפולים - עבודת סדר, לא בנייה מאפס.</div>
+  </section>
+
+  <footer>אפיון מוצר · Siango · דשבורד העל כ-CRM סוחרים</footer>
+</div></div>
+</body></html>
