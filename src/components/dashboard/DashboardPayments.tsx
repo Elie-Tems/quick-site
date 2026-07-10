@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CreditCard, ExternalLink, Mail, Clock, ShieldCheck, CircleCheck, Sparkles, ArrowRight } from "lucide-react";
 import PayplusConnectForm from "@/components/payments/PayplusConnectForm";
+import IcountConnectForm from "@/components/payments/IcountConnectForm";
 import PaymentApprovalKit from "@/components/payments/PaymentApprovalKit";
 import type { BusinessSettings } from "@/components/dashboard/DashboardSettings";
 import { PARTNER_LINKS, providerLogo } from "@/lib/partnerLinks";
@@ -157,7 +158,14 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
             )
           )}
 
-          {provider && provider !== "payplus" && (
+          {/* iCount storefront: the merchant connects their own iCount account. */}
+          {provider === "icount" && (
+            settings.id
+              ? <IcountConnectForm businessId={settings.id} />
+              : <p className="text-sm text-muted-foreground">יש לשמור את פרטי העסק לפני חיבור סליקה.</p>
+          )}
+
+          {provider && provider !== "payplus" && provider !== "icount" && (
             <div className="rounded-2xl border border-border bg-muted/30 p-4 flex items-start gap-3">
               <Clock className="h-5 w-5 text-[#3b6d11] shrink-0 mt-0.5" />
               <div className="text-sm text-muted-foreground">
