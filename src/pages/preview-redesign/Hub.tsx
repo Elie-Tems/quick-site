@@ -76,6 +76,7 @@ const GROUPS: { title: string; note?: string; items: Item[] }[] = [
     title: "מסמכי אפיון (לדניאל)",
     note: "מסמכים לקריאה - אפיון ארגון מחדש של הדשבורדים. נפתחים בלשונית חדשה.",
     items: [
+      { to: "/specs/synagogue-yeshiva-spec.html", external: true, icon: HandCoins, title: "אפיון בתי כנסת וישיבות", desc: "תת-תחום תחת עמותות: עליות, נדרים, הקדשות, יארצייט, שותפות ללימוד. צד לקוח + ניהול", tag: "חדש · לאישור", tone: "green" },
       { to: "/specs/admin-dashboard-spec.html", external: true, icon: FileCheck2, title: "אפיון דשבורד העל (אדמין)", desc: "ארגון מחדש ל-7 אזורים, בעברית פשוטה בלי מושגים באנגלית", tag: "מסמך", tone: "primary" },
       { to: "/specs/merchant-crm-spec.html", external: true, icon: FileText, title: "אפיון דשבורד הסוחר (ניהול לקוחות)", desc: "הצעה לארגון דשבורד הסוחר כמערכת ניהול לקוחות - בהמתנה לעיון", tag: "מסמך · בהמתנה", tone: "primary" },
     ],
