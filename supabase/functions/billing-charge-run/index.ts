@@ -35,6 +35,16 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
   }
 
+  // Run only around 01:30 ISRAEL time, all year. The cron fires at BOTH 22:30 and
+  // 23:30 UTC; whichever one is ~01:xx in Israel (summer vs winter, DST-aware) does
+  // the work, the other exits early. A manual call bypasses with { "force": true }.
+  let reqBody: Record<string, unknown> = {};
+  try { reqBody = await req.json(); } catch { /* empty/no body */ }
+  const ilHour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Jerusalem", hour: "2-digit", hour12: false }).format(new Date()));
+  if (reqBody?.force !== true && ilHour !== 1) {
+    return new Response(JSON.stringify({ ok: true, skipped: "off-hours (Israel)", ilHour }), { status: 200, headers: { "Content-Type": "application/json" } });
+  }
+
   const url = Deno.env.get("SUPABASE_URL")!;
   const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const isTest = Deno.env.get("BILLING_TEST_MODE") === "true";
