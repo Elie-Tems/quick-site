@@ -5,12 +5,13 @@
 // when it isn't. Deposit payment reuses the store's existing order/payment flow.
 // verify_jwt = false (storefront visitors are anonymous).
 //
-// NOTE: customer confirmation email/WhatsApp are intentionally NOT sent here yet -
-// the per-vertical email designs are pending Moti's approval. Wire notifications
-// once approved (reuse _shared/email + whatsapp-send).
+// Customer confirmation email is sent for CONFIRMED bookings via the merchant-editable
+// "booking_confirm" lifecycle email (the merchant can disable/reword it). Deposit
+// bookings are confirmed later by payments-callback, which sends it there.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getProvider } from "../_shared/payments/registry.ts";
+import { sendLifecycleEmail } from "../_shared/email/lifecycle.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -113,6 +114,18 @@ Deno.serve(async (req) => {
   const cancelToken = await hmac(cancelSecret, appointmentId);
   await admin.from("booking_appointments").update({ cancel_token: cancelToken }).eq("id", appointmentId);
 
+  // Send the customer's booking confirmation - only for a CONFIRMED appointment.
+  // Best-effort; never blocks the response.
+  const emailBookingConfirm = async () => {
+    if (!customer.email) return;
+    try {
+      await sendLifecycleEmail(admin, {
+        businessId, key: "booking_confirm", to: customer.email, name: customer.fullName,
+        vars: { service: service.name },
+      });
+    } catch (e) { console.warn("booking confirm email failed:", appointmentId, String(e)); }
+  };
+
   // Deposit payment: reuse the store's existing order/payment machinery. We create
   // a pending deposit ORDER, link it to the appointment (order_id), and return a
   // hosted payment link from the merchant's own gateway. payments-callback marks
@@ -136,6 +149,7 @@ Deno.serve(async (req) => {
         .update({ status: "confirmed", deposit_status: "none", hold_expires_at: null })
         .eq("id", appointmentId);
       console.warn(`Deposit configured but payment not set up for business ${businessId}; booking confirmed without deposit`);
+      await emailBookingConfirm();
       return json({ ok: true, appointmentId, status: "confirmed", needsDeposit: false, depositAmount: 0, cancelToken });
     }
 
@@ -176,9 +190,11 @@ Deno.serve(async (req) => {
     await admin.from("booking_appointments")
       .update({ status: "confirmed", deposit_status: "none", hold_expires_at: null })
       .eq("id", appointmentId);
+    await emailBookingConfirm();
     return json({ ok: true, appointmentId, status: "confirmed", needsDeposit: false, depositAmount: 0, cancelToken });
   }
 
+  await emailBookingConfirm();
   return json({
     ok: true,
     appointmentId,

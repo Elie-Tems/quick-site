@@ -8,6 +8,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { getProvider } from "../_shared/payments/registry.ts";
 import { createDonationReceipt, allocationNumberFrom } from "../_shared/icount/api.ts";
 import { decryptToken } from "../_shared/calendar/crypto.ts";
+import { sendLifecycleEmail } from "../_shared/email/lifecycle.ts";
 
 const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*" };
 const json = (b: unknown, s = 200) =>
@@ -103,6 +104,24 @@ Deno.serve(async (req) => {
     }
 
     await admin.from("transactions").update({ status: "paid", details: paidDetails }).eq("id", txn.id);
+
+    // Thank-you email to the donor - a merchant-editable lifecycle email. If an
+    // allocation number was issued we mention it (no receipt PDF to keep). Best-effort.
+    try {
+      const d = (txn.details ?? {}) as Record<string, any>;
+      if (d.donor_email && !d.donor_anonymous) {
+        const alloc = paidDetails.receipt_allocation_number as string | undefined;
+        await sendLifecycleEmail(admin, {
+          businessId: txn.business_id, key: "donation_thanks",
+          to: d.donor_email, name: d.donor_name || undefined,
+          extraHtml: alloc
+            ? `<p dir="rtl" style="margin:0 0 14px;font-family:Arial,Tahoma,sans-serif;font-size:14px;color:#1f5c46;text-align:right;">דווח לתרומות ישראל · מספר הקצאה <span dir="ltr">${alloc}</span>. הזיכוי יופיע באזור האישי שלך ברשות המסים - אין צורך לשמור קבלה.</p>`
+            : undefined,
+        });
+      }
+    } catch (e) {
+      console.warn("donor thank-you email failed:", txn.id, String(e));
+    }
 
     // Refresh the campaign's cached raised/backers totals, if this gift targeted one.
     const campaignId = (txn.details as { campaign_id?: string } | null)?.campaign_id;

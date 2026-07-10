@@ -4,10 +4,11 @@
 // writes - this service-role function is the only path, rate-limited like
 // orders-create. verify_jwt = false.
 //
-// Merchant "new lead" notification email is deferred until the vertical emails
-// are approved.
+// The lead gets an auto-acknowledgement via the merchant-editable "lead_reply"
+// lifecycle email (can be disabled/reworded in the dashboard).
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendLifecycleEmail } from "../_shared/email/lifecycle.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -71,6 +72,16 @@ Deno.serve(async (req) => {
       business_id: businessId, pipeline_id: pipeline.id, contact_id: contact.id,
       stage_key: firstStage, title: title || name, value: value ?? null, details: details ?? {},
     });
+  }
+
+  // Auto-acknowledge the lead by email (best-effort; only if they left one).
+  if (email?.trim()) {
+    try {
+      await sendLifecycleEmail(admin, {
+        businessId, key: "lead_reply", to: email.trim(), name,
+        vars: { title: title || "" },
+      });
+    } catch (e) { console.warn("lead reply email failed:", contact.id, String(e)); }
   }
 
   return json({ ok: true, contactId: contact.id });

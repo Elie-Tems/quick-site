@@ -4,6 +4,8 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendViaResend } from "../_shared/email/resend.ts";
+import { emailItemsTable } from "../_shared/email/rtlEmail.ts";
+import { sendLifecycleEmail } from "../_shared/email/lifecycle.ts";
 import { newOrderMerchant } from "../_shared/email/platformEmails.ts";
 
 const corsHeaders = {
@@ -174,6 +176,23 @@ Deno.serve(async (req) => {
     } catch (e) {
       console.warn("merchant order email failed:", e);
     }
+  }
+
+  // Customer order confirmation - a merchant-editable lifecycle email (can be turned
+  // off or reworded in the dashboard). Best-effort; never blocks the order.
+  try {
+    const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
+    const itemsHtml = emailItemsTable(
+      orderItems.map((it) => ({ name: it.product_name, quantity: it.quantity, price: it.price_at_order })),
+      totalPrice,
+    );
+    await sendLifecycleEmail(admin, {
+      businessId, key: "order_confirm", to: customer.email, name: customer.fullName,
+      extraHtml: itemsHtml,
+      buttonUrl: body.slug ? `${siteUrl}/store/${body.slug}` : undefined,
+    });
+  } catch (e) {
+    console.warn("customer order confirmation email failed:", e);
   }
 
   const webhookUrl = Deno.env.get("VITE_ORDER_WEBHOOK_URL");
