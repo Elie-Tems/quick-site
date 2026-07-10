@@ -46,7 +46,7 @@ serve(async (req) => {
     .from("subscriptions")
     .select("id, user_id, status, cc_token_id, base_amount_ils, coupon_duration, coupon_discount_type, coupon_discount_value, billing_cycle_count, next_charge_at, cancel_type, free_months_credit, billing_anchor_day")
     .eq("billing_provider", "cardcom_token")
-    .eq("status", "active")
+    .in("status", ["active", "past_due"]) // past_due = suspended; keep retrying so a payment reactivates it
     .not("cc_token_id", "is", null)
     .lte("next_charge_at", nowIso)
     .limit(200);
@@ -159,21 +159,45 @@ serve(async (req) => {
         next_charge_at: new Date(nextMs).toISOString(),
         billing_cycle_count: cycle + 1,
         last_charge_status: "success",
+        status: "active", // reactivate a subscription that had gone past_due
         updated_at: nowIso,
       }).eq("id", s.id);
+      // If the store had been suspended for non-payment, bring it back online now.
+      if ((s as any).status === "past_due") {
+        const { data: prof } = await admin.from("profiles").select("id").eq("user_id", s.user_id).maybeSingle();
+        if (prof) await admin.from("businesses").update({ is_published: true, updated_at: nowIso }).eq("owner_id", (prof as any).id);
+      }
       charged++; chargedGross += amount;
     } else {
       const errCode = res.error || (res.data as any)?.Description || "declined";
       await admin.from("billing_charges").update({ status: "failed", error_code: String(errCode) }).eq("idempotency_key", idem);
-      // Dunning: retry in RETRY_DAYS; after MAX_FAILURES consecutive fails, past_due.
-      const { count } = await admin.from("billing_charges")
-        .select("id", { count: "exact", head: true })
-        .eq("subscription_id", s.id).eq("status", "failed")
-        .gte("created_at", new Date(nowMs - 20 * 864e5).toISOString());
-      const tooMany = (count ?? 0) >= MAX_FAILURES;
+      // Dunning aligned to the Terms (סעיף 1.4). Measure the CURRENT failure streak
+      // from the first failed charge since the last success. Days 0-9: site stays
+      // live, retry every RETRY_DAYS. Day 10+: SUSPEND (unpublish) the store but keep
+      // retrying so a payment reactivates it. Day 45+: flag for deletion
+      // (pending_deletion) - we NEVER auto-delete a customer's data; the admin decides.
+      const { data: lastOk } = await admin.from("billing_charges")
+        .select("created_at").eq("subscription_id", s.id).eq("status", "success")
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const sinceIso = (lastOk as any)?.created_at ?? new Date(0).toISOString();
+      const { data: firstFail } = await admin.from("billing_charges")
+        .select("created_at").eq("subscription_id", s.id).eq("status", "failed")
+        .gt("created_at", sinceIso).order("created_at", { ascending: true }).limit(1).maybeSingle();
+      const firstFailMs = new Date((firstFail as any)?.created_at ?? nowMs).getTime();
+      const daysFailing = Math.floor((nowMs - firstFailMs) / 864e5);
+
+      let newStatus = "active";
+      let nextRetry: string | null = new Date(nowMs + RETRY_DAYS * 864e5).toISOString();
+      if (daysFailing >= 45) {
+        newStatus = "pending_deletion"; nextRetry = null; // stop; admin reviews before any deletion
+      } else if (daysFailing >= 10) {
+        newStatus = "past_due"; // suspended (unpublished); keep retrying to allow reactivation
+        const { data: prof } = await admin.from("profiles").select("id").eq("user_id", s.user_id).maybeSingle();
+        if (prof) await admin.from("businesses").update({ is_published: false, updated_at: nowIso }).eq("owner_id", (prof as any).id).eq("is_published", true);
+      }
       await admin.from("subscriptions").update({
-        next_charge_at: tooMany ? null : new Date(nowMs + RETRY_DAYS * 864e5).toISOString(),
-        status: tooMany ? "past_due" : "active",
+        next_charge_at: nextRetry,
+        status: newStatus,
         last_charge_status: "failed",
         updated_at: nowIso,
       }).eq("id", s.id);
