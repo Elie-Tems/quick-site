@@ -194,3 +194,69 @@ export function getCcTokens(client: { clientId?: string | number; customClientId
 export function refundCharge(payload: Record<string, unknown>) {
   return icountCall("cc/refund", payload);
 }
+
+export interface DonationReceiptOpts {
+  apiToken: string;              // the NONPROFIT's iCount token (not Siango's)
+  companyId?: string;
+  sumIls: number;               // donation amount
+  donorName: string;
+  donorId?: string;             // תעודת זהות - MANDATORY for reporting; omit only if anonymous
+  donorEmail?: string;
+  donorPhone?: string;
+  isAnonymous?: boolean;        // no ID -> no tax credit, still a valid receipt
+  isTest?: boolean;
+}
+
+/**
+ * Issue a DONATION RECEIPT (קבלת תרומה) through the nonprofit's own iCount account.
+ * iCount reports the donation to תרומות ישראל (the Tax Authority's donations
+ * system) and returns a one-time ALLOCATION NUMBER (מספר הקצאה) that must appear
+ * on the receipt. From 1.1.2026 this is how a Section-46 donor gets the credit
+ * (centralised in their Tax Authority personal area) - a plain PDF no longer
+ * qualifies. The donor's ID is mandatory for the report unless anonymous.
+ *
+ * NOTE: iCount's exact donation doctype string is account-dependent - it's read
+ * from ICOUNT_DONATION_DOCTYPE (default "receipt"). VERIFY the doctype + the
+ * allocation-number field against the nonprofit's iCount API before enabling
+ * reporting for real donors. This is why donation_reporting_enabled is OFF by
+ * default per nonprofit.
+ */
+export async function createDonationReceipt(o: DonationReceiptOpts): Promise<IcountResult<{
+  doc_url?: string; docnum?: string | number;
+  allocation_num?: string; allocation_number?: string; taxauth_allocation_num?: string;
+}>> {
+  const doctype = Deno.env.get("ICOUNT_DONATION_DOCTYPE") || "receipt";
+  try {
+    const r = await fetch(`${ICOUNT_BASE}/doc/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${o.apiToken}` },
+      body: JSON.stringify({
+        doctype,
+        lang: "he",
+        currency: "ILS",
+        is_donation: 1,                          // mark as a donation receipt
+        client_name: o.donorName,
+        ...(o.donorId && !o.isAnonymous ? { id_number: o.donorId } : {}),
+        ...(o.donorEmail ? { email: o.donorEmail, email_to: o.donorEmail } : {}),
+        ...(o.companyId ? { cid: o.companyId } : {}),
+        items: [{ description: "תרומה", unitprice: o.sumIls, quantity: 1 }],
+        cc: 1,
+        send_email: 1,
+        ...(o.isTest ? { is_test: true } : {}),
+      }),
+    });
+    let data: Record<string, unknown> = {};
+    try { data = await r.json(); } catch { /* empty */ }
+    const bodyOk = data?.success !== false && data?.status !== false;
+    return { ok: r.ok && bodyOk, status: r.status, data: data as any };
+  } catch (e) {
+    return { ok: false, status: 0, data: {}, error: String(e) };
+  }
+}
+
+/** Pull the Tax Authority allocation number out of iCount's varied response shapes. */
+export function allocationNumberFrom(data: Record<string, unknown> | undefined): string | null {
+  if (!data) return null;
+  return (data.allocation_num || data.allocation_number || data.taxauth_allocation_num ||
+    (data as any)?.taxauth?.allocation_num || null) as string | null;
+}

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useDonationCampaigns, useUpsertCampaign, useSection46Enabled } from "@/hooks/useDonations";
+import { useDonationCampaigns, useUpsertCampaign, useSection46Enabled, useDonationReporting, useSaveDonationReporting } from "@/hooks/useDonations";
 
 /**
  * Merchant-side donations management: campaigns + the Section 46 toggle
@@ -22,6 +22,25 @@ const DonationsManager = ({ businessId }: { businessId: string }) => {
   const qc = useQueryClient();
   const [draft, setDraft] = useState({ title: "", goal: "" });
   const [saving46, setSaving46] = useState(false);
+
+  const { data: reporting } = useDonationReporting(businessId);
+  const saveReporting = useSaveDonationReporting();
+  const [rep, setRep] = useState({ number46: "", icountToken: "", companyId: "" });
+  const number46 = rep.number46 || reporting?.number46 || "";
+
+  const submitReporting = (enabled: boolean) => {
+    saveReporting.mutate(
+      { businessId, number46, icountToken: rep.icountToken.trim() || undefined, companyId: rep.companyId.trim() || undefined, enabled },
+      {
+        onSuccess: (r) => {
+          setRep((s) => ({ ...s, icountToken: "" }));
+          if (r.blocked) toast.error(r.blocked);
+          else toast.success(r.enabled ? "דיווח לתרומות ישראל הופעל" : "נשמר");
+        },
+        onError: () => toast.error("שמירה נכשלה"),
+      },
+    );
+  };
 
   const add = () => {
     if (!draft.title.trim()) return;
@@ -52,6 +71,37 @@ const DonationsManager = ({ businessId }: { businessId: string }) => {
           <span className="w-5 h-5 rounded-full bg-white shadow" />
         </button>
       </div>
+
+      {/* תרומות ישראל reporting (only relevant once Section 46 is on). From 1.1.2026
+          every credit-eligible donation must be reported to the Tax Authority. */}
+      {s46 && (
+        <div className="p-4 rounded-xl border border-border bg-card space-y-3">
+          <div className="flex items-center gap-3">
+            <FileText className="w-5 h-5 text-primary shrink-0" />
+            <div className="flex-1">
+              <div className="font-medium text-foreground">דיווח לתרומות ישראל (רשות המסים)</div>
+              <div className="text-xs text-muted-foreground">חובה מ-1.1.2026: כל תרומה מזכה מדווחת אוטומטית ומקבלת מספר הקצאה. הזיכוי מופיע לתורם באזור האישי - בלי קבלת PDF.</div>
+            </div>
+            <span className={`text-[11px] font-medium rounded-full px-2.5 py-1 ${reporting?.enabled ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+              {reporting?.enabled ? "פעיל" : "כבוי"}
+            </span>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-2">
+            <Input placeholder="מספר מוסד (46)" value={number46} onChange={(e) => setRep({ ...rep, number46: e.target.value })} />
+            <Input placeholder={reporting?.hasToken ? "טוקן iCount (שמור)" : "טוקן API של iCount"} type="password" value={rep.icountToken} onChange={(e) => setRep({ ...rep, icountToken: e.target.value })} />
+            <Input placeholder="מזהה חברה ב-iCount (אופציונלי)" value={rep.companyId} onChange={(e) => setRep({ ...rep, companyId: e.target.value })} />
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={() => submitReporting(true)} disabled={saveReporting.isPending}>
+              {saveReporting.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "הפעל דיווח"}
+            </Button>
+            {reporting?.enabled && (
+              <Button size="sm" variant="outline" onClick={() => submitReporting(false)} disabled={saveReporting.isPending}>כבה</Button>
+            )}
+          </div>
+          <p className="text-[11px] text-muted-foreground">הטוקן מ-iCount (הגדרות ← API). iCount מפיק את קבלת התרומה ומדווח לרשות. מומלץ לבצע תרומת בדיקה קטנה לפני הפעלה מלאה.</p>
+        </div>
+      )}
 
       {/* Campaigns */}
       <div>

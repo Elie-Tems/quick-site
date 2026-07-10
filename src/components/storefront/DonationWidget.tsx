@@ -22,7 +22,8 @@ const DonationWidget = ({ businessId }: { businessId: string }) => {
   const [amount, setAmount] = useState(100);
   const [custom, setCustom] = useState("");
   const [monthly, setMonthly] = useState(false);
-  const [donor, setDonor] = useState({ name: "", email: "", phone: "" });
+  const [donor, setDonor] = useState({ name: "", email: "", phone: "", idNumber: "" });
+  const [anonymous, setAnonymous] = useState(false);
   const [campaignId, setCampaignId] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
@@ -33,9 +34,15 @@ const DonationWidget = ({ businessId }: { businessId: string }) => {
       toast.error("מלאו סכום, שם ואימייל/טלפון");
       return;
     }
+    // For a Section-46 credit the donation is reported to תרומות ישראל, which
+    // requires the donor's ID - unless they chose to give anonymously (no credit).
+    if (s46 && !anonymous && donor.idNumber.trim().length < 5) {
+      toast.error("לזיכוי מס נדרשת תעודת זהות, או סמנו \"תרומה אנונימית\"");
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.functions.invoke("donation-create", {
-      body: { businessId, amount: finalAmount, recurring: monthly, campaignId, donor },
+      body: { businessId, amount: finalAmount, recurring: monthly, campaignId, donor: { ...donor, anonymous } },
     });
     setLoading(false);
     if (error || (data as { error?: string })?.error) { toast.error("שגיאה בתרומה, נסו שוב"); return; }
@@ -72,6 +79,25 @@ const DonationWidget = ({ businessId }: { businessId: string }) => {
             <Input placeholder="שם מלא" value={donor.name} onChange={(e) => setDonor({ ...donor, name: e.target.value })} />
             <Input placeholder="אימייל" value={donor.email} onChange={(e) => setDonor({ ...donor, email: e.target.value })} />
             <Input placeholder="טלפון" value={donor.phone} onChange={(e) => setDonor({ ...donor, phone: e.target.value })} />
+
+            {/* Section 46 -> reported to תרומות ישראל, which needs the donor's ID. */}
+            {s46 && !anonymous && (
+              <Input placeholder="תעודת זהות (לזיכוי מס)" inputMode="numeric" value={donor.idNumber}
+                onChange={(e) => setDonor({ ...donor, idNumber: e.target.value.replace(/\D/g, "").slice(0, 9) })} />
+            )}
+            {s46 && (
+              <>
+                <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer pt-0.5">
+                  <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} className="accent-primary" />
+                  תרומה אנונימית (ללא זיכוי מס)
+                </label>
+                {!anonymous && (
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    התרומה תדווח ל"תרומות ישראל" של רשות המסים, והזיכוי (סעיף 46) יופיע אוטומטית באזור האישי שלך באתר הרשות. לא צריך לשמור קבלה.
+                  </p>
+                )}
+              </>
+            )}
           </div>
 
           <Button className="w-full" onClick={donate} disabled={loading}>

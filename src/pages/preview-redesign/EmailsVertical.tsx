@@ -240,7 +240,7 @@ const EmailsVertical = () => {
               <Hero icon={Heart} title="תודה מכל הלב 🙏" sub={<>דנה יקרה, תרומתך של <b style={{ color: GREEN_DARK }}>₪250 לחודש</b> עוזרת לנו לשנות חיים - כל חודש מחדש.</>} />
               <div style={{ display: "flex", gap: 12, alignItems: "center", background: "#fafbfa", border: `1px solid ${LINE}`, borderRadius: 14, padding: 16, marginBottom: 18 }}>
                 <FileText style={{ width: 20, height: 20, color: GREEN_DARK, flexShrink: 0 }} />
-                <div style={{ fontSize: 13, color: MUTED }}>מצורפת <b style={{ color: INK }}>קבלה מוכרת לצורכי מס (סעיף 46)</b>. שמרו אותה.</div>
+                <div style={{ fontSize: 13, color: MUTED }}>התרומה <b style={{ color: INK }}>דווחה לתרומות ישראל</b> (רשות המסים) · מס' הקצאה 24-0009182. הזיכוי (סעיף 46) יופיע אוטומטית באזור האישי שלך - <b style={{ color: INK }}>אין צורך לשמור קבלה</b>.</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", fontSize: 13, color: MUTED }}>
                 <Repeat style={{ width: 15, height: 15, color: GREEN_DARK }} /> תרומה חוזרת · אפשר לעדכן או לעצור בכל עת
@@ -255,14 +255,14 @@ const EmailsVertical = () => {
               <Hero icon={Repeat} title="החיוב החודשי התקבל" sub={<>דנה, תרומתך החודשית <b style={{ color: GREEN_DARK }}>₪250</b> חויבה בהצלחה. תודה שאת איתנו לאורך זמן 🙏</>} />
               <Box>
                 <Row icon={CreditCard} label="סכום" value="₪250 · חיוב 7/12" accent />
-                <Row icon={FileText} label="קבלה" value="מצורפת (סעיף 46)" />
+                <Row icon={FileText} label="דיווח מס" value="דווח לתרומות ישראל · הקצאה 24-0009183" />
               </Box>
               <div style={{ textAlign: "center" }}><a style={{ color: GREEN_DARK, fontWeight: 600, fontSize: 13 }}>עדכון סכום / עצירת הוראת קבע</a></div>
             </Body>
           </Email>
 
           <div className="rounded-2xl pv-surface2 border pv-border p-5 text-center">
-            <p className="pv-text text-sm"><span className="font-bold text-primary">סעיף 46 מותנה:</span> בעמותה ללא אישור 46, השורה של הקבלה <b>נעלמת לגמרי</b> מהמייל.</p>
+            <p className="pv-text text-sm"><span className="font-bold text-primary">תרומות ישראל (חובה מ-1.1.2026):</span> תרומה שמזכה במס מדווחת אוטומטית לרשות המסים ומקבלת מספר הקצאה; הזיכוי מופיע באזור האישי של התורם - קבלת PDF כבר לא מזכה. בעמותה ללא אישור 46 / תורם אנונימי, שורת הדיווח <b>נעלמת</b> מהמייל.</p>
           </div>
 
           {/* ═══════════ Platform (Siango) emails ═══════════ */}

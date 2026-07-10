@@ -6,6 +6,8 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getProvider } from "../_shared/payments/registry.ts";
+import { createDonationReceipt, allocationNumberFrom } from "../_shared/icount/api.ts";
+import { decryptToken } from "../_shared/calendar/crypto.ts";
 
 const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*" };
 const json = (b: unknown, s = 200) =>
@@ -56,10 +58,46 @@ Deno.serve(async (req) => {
       await admin.from("transactions").update({ status: "amount_mismatch" }).eq("id", txn.id);
       return json({ error: "Amount mismatch" }, 400);
     }
-    await admin.from("transactions").update({
-      status: "paid",
-      details: { ...(txn.details ?? {}), transaction_uid: parsed.transactionUid, paid_at: now },
-    }).eq("id", txn.id);
+    const paidDetails: Record<string, unknown> = { ...(txn.details ?? {}), transaction_uid: parsed.transactionUid, paid_at: now };
+
+    // תרומות ישראל: issue a donation receipt via the nonprofit's provider, which
+    // reports it to the Tax Authority and returns an allocation number. Off unless
+    // the nonprofit enabled reporting AND connected a provider. Best-effort - a
+    // failure never blocks marking the gift paid (we retry/report separately).
+    try {
+      const { data: biz } = await admin.from("businesses")
+        .select("donation_reporting_enabled, donation_receipt_provider, nonprofit_46_number")
+        .eq("id", txn.business_id).maybeSingle();
+      if (biz?.donation_reporting_enabled && biz?.donation_receipt_provider === "icount") {
+        const { data: creds } = await admin.from("donation_receipt_credentials")
+          .select("api_token_enc, company_id").eq("business_id", txn.business_id).maybeSingle();
+        const d = (txn.details ?? {}) as Record<string, any>;
+        if (creds?.api_token_enc && (d.donor_id_number || d.donor_anonymous)) {
+          const rec = await createDonationReceipt({
+            apiToken: await decryptToken(creds.api_token_enc),
+            companyId: creds.company_id ?? undefined,
+            sumIls: Number(txn.amount),
+            donorName: d.donor_name || "תורם",
+            donorId: d.donor_id_number ?? undefined,
+            donorEmail: d.donor_email ?? undefined,
+            donorPhone: d.donor_phone ?? undefined,
+            isAnonymous: !!d.donor_anonymous,
+          });
+          if (rec.ok) {
+            paidDetails.receipt_allocation_number = allocationNumberFrom(rec.data);
+            paidDetails.receipt_doc_url = rec.data.doc_url ?? null;
+            paidDetails.reported_to_tax_authority = true;
+          } else {
+            paidDetails.receipt_error = rec.error || "icount_donation_receipt_failed";
+            console.error("donation receipt failed", txn.id, rec.error, rec.data);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("donation reporting error", txn.id, String(e));
+    }
+
+    await admin.from("transactions").update({ status: "paid", details: paidDetails }).eq("id", txn.id);
 
     // Refresh the campaign's cached raised/backers totals, if this gift targeted one.
     const campaignId = (txn.details as { campaign_id?: string } | null)?.campaign_id;
