@@ -123,14 +123,22 @@ Deno.serve(async (req) => {
     payment_description: "פרסום אתר Siango - חיוב ראשון", invoice_url: invoiceUrl,
   }).then(() => {}).catch(() => {});
 
-  const paidUntil = new Date(Date.now() + 31 * 864e5).toISOString();
-  const nextCharge = new Date(Date.now() + 30 * 864e5).toISOString();
+  // Anchor monthly billing to today's day-of-month, and set the next charge to the
+  // SAME day next month (clamped for short months - e.g. paid on the 31st -> Feb 28).
+  const nowD = new Date();
+  const anchorDay = nowD.getUTCDate();
+  let ny = nowD.getUTCFullYear(), nm = nowD.getUTCMonth() + 1;
+  if (nm > 11) { nm = 0; ny++; }
+  const dim = new Date(Date.UTC(ny, nm + 1, 0)).getUTCDate();
+  const nextChargeMs = Date.UTC(ny, nm, Math.min(anchorDay, dim), 0, 0, 0);
+  const nextCharge = new Date(nextChargeMs).toISOString();
+  const paidUntil = new Date(nextChargeMs + 2 * 864e5).toISOString();
   try {
     await admin.from("subscriptions").upsert({
       user_id: userId, status: "active", billing_provider: "cardcom_token",
       cc_token_id: token ?? null,
       paid_until: paidUntil, next_charge_at: token ? nextCharge : null,
-      billing_cycle_count: 1, last_charge_status: "success",
+      billing_cycle_count: 1, last_charge_status: "success", billing_anchor_day: anchorDay,
       cancel_type: null, cancel_at: null, updated_at: now,
     }, { onConflict: "user_id" });
   } catch (e) { console.warn("cardcom webhook: subscription activation failed (non-fatal):", e); }

@@ -16,6 +16,21 @@ const VAT_RATE = 0.18;
 const RETRY_DAYS = 2;        // reschedule a failed charge this many days out
 const MAX_FAILURES = 3;      // consecutive failures before marking past_due
 const gross = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
+const ADMIN_EMAILS = ["moti4384@gmail.com", "furmand713@gmail.com"];
+
+// Next CALENDAR-month charge date, anchored to `anchorDay` (the day-of-month of the
+// first charge). If the next month is too short (e.g. anchor 30, next month = Feb),
+// clamp to that month's LAST day; the month after snaps back to the anchor. Keeps the
+// time-of-day at midnight so the daily 01:30 cron always catches it on the target day.
+function nextMonthlyChargeMs(anchorDay: number, fromMs: number): number {
+  const d = new Date(fromMs);
+  let y = d.getUTCFullYear();
+  let m = d.getUTCMonth() + 1; // advance one month
+  if (m > 11) { m = 0; y++; }
+  const daysInTarget = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  const day = Math.min(Math.max(1, anchorDay || 1), daysInTarget);
+  return Date.UTC(y, m, day, 0, 0, 0);
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204 });
@@ -34,7 +49,7 @@ serve(async (req) => {
   // Due, active, token-billed subscriptions that aren't cancelled.
   const { data: subs, error } = await admin
     .from("subscriptions")
-    .select("id, user_id, status, cc_token_id, base_amount_ils, coupon_duration, coupon_discount_type, coupon_discount_value, billing_cycle_count, next_charge_at, cancel_type, free_months_credit")
+    .select("id, user_id, status, cc_token_id, base_amount_ils, coupon_duration, coupon_discount_type, coupon_discount_value, billing_cycle_count, next_charge_at, cancel_type, free_months_credit, billing_anchor_day")
     .eq("billing_provider", "cardcom_token")
     .eq("status", "active")
     .not("cc_token_id", "is", null)
@@ -44,6 +59,7 @@ serve(async (req) => {
   if (error) { console.error("charge-run query:", error); return new Response(JSON.stringify({ error: "query" }), { status: 500 }); }
 
   let charged = 0, failed = 0, skipped = 0, freeMonths = 0;
+  let chargedGross = 0, declinedGross = 0; // ₪ totals (VAT-inclusive) for the report
 
   for (const s of subs ?? []) {
     const base = Number(s.base_amount_ils);
@@ -141,14 +157,18 @@ serve(async (req) => {
     if (res.ok) {
       const invoiceUrl = (res.data as any)?.DocumentUrl ?? (res.data as any)?.DocumentInfo?.DocumentUrl ?? null;
       await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.ApprovalNumber ?? null, invoice_url: invoiceUrl }).eq("idempotency_key", idem);
+      // Next charge = same day-of-month next month (clamped for short months); the
+      // anchor is the first-charge day, stored so a Feb clamp never loses the 30th.
+      const anchorDay = Number((s as any).billing_anchor_day) || new Date((s as any).next_charge_at || nowMs).getUTCDate();
+      const nextMs = nextMonthlyChargeMs(anchorDay, nowMs);
       await admin.from("subscriptions").update({
-        paid_until: new Date(nowMs + 31 * 864e5).toISOString(),
-        next_charge_at: new Date(nowMs + 30 * 864e5).toISOString(),
+        paid_until: new Date(nextMs + 2 * 864e5).toISOString(), // small grace past the next charge
+        next_charge_at: new Date(nextMs).toISOString(),
         billing_cycle_count: cycle + 1,
         last_charge_status: "success",
         updated_at: nowIso,
       }).eq("id", s.id);
-      charged++;
+      charged++; chargedGross += amount;
     } else {
       const errCode = res.error || (res.data as any)?.Description || "declined";
       await admin.from("billing_charges").update({ status: "failed", error_code: String(errCode) }).eq("idempotency_key", idem);
@@ -172,7 +192,33 @@ serve(async (req) => {
           body: JSON.stringify({ type: "paymentFailed", to: email, ctx: {} }),
         }).catch(() => {});
       }
-      failed++;
+      failed++; declinedGross += amount;
+    }
+  }
+
+  // Daily report to the admins (Moti + Daniel): how much was charged (incl VAT) and
+  // how many declines. Only when something actually ran, to avoid empty-day noise.
+  if ((charged + failed + freeMonths) > 0) {
+    const resendKey = Deno.env.get("RESEND_API_KEY");
+    if (resendKey) {
+      const dt = new Date(nowMs).toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" });
+      const money = (n: number) => `₪${(Math.round(n * 100) / 100).toLocaleString("he-IL")}`;
+      const html = `<div dir="rtl" style="font-family:Arial,sans-serif;max-width:520px;margin:auto">
+        <h2 style="color:#16a34a">דוח חיוב יומי · Siango</h2>
+        <p style="color:#555">${dt}${isTest ? " · (מצב טסט)" : ""}</p>
+        <table style="width:100%;border-collapse:collapse;font-size:15px">
+          <tr><td style="padding:8px;border-bottom:1px solid #eee">✅ חיובים שהצליחו</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:left"><b>${charged}</b></td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee">💰 סה"כ חויב (כולל מע"מ)</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:left"><b>${money(chargedGross)}</b></td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee">❌ סירובים</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:left"><b>${failed}</b> (${money(declinedGross)})</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee">🎁 חודשים חינם (הפניות)</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:left"><b>${freeMonths}</b></td></tr>
+        </table>
+        <p style="color:#999;font-size:12px;margin-top:16px">דוח אוטומטי ממנוע החיוב של Siango.</p>
+      </div>`;
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ from: "Siango Billing <billing@send.siango.app>", to: ADMIN_EMAILS, subject: `דוח חיוב יומי · ${money(chargedGross)} · ${dt}`, html }),
+      }).catch((e) => console.warn("charge-run report email failed:", e));
     }
   }
 
