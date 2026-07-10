@@ -18,18 +18,13 @@ const MAX_FAILURES = 3;      // consecutive failures before marking past_due
 const gross = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
 const ADMIN_EMAILS = ["moti4384@gmail.com", "furmand713@gmail.com"];
 
-// Next CALENDAR-month charge date, anchored to `anchorDay` (the day-of-month of the
-// first charge). If the next month is too short (e.g. anchor 30, next month = Feb),
-// clamp to that month's LAST day; the month after snaps back to the anchor. Keeps the
-// time-of-day at midnight so the daily 01:30 cron always catches it on the target day.
-function nextMonthlyChargeMs(anchorDay: number, fromMs: number): number {
+// All subscriptions bill on the 1st of each month. Given a date, returns the 1st of
+// the NEXT month at 00:00 UTC - the daily 01:30 cron picks it up on that day.
+function firstOfNextMonthMs(fromMs: number): number {
   const d = new Date(fromMs);
-  let y = d.getUTCFullYear();
-  let m = d.getUTCMonth() + 1; // advance one month
+  let y = d.getUTCFullYear(), m = d.getUTCMonth() + 1;
   if (m > 11) { m = 0; y++; }
-  const daysInTarget = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
-  const day = Math.min(Math.max(1, anchorDay || 1), daysInTarget);
-  return Date.UTC(y, m, day, 0, 0, 0);
+  return Date.UTC(y, m, 1, 0, 0, 0);
 }
 
 serve(async (req) => {
@@ -157,10 +152,8 @@ serve(async (req) => {
     if (res.ok) {
       const invoiceUrl = (res.data as any)?.DocumentUrl ?? (res.data as any)?.DocumentInfo?.DocumentUrl ?? null;
       await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.ApprovalNumber ?? null, invoice_url: invoiceUrl }).eq("idempotency_key", idem);
-      // Next charge = same day-of-month next month (clamped for short months); the
-      // anchor is the first-charge day, stored so a Feb clamp never loses the 30th.
-      const anchorDay = Number((s as any).billing_anchor_day) || new Date((s as any).next_charge_at || nowMs).getUTCDate();
-      const nextMs = nextMonthlyChargeMs(anchorDay, nowMs);
+      // Everyone bills on the 1st -> next charge is the 1st of next month.
+      const nextMs = firstOfNextMonthMs(nowMs);
       await admin.from("subscriptions").update({
         paid_until: new Date(nextMs + 2 * 864e5).toISOString(), // small grace past the next charge
         next_charge_at: new Date(nextMs).toISOString(),

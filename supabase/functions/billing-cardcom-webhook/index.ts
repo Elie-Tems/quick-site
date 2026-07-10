@@ -123,14 +123,16 @@ Deno.serve(async (req) => {
     payment_description: "פרסום אתר Siango - חיוב ראשון", invoice_url: invoiceUrl,
   }).then(() => {}).catch(() => {});
 
-  // Anchor monthly billing to today's day-of-month, and set the next charge to the
-  // SAME day next month (clamped for short months - e.g. paid on the 31st -> Feb 28).
-  const nowD = new Date();
-  const anchorDay = nowD.getUTCDate();
-  let ny = nowD.getUTCFullYear(), nm = nowD.getUTCMonth() + 1;
-  if (nm > 11) { nm = 0; ny++; }
-  const dim = new Date(Date.UTC(ny, nm + 1, 0)).getUTCDate();
-  const nextChargeMs = Date.UTC(ny, nm, Math.min(anchorDay, dim), 0, 0, 0);
+  // Billing aligns to the 1st of each month. The first month is paid in full now, so
+  // the next charge is the FIRST 1st-of-month at least 28 days out (the paid first
+  // month is never cut short). Documented in the Terms + the Help Center.
+  const nowMs2 = Date.now();
+  const firstOfNext = (fromMs: number) => {
+    const d = new Date(fromMs); let y = d.getUTCFullYear(), m = d.getUTCMonth() + 1;
+    if (m > 11) { m = 0; y++; } return Date.UTC(y, m, 1, 0, 0, 0);
+  };
+  let nextChargeMs = firstOfNext(nowMs2);
+  if (nextChargeMs - nowMs2 < 28 * 864e5) nextChargeMs = firstOfNext(nextChargeMs);
   const nextCharge = new Date(nextChargeMs).toISOString();
   const paidUntil = new Date(nextChargeMs + 2 * 864e5).toISOString();
   try {
@@ -138,7 +140,7 @@ Deno.serve(async (req) => {
       user_id: userId, status: "active", billing_provider: "cardcom_token",
       cc_token_id: token ?? null,
       paid_until: paidUntil, next_charge_at: token ? nextCharge : null,
-      billing_cycle_count: 1, last_charge_status: "success", billing_anchor_day: anchorDay,
+      billing_cycle_count: 1, last_charge_status: "success", billing_anchor_day: 1,
       cancel_type: null, cancel_at: null, updated_at: now,
     }, { onConflict: "user_id" });
   } catch (e) { console.warn("cardcom webhook: subscription activation failed (non-fatal):", e); }
