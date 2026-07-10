@@ -10,20 +10,22 @@
 
 alter table public.businesses
   add column if not exists nonprofit_46_number text,           -- מספר מוסד ציבורי (46)
-  add column if not exists donation_receipt_provider text,      -- 'icount' | null
+  add column if not exists donation_receipt_provider text,      -- 'icount'|'morning'|'rivhit'|'sumit'|'self'|null
   add column if not exists donation_reporting_enabled boolean not null default false;
 
 comment on column public.businesses.donation_reporting_enabled is
   'When true, each paid donation is issued a donation receipt via the nonprofit''s connected provider, which reports it to תרומות ישראל and returns an allocation number. OFF by default - enable only once the provider connection is verified. Requires nonprofit_46_number + a connected receipt provider + the donor''s ID.';
 
--- Donation reporting uses the merchant's own iCount account (a nonprofit account,
--- distinct from Siango's platform-billing iCount). Stored encrypted like the
--- payment credentials pattern.
+-- Donation reporting uses the nonprofit's OWN receipt provider (iCount / Morning /
+-- ריווחית / SUMIT / self), distinct from Siango's platform-billing iCount. All
+-- implement the same Tax Authority "מודל תרומות" API. iCount is automated today; the
+-- rest run in record mode (Siango stores the donor id, the nonprofit issues the
+-- allocation-numbered receipt in its own system). Token stored encrypted.
 create table if not exists public.donation_receipt_credentials (
   business_id uuid primary key references public.businesses(id) on delete cascade,
-  provider text not null default 'icount' check (provider in ('icount')),
-  api_token_enc text,             -- the nonprofit's iCount API token (encrypted)
-  company_id text,                -- iCount company id / cid
+  provider text not null default 'icount' check (provider in ('icount','morning','rivhit','sumit','self')),
+  api_token_enc text,             -- the nonprofit's provider API token (encrypted); null in record mode
+  company_id text,                -- provider company id / cid (iCount)
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
