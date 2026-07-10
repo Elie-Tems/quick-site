@@ -1,10 +1,10 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2, FileText } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2, FileText, CalendarClock } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 import type { BusinessType } from "@/lib/businessModules";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -16,6 +16,10 @@ interface DashboardNavProps {
   canUseCoupons?: boolean;
   /** האם לאפשר טאב תמונות AI (למשל בהתאם למנוי) */
   canUseAIImages?: boolean;
+  /** יומן/לידים/תרומות - רק לעסקים עם מודול ורטיקל */
+  showVerticals?: boolean;
+  /** התווית המדויקת למודול ("יומן ותורים" / "לידים ונכסים" / "תרומות") */
+  verticalsLabel?: string;
 }
 
 // Sidebar groups (desktop shows these as section headers). Order here = display order.
@@ -72,6 +76,9 @@ const navItems: {
   { id: "preview", label: "תצוגה מקדימה", shortLabel: "תצוגה", icon: Eye, group: "עריכה ועיצוב" },
 
   // ניהול מכירות
+  // Vertical managers (booking calendar / listings / donation campaigns). Shown
+  // only for non-commerce businesses; label follows the active module.
+  { id: "verticals", label: "יומן ולידים", icon: CalendarClock, group: "ניהול מכירות" },
   { id: "orders", label: "הזמנות", icon: ShoppingCart, group: "ניהול מכירות" },
   { id: "coupons", label: "קופונים", icon: Ticket, group: "ניהול מכירות" },
   { id: "shipping", label: "משלוחים", icon: Truck, group: "ניהול מכירות" },
@@ -98,6 +105,8 @@ const DashboardNav = ({
   canUseCampaigns = true,
   canUseCoupons = true,
   canUseAIImages = true,
+  showVerticals = false,
+  verticalsLabel,
 }: DashboardNavProps) => {
   const typeConfig = TYPE_CONFIG[businessType] ?? {};
   const hiddenItems = new Set(typeConfig.hiddenItems ?? []);
@@ -111,7 +120,7 @@ const DashboardNav = ({
       const override = itemOverrides[item.id] ?? {};
       return {
         ...item,
-        label: override.label ?? item.label,
+        label: item.id === "verticals" && verticalsLabel ? verticalsLabel : (override.label ?? item.label),
         shortLabel: override.shortLabel ?? item.shortLabel,
         icon: override.icon ?? item.icon,
         comingSoon:
@@ -121,6 +130,7 @@ const DashboardNav = ({
     })
     .filter((item) => {
       if (hiddenItems.has(item.id)) return false;
+      if (item.id === "verticals" && !showVerticals) return false;
       if (item.id === "campaigns" && !canUseCampaigns) return false;
       if (item.id === "coupons" && !canUseCoupons) return false;
       if (item.id === "ai-images" && !canUseAIImages) return false;

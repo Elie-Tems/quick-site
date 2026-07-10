@@ -126,6 +126,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         businessCategory: resolvedCategory,
         customCategoryName: effectiveCustomName,
         isReligiousAudience: data.isReligiousAudience,
+        businessType: data.businessType,
         paymentEnabled: false,
         paymentProvider: null,
         logo: data.logo,

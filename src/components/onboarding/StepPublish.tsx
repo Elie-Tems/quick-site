@@ -134,6 +134,7 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
           businessCategory: data.businessCategory,
           customCategoryName: data.customCategoryName,
           isReligiousAudience: data.isReligiousAudience,
+          businessType: data.businessType,
           paymentEnabled: data.orderType === "orders-payments" && data.paymentConnected,
           paymentProvider: data.paymentProvider || null,
           logo: data.logo,

@@ -87,6 +87,12 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: str
 
 const SHOW_INITIAL = 6;
 
+// Sub-types that are really a "listings + leads" business (real estate / vehicles),
+// even though the UI groups them under "נותן שירות". Picking one saves
+// business_type='realestate' so the listings module turns on (see businessModules.ts),
+// while the 3-card UI stays exactly as designed.
+const LISTINGS_SUBTYPES = new Set(["broker", "developer", "vacation", "commercial", "car-dealer"]);
+
 const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
   const [activeMain, setActiveMain] = useState<BusinessType | null>(data.businessType ?? null);
   const [search, setSearch] = useState("");
@@ -109,6 +115,9 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
     updateData({
       businessSubType: effectiveSubType,
       businessCategory: SUB_TYPE_TO_CATEGORY[subId] || 'other',
+      // Real-estate / vehicle sub-types unlock the listings module regardless of
+      // which main card they sit under.
+      ...(LISTINGS_SUBTYPES.has(subId) ? { businessType: 'realestate' as BusinessType } : {}),
     });
     onNext();
   };

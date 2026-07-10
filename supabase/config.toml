@@ -176,3 +176,27 @@ verify_jwt = true
 # optional ?secret=RESEND_WEBHOOK_SECRET. Updates the platform_email_log audit.
 [functions.resend-webhook]
 verify_jwt = false
+
+# ── Verticals (booking / listings / donations / calendar) ────────────────────
+# Public storefront endpoints (anonymous visitors): availability, booking, cancel,
+# lead capture, donations. Authenticated internally (server-recomputed / HMAC).
+[functions.booking-availability]
+verify_jwt = false
+[functions.booking-create]
+verify_jwt = false
+[functions.booking-cancel-public]
+verify_jwt = false
+[functions.booking-holds-sweep]
+verify_jwt = false
+[functions.contacts-capture]
+verify_jwt = false
+[functions.donation-create]
+verify_jwt = false
+[functions.donation-callback]
+verify_jwt = false
+# calendar-oauth-callback is Google's OAuth redirect (no JWT); authenticated by a
+# signed state. calendar-sync runs from cron (CRON_SECRET) or a merchant JWT.
+[functions.calendar-oauth-callback]
+verify_jwt = false
+[functions.calendar-sync]
+verify_jwt = false
