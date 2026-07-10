@@ -1,16 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Home, LayoutDashboard, Rocket, LogIn, Shield, ArrowLeft, Sparkles,
   Layers, CalendarClock, CalendarCheck, Building2, Inbox, Compass, ClipboardList,
   Heart, HandHeart, Camera, Wrench, Car, Tent, CalendarDays, Palette, Mail,
+  ShoppingBag, CreditCard, FileText, HandCoins, MailCheck, FileCheck2,
 } from "lucide-react";
 import { AuroraBg, Card, PreviewThemeRoot, ThemeToggle } from "@/components/preview-redesign/kit";
 
-/** Hub linking every redesign preview. Route: /preview/redesign */
+/** Hub linking every redesign preview + spec docs. Route: /preview/redesign */
 
-const GROUPS: { title: string; items: { to: string; icon: typeof Home; title: string; desc: string; tag: string; tone: string }[] }[] = [
+type Item = { to: string; icon: typeof Home; title: string; desc: string; tag: string; tone: string; external?: boolean };
+const GROUPS: { title: string; note?: string; items: Item[] }[] = [
   {
     title: "המערכת הקיימת - בעיצוב החדש",
     items: [
@@ -50,6 +52,7 @@ const GROUPS: { title: string; items: { to: string; icon: typeof Home; title: st
       { to: "/preview/redesign/photographer", icon: Camera, title: "צלם", desc: "היברידי: גלריה + הזמנת סשן + חנות הדפסות", tag: "היברידי", tone: "primary" },
       { to: "/preview/redesign/home-pro", icon: Wrench, title: "בעל מקצוע / שיפוצים", desc: "שירותים, עבודות, המלצות, בקשת הצעת מחיר", tag: "לידים", tone: "primary" },
       { to: "/preview/redesign/car-dealer", icon: Car, title: "סוחר רכב", desc: "לוח רכבים + סינון + מפרט + ליד", tag: "לוח", tone: "primary" },
+      { to: "/preview/redesign/boutique", icon: ShoppingBag, title: "חנות בוטיק", desc: "אתר מכר קלאסי בעיצוב החדש - קטלוג, מוצר, עגלה", tag: "מוצרים", tone: "primary" },
     ],
   },
   {
@@ -57,6 +60,24 @@ const GROUPS: { title: string; items: { to: string; icon: typeof Home; title: st
     items: [
       { to: "/preview/redesign/vacation", icon: Tent, title: "צימר / דירת נופש - אתר", desc: "גלריה, יחידות, מתקנים, ובחירת תאריכים עם מחיר ללילה", tag: "צד לקוח", tone: "primary" },
       { to: "/preview/redesign/vacation-dashboard", icon: CalendarDays, title: "צימר / דירת נופש - ניהול", desc: "תפוסה, הזמנות, יומן זמינות וסנכרון Booking/Airbnb", tag: "צד מארח", tone: "primary" },
+    ],
+  },
+  {
+    title: "חי במערכת האמיתית (בדשבורד)",
+    note: "אלה כבר עובדים בפרודקשן, לא רק מוקאפ. הכרטיס פותח תצוגה; במערכת מגיעים דרך הדשבורד.",
+    items: [
+      { to: "/preview/redesign/emails", icon: MailCheck, title: "מיילים ללקוחות - לאישור", desc: "14 מיילים אוטומטיים + לוגו העסק. בדשבורד: יומן ולידים ← עריכת מיילים (הפעלה/כיבוי + עריכת טקסט)", tag: "חי · לאישור", tone: "green" },
+      { to: "/preview/redesign/services-dashboard", icon: CalendarClock, title: "יומן ולידים", desc: "אזור חדש בדשבורד לפי סוג העסק (יומן תורים / לידים / תרומות). בדשבורד: תפריט צד ← יומן ולידים", tag: "חי", tone: "green" },
+      { to: "/preview/redesign/nonprofit-dashboard", icon: HandCoins, title: "דיווח תרומות ישראל", desc: "הגדרת דיווח לרשות המסים (מספר 46 + ספק קבלות). בדשבורד: תרומות וקמפיינים ← דיווח לתרומות ישראל", tag: "חי · לבדיקה", tone: "green" },
+      { to: "/preview/payments", icon: CreditCard, title: "סליקה בעיצוב חדש", desc: "מסך התשלומים והחיבור לסליקה (כיוון ירוק). בדשבורד: תפריט צד ← תשלומים", tag: "חי", tone: "green" },
+    ],
+  },
+  {
+    title: "מסמכי אפיון (לדניאל)",
+    note: "מסמכים לקריאה - אפיון ארגון מחדש של הדשבורדים. נפתחים בלשונית חדשה.",
+    items: [
+      { to: "/specs/admin-dashboard-spec.html", external: true, icon: FileCheck2, title: "אפיון דשבורד העל (אדמין)", desc: "ארגון מחדש ל-7 אזורים, בעברית פשוטה בלי מושגים באנגלית", tag: "מסמך", tone: "primary" },
+      { to: "/specs/merchant-crm-spec.html", external: true, icon: FileText, title: "אפיון דשבורד הסוחר (ניהול לקוחות)", desc: "הצעה לארגון דשבורד הסוחר כמערכת ניהול לקוחות - בהמתנה לעיון", tag: "מסמך · בהמתנה", tone: "primary" },
     ],
   },
 ];
@@ -80,21 +101,27 @@ const Hub = () => {
             העיצוב החדש של <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">Siango</span>
           </h1>
           <p className="text-lg pv-muted max-w-xl mx-auto">
-            כל המסכים בשפה אחת - צעירה, נקייה ואנימטיבית. אפשר להחליף בין רקע בהיר לכהה עם המתג למעלה. מוקאפים בלבד; המערכת האמיתית לא השתנתה.
+            מרכז בקרה לבדיקה ואישור - כל מה שבנינו במקום אחד. חלק מוקאפים לעיצוב, וחלק כבר חי במערכת (מסומן "חי"). אפשר להחליף בין רקע בהיר לכהה עם המתג למעלה.
           </p>
         </motion.div>
 
         {GROUPS.map((g) => (
           <div key={g.title} className="mb-10">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-2">
               <h2 className="text-lg font-display font-bold pv-text">{g.title}</h2>
               <div className="flex-1 h-px" style={{ background: "var(--pv-border)" }} />
             </div>
+            {g.note && <p className="text-sm pv-muted mb-4">{g.note}</p>}
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {g.items.map((s, i) => (
+              {g.items.map((s, i) => {
+                const Wrapper = ({ children }: { children: React.ReactNode }) =>
+                  s.external
+                    ? <a href={s.to} target="_blank" rel="noopener noreferrer">{children}</a>
+                    : <Link to={s.to}>{children}</Link>;
+                return (
                 <motion.div key={s.to}
                   initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: i * 0.05 }}>
-                  <Link to={s.to}>
+                  <Wrapper>
                     <Card hover className="p-6 h-full group relative overflow-hidden">
                       <div className="absolute -top-10 -left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
                       <div className="relative flex items-start justify-between mb-4">
@@ -109,9 +136,10 @@ const Hub = () => {
                       </h3>
                       <p className="relative text-sm pv-muted leading-relaxed">{s.desc}</p>
                     </Card>
-                  </Link>
+                  </Wrapper>
                 </motion.div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}
