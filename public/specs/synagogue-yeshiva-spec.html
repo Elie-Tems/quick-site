@@ -1,4 +1,4 @@
-<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>אפיון: בית הכנסת הדיגיטלי + ישיבה - תחת עמותות</title></head><body>
+<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>אפיון מלא: בית הכנסת הדיגיטלי + מוסד התורה</title></head><body>
 <style>
   :root{
     --page:#f6f8f4; --panel:#ffffff; --soft:#eef1ea;
@@ -7,8 +7,8 @@
     --g1:#1d9e75; --g2:#0f6e56; --g3:#3b6d11; --g-soft:#eaf3de; --g-soft2:#e1f5ee;
     --gold:#b8860b; --gold-soft:#f7efd8;
     --font:"Assistant","Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif;
-    --mono:"SF Mono",ui-monospace,"Menlo",monospace;
-    --maxw:940px;
+    --serif:"Frank Ruhl Libre","David Libre",Georgia,"Times New Roman",serif;
+    --maxw:960px;
   }
   @media (prefers-color-scheme:dark){
     :root{ --page:#0e1512; --panel:#161f1a; --soft:#141c18;
@@ -27,14 +27,15 @@
   .hero{padding:56px 0 34px; border-bottom:1px solid var(--line);}
   .kicker{display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:600; letter-spacing:.04em; color:var(--g2); background:var(--g-soft2); border-radius:20px; padding:5px 13px;}
   .hero h1{font-size:clamp(28px,5vw,42px); font-weight:700; line-height:1.15; margin:18px 0 10px; text-wrap:balance; letter-spacing:-.01em;}
-  .hero p{font-size:17px; color:var(--ink2); max-width:66ch; margin:0;}
+  .hero p{font-size:17px; color:var(--ink2); max-width:68ch; margin:0;}
   .meta{margin-top:20px; display:flex; gap:8px; flex-wrap:wrap; font-size:12.5px; color:var(--ink3);}
   .meta span{background:var(--soft); border-radius:8px; padding:5px 11px;}
   section{padding:38px 0; border-bottom:1px solid var(--line);}
   .eyebrow{font-size:12px; font-weight:600; letter-spacing:.08em; color:var(--g3); text-transform:uppercase;}
-  h2{font-size:25px; font-weight:700; margin:8px 0 6px; letter-spacing:-.01em;}
+  h2{font-size:26px; font-weight:700; margin:8px 0 6px; letter-spacing:-.01em;}
   h3.sub{font-size:18px; font-weight:700; margin:28px 0 10px; display:flex; align-items:center; gap:9px;}
-  p.lead{font-size:16px; color:var(--ink2); margin:6px 0 0; max-width:68ch;}
+  p.lead{font-size:16px; color:var(--ink2); margin:6px 0 0; max-width:70ch;}
+  p.body-t{font-size:15px; color:var(--ink2); margin:12px 0 0; max-width:72ch;}
   .cols{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px;}
   .cols3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-top:18px;}
   @media(max-width:680px){ .cols,.cols3{grid-template-columns:1fr;} }
@@ -63,6 +64,9 @@
   .note{background:var(--g-soft); border:1px solid #cfe3ad; border-radius:12px; padding:14px 16px; font-size:13.5px; color:var(--g3); margin-top:18px;}
   @media (prefers-color-scheme:dark){ .note{background:#13251a; border-color:#1f4a2e; color:#9fe1cb;} }
   :root[data-theme="dark"] .note{background:#13251a; border-color:#1f4a2e; color:#9fe1cb;}
+  .note.gold{background:var(--gold-soft); border-color:#e8d59a; color:#8a6a0e;}
+  @media (prefers-color-scheme:dark){ .note.gold{background:#2a2413; border-color:#5a4a1d; color:#e8c766;} }
+  :root[data-theme="dark"] .note.gold{background:#2a2413; border-color:#5a4a1d; color:#e8c766;}
 
   /* ---- Mockups ---- */
   .mock{background:var(--soft); border:1px solid var(--line2); border-radius:16px; padding:14px; margin-top:16px;}
@@ -75,7 +79,7 @@
   .times div{flex:1; text-align:center; padding:7px 4px; font-size:11.5px; color:var(--g2); border-inline-start:1px solid var(--line);}
   .times div:first-child{border:0;}
   .times b{display:block; font-size:13px; color:var(--ink);}
-  .body{padding:14px;}
+  .bodyp{padding:14px;}
   .tile{border:1px solid var(--line); border-radius:11px; padding:12px 13px; background:var(--panel);}
   .tile .h{font-size:13.5px; font-weight:700; display:flex; align-items:center; gap:7px; margin-bottom:6px;}
   .tile .m{font-size:12px; color:var(--ink2); line-height:1.55;}
@@ -93,7 +97,7 @@
   .tag.gold{background:var(--gold-soft); color:var(--gold);}
   .tag.warn{background:#fbe5d6; color:#a5601f;}
   @media (prefers-color-scheme:dark){ .tag.warn{background:#3a2a17; color:#e0a869;} }
-  .nav{display:flex; flex-direction:column; gap:3px; padding:12px; background:var(--soft); border-inline-start:1px solid var(--line); min-width:158px;}
+  .nav{display:flex; flex-direction:column; gap:3px; padding:12px; background:var(--soft); border-inline-start:1px solid var(--line); min-width:160px;}
   .nav div{font-size:12px; color:var(--ink2); padding:7px 9px; border-radius:7px;}
   .nav div.on{background:var(--g1); color:#fff; font-weight:700;}
   .dash{display:flex; flex-direction:row-reverse;}
@@ -105,97 +109,164 @@
 
   /* WhatsApp flow */
   .wa{background:#e7ded3; border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px;}
-  @media (prefers-color-scheme:dark){ .wa{background:#0e1a14;} }
   :root[data-theme="dark"] .wa{background:#0e1a14;}
+  @media (prefers-color-scheme:dark){ .wa{background:#0e1a14;} }
   .wa .bub{max-width:82%; padding:8px 11px; border-radius:11px; font-size:12.5px; line-height:1.5; box-shadow:0 1px 1px rgba(0,0,0,.08);}
   .wa .in{align-self:flex-start; background:#fff; color:#111; border-top-right-radius:3px;}
   .wa .out{align-self:flex-end; background:#d9fdd3; color:#0b3b26; border-top-left-radius:3px;}
-  @media (prefers-color-scheme:dark){ .wa .in{background:#1f2c25; color:#e8efe9;} .wa .out{background:#144d34; color:#dff5e8;} }
   :root[data-theme="dark"] .wa .in{background:#1f2c25; color:#e8efe9;}
   :root[data-theme="dark"] .wa .out{background:#144d34; color:#dff5e8;}
+  @media (prefers-color-scheme:dark){ .wa .in{background:#1f2c25; color:#e8efe9;} .wa .out{background:#144d34; color:#dff5e8;} }
 
-  /* Kiosk display screen */
-  .screen{background:#0c130f; border-radius:14px; padding:20px 22px; color:#eafaf3; border:1px solid #1e2a22;}
-  .screen .hd{display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid #23342a; padding-bottom:10px; margin-bottom:14px;}
-  .screen .hd .ttl{font-size:16px; font-weight:800;}
-  .screen .hd .d{font-size:12px; color:#8fb3a1;}
-  .screen .big{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
-  @media(max-width:560px){ .screen .big{grid-template-columns:1fr 1fr;} }
-  .screen .c{text-align:center; background:#111c16; border:1px solid #23342a; border-radius:10px; padding:11px 8px;}
-  .screen .c .l{font-size:11.5px; color:#8fb3a1;}
-  .screen .c .v{font-size:22px; font-weight:800; color:#eafaf3; letter-spacing:.02em;}
-  .screen .ann{margin-top:14px; font-size:12.5px; color:#cfe9dd; display:flex; justify-content:space-between; gap:10px; border-top:1px solid #23342a; padding-top:11px;}
-  .live{display:inline-flex; align-items:center; gap:5px; font-size:11px; color:#6ee7b7;}
-  .live::before{content:""; width:7px; height:7px; border-radius:50%; background:#34d399;}
+  /* ---- Seat map ---- */
+  .seatmap{background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:14px;}
+  .mizrach{text-align:center; font-size:12px; font-weight:700; color:var(--gold); background:var(--gold-soft); border:1px solid #e8d59a; border-radius:8px; padding:6px; letter-spacing:.05em;}
+  :root[data-theme="dark"] .mizrach{border-color:#5a4a1d;}
+  .fixtures{display:flex; justify-content:center; gap:10px; margin:10px 0;}
+  .fixture{font-size:10.5px; font-weight:700; color:var(--ink2); background:var(--soft); border:1px dashed var(--line2); border-radius:7px; padding:5px 12px;}
+  .seatrows{display:flex; flex-direction:column; gap:6px; align-items:center;}
+  .seatrow{display:flex; gap:5px; align-items:center;}
+  .rownum{font-size:9.5px; color:var(--ink3); width:16px; text-align:center;}
+  .seat{width:21px; height:21px; border-radius:5px; font-size:8.5px; display:flex; align-items:center; justify-content:center; border:1px solid var(--line2); background:var(--soft); color:var(--ink3);}
+  .seat.free{background:var(--g-soft2); border-color:var(--g1); color:var(--g2);}
+  .seat.sold{background:var(--soft); border-color:var(--line2); color:var(--ink3);}
+  .seat.mine{background:var(--g1); border-color:var(--g2); color:#fff; font-weight:700;}
+  .seat.pending{background:var(--gold-soft); border:1px dashed var(--gold); color:var(--gold);}
+  .seatlegend{display:flex; gap:12px; flex-wrap:wrap; margin-top:11px; font-size:11px; color:var(--ink2);}
+  .seatlegend span{display:inline-flex; align-items:center; gap:5px;}
+  .sw{width:12px; height:12px; border-radius:3px; display:inline-block;}
+  .toolbar{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;}
+  .toolbar .tb{font-size:11px; font-weight:600; color:var(--ink2); background:var(--soft); border:1px solid var(--line); border-radius:7px; padding:5px 10px;}
+  .toolbar .tb.on{background:var(--g1); color:#fff; border-color:var(--g2);}
+  .ezrat{margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); text-align:center; font-size:10.5px; color:var(--ink3);}
+
+  /* ---- Ornamental Jewish display screen ---- */
+  .shul-screen{position:relative; background:radial-gradient(130% 100% at 50% 0%, #16281d 0%, #0a1712 55%, #050d09 100%); border-radius:16px; padding:16px; border:2px solid var(--gold); box-shadow:inset 0 0 0 6px rgba(0,0,0,.35), 0 10px 30px rgba(0,0,0,.25); overflow:hidden;}
+  .shul-screen .corner{position:absolute; color:var(--gold); font-size:15px; opacity:.8;}
+  .shul-screen .corner.tr{top:9px; left:11px;} .shul-screen .corner.tl{top:9px; right:11px;}
+  .shul-screen .corner.br{bottom:9px; left:11px;} .shul-screen .corner.bl{bottom:9px; right:11px;}
+  .shul-inner{border:1px solid rgba(201,162,39,.45); border-radius:11px; padding:20px 22px 16px; color:#f3ead0; text-align:center;}
+  .crown{font-size:11px; letter-spacing:.35em; color:#c9a227;}
+  .shul-title{font-family:var(--serif); font-size:26px; font-weight:700; color:#f9efce; letter-spacing:.02em; margin-top:3px;}
+  .shul-sub{font-size:12px; color:#a9c1b3; margin-top:2px;}
+  .gdiv{display:flex; align-items:center; gap:10px; margin:15px 0;}
+  .gdiv::before,.gdiv::after{content:""; flex:1; height:1px; background:linear-gradient(90deg,transparent,rgba(201,162,39,.55),transparent);}
+  .gdiv span{color:var(--gold); font-size:9px;}
+  .hdate{font-size:13.5px; color:#ecdcac; letter-spacing:.02em;}
+  .zmanim{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px;}
+  @media(max-width:560px){ .zmanim{grid-template-columns:repeat(2,1fr);} }
+  .zmanim > div{background:rgba(255,255,255,.03); border:1px solid rgba(201,162,39,.25); border-radius:9px; padding:8px 6px;}
+  .zl{display:block; font-size:10px; color:#a9bdb0;}
+  .zv{display:block; font-size:16px; font-weight:700; color:#f3ead0;}
+  .tefilot{display:grid; grid-template-columns:repeat(4,1fr); gap:8px;}
+  @media(max-width:560px){ .tefilot{grid-template-columns:repeat(2,1fr);} }
+  .tf{background:linear-gradient(180deg, rgba(201,162,39,.16), rgba(201,162,39,.03)); border:1px solid rgba(201,162,39,.4); border-radius:9px; padding:9px 6px;}
+  .tf span{display:block; font-size:11px; color:#d9c893;}
+  .tf b{display:block; font-size:20px; color:#fff7e2; font-weight:800;}
+  .band{display:flex; justify-content:space-between; gap:10px; font-size:11.5px; color:#cfe0bf; margin-top:14px; border-top:1px solid rgba(201,162,39,.28); padding-top:10px; flex-wrap:wrap;}
+  .ticker{margin-top:9px; font-size:11.5px; color:#ecdcac;}
+  .livebadge{margin-top:11px; display:inline-flex; align-items:center; gap:6px; font-size:10.5px; color:#7bdcb0;}
+  .livebadge::before{content:""; width:7px; height:7px; border-radius:50%; background:#34d399;}
 
   footer{padding:30px 0 0; font-size:12.5px; color:var(--ink3); text-align:center;}
   .legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:14px; font-size:12.5px; color:var(--ink2);}
   .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .toc{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 18px; margin-top:18px; font-size:13.5px;}
+  .toc b{color:var(--g2);} .toc ol{margin:8px 0 0; padding-inline-start:20px; color:var(--ink2);} .toc li{margin:3px 0;}
 </style>
 
 <div class="wrap"><div class="inner">
   <header class="hero">
-    <span class="kicker">אפיון מוצר · סיאנגו · תת-תחום חדש</span>
+    <span class="kicker">אפיון מוצר מלא · סיאנגו · לדניאל</span>
     <h1>בית הכנסת הדיגיטלי - ומוסד התורה</h1>
-    <p>לא עוד אתר תדמית. <b>מערכת הפעלה שלמה</b> לבית הכנסת ולישיבה, שרצה על מה שכבר בנינו: תרומות, סעיף 46, תרומות ישראל, הוראות קבע, קמפיינים, CRM - <b>ומעל הכל וואטסאפ, ESP ומנוע לוח עברי שכבר חיים אצלנו במערכת.</b> שלוש חזיתות: אתר + אזור אישי למתפלל, דשבורד לגבאי שמנוהל מהוואטסאפ, ומסך חי בבית הכנסת שלא כבה.</p>
-    <div class="meta"><span>3 חזיתות</span><span>מנוהל מוואטסאפ</span><span>מסך חי מסונכרן</span><span>אזור אישי לכל מתפלל</span><span>לבדיקה ואישור</span></div>
+    <p>מסמך זה מסביר מאפס את הקונספט של תת-התחום "עולם התורה" בסיאנגו: <b>בית כנסת</b> ו<b>ישיבה / מוסד תורה</b>, כשני סוגי-עסק חדשים תחת "עמותה". המטרה - לא אתר תדמית, אלא <b>מערכת הפעלה</b> שהגבאי מנהל מהוואטסאפ, שלכל מתפלל יש בה אזור אישי, ושמזרימה הכול למסך חי בבית הכנסת. כמעט כל התשתית הכבדה כבר בנויה אצלנו; מוסיפים שכבה תורנית.</p>
+    <div class="meta"><span>לקריאה ראשונה של דניאל</span><span>3 חזיתות</span><span>מקומות + ימים נוראים</span><span>מנוהל מוואטסאפ</span><span>מסך בעיצוב יהודי</span></div>
+    <div class="toc"><b>מה יש במסמך:</b>
+      <ol>
+        <li>הקונספט ואיך זה מתחבר לארכיטקטורה הקיימת</li>
+        <li>שלוש החזיתות (מתפלל / גבאי / מסך)</li>
+        <li>עליות ונדרים - מודל התחייבות→חוב→תשלום</li>
+        <li>מקומות קבועים וימים נוראים (הפיצ'ר החדש הגדול) - ב-3 חלקים</li>
+        <li>ניהול מוואטסאפ ודיוורים קבועים</li>
+        <li>מסך בית הכנסת - עיצוב יהודי + זמני היום לפי הלוח</li>
+        <li>ישיבה / מוסד תורה</li>
+        <li>למה זה בר-ביצוע · טבלת יכולות · תוכנית מדורגת</li>
+      </ol>
+    </div>
   </header>
 
-  <!-- ===== The idea ===== -->
+  <!-- ===== 1. Concept for Daniel ===== -->
   <section>
-    <span class="eyebrow">הרעיון בגדול</span>
-    <h2>מנהלים בית כנסת מהטלפון - והכול מסתנכרן לבד</h2>
-    <p class="lead">הבנה מרכזית מהמחקר (ShulCloud העולמי; ביתא, הגבאי החכם, לוח ניסן, עיתים לקודש בארץ): הגבאי לא רוצה עוד מערכת לפתוח במחשב. הוא רוצה לנהל <b>מהוואטסאפ</b> - "מנחה היום 17:15", "הוסף עלייה למשה ₪180" - ושהכול יתעדכן לבד: האתר, האזור האישי של המתפלל, והמסך בבית הכנסת. זה הפער האמיתי, וזה בדיוק מה שסיאנגו יכול לתת כי כל הרכיבים כבר קיימים.</p>
+    <span class="eyebrow">1 · הקונספט</span>
+    <h2>מה אנחנו בונים ואיך זה יושב על המערכת</h2>
+    <p class="body-t">דניאל - כדי שתהיה בתמונה מהר: בית כנסת וישיבה הם <b>וריאציות של עמותה</b>. באונבורדינג, מתחת ל"עמותה", נוסיף שתי אפשרויות: "בית כנסת / קהילה" ו"ישיבה / מוסד תורה". הבחירה קובעת אילו מודולים נדלקים (בדיוק כמו ש-<code>business_type</code> קובע היום את המודולים ב-<code>businessModules.ts</code>). הגרעין לא משתנה: אותו מנוע תרומות, אותה סליקה פר-עמותה, אותו סעיף 46 ותרומות ישראל, אותו CRM.</p>
+    <p class="body-t">מה שמייחד את העולם הזה זה לא עוד "תבנית תרומה". זה <b>תפעול יומיומי</b>: זמני תפילה, עליות ונדרים, מקומות בבית הכנסת, יארצייט לפי לוח עברי, ומסך חי בכניסה. הגבאי הטיפוסי לא ייכנס לדשבורד כל יום - הוא רוצה לנהל <b>מהוואטסאפ</b>. זה עמוד השדרה של האפיון.</p>
     <div class="cols">
-      <div class="card"><h4><span class="dot"></span> המנוע שכבר בנוי (מתחבר מיד)</h4><p>וואטסאפ דו-כיווני (בוט + שידור) · דיוור אוטומטי (ESP מלא) · מנוע לוח עברי וזמנים (Hebcal, כבר בקוד) · הוראת קבע / חיוב חוזר · תרומות + סליקה פר-עמותה · סעיף 46 + תרומות ישראל · קמפיינים · CRM וקבלות.</p></div>
-      <div class="card"><h4><span class="dot gold"></span> השכבה התורנית (החדש)</h4><p>עליות ונדרים כ<b>התחייבות→חוב→תזכורת→תשלום</b> · אזור אישי למתפלל · מסך בית כנסת מסונכרן · שליטה מוואטסאפ · יארצייט לפי לוח עברי · הקדשות והנצחה · שותפות ללימוד ומלגות אברכים.</p></div>
+      <div class="card"><h4><span class="dot"></span> המנוע שכבר בנוי (מתחבר מיד)</h4><p>וואטסאפ דו-כיווני (בוט + שידור) · דיוור אוטומטי (ESP מלא) · מנוע לוח עברי וזמנים (Hebcal, כבר בקוד ב-<code>shabbat-status</code>) · הוראת קבע / חיוב חוזר · תרומות + סליקה פר-עמותה · סעיף 46 + תרומות ישראל · קמפיינים · CRM וקבלות.</p></div>
+      <div class="card"><h4><span class="dot gold"></span> השכבה התורנית (החדש לבנייה)</h4><p>עליות ונדרים (התחייבות→חוב→תזכורת→תשלום) · אזור אישי למתפלל · <b>מקומות קבועים + מכירת מקומות לימים נוראים</b> · מסך בית כנסת מסונכרן ומעוצב · שליטה מוואטסאפ · יארצייט לפי לוח עברי · הקדשות והנצחה · שותפות ללימוד ומלגות אברכים.</p></div>
     </div>
-    <div class="note">עדיין <b>לא מוצר נפרד</b>: "בית כנסת" ו"ישיבה" הם סוגי-עסק חדשים תחת "עמותה" באונבורדינג. אבל הפעם חושבים בגדול על מה שמייחד אותם - ניהול מוואטסאפ, מסך חי, ואזור אישי - ולא רק "עוד תבנית תרומה".</div>
   </section>
 
-  <!-- ===== Synagogue ===== -->
+  <!-- ===== 2. Three surfaces ===== -->
   <section>
-    <span class="eyebrow">בית כנסת · שלוש חזיתות</span>
-    <h2>1 · אתר בית הכנסת + אזור אישי למתפלל</h2>
-    <p class="lead">המתפלל נכנס, רואה זמני תפילה חיים - ומקבל <b>אזור אישי משלו</b>: כל מה שהתחייב (עליות, נדרים, דמי חבר) מופיע כ<b>יתרה פתוחה לתשלום</b>, עם תזכורות. אף אחד לא "קונה עלייה מראש" - הגבאי מחייב אחרי התפילה, וזה נוחת כאן.</p>
+    <span class="eyebrow">2 · המבנה</span>
+    <h2>שלוש חזיתות שמדברות זו עם זו</h2>
+    <p class="lead">כל שינוי במקום אחד מתעדכן בשלושתן בזמן אמת. זו הנקודה: מקור-אמת אחד, שלושה חלונות.</p>
+    <div class="cols3">
+      <div class="card"><h4><span class="dot gold"></span> א · המתפלל</h4><p>אתר בית הכנסת + <b>אזור אישי</b>: זמני תפילה, החובות שלי (עליות/נדרים), המקום שלי, יארצייטים, קבלות, חברות.</p></div>
+      <div class="card"><h4><span class="dot gold"></span> ב · הגבאי</h4><p>דשבורד ניהול - <b>אבל בעיקר וואטסאפ</b>: רישום עליות, עדכון זמנים, בניית מפת מקומות, שידור לקהילה.</p></div>
+      <div class="card"><h4><span class="dot gold"></span> ג · המסך</h4><p>תצוגת קיוסק בבית הכנסת: זמנים חיים, זמני היום, יארצייט, פרנס היום, מקומות שנמכרו - <b>לא מתנתק לעולם</b>.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== 3. Member site + personal area ===== -->
+  <section>
+    <span class="eyebrow">3 · חזית המתפלל</span>
+    <h2>אתר בית הכנסת + אזור אישי</h2>
+    <p class="body-t">המתפלל נכנס ורואה זמני תפילה חיים למעלה. הלב הוא ה<b>אזור האישי</b>: כל מה שהתחייב מופיע כ<b>יתרה פתוחה לתשלום</b>, עם תזכורות. אף אחד לא "קונה עלייה מראש" - הגבאי מחייב אחרי התפילה, וזה נוחת כאן.</p>
     <div class="mock">
       <div class="device">
         <div class="topbar"><span class="b">בית הכנסת "אהבת ישראל"</span><span class="t">רמת גן · נוסח ספרד</span></div>
         <div class="times">
           <div>שחרית<b>06:20</b></div><div>מנחה<b>17:15</b></div><div>ערבית<b>19:30</b></div><div>כניסת שבת<b>19:02</b></div><div>דף היומי<b>20:15</b></div>
         </div>
-        <div class="body">
+        <div class="bodyp">
           <div class="tile"><div class="h">🙋 האזור האישי שלי · דוד לוי</div>
             <div class="row"><span>עליית מפטיר · שבת פרשת ויצא</span><span><span class="tag warn">חוב ₪250</span> <span class="btn">שלם</span></span></div>
             <div class="row"><span>נדר לרפואת רבקה בת שרה</span><span><span class="tag warn">חוב ₪100</span> <span class="btn">שלם</span></span></div>
+            <div class="row"><span>המקום שלי · טור 4 כיסא 2</span><span><span class="tag">קבוע ✓</span></span></div>
             <div class="row"><span>דמי חבר חודשי · הוראת קבע</span><span><span class="tag">פעיל ✓</span></span></div>
             <div class="m" style="margin-top:8px">תזכורת אחרונה נשלחה אתמול בוואטסאפ · קבלה 46 אוטומטית לכל תשלום</div>
           </div>
           <div class="grid3" style="margin-top:10px">
-            <div class="tile"><div class="h">🕯️ הקדשה</div><div class="m">יום לימוד / נר נשמה / שלט הנצחה - לעילוי נשמת או לרפואה.</div></div>
-            <div class="tile"><div class="h">📿 היארצייטים שלי</div><div class="m">תזכורת לפי לוח עברי + הזמנת מניין / קדיש / לימוד ליום.</div></div>
-            <div class="tile"><div class="h">🤝 חבר בקהילה</div><div class="m">דמי חבר בהוראת קבע, מקום קבוע, עדכונים.</div></div>
+            <div class="tile"><div class="h">🪑 המקום שלי</div><div class="m">רכישת/בחירת מקום קבוע, ומקום לימים נוראים.</div></div>
+            <div class="tile"><div class="h">📿 היארצייטים שלי</div><div class="m">תזכורת לפי לוח עברי + הזמנת מניין/קדיש/לימוד.</div></div>
+            <div class="tile"><div class="h">🕯️ הקדשה</div><div class="m">יום לימוד / נר נשמה / שלט הנצחה.</div></div>
           </div>
         </div>
       </div>
-      <div class="mock-cap">אתר + אזור אישי - "החובות שלי": עליות ונדרים כיתרה פתוחה לתשלום, לא קנייה מראש</div>
+      <div class="mock-cap">מוקאפ 1 · אתר + אזור אישי - "החובות שלי", המקום שלי, יארצייטים וקבלות</div>
     </div>
+  </section>
 
-    <h2 style="margin-top:34px">2 · דשבורד הגבאי</h2>
-    <p class="lead">הגבאי מנהל את הגבייה: אחרי התפילה הוא <b>רושם למי הייתה עלייה ובכמה התחייב</b> - וזה הופך אוטומטית לחוב באזור האישי של המתפלל, עם תזכורת בוואטסאפ. רואה בבירור מה שולם ומה פתוח.</p>
+  <!-- ===== 4. Aliyot model ===== -->
+  <section>
+    <span class="eyebrow">4 · עליות ונדרים</span>
+    <h2>לא קונים מראש - מתחייבים ומשלמים אחר כך</h2>
+    <p class="body-t">זה התיקון המרכזי מהגרסה הקודמת. בעולם האמיתי אף אחד לא "קונה עלייה" באתר לפני שבת. מה שקורה: בזמן התפילה מכריזים, המתפלל <b>מתחייב</b> לסכום, ואחרי שבת הוא משלם. אז המודל שלנו הוא זרימת חוב, לא חנות.</p>
     <div class="steps">
-      <div class="st"><span class="n">1</span><div class="t">רישום עלייה</div><div class="m">הגבאי מקצה עלייה/כיבוד למתפלל + סכום שהתחייב.</div></div>
+      <div class="st"><span class="n">1</span><div class="t">רישום התחייבות</div><div class="m">הגבאי מקצה עלייה/כיבוד למתפלל + הסכום (מהדשבורד או מהוואטסאפ).</div></div>
       <div class="arrow">←</div>
-      <div class="st"><span class="n">2</span><div class="t">חוב אוטומטי</div><div class="m">נפתחת יתרה באזור האישי של המתפלל.</div></div>
+      <div class="st"><span class="n">2</span><div class="t">חוב אוטומטי</div><div class="m">נפתחת יתרה פתוחה באזור האישי של המתפלל.</div></div>
       <div class="arrow">←</div>
-      <div class="st"><span class="n">3</span><div class="t">תזכורת</div><div class="m">וואטסאפ/מייל אוטומטי: "יש לך נדר פתוח".</div></div>
+      <div class="st"><span class="n">3</span><div class="t">תזכורת</div><div class="m">וואטסאפ/מייל אוטומטי: "יש לך נדר פתוח לתשלום".</div></div>
       <div class="arrow">←</div>
       <div class="st"><span class="n">4</span><div class="t">תשלום + קבלה</div><div class="m">תשלום אונליין, קבלת 46, דיווח לתרומות ישראל.</div></div>
     </div>
     <div class="mock">
       <div class="device"><div class="dash">
         <div class="nav">
-          <div class="on">עליות ונדרים</div><div>מתפללים וחברים</div><div>יארצייט ואזכרות</div><div>זמני תפילה</div><div>דיוורים ושידור</div><div>תרומות והוראות קבע</div><div>קבלות ותרומות ישראל</div>
+          <div class="on">עליות ונדרים</div><div>מקומות וימים נוראים</div><div>מתפללים וחברים</div><div>יארצייט ואזכרות</div><div>זמני תפילה</div><div>דיוורים ושידור</div><div>קבלות ותרומות ישראל</div>
         </div>
         <div class="main">
           <div class="kpis">
@@ -209,62 +280,159 @@
             <div class="row"><span>הגבהה · יוסי א.</span><span><span class="tag warn">חוב ₪120</span></span></div>
             <div style="margin-top:9px"><span class="btn">+ רישום עלייה חדשה</span></div>
           </div>
-          <div class="tile" style="margin-top:10px"><div class="h">📿 יארצייט השבוע (לוח עברי)</div>
-            <div class="row"><span>ר' יעקב בן אברהם ז"ל · ט"ו כסלו</span><span><span class="tag">תזכורת למשפחה נשלחה</span></span></div>
-            <div class="row"><span>שרה בת חיים ז"ל · י"ז כסלו</span><span><span class="tag warn">להזמין למניין</span></span></div>
+        </div>
+      </div></div>
+      <div class="mock-cap">מוקאפ 2 · דשבורד הגבאי - רישום עלייה שהופך לחוב + תזכורת אוטומטית</div>
+    </div>
+  </section>
+
+  <!-- ===== 5. Seats + High Holidays (THE BIG NEW FEATURE) ===== -->
+  <section>
+    <span class="eyebrow">5 · הפיצ'ר החדש הגדול</span>
+    <h2>מקומות קבועים ומכירת מקומות לימים נוראים</h2>
+    <p class="body-t">אחד ממקורות ההכנסה הגדולים של בית כנסת: <b>מקומות קבועים</b> כל השנה, ובעיקר <b>מכירת מקומות לימים נוראים</b> (ראש השנה ויום כיפור). זה עובד בשלושה חלקים.</p>
+
+    <h3 class="sub"><span style="font-size:16px">🏗️</span> חלק א' · הגבאי בונה את מפת ההושבה</h3>
+    <p class="body-t">הגבאי לא צריך לצייר ב-Photoshop. שתי דרכים: <b>(1)</b> מעלה סרטוט/תמונה של בית הכנסת, או <b>(2)</b> כותב באזור ייעודי במילים - "20 טורים, כל טור 4 כיסאות, בימה במרכז, עמוד במזרח". <b>המערכת בונה לו מפה אוטומטית</b>, והוא <b>גורר בעכבר</b> כדי לסדר: מזיז טור, מוסיף/מוחק כיסא, מסמן את הבימה והעמוד, מגדיר עזרת נשים. עריכה קלה, ויזואלית.</p>
+    <div class="mock">
+      <div class="device"><div class="bodyp">
+        <div class="tile" style="margin-bottom:12px"><div class="h">✍️ תיאור מהיר → מפה</div><div class="m">"20 טורים × 4 כיסאות · בימה במרכז · עמוד במזרח · עזרת נשים ביציע" — או העלאת סרטוט. המערכת מייצרת, ואתה מסדר בגרירה.</div></div>
+        <div class="seatmap">
+          <div class="toolbar"><span class="tb on">גרירה</span><span class="tb">+ טור</span><span class="tb">+ כיסא</span><span class="tb">בימה</span><span class="tb">עמוד</span><span class="tb">עזרת נשים</span><span class="tb">⇪ העלה סרטוט</span></div>
+          <div class="mizrach">↑ מזרח · ארון קודש · עמוד ש"ץ</div>
+          <div class="fixtures"><span class="fixture">🎗️ בימה</span></div>
+          <div class="seatrows">
+            <div class="seatrow"><span class="rownum">1</span><span class="seat">1</span><span class="seat">2</span><span class="seat">3</span><span class="seat">4</span></div>
+            <div class="seatrow"><span class="rownum">2</span><span class="seat">1</span><span class="seat">2</span><span class="seat">3</span><span class="seat">4</span></div>
+            <div class="seatrow"><span class="rownum">3</span><span class="seat">1</span><span class="seat">2</span><span class="seat">3</span><span class="seat">4</span></div>
+            <div class="seatrow"><span class="rownum">4</span><span class="seat">1</span><span class="seat">2</span><span class="seat">3</span><span class="seat">4</span></div>
+          </div>
+          <div class="ezrat">— עזרת נשים (יציע) · 8 טורים —</div>
+          <div class="seatlegend"><span>4 כיסאות בטור · 20 טורים (מוצג חלקי)</span></div>
+        </div>
+      </div></div>
+      <div class="mock-cap">מוקאפ 3 · בונה מפת ההושבה - תיאור במילים או העלאת סרטוט → מפה שנערכת בגרירת עכבר</div>
+    </div>
+
+    <h3 class="sub"><span style="font-size:16px">🪑</span> חלק ב' · המתפלל קונה ובוחר מקום</h3>
+    <p class="body-t">המתפלל נכנס לאזור האישי, רואה את המפה, <b>בוחר כיסא פנוי ומשלם</b>. אפשר להגדיר פר-בית-כנסת אם הרכישה <b>מיידית</b> או <b>ממתינה לאישור הגבאי</b> (למקרים של סדר קדימויות). תמחור לפי מיקום (קרוב למזרח יקר יותר) - בדיוק כמו ShulCloud.</p>
+    <div class="mock">
+      <div class="device"><div class="bodyp">
+        <div class="tile" style="margin-bottom:12px"><div class="h">🪑 בחירת מקום · דוד לוי</div><div class="m">בחר כיסא פנוי במפה. ירוק=פנוי · אפור=תפוס · זהב=ממתין לאישור · מלא=שלך. מחיר לפי אזור.</div></div>
+        <div class="seatmap">
+          <div class="mizrach">↑ מזרח · ארון קודש</div>
+          <div class="fixtures"><span class="fixture">🎗️ בימה</span></div>
+          <div class="seatrows">
+            <div class="seatrow"><span class="rownum">1</span><span class="seat sold">1</span><span class="seat sold">2</span><span class="seat free">3</span><span class="seat sold">4</span></div>
+            <div class="seatrow"><span class="rownum">2</span><span class="seat free">1</span><span class="seat mine">2</span><span class="seat sold">3</span><span class="seat free">4</span></div>
+            <div class="seatrow"><span class="rownum">3</span><span class="seat free">1</span><span class="seat pending">2</span><span class="seat free">3</span><span class="seat free">4</span></div>
+            <div class="seatrow"><span class="rownum">4</span><span class="seat free">1</span><span class="seat free">2</span><span class="seat free">3</span><span class="seat sold">4</span></div>
+          </div>
+          <div class="seatlegend">
+            <span><span class="sw" style="background:var(--g-soft2);border:1px solid var(--g1)"></span>פנוי</span>
+            <span><span class="sw" style="background:var(--soft);border:1px solid var(--line2)"></span>תפוס</span>
+            <span><span class="sw" style="background:var(--gold-soft);border:1px dashed var(--gold)"></span>ממתין לאישור</span>
+            <span><span class="sw" style="background:var(--g1)"></span>המקום שלי</span>
+          </div>
+          <div class="row" style="margin-top:11px;border-top:1px solid var(--line);padding-top:11px"><span>טור 2 · כיסא 2 · אזור מזרח</span><span><span class="tag gold">₪600 לשנה</span> <span class="btn">רכישה ותשלום</span></span></div>
+        </div>
+      </div></div>
+      <div class="mock-cap">מוקאפ 4 · המתפלל בוחר כיסא פנוי במפה, משלם, ואפשר להגדיר "ממתין לאישור הגבאי"</div>
+    </div>
+
+    <h3 class="sub"><span style="font-size:16px">🔄</span> חלק ג' · מתעדכן חי + ימים נוראים</h3>
+    <p class="body-t">ברגע שכיסא נמכר - הוא נצבע כתפוס אצל כל המתפללים <b>ועל המסך בבית הכנסת</b>, בזמן אמת. לימים נוראים פותחים "מכירת מקומות" ייעודית (מפה נפרדת, תמחור מיוחד, גם למי שאינו חבר קבוע), עם מד התקדמות לגבאי.</p>
+    <div class="mock">
+      <div class="device"><div class="dash">
+        <div class="nav"><div>עליות ונדרים</div><div class="on">מקומות וימים נוראים</div><div>מתפללים וחברים</div><div>זמני תפילה</div><div>דיוורים ושידור</div></div>
+        <div class="main">
+          <div class="tile"><div class="h">🍎 מכירת מקומות · ימים נוראים התשפ"ו</div>
+            <div class="bar"><i style="width:78%"></i></div>
+            <div class="row"><span>142 מתוך 180 מקומות נמכרו</span><span><span class="tag">₪71,000 גויסו · 38 פנויים</span></span></div>
+            <div class="row"><span>ממתינים לאישור הגבאי</span><span><span class="tag gold">5 בקשות</span></span></div>
+            <div class="row"><span>לא-חברים שרכשו</span><span><span class="tag">23 מקומות</span></span></div>
+          </div>
+          <div class="tile" style="margin-top:10px"><div class="h">🔄 סנכרון חי</div>
+            <div class="row"><span>כיסא נמכר לפני רגע · טור 3 כיסא 2</span><span><span class="tag">עודכן במפה + במסך</span></span></div>
           </div>
         </div>
       </div></div>
-      <div class="mock-cap">דשבורד הגבאי - רישום עליות שהופך לחוב+תזכורת אוטומטית, גבייה, ויארצייט לפי לוח עברי</div>
+      <div class="mock-cap">מוקאפ 5 · מכירת מקומות לימים נוראים - מד גיוס, אישורי גבאי, וסנכרון חי לכל המפות ולמסך</div>
     </div>
+    <div class="note gold">הערת יישום לדניאל: מפת ההושבה היא JSON פשוט (טורים × כיסאות + סימון בימה/עמוד/עזרת-נשים + מחיר-פר-אזור). כל כיסא הוא רשומה עם סטטוס (פנוי/נמכר/ממתין) ובעלים. הרכישה משתמשת בסליקה הקיימת; "ממתין לאישור" זה פשוט דגל. הסנכרון החי לשלוש החזיתות דרך Realtime/פולינג קל.</div>
+  </section>
 
-    <h2 style="margin-top:34px">3 · מסך בית הכנסת - חי ומסונכרן</h2>
-    <p class="lead">מסך אחד על טלוויזיה/טאבלט בבית הכנסת (פותחים כתובת - בלי חומרה מיוחדת). מציג זמני תפילה חיים, ספירה לתפילה הבאה, יארצייט היום, פרנס היום והודעות. <b>מסתנכרן בזמן אמת ולא מתנתק</b> - כשהגבאי משנה זמן בוואטסאפ, המסך מתעדכן מיד; ואם האינטרנט נופל לרגע, הוא מתחבר מחדש לבד וממשיך מהזיכרון.</p>
+  <!-- ===== 6. WhatsApp ===== -->
+  <section>
+    <span class="eyebrow">6 · וואטסאפ-first</span>
+    <h2>הגבאי מנהל הכול מהוואטסאפ</h2>
+    <p class="body-t">הלב של "בגדול": הגבאי כותב הודעה, והבוט מבין ומעדכן את האתר, האזור האישי והמסך - וגם שולח את הדיוור הקבוע לקהילה. הכול על תשתית הוואטסאפ וה-ESP הקיימת.</p>
     <div class="mock">
-      <div class="screen">
-        <div class="hd"><span class="ttl">בית הכנסת "אהבת ישראל"</span><span class="d">יום שלישי · ט"ז כסלו התשפ"ו · <span class="live">מחובר</span></span></div>
-        <div class="big">
-          <div class="c"><div class="l">מנחה</div><div class="v">17:15</div></div>
-          <div class="c"><div class="l">ערבית</div><div class="v">19:30</div></div>
-          <div class="c"><div class="l">שחרית מחר</div><div class="v">06:20</div></div>
-        </div>
-        <div class="ann"><span>🕯️ פרנס היום: משפ' כהן לע"נ ר' יצחק ז"ל</span><span>📿 יארצייט: ר' יעקב בן אברהם</span></div>
-        <div class="ann"><span>📢 הערב שיעור דף יומי 20:15 · מסעודה שלישית נדרשים 2 מתנדבים</span><span></span></div>
-      </div>
-      <div class="mock-cap">מסך בית הכנסת - זמנים חיים, פרנס היום, יארצייט והודעות. מתעדכן מוואטסאפ, מתחבר-מחדש לבד</div>
-    </div>
-
-    <h2 style="margin-top:34px">4 · הכול מהוואטסאפ של הגבאי</h2>
-    <p class="lead">הלב של "חושבים בגדול": הגבאי לא נכנס לדשבורד. הוא כותב הודעה בוואטסאפ, והבוט מבין ומעדכן את האתר, האזור האישי והמסך - <b>וגם שולח את הדיוור הקבוע לקהילה</b>. הכול על תשתית הוואטסאפ וה-ESP שכבר בנויה.</p>
-    <div class="mock">
-      <div class="device"><div class="body">
+      <div class="device"><div class="bodyp">
         <div class="wa">
           <div class="bub out">מנחה היום 17:15</div>
           <div class="bub in">✓ עודכן. האתר והמסך בבית הכנסת מציגים מנחה 17:15.</div>
           <div class="bub out">הוסף עלייה מפטיר לדוד לוי ₪250</div>
           <div class="bub in">✓ נרשם חוב ₪250 לדוד לוי. נשלחה לו תזכורת לתשלום.</div>
-          <div class="bub out">שלח לכולם את זמני שבת</div>
-          <div class="bub in">✓ הדיוור השבועי "זמני שבת פרשת ויצא" נשלח ל-86 חברים (וואטסאפ + מייל).</div>
+          <div class="bub out">פתח מכירת מקומות לימים נוראים</div>
+          <div class="bub in">✓ נפתחה. הקישור לרכישה נשלח לכל החברים בוואטסאפ ובמייל.</div>
+          <div class="bub out">שלח לכולם זמני שבת</div>
+          <div class="bub in">✓ הדיוור השבועי "זמני שבת פרשת ויצא" נשלח ל-86 חברים.</div>
         </div>
       </div></div>
-      <div class="mock-cap">שליטה מלאה מוואטסאפ - עדכון זמנים, רישום עליות, ושליחת הדיוור הקבוע. בלי לפתוח מחשב</div>
-    </div>
-    <div class="cols3" style="margin-top:16px">
-      <div class="card"><h4><span class="dot"></span> עדכון זמנים</h4><p>"מנחה 17:15" → אתר + מסך + אזור אישי מתעדכנים מיד. זמני שבת/חג מחושבים לבד לפי מיקום (Hebcal).</p></div>
-      <div class="card"><h4><span class="dot"></span> דיוורים קבועים</h4><p>זמני שבת שבועיים, פרשה, הודעות - אוטומטי ומתוזמן, בוואטסאפ ובמייל. על ה-ESP הקיים.</p></div>
-      <div class="card"><h4><span class="dot"></span> רישום עליות</h4><p>"עלייה לדוד ₪250" → חוב + תזכורת אוטומטית. גם הכי לא-טכני שבגבאים מסתדר.</p></div>
+      <div class="mock-cap">מוקאפ 6 · שליטה מלאה מוואטסאפ - זמנים, עליות, פתיחת מכירת מקומות, ודיוור קבוע</div>
     </div>
   </section>
 
-  <!-- ===== Yeshiva ===== -->
+  <!-- ===== 7. The beautiful Jewish screen ===== -->
   <section>
-    <span class="eyebrow">תת-תחום ב'</span>
+    <span class="eyebrow">7 · מסך בית הכנסת</span>
+    <h2>מסך חי, מעוצב בסגנון יהודי - עם זמני היום</h2>
+    <p class="body-t">מסך אחד על טלוויזיה/טאבלט בכניסה (פותחים כתובת - בלי חומרה מיוחדת). עיצוב מהודר: מסגרת זהב, כותרת בכתב סת"ם-י, מחיצות מעוטרות. מציג <b>זמני היום לפי הלוח העברי</b> (עלות השחר, נץ, סו"ז ק"ש, חצות, מנחה גדולה, שקיעה, צאת הכוכבים - מחושבים אוטומטית לפי מיקום), זמני תפילה, פרנס היום, יארצייט והודעות. <b>מסתנכרן בזמן אמת ולא מתנתק</b> - מתחבר-מחדש לבד ושומר מטמון לנפילות רשת.</p>
+    <div class="mock">
+      <div class="shul-screen">
+        <span class="corner tl">✡</span><span class="corner tr">✡</span><span class="corner bl">✡</span><span class="corner br">✡</span>
+        <div class="shul-inner">
+          <div class="crown">ב ס ״ ד</div>
+          <div class="shul-title">בית הכנסת אהבת ישראל</div>
+          <div class="shul-sub">רמת גן · נוסח ספרד</div>
+          <div class="gdiv"><span>◆</span></div>
+          <div class="hdate">יום שלישי · ט״ז בְּכִסְלֵו התשפ״ו · פרשת וישלח</div>
+          <div class="zmanim">
+            <div><span class="zl">עלות השחר</span><span class="zv">05:12</span></div>
+            <div><span class="zl">נץ החמה</span><span class="zv">06:31</span></div>
+            <div><span class="zl">סו״ז ק״ש</span><span class="zv">08:14</span></div>
+            <div><span class="zl">חצות</span><span class="zv">11:38</span></div>
+            <div><span class="zl">מנחה גדולה</span><span class="zv">12:08</span></div>
+            <div><span class="zl">פלג המנחה</span><span class="zv">15:29</span></div>
+            <div><span class="zl">שקיעה</span><span class="zv">16:44</span></div>
+            <div><span class="zl">צאת הכוכבים</span><span class="zv">17:04</span></div>
+          </div>
+          <div class="gdiv"><span>◆</span></div>
+          <div class="tefilot">
+            <div class="tf"><span>מנחה</span><b>17:15</b></div>
+            <div class="tf"><span>ערבית</span><b>19:30</b></div>
+            <div class="tf"><span>שחרית מחר</span><b>06:20</b></div>
+            <div class="tf"><span>דף היומי</span><b>20:15</b></div>
+          </div>
+          <div class="band"><span>🕯️ פרנס היום: משפ׳ כהן לע״נ ר׳ יצחק ז״ל</span><span>📿 יארצייט: ר׳ יעקב בן אברהם ז״ל</span></div>
+          <div class="ticker">📢 הערב שיעור דף היומי 20:15 · דרושים 2 מתנדבים לסעודה שלישית · מכירת מקומות לימים נוראים פתוחה</div>
+          <div class="livebadge">מחובר · מתעדכן מהוואטסאפ בזמן אמת</div>
+        </div>
+      </div>
+      <div class="mock-cap">מוקאפ 7 · מסך בית הכנסת בעיצוב יהודי - זמני היום לפי הלוח, זמני תפילה, פרנס היום ויארצייט</div>
+    </div>
+  </section>
+
+  <!-- ===== 8. Yeshiva ===== -->
+  <section>
+    <span class="eyebrow">8 · תת-תחום ב'</span>
     <h2>ישיבה · כולל · מוסד תורה</h2>
-    <p class="lead">כאן הלב הוא <b>גיוס, שותפות והנצחה</b>. תורם מאמץ אברך בהוראת קבע, מקדיש יום/מסכת לימוד, קונה שלט בהיכל - <b>ורואה הכול באזור אישי משלו</b>: השותפויות, ההקדשות, הקבלות וההשפעה. בפנים - ניהול שותפים, מלגות ודיוורי חיזוק. כמעט הכול על התשתית הקיימת של תרומות/קמפיינים/הוראות קבע.</p>
+    <p class="body-t">כאן הלב הוא <b>גיוס, שותפות והנצחה</b>. תורם מאמץ אברך בהוראת קבע, מקדיש יום/מסכת לימוד, קונה שלט בהיכל - ורואה הכול באזור אישי משלו. בפנים - ניהול שותפים, מלגות ודיוורי חיזוק. כמעט הכול על התשתית הקיימת.</p>
     <div class="mock">
       <div class="device">
         <div class="topbar"><span class="b">ישיבת "אור התורה"</span><span class="t">ירושלים · מוסד מוכר סעיף 46</span></div>
-        <div class="body">
+        <div class="bodyp">
           <div class="tile"><div class="h">🎯 קמפיין: היכל הלימוד החדש</div>
             <div class="bar"><i style="width:72%"></i></div>
             <div class="row"><span>₪720,000 מתוך ₪1,000,000</span><span><span class="tag">312 שותפים · 9 ימים</span></span></div>
@@ -275,21 +443,17 @@
             <div class="row"><span>קבלות 46 · דיווח תרומות ישראל</span><span><span class="tag">4 קבלות</span></span></div>
           </div>
           <div class="grid3" style="margin-top:10px">
-            <div class="tile"><div class="h">🕯️ הקדשת לימוד</div><div class="m">יום / מסכת / שיעור - עם נוסח הקדשה שמופיע בהיכל ובאתר.</div></div>
-            <div class="tile"><div class="h">🤝 שותפות חודשית</div><div class="m">אימוץ אברך בהוראת קבע - שותף בכל דף שנלמד.</div></div>
-            <div class="tile"><div class="h">🏛️ הנצחה בהיכל</div><div class="m">שלט על סטנדר / כיסא / חדר, לדורות.</div></div>
+            <div class="tile"><div class="h">🕯️ הקדשת לימוד</div><div class="m">יום / מסכת / שיעור - נוסח הקדשה בהיכל ובאתר.</div></div>
+            <div class="tile"><div class="h">🤝 שותפות חודשית</div><div class="m">אימוץ אברך בהוראת קבע.</div></div>
+            <div class="tile"><div class="h">🏛️ הנצחה בהיכל</div><div class="m">שלט על סטנדר / כיסא / חדר.</div></div>
           </div>
         </div>
       </div>
-      <div class="mock-cap">אתר ישיבה + אזור אישי לתורם - שותפות בהוראת קבע, הקדשות מפורסמות, וקבלות במקום אחד</div>
+      <div class="mock-cap">מוקאפ 8 · אתר ישיבה + אזור אישי לתורם - שותפות, הקדשות מפורסמות, וקבלות</div>
     </div>
-
-    <h3 class="sub"><span style="font-size:16px">📊</span> דשבורד המוסד</h3>
     <div class="mock">
       <div class="device"><div class="dash">
-        <div class="nav">
-          <div class="on">שותפים בהוראת קבע</div><div>קמפיינים ויעדים</div><div>הקדשות והנצחה</div><div>מלגות אברכים</div><div>דיוורי חיזוק</div><div>קבלות ותרומות ישראל</div>
-        </div>
+        <div class="nav"><div class="on">שותפים בהוראת קבע</div><div>קמפיינים ויעדים</div><div>הקדשות והנצחה</div><div>מלגות אברכים</div><div>דיוורי חיזוק</div><div>קבלות ותרומות ישראל</div></div>
         <div class="main">
           <div class="kpis">
             <div class="kpi"><div class="n">₪38,900</div><div class="l">גיוס החודש</div></div>
@@ -306,64 +470,51 @@
           </div>
         </div>
       </div></div>
-      <div class="mock-cap">דשבורד ישיבה - שותפים בהוראת קבע וחיוב אוטומטי, הקדשות, מלגות, ודיוורי חיזוק מתוזמנים</div>
+      <div class="mock-cap">מוקאפ 9 · דשבורד ישיבה - שותפים בהוראת קבע, הקדשות, מלגות ודיוורי חיזוק</div>
     </div>
   </section>
 
-  <!-- ===== Real engine ===== -->
+  <!-- ===== 9. Real engine + matrix + plan ===== -->
   <section>
-    <span class="eyebrow">למה זה בר-ביצוע</span>
+    <span class="eyebrow">9 · למה זה בר-ביצוע</span>
     <h2>המנוע כבר חי במערכת</h2>
-    <p class="lead">"חושבים בגדול" עובד רק כי הרכיבים הכבדים כבר קיימים ונבדקו. אנחנו לא בונים תשתית - אנחנו מלבישים עליה שפה תורנית.</p>
+    <p class="lead">"חושבים בגדול" עובד רק כי הרכיבים הכבדים כבר קיימים ונבדקו. לא בונים תשתית - מלבישים עליה שפה תורנית.</p>
     <div class="cols3">
-      <div class="card"><h4><span class="dot"></span> וואטסאפ דו-כיווני</h4><p>בוט, webhook, שליחה ושידור - כבר בקוד. עליו יושבים "עדכון זמנים" ו"רישום עליות" מהוואטסאפ.</p></div>
-      <div class="card"><h4><span class="dot"></span> לוח עברי וזמנים</h4><p>הפונקציה שסוגרת רישום בשבת כבר מחשבת נרות/הבדלה/חגים לפי מיקום (Hebcal). אותו מנוע ליארצייט וזמני תפילה.</p></div>
-      <div class="card"><h4><span class="dot"></span> דיוור אוטומטי (ESP)</h4><p>מערכת דיוור מלאה עם תזמון ואוטומציות - עליה יושבים הדיוורים הקבועים והתזכורות.</p></div>
-      <div class="card"><h4><span class="dot"></span> הוראת קבע וחיוב חוזר</h4><p>מנגנון החיוב החוזר משמש דמי חבר, שותפות ואימוץ אברך - אותו קוד.</p></div>
-      <div class="card"><h4><span class="dot"></span> תרומות + 46 + תרומות ישראל</h4><p>סליקה פר-עמותה, קבלות אוטומטיות ודיווח לרשות המסים - כבר בנוי ופרוס.</p></div>
-      <div class="card"><h4><span class="dot"></span> CRM וקמפיינים</h4><p>ניהול אנשי קשר, פייפליין, יעדי גיוס - הבסיס למתפללים, חברים, תורמים ושותפים.</p></div>
+      <div class="card"><h4><span class="dot"></span> וואטסאפ דו-כיווני</h4><p>בוט, webhook, שליחה ושידור - בקוד. עליו יושבים עדכון זמנים ורישום עליות מהוואטסאפ.</p></div>
+      <div class="card"><h4><span class="dot"></span> לוח עברי וזמנים</h4><p>הפונקציה שסוגרת רישום בשבת כבר מחשבת נרות/הבדלה/חגים לפי מיקום (Hebcal). אותו מנוע לזמני היום וליארצייט.</p></div>
+      <div class="card"><h4><span class="dot"></span> דיוור אוטומטי (ESP)</h4><p>מערכת דיוור מלאה עם תזמון ואוטומציות - לדיוורים הקבועים ולתזכורות.</p></div>
+      <div class="card"><h4><span class="dot"></span> הוראת קבע וחיוב חוזר</h4><p>אותו מנגנון לדמי חבר, שותפות ואימוץ אברך.</p></div>
+      <div class="card"><h4><span class="dot"></span> תרומות + 46 + תרומות ישראל</h4><p>סליקה פר-עמותה, קבלות ודיווח לרשות - בנוי ופרוס. גם הרכישות/מקומות עוברים בו.</p></div>
+      <div class="card"><h4><span class="dot"></span> CRM וקמפיינים</h4><p>אנשי קשר, פייפליין, יעדי גיוס - הבסיס למתפללים, חברים ותורמים.</p></div>
     </div>
-  </section>
 
-  <!-- ===== Feature matrix ===== -->
-  <section>
-    <span class="eyebrow">מה קיים ומה חדש</span>
-    <h2>טבלת יכולות</h2>
-    <div class="legend">
-      <span><span class="pill exist">קיים</span> כבר בנוי, מתחבר מיד</span>
-      <span><span class="pill new">חדש</span> השכבה התורנית לבנייה</span>
-    </div>
+    <h3 class="sub"><span style="font-size:16px">📋</span> טבלת יכולות</h3>
+    <div class="legend"><span><span class="pill exist">קיים</span> בנוי, מתחבר מיד</span><span><span class="pill new">חדש</span> השכבה התורנית</span></div>
     <table>
-      <tr><th>יכולת</th><th>בית כנסת</th><th>ישיבה / מוסד</th><th>סטטוס</th></tr>
-      <tr><td>תרומה + סליקה פר-עמותה</td><td>✓</td><td>✓</td><td><span class="pill exist">קיים</span></td></tr>
-      <tr><td>הוראת קבע / חיוב חוזר</td><td>דמי חבר</td><td>שותפות / אימוץ אברך</td><td><span class="pill exist">קיים</span></td></tr>
-      <tr><td>סעיף 46 + תרומות ישראל</td><td>✓</td><td>✓</td><td><span class="pill exist">קיים</span></td></tr>
-      <tr><td>קמפיינים ויעדי גיוס · CRM · קבלות</td><td>✓</td><td>✓</td><td><span class="pill exist">קיים</span></td></tr>
+      <tr><th>יכולת</th><th>בית כנסת</th><th>ישיבה</th><th>סטטוס</th></tr>
+      <tr><td>תרומה + סליקה · הוראת קבע · 46 + תרומות ישראל · CRM · קמפיינים</td><td>✓</td><td>✓</td><td><span class="pill exist">קיים</span></td></tr>
       <tr><td>וואטסאפ דו-כיווני · ESP · לוח עברי (Hebcal)</td><td>✓</td><td>✓</td><td><span class="pill exist">קיים כמנוע</span></td></tr>
-      <tr><td>אזור אישי (חובות / שותפויות / קבלות)</td><td>✓ ליבה</td><td>✓ ליבה</td><td><span class="pill new">חדש</span></td></tr>
+      <tr><td>אזור אישי (חובות / מקום / שותפויות / קבלות)</td><td>✓ ליבה</td><td>✓ ליבה</td><td><span class="pill new">חדש</span></td></tr>
       <tr><td>עליות ונדרים: התחייבות→חוב→תזכורת→תשלום</td><td>✓ ליבה</td><td>-</td><td><span class="pill new">חדש</span></td></tr>
-      <tr><td>ניהול מוואטסאפ (זמנים / עליות / שידור)</td><td>✓ ליבה</td><td>שידור</td><td><span class="pill new">חדש</span></td></tr>
-      <tr><td>מסך בית כנסת חי ומסונכרן</td><td>✓ ליבה</td><td>-</td><td><span class="pill new">חדש</span></td></tr>
+      <tr><td>מקומות קבועים + מכירת מקומות לימים נוראים</td><td>✓ ליבה</td><td>-</td><td><span class="pill new">חדש</span></td></tr>
+      <tr><td>בונה מפת הושבה (תיאור/סרטוט → גרירה)</td><td>✓ ליבה</td><td>-</td><td><span class="pill new">חדש</span></td></tr>
+      <tr><td>ניהול מוואטסאפ (זמנים / עליות / מקומות / שידור)</td><td>✓ ליבה</td><td>שידור</td><td><span class="pill new">חדש</span></td></tr>
+      <tr><td>מסך בית כנסת חי + זמני היום, בעיצוב יהודי</td><td>✓ ליבה</td><td>-</td><td><span class="pill new">חדש</span></td></tr>
       <tr><td>דיוורים קבועים מתוזמנים (זמני שבת / חיזוק)</td><td>✓</td><td>✓</td><td><span class="pill new">חדש (על ESP)</span></td></tr>
       <tr><td>יארצייט / אזכרות לפי לוח עברי + תזכורות</td><td>✓ ליבה</td><td>הילולות</td><td><span class="pill new">חדש</span></td></tr>
-      <tr><td>הקדשות והנצחה (יום לימוד / שלט)</td><td>✓</td><td>✓ ליבה</td><td><span class="pill new">חדש</span></td></tr>
-      <tr><td>שותפות ללימוד / מלגות אברכים</td><td>-</td><td>✓ ליבה</td><td><span class="pill new">חדש</span></td></tr>
+      <tr><td>הקדשות והנצחה · שותפות ללימוד / מלגות אברכים</td><td>✓</td><td>✓ ליבה</td><td><span class="pill new">חדש</span></td></tr>
     </table>
+
+    <h3 class="sub"><span style="font-size:16px">🗺️</span> תוכנית מדורגת</h3>
+    <div class="phase"><div class="pk">שלב 0</div><div><div class="pt">אונבורדינג - שני סוגים חדשים</div><div class="ps">תחת "עמותה": "בית כנסת" ו"ישיבה". כל אחד מדליק את המודולים שלו. אפס שינוי בגרעין.</div></div></div>
+    <div class="phase"><div class="pk">שלב 1</div><div><div class="pt">ישיבה + אזור אישי - הכי מהיר לערך</div><div class="ps">הקדשות ושותפות כתבניות תרומה על הקיים + אזור אישי לתורם. כמעט "חינם" על התשתית.</div></div></div>
+    <div class="phase"><div class="pk">שלב 2</div><div><div class="pt">בית כנסת - עליות, נדרים ואזור אישי</div><div class="ps">מנגנון התחייבות→חוב→תזכורת→תשלום, והאזור האישי של המתפלל.</div></div></div>
+    <div class="phase"><div class="pk">שלב 3</div><div><div class="pt">מקומות וימים נוראים</div><div class="ps">בונה מפת הושבה (תיאור/סרטוט→גרירה), רכישת/בחירת מקום, אישור גבאי, ומכירת מקומות לימים נוראים.</div></div></div>
+    <div class="phase"><div class="pk">שלב 4</div><div><div class="pt">וואטסאפ-first + דיוורים קבועים</div><div class="ps">פקודות גבאי בוואטסאפ על תשתית הבוט, ודיוורים מתוזמנים על ה-ESP.</div></div></div>
+    <div class="phase"><div class="pk">שלב 5</div><div><div class="pt">לוח עברי + מסך בית הכנסת</div><div class="ps">יארצייט וזמני היום על מנוע Hebcal, ומסך הקיוסק המעוצב עם סנכרון חי והתחברות-מחדש.</div></div></div>
+    <div class="note">מתחילים ב<b>ישיבה</b> (שלב 1) כי הוא כמעט חינם על הקיים; הלב הייחודי הוא <b>עליות/נדרים + מקומות + אזור אישי + וואטסאפ + מסך חי</b> של בית הכנסת.</div>
   </section>
 
-  <!-- ===== Build plan ===== -->
-  <section>
-    <span class="eyebrow">איך בונים</span>
-    <h2>תוכנית מדורגת</h2>
-    <div class="phase"><div class="pk">שלב 0</div><div><div class="pt">אונבורדינג - שני סוגים חדשים</div><div class="ps">תחת "עמותה": "בית כנסת / קהילה" ו"ישיבה / מוסד תורה". כל אחד מדליק את המודולים המתאימים. אפס שינוי בגרעין.</div></div></div>
-    <div class="phase"><div class="pk">שלב 1</div><div><div class="pt">ישיבה + אזור אישי - הכי מהיר לערך</div><div class="ps">הקדשות ושותפות חודשית כתבניות תרומה על הקיים, ואזור אישי לתורם (שותפויות/הקדשות/קבלות). כמעט "חינם" על התשתית.</div></div></div>
-    <div class="phase"><div class="pk">שלב 2</div><div><div class="pt">בית כנסת - עליות, נדרים ואזור אישי</div><div class="ps">מנגנון התחייבות→חוב→תזכורת→תשלום, והאזור האישי של המתפלל. זה הייחוד האמיתי שאין לו מקבילה קיימת.</div></div></div>
-    <div class="phase"><div class="pk">שלב 3</div><div><div class="pt">וואטסאפ-first + דיוורים קבועים</div><div class="ps">פקודות גבאי בוואטסאפ (עדכון זמנים, רישום עלייה, שידור) על תשתית הבוט, ודיוורים מתוזמנים על ה-ESP.</div></div></div>
-    <div class="phase"><div class="pk">שלב 4</div><div><div class="pt">לוח עברי - יארצייט וזמני תפילה</div><div class="ps">יארצייט לפי תאריך עברי + תזכורות למשפחות, וזמני תפילה הלכתיים לפי מיקום. מודול משותף, על מנוע Hebcal הקיים.</div></div></div>
-    <div class="phase"><div class="pk">שלב 5</div><div><div class="pt">מסך בית הכנסת החי</div><div class="ps">תצוגת קיוסק בכתובת ייעודית, סנכרון בזמן אמת, התחברות-מחדש אוטומטית ומטמון לנפילות רשת. מלגות אברכים לליטוש.</div></div></div>
-    <div class="note">כל שלב עומד בפני עצמו ונותן ערך. מתחילים ב<b>ישיבה</b> (שלב 1) כי הוא כמעט חינם על הקיים; הלב הייחודי הוא <b>עליות/נדרים + אזור אישי + וואטסאפ + מסך חי</b> של בית הכנסת.</div>
-  </section>
-
-  <footer>אפיון לבדיקה · סיאנגו · בית הכנסת הדיגיטלי + מוסד התורה, תחת עמותות · מבוסס מחקר שוק (ShulCloud · ביתא · הגבאי החכם · לוח ניסן · עיתים לקודש · Jgive)</footer>
+  <footer>אפיון מלא לבדיקה · סיאנגו · בית הכנסת הדיגיטלי + מוסד התורה, תחת עמותות · מבוסס מחקר שוק (ShulCloud · ShulHub · ביתא · הגבאי החכם · לוח ניסן · עיתים לקודש · Jgive)</footer>
 </div></div>
 </body></html>
