@@ -275,6 +275,7 @@ const Dashboard = () => {
         active: p.active,
         category_id: p.categoryId || null,
         customFields: p.customFields || [],
+        additional_images: p.additionalImages || [],
       });
     });
 
@@ -295,7 +296,8 @@ const Dashboard = () => {
         original.active !== p.active ||
         original.sortOrder !== p.sortOrder ||
         original.categoryId !== p.categoryId ||
-        customFieldsChanged
+        customFieldsChanged ||
+        JSON.stringify(original.additionalImages || []) !== JSON.stringify(p.additionalImages || [])
       )) {
         updateProduct.mutate({
           id: p.id,
@@ -309,6 +311,7 @@ const Dashboard = () => {
           active: p.active,
           category_id: p.categoryId ?? null,
           customFields: p.customFields || [],
+          additional_images: p.additionalImages || [],
         });
       }
     });
@@ -363,6 +366,7 @@ const Dashboard = () => {
       sku: (p as any).sku || undefined,
       imageUrl: p.image_url || undefined,
       videoUrl: (p as any).video_url || undefined,
+      additionalImages: Array.isArray((p as any).additional_images) ? (p as any).additional_images : [],
       active: p.active ?? true,
       sale_price: (p as any).sale_price || null,
       is_on_sale: (p as any).is_on_sale || false,

@@ -1,4 +1,5 @@
-import { X, Plus, Heart, Package, ShoppingBag } from "lucide-react";
+import { useState } from "react";
+import { X, Heart, Package, ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Product } from "./StoreProducts";
 
@@ -19,7 +20,16 @@ const ProductDetailModal = ({
   isFavorite = false,
   onToggleFavorite,
 }: ProductDetailModalProps) => {
+  const [activeIdx, setActiveIdx] = useState(0);
+
   if (!isOpen || !product) return null;
+
+  const allImages = [
+    ...(product.imageUrl ? [product.imageUrl] : []),
+    ...(product.additionalImages || []),
+  ];
+  const hasGallery = allImages.length > 1;
+  const activeImage = allImages[activeIdx] || null;
 
   const formatPrice = (price: number) => {
     if (price === 0) return "-";
@@ -29,10 +39,6 @@ const ProductDetailModal = ({
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
-  };
-
-  const handleAddToCart = () => {
-    onAddToCart(product);
   };
 
   return (
@@ -68,61 +74,96 @@ const ProductDetailModal = ({
 
         <div className="grid md:grid-cols-2 gap-0 overflow-y-auto max-h-[90vh]">
           {/* Image Section */}
-          <div className="relative bg-muted aspect-square md:aspect-auto md:min-h-[500px]">
-            {product.imageUrl ? (
-              <img
-                src={product.imageUrl}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Package className="h-20 w-20 text-muted-foreground/20" />
+          <div className="flex flex-col bg-muted">
+            {/* Main image */}
+            <div className="relative aspect-square md:aspect-auto md:flex-1 md:min-h-[400px]">
+              {activeImage ? (
+                <img
+                  key={activeImage}
+                  src={activeImage}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Package className="h-20 w-20 text-muted-foreground/20" />
+                </div>
+              )}
+
+              {/* Arrow nav for gallery */}
+              {hasGallery && (
+                <>
+                  <button
+                    onClick={() => setActiveIdx(i => (i - 1 + allImages.length) % allImages.length)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background/80 backdrop-blur flex items-center justify-center shadow hover:bg-background transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setActiveIdx(i => (i + 1) % allImages.length)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background/80 backdrop-blur flex items-center justify-center shadow hover:bg-background transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+
+              {/* Badges */}
+              <div className="absolute top-4 right-4 flex flex-col gap-2">
+                {product.isHot && (
+                  <span className="bg-orange-500 text-white text-xs font-bold tracking-wider uppercase px-3 py-1.5 shadow-lg">
+                    חם
+                  </span>
+                )}
+                {product.isNew && (
+                  <span className="bg-foreground text-background text-xs font-bold tracking-wider uppercase px-3 py-1.5 shadow-lg">
+                    חדש
+                  </span>
+                )}
+                {product.isSale && (
+                  <span className="bg-red-500 text-white text-xs font-bold tracking-wider uppercase px-3 py-1.5 shadow-lg">
+                    מבצע
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Thumbnails */}
+            {hasGallery && (
+              <div className="flex gap-2 p-3 overflow-x-auto bg-muted/60 border-t border-border">
+                {allImages.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveIdx(i)}
+                    className={`shrink-0 w-14 h-14 rounded-md overflow-hidden border-2 transition-colors ${
+                      i === activeIdx ? "border-primary" : "border-transparent hover:border-border"
+                    }`}
+                  >
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
               </div>
             )}
-
-            {/* Badges */}
-            <div className="absolute top-4 right-4 flex flex-col gap-2">
-              {product.isHot && (
-                <span className="bg-orange-500 text-white text-xs font-bold tracking-wider uppercase px-3 py-1.5 shadow-lg">
-                  חם
-                </span>
-              )}
-              {product.isNew && (
-                <span className="bg-foreground text-background text-xs font-bold tracking-wider uppercase px-3 py-1.5 shadow-lg">
-                  חדש
-                </span>
-              )}
-              {product.isSale && (
-                <span className="bg-red-500 text-white text-xs font-bold tracking-wider uppercase px-3 py-1.5 shadow-lg">
-                  מבצע
-                </span>
-              )}
-            </div>
           </div>
 
           {/* Content Section */}
           <div className="p-8 md:p-10 flex flex-col" dir="rtl">
-            {/* Brand */}
             {product.brand && (
               <p className="text-xs tracking-widest uppercase text-muted-foreground font-medium mb-2">
                 {product.brand}
               </p>
             )}
 
-            {/* Product Name */}
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">
               {product.name}
             </h2>
 
-            {/* SKU */}
             {product.sku && (
               <p className="text-sm text-muted-foreground mb-4">
                 מק"ט: {product.sku}
               </p>
             )}
 
-            {/* Price */}
             <div className="flex items-baseline gap-3 mb-6 pb-6 border-b border-border">
               <span
                 className={`text-3xl font-bold ${
@@ -138,7 +179,6 @@ const ProductDetailModal = ({
               )}
             </div>
 
-            {/* Description */}
             {product.description && (
               <div className="mb-6">
                 <h3 className="text-sm font-bold tracking-wider uppercase text-foreground mb-2">
@@ -150,7 +190,6 @@ const ProductDetailModal = ({
               </div>
             )}
 
-            {/* Custom Fields */}
             {product.custom_fields && product.custom_fields.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-bold tracking-wider uppercase text-foreground mb-3">
@@ -174,10 +213,9 @@ const ProductDetailModal = ({
               </div>
             )}
 
-            {/* Add to Cart Button */}
             <div className="mt-auto pt-6">
               <Button
-                onClick={handleAddToCart}
+                onClick={() => onAddToCart(product)}
                 className="w-full h-14 text-base font-bold tracking-wider uppercase gap-2"
                 size="lg"
               >

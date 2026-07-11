@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, Fragment } from "react";
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Package, X, Upload, FileSpreadsheet, Download, AlertCircle, Search, Wand2, Loader2, LayoutGrid, List, Video, Play } from "lucide-react";
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Package, X, Upload, FileSpreadsheet, Download, AlertCircle, Search, Wand2, Loader2, LayoutGrid, List, Video, Play, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -88,6 +88,9 @@ const DashboardProducts = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const additionalImagesInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingAdditional, setIsUploadingAdditional] = useState(false);
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
 
   const { data: usageStatus } = useBusinessUsage(businessId);
   const [formData, setFormData] = useState({
@@ -133,6 +136,7 @@ const DashboardProducts = ({
   const resetForm = () => {
     setFormData({ name: '', description: '', price: '', sku: '', imageUrl: '', videoUrl: '', sortOrder: '', categoryId: '' });
     setCustomFields([]);
+    setAdditionalImages([]);
     setEditingProduct(null);
     setIsFormOpen(false);
     setShowAIUpsell(false);
@@ -209,6 +213,38 @@ const DashboardProducts = ({
     }
   };
 
+  const handleAdditionalImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length || !businessId) return;
+    if (usageStatus?.imageUploadBlocked) {
+      setShowBlockerDialog(true);
+      if (additionalImagesInputRef.current) additionalImagesInputRef.current.value = '';
+      return;
+    }
+    setIsUploadingAdditional(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) continue;
+        const ext = file.name.split('.').pop() || 'jpg';
+        const filePath = `${businessId}/products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error } = await supabase.storage
+          .from('business-assets')
+          .upload(filePath, file, { upsert: true });
+        if (error) throw error;
+        const { data } = supabase.storage.from('business-assets').getPublicUrl(filePath);
+        uploaded.push(data.publicUrl);
+      }
+      setAdditionalImages(prev => [...prev, ...uploaded]);
+      toast.success(`${uploaded.length} תמונות נוספו`);
+    } catch {
+      toast.error('שגיאה בהעלאת תמונות');
+    } finally {
+      setIsUploadingAdditional(false);
+      if (additionalImagesInputRef.current) additionalImagesInputRef.current.value = '';
+    }
+  };
+
   // עדכון סינון לפי קטגוריה כאשר מגיעים ממסך הקטגוריות
   if (initialCategoryFilterId && categoryFilter === 'all') {
     // נקבע רק פעם אחת על כניסה - לא נשנה שוב כשמשתמש מחליף ידנית
@@ -232,6 +268,7 @@ const DashboardProducts = ({
       categoryId: product.categoryId || '',
     });
     setCustomFields(product.customFields || []);
+    setAdditionalImages(product.additionalImages || []);
     setEditingProduct(product);
     setIsFormOpen(true);
   };
@@ -241,16 +278,17 @@ const DashboardProducts = ({
     
     if (editingProduct) {
       // Update existing
-      onProductsChange(products.map(p => 
-        p.id === editingProduct.id 
-          ? { 
-              ...p, 
-              ...formData, 
+      onProductsChange(products.map(p =>
+        p.id === editingProduct.id
+          ? {
+              ...p,
+              ...formData,
               price: parseFloat(formData.price) || 0,
               sku: formData.sku || undefined,
               sortOrder: formData.sortOrder ? parseInt(formData.sortOrder) : undefined,
               categoryId: formData.categoryId || undefined,
-              customFields 
+              customFields,
+              additionalImages,
             }
           : p
       ));
@@ -269,6 +307,7 @@ const DashboardProducts = ({
         sortOrder: formData.sortOrder ? parseInt(formData.sortOrder) : maxSortOrder + 1,
         categoryId: formData.categoryId || undefined,
         customFields,
+        additionalImages,
       };
       onProductsChange([...products, newProduct]);
     }
@@ -953,6 +992,50 @@ const DashboardProducts = ({
                   onDismiss={() => setShowAIUpsell(false)}
                 />
               )}
+
+              {/* Additional images */}
+              <div className="pt-2 border-t border-border space-y-2">
+                <Label className="!text-foreground flex items-center gap-1.5">
+                  <Images className="h-4 w-4 text-muted-foreground" />
+                  תמונות נוספות <span className="text-muted-foreground font-normal text-xs">(גלריה במוצר)</span>
+                </Label>
+                <input
+                  ref={additionalImagesInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleAdditionalImageUpload}
+                  className="hidden"
+                  aria-label="העלאת תמונות נוספות"
+                />
+                {additionalImages.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {additionalImages.map((url, i) => (
+                      <div key={i} className="relative w-16 h-16 rounded-md overflow-hidden border border-border group">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setAdditionalImages(prev => prev.filter((_, idx) => idx !== i))}
+                          className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                        >
+                          <X className="h-4 w-4 text-white" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-2"
+                  onClick={() => additionalImagesInputRef.current?.click()}
+                  disabled={isUploadingAdditional || usageStatus?.imageUploadBlocked}
+                >
+                  {isUploadingAdditional ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                  {isUploadingAdditional ? 'מעלה...' : 'הוסף תמונות לגלריה'}
+                </Button>
+              </div>
 
               {/* Video upload */}
               <div className="pt-2 border-t border-border space-y-2">

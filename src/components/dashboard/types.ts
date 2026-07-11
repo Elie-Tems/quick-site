@@ -12,6 +12,7 @@ export interface Product {
   sku?: string;
   imageUrl?: string;
   videoUrl?: string;
+  additionalImages?: string[];
   active: boolean;
   customFields?: ProductCustomField[];
   sortOrder?: number;

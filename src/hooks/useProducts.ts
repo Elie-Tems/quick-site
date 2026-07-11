@@ -88,13 +88,14 @@ export const useCreateProduct = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (product: ProductInsert & { customFields?: ProductCustomField[]; categoryIds?: string[] }) => {
-      const { customFields, categoryIds, ...productData } = product;
+    mutationFn: async (product: ProductInsert & { customFields?: ProductCustomField[]; categoryIds?: string[]; additional_images?: string[] | null }) => {
+      const { customFields, categoryIds, additional_images, ...productData } = product;
+      const insertData = { ...productData, additional_images: additional_images ?? [] };
       
       // Create product
       const { data, error } = await supabase
         .from('products')
-        .insert(productData)
+        .insert(insertData as ProductInsert)
         .select()
         .single();
       
@@ -158,7 +159,7 @@ export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, customFields, categoryIds, ...updates }: ProductUpdate & { id: string; customFields?: ProductCustomField[]; categoryIds?: string[] }) => {
+    mutationFn: async ({ id, customFields, categoryIds, ...updates }: ProductUpdate & { id: string; customFields?: ProductCustomField[]; categoryIds?: string[]; additional_images?: string[] | null }) => {
       // Update product
       const { data, error } = await supabase
         .from('products')

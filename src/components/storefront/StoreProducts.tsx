@@ -32,6 +32,7 @@ export interface Product {
   sku?: string;
   categoryId?: string;
   custom_fields?: ProductCustomField[];
+  additionalImages?: string[];
 }
 
 interface StoreProductsProps {

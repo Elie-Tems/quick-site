@@ -211,6 +211,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       price: p.is_on_sale && p.sale_price ? p.sale_price : p.price,
       originalPrice: p.is_on_sale && p.sale_price ? p.price : undefined,
       imageUrl: p.image_url || undefined,
+      additionalImages: Array.isArray(p.additional_images) ? p.additional_images as string[] : [],
       active: p.active ?? true,
       sku: p.sku || undefined,
       isSale: p.is_on_sale || false,
