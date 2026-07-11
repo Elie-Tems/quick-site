@@ -1,10 +1,10 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2, FileText, CalendarClock } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2, FileText, CalendarClock, Layers } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 import type { BusinessType } from "@/lib/businessModules";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -33,11 +33,11 @@ const TYPE_CONFIG: Record<BusinessType, {
   managementGroupLabel?: string;
   itemOverrides?: Partial<Record<DashboardView, { label?: string; shortLabel?: string; icon?: React.ComponentType<{ className?: string }> }>>;
 }> = {
-  products: {},
-  services: {},
+  products:  { hiddenItems: ['visualization-studio'] },
+  services:  { hiddenItems: ['visualization-studio'] },
   nonprofit: {
     managementGroupLabel: "ניהול תרומות",
-    hiddenItems: ['shipping', 'coupons'],
+    hiddenItems: ['shipping', 'coupons', 'visualization-studio'],
     itemOverrides: {
       products: { label: "פרויקטים / מיזמים", shortLabel: "פרויקטים", icon: Heart },
       orders: { label: "תרומות", shortLabel: "תרומות", icon: Heart },
@@ -45,7 +45,7 @@ const TYPE_CONFIG: Record<BusinessType, {
   },
   realestate: {
     managementGroupLabel: "ניהול לידים",
-    hiddenItems: ['shipping', 'coupons'],
+    hiddenItems: ['shipping', 'coupons'] as DashboardView[],
     itemOverrides: {
       products: { label: "נכסים", shortLabel: "נכסים", icon: Building2 },
       orders: { label: "לידים", shortLabel: "לידים", icon: Users },
@@ -73,6 +73,7 @@ const navItems: {
   { id: "design", label: "עיצוב", icon: Palette, group: "עריכה ועיצוב" },
   { id: "store-texts", label: "טקסטים", icon: Type, group: "עריכה ועיצוב" },
   { id: "ai-generated-images", label: "גלריית תמונות", shortLabel: "גלריה", icon: Image, group: "עריכה ועיצוב" },
+  { id: "visualization-studio", label: "סטודיו הדמיות", shortLabel: "הדמיות", icon: Layers, group: "עריכה ועיצוב" },
   { id: "preview", label: "תצוגה מקדימה", shortLabel: "תצוגה", icon: Eye, group: "עריכה ועיצוב" },
 
   // ניהול מכירות
