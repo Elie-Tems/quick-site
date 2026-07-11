@@ -131,42 +131,12 @@ const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
 
   const fallbackImage = ogImage;
 
-  const shippingDetails = {
-    "@type": "OfferShippingDetails",
-    "shippingRate": {
-      "@type": "MonetaryAmount",
-      "value": "0",
-      "currency": "ILS"
-    },
-    "shippingDestination": {
-      "@type": "DefinedRegion",
-      "addressCountry": "IL"
-    },
-    "deliveryTime": {
-      "@type": "ShippingDeliveryTime",
-      "handlingTime": {
-        "@type": "QuantitativeValue",
-        "minValue": 0,
-        "maxValue": 1,
-        "unitCode": "DAY"
-      },
-      "transitTime": {
-        "@type": "QuantitativeValue",
-        "minValue": 1,
-        "maxValue": 5,
-        "unitCode": "DAY"
-      }
-    }
-  };
-
-  const merchantReturnPolicy = {
-    "@type": "MerchantReturnPolicy",
-    "applicableCountry": "IL",
-    "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-    "merchantReturnDays": 14,
-    "returnMethod": "https://schema.org/ReturnByMail",
-    "returnFees": "https://schema.org/FreeReturn"
-  };
+  // NOTE: shipping cost and return policy are intentionally NOT emitted here.
+  // They were previously hardcoded (free shipping + 14-day free returns) for
+  // every product of every store, which is fabricated per-merchant data -
+  // a Google Merchant policy risk and against the project's no-fake-data rule.
+  // Re-add as OfferShippingDetails / MerchantReturnPolicy only when the store
+  // actually configures real shipping and return terms.
 
   // Individual Product Schemas (for first 5 products)
   const productSchemas = products.slice(0, 5).map(product => ({
@@ -193,9 +163,7 @@ const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
       "seller": {
         "@type": "Organization",
         "name": siteName
-      },
-      "shippingDetails": shippingDetails,
-      "hasMerchantReturnPolicy": merchantReturnPolicy
+      }
     }
   }));
 
