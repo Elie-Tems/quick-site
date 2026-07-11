@@ -116,26 +116,36 @@ export const useStoreTracking = (config: StoreTrackingConfig) => {
       );
     }
 
-    // Free-form custom head snippet (advanced; merchant's own responsibility).
+    // Free-form custom head snippet (advanced).
+    // SECURITY: storefronts render on the SAME origin (siango.app) as the
+    // authenticated dashboard, so any <script> injected here would run
+    // same-origin and could read another logged-in user's Supabase session
+    // token from localStorage (cross-tenant account takeover). We therefore do
+    // NOT execute arbitrary scripts from this field. Only non-executing site
+    // verification tags (<meta>, <link>) are injected; all real tracking goes
+    // through the structured GTM / GA4 / Meta / Ads / TikTok fields above.
+    // Executing full custom scripts safely requires serving stores from an
+    // isolated origin (infra change, tracked separately).
     if (custom) {
       const wrap = document.createElement("div");
       wrap.innerHTML = custom;
+      const ALLOWED_TAGS = new Set(["META", "LINK"]);
+      // Deliberately excludes http-equiv (meta-refresh redirect) and any on* handler.
+      const SAFE_ATTRS = new Set(["name", "content", "property", "rel", "href", "charset"]);
       Array.from(wrap.childNodes).forEach((node) => {
-        // Re-create <script> nodes so the browser actually executes them.
-        if (node.nodeName === "SCRIPT") {
-          const orig = node as HTMLScriptElement;
-          const s = document.createElement("script");
-          if (orig.src) s.src = orig.src;
-          if (orig.type) s.type = orig.type;
-          s.text = orig.text;
-          s.setAttribute("data-store-tracking", "custom");
-          document.head.appendChild(s);
-          added.push(s);
-        } else {
-          (node as HTMLElement).setAttribute?.("data-store-tracking", "custom");
-          document.head.appendChild(node);
-          added.push(node);
-        }
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        const el = node as HTMLElement;
+        if (!ALLOWED_TAGS.has(el.nodeName)) return; // drop <script>, <img>, <iframe>, <style>, etc.
+        Array.from(el.attributes).forEach((a) => {
+          const attr = a.name.toLowerCase();
+          const val = (a.value || "").trim().toLowerCase();
+          if (!SAFE_ATTRS.has(attr) || attr.startsWith("on") || val.startsWith("javascript:")) {
+            el.removeAttribute(a.name);
+          }
+        });
+        el.setAttribute("data-store-tracking", "custom");
+        document.head.appendChild(el);
+        added.push(el);
       });
     }
 

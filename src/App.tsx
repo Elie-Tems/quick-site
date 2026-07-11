@@ -18,6 +18,7 @@ import Index from "./pages/Index";
 import { useResolvedTenant } from "@/hooks/useResolvedTenant";
 import ShabbatGate from "@/components/ShabbatGate";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import AdminOnlyRoute from "@/components/AdminOnlyRoute";
 import { captureUtm } from "@/lib/utmCapture";
 // Lazy-loaded: heavy or non-first-paint pages get their own chunk, loaded on
 // demand. This keeps the initial bundle small so navigation feels snappy.
@@ -184,41 +185,47 @@ const App = () => {
                   <Route path="/onboarding" element={<ShabbatGate><Onboarding /></ShabbatGate>} />
                   <Route path="/onboarding/complete" element={<OnboardingCompleteGate />} />
                   <Route path="/publish-payment" element={<PublishPayment />} />
-                  <Route path="/email-marketing-preview" element={<EmailMarketingPreview />} />
-                  <Route path="/presentation" element={<Presentation />} />
                   <Route path="/thank-you" element={<ThankYou />} />
                   <Route path="/ai-credits-payment" element={<AICreditPayment />} />
-                  <Route path="/preview/payments" element={<PreviewPayments />} />
-                  <Route path="/preview/emails" element={<PreviewEmails />} />
-                  <Route path="/preview/publish" element={<PublishCheckoutPreview />} />
-                  <Route path="/preview/onboarding-v2" element={<PreviewOnboardingV2 />} />
-                  <Route path="/preview/home-v2" element={<PreviewHomeV2 />} />
-                  <Route path="/preview/redesign" element={<RedesignHub />} />
-                  <Route path="/preview/redesign/dashboard" element={<RedesignDashboard />} />
-                  <Route path="/preview/redesign/onboarding" element={<RedesignOnboarding />} />
-                  <Route path="/preview/redesign/login" element={<RedesignLogin />} />
-                  <Route path="/preview/redesign/admin" element={<RedesignAdmin />} />
+
+                  {/* Internal-only pages (investor deck, platform-UI mockups with
+                      sample data). Admin-gated so Moti/Daniel can review them but
+                      the public and crawlers cannot reach them. */}
+                  <Route path="/email-marketing-preview" element={<AdminOnlyRoute><EmailMarketingPreview /></AdminOnlyRoute>} />
+                  <Route path="/presentation" element={<AdminOnlyRoute><Presentation /></AdminOnlyRoute>} />
+                  <Route path="/preview/payments" element={<AdminOnlyRoute><PreviewPayments /></AdminOnlyRoute>} />
+                  <Route path="/preview/emails" element={<AdminOnlyRoute><PreviewEmails /></AdminOnlyRoute>} />
+                  <Route path="/preview/publish" element={<AdminOnlyRoute><PublishCheckoutPreview /></AdminOnlyRoute>} />
+                  <Route path="/preview/onboarding-v2" element={<AdminOnlyRoute><PreviewOnboardingV2 /></AdminOnlyRoute>} />
+                  <Route path="/preview/home-v2" element={<AdminOnlyRoute><PreviewHomeV2 /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign" element={<AdminOnlyRoute><RedesignHub /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/dashboard" element={<AdminOnlyRoute><RedesignDashboard /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/onboarding" element={<AdminOnlyRoute><RedesignOnboarding /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/login" element={<AdminOnlyRoute><RedesignLogin /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/admin" element={<AdminOnlyRoute><RedesignAdmin /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/services-dashboard" element={<AdminOnlyRoute><RedesignServicesDash /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/realestate-dashboard" element={<AdminOnlyRoute><RedesignRealEstateDash /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/project-dashboard" element={<AdminOnlyRoute><RedesignProjectDash /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/nonprofit-dashboard" element={<AdminOnlyRoute><RedesignNonprofitDash /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/campaign-dashboard" element={<AdminOnlyRoute><RedesignCampaignDash /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/vacation-dashboard" element={<AdminOnlyRoute><RedesignVacationDash /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/emails" element={<AdminOnlyRoute><RedesignEmails /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/templates" element={<AdminOnlyRoute><RedesignTemplates /></AdminOnlyRoute>} />
+                  <Route path="/preview/whatsapp" element={<AdminOnlyRoute><PreviewWhatsApp /></AdminOnlyRoute>} />
+                  <Route path="/preview/email" element={<AdminOnlyRoute><PreviewEmail /></AdminOnlyRoute>} />
+
+                  {/* Public storefront-design template demos (linked from the homepage). */}
                   <Route path="/preview/redesign/home-multi" element={<RedesignHomeMulti />} />
                   <Route path="/preview/redesign/services" element={<RedesignServices />} />
-                  <Route path="/preview/redesign/services-dashboard" element={<RedesignServicesDash />} />
                   <Route path="/preview/redesign/realestate" element={<RedesignRealEstate />} />
-                  <Route path="/preview/redesign/realestate-dashboard" element={<RedesignRealEstateDash />} />
                   <Route path="/preview/redesign/project" element={<RedesignProject />} />
-                  <Route path="/preview/redesign/project-dashboard" element={<RedesignProjectDash />} />
                   <Route path="/preview/redesign/nonprofit" element={<RedesignNonprofit />} />
                   <Route path="/preview/redesign/crowdfunding" element={<RedesignCrowdfunding />} />
                   <Route path="/preview/redesign/photographer" element={<RedesignPhotographer />} />
                   <Route path="/preview/redesign/home-pro" element={<RedesignHomePro />} />
                   <Route path="/preview/redesign/car-dealer" element={<RedesignCarDealer />} />
-                  <Route path="/preview/redesign/nonprofit-dashboard" element={<RedesignNonprofitDash />} />
-                  <Route path="/preview/redesign/campaign-dashboard" element={<RedesignCampaignDash />} />
                   <Route path="/preview/redesign/vacation" element={<RedesignVacation />} />
-                  <Route path="/preview/redesign/vacation-dashboard" element={<RedesignVacationDash />} />
                   <Route path="/preview/redesign/boutique" element={<RedesignBoutique />} />
-                  <Route path="/preview/redesign/emails" element={<RedesignEmails />} />
-                  <Route path="/preview/redesign/templates" element={<RedesignTemplates />} />
-                  <Route path="/preview/whatsapp" element={<PreviewWhatsApp />} />
-                  <Route path="/preview/email" element={<PreviewEmail />} />
                   <Route path="/store" element={<StoreFront />} />
                   <Route path="/store/:slug" element={<StoreFront />} />
                   <Route path="/store/:slug/about" element={<StoreAboutPage />} />

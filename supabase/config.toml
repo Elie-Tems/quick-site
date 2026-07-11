@@ -15,17 +15,8 @@ verify_jwt = true
 [functions.generate-styled-product-image]
 verify_jwt = true
 
-# icount-webhook is called by iCount (no Supabase JWT); it authenticates via
-# ICOUNT_WEBHOOK_SECRET instead, so JWT verification must stay disabled.
-[functions.icount-webhook]
-verify_jwt = false
-
 [functions.finalize-publish]
 verify_jwt = true
-
-# icount-publish-webhook is the iCount IPN for platform subscription payments (no JWT).
-[functions.icount-publish-webhook]
-verify_jwt = false
 
 # expire-subscriptions is invoked by a scheduled cron (no user JWT); it
 # authenticates via the CRON_SECRET header instead.
@@ -40,12 +31,6 @@ verify_jwt = false
 # onboarding-abandoned is an hourly cron (no user JWT) that nudges users who
 # signed up but never finished onboarding. Optional CRON_SECRET guard.
 [functions.onboarding-abandoned]
-verify_jwt = false
-
-# billing-icount-ipn is the iCount IPN for the first self-managed subscription
-# payment (captures the card token). Authenticated by the shared secret in the
-# URL query, not a Supabase JWT.
-[functions.billing-icount-ipn]
 verify_jwt = false
 
 # billing-charge-run is the monthly self-managed billing cron (charges stored

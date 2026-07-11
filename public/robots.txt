@@ -11,6 +11,8 @@ Disallow: /publish-payment
 Disallow: /ai-credits-payment
 Disallow: /thank-you
 Disallow: /manage-x7k9
+Disallow: /presentation
+Disallow: /email-marketing-preview
 Disallow: /preview/
 Crawl-delay: 1
 
