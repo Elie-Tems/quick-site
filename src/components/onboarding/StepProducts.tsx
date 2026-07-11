@@ -849,6 +849,37 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         );
       })()}
 
+      {/* Dashboard upsell card */}
+      <div className="rounded-xl border border-border overflow-hidden text-right">
+        <div className="flex items-start gap-3 px-4 py-3 bg-primary/8 border-b border-primary/20">
+          <svg className="w-4 h-4 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <p className="text-sm text-primary leading-relaxed">
+            כדאי להוסיף כמה מוצרים עכשיו - אפילו מוצרי דמו. את כל השאר - תמונות, תיאורים מלאים, מחירי מבצע - עושים בנחת בדשבורד הניהול אחרי שהאתר באוויר.
+          </p>
+        </div>
+        <div className="px-4 py-3 bg-card">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">מה מיוחד בדשבורד הניהול</p>
+          <div className="grid gap-2">
+            {[
+              { icon: "📷", title: "גלריית תמונות לכל מוצר", desc: "כמה תמונות לכל מוצר - הלקוח רואה מכל הזוויות" },
+              { icon: "🎬", title: "וידאו מוצר", desc: "צירוף סרטון לכל מוצר - מוצג ישירות בדף המוצר" },
+              { icon: "🏷️", title: "מבצעים ותגיות", desc: "מחיר מבצע, סימון חם ו-חדש, מוצרים מובילים בראש הדף" },
+              { icon: "📂", title: "קטגוריות וסדר גרירה", desc: "ארגון בקטגוריות וסידור ידני בגרירה" },
+              { icon: "📋", title: "שדות מותאמים אישית", desc: "מידות, חומרים, אחריות - כל מידע נוסף שצריך" },
+              { icon: "👁️", title: "הסתרת מוצרים", desc: "להפעיל ולכבות כל מוצר ללא מחיקה - שימושי למלאי ועונתיות" },
+            ].map(({ icon, title, desc }) => (
+              <div key={title} className="flex items-start gap-2.5">
+                <span className="text-sm mt-0.5 shrink-0">{icon}</span>
+                <div>
+                  <span className="text-sm font-medium text-foreground">{title} </span>
+                  <span className="text-sm text-muted-foreground">{desc}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Organization toggle */}
       <div className="grid grid-cols-2 gap-3">
         <button
