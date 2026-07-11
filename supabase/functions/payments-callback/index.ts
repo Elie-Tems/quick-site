@@ -75,6 +75,23 @@ Deno.serve(async (req) => {
     }
   } else {
     await admin.from("orders").update({ payment_status: "failed", updated_at: now }).eq("id", order.id);
+    // Release the coupon use we optimistically claimed in payments-create, so a
+    // declined payment doesn't permanently burn a max_uses slot. Read coupon_id
+    // from the payment metadata BEFORE we overwrite it below.
+    const { data: pay } = await admin.from("payments")
+      .select("metadata").eq("order_id", order.id).maybeSingle();
+    const couponId = (pay?.metadata as Record<string, unknown> | null)?.coupon_id as string | undefined;
+    if (couponId) {
+      const { data: c } = await admin.from("coupons")
+        .select("id, current_uses").eq("id", couponId).maybeSingle();
+      if (c && Number(c.current_uses) > 0) {
+        // Compare-and-set so a retry/double callback can't over-release.
+        await admin.from("coupons")
+          .update({ current_uses: Number(c.current_uses) - 1 })
+          .eq("id", c.id)
+          .eq("current_uses", Number(c.current_uses));
+      }
+    }
     await admin.from("payments").update({ status: "failed", metadata: { callback: payload }, updated_at: now }).eq("order_id", order.id);
   }
   return json({ ok: true });
