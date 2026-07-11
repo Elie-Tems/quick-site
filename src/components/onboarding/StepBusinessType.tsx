@@ -151,7 +151,7 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50 pointer-events-none" />
             <input
               type="text"
-              placeholder="חפשו סוג עסק — נדל\"ן, מאפייה, כושר..."
+              placeholder='חפשו סוג עסק - נדל"ן, מאפייה, כושר...'
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full h-11 pr-9 pl-3 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-primary/40"
