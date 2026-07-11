@@ -93,10 +93,19 @@ const SHOW_INITIAL = 6;
 // while the 3-card UI stays exactly as designed.
 const LISTINGS_SUBTYPES = new Set(["broker", "developer", "vacation", "commercial", "car-dealer"]);
 
+// Flat list of all sub-categories with their parent type, for global search
+const ALL_SUBS_FLAT = (Object.entries(SUB_CATEGORIES) as [BusinessType, typeof SUB_CATEGORIES[BusinessType]][])
+  .flatMap(([mainType, subs]) => subs.map(s => ({ ...s, mainType })));
+
 const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
   const [activeMain, setActiveMain] = useState<BusinessType | null>(data.businessType ?? null);
   const [search, setSearch] = useState("");
   const [showAll, setShowAll] = useState(false);
+
+  // Global search across all sub-types (used on the main screen before a category is selected)
+  const globalSearchResults = search.trim()
+    ? ALL_SUBS_FLAT.filter(s => s.title.includes(search.trim()))
+    : [];
 
   const allSubs = activeMain ? SUB_CATEGORIES[activeMain] : [];
   const filteredSubs = allSubs.filter(s => !search || s.title.includes(search));
@@ -136,23 +145,68 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
       </div>
 
       {!activeMain ? (
-        <div className="grid grid-cols-3 gap-3">
-          {MAIN_CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => handleMainSelect(cat.id)}
-              className="group relative rounded-2xl overflow-hidden focus:outline-none"
-              style={{ height: "300px" }}
-            >
-              <img src={cat.img} alt={cat.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-              <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
-              <div className="absolute bottom-0 right-0 left-0 p-4 text-right">
-                <p className="font-bold text-white text-xl leading-tight mb-1">{cat.title}</p>
-                <p className="text-xs text-white/65 leading-snug">{cat.desc}</p>
-              </div>
-            </button>
-          ))}
+        <div className="space-y-4">
+          {/* Global search */}
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="חפשו סוג עסק — נדל\"ן, מאפייה, כושר..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full h-11 pr-9 pl-3 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-primary/40"
+              style={{ background: "var(--pv-surface2)", border: "1px solid var(--pv-border)", color: "var(--pv-text)" }}
+              dir="rtl"
+            />
+          </div>
+
+          {search.trim() ? (
+            /* Search results across all categories */
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {globalSearchResults.length === 0 ? (
+                <div className="col-span-3 text-center pv-faint text-sm py-8">לא נמצאו תוצאות</div>
+              ) : (
+                globalSearchResults.map((sub, i) => (
+                  <button
+                    key={sub.mainType + sub.id}
+                    onClick={() => {
+                      updateData({ businessType: sub.mainType });
+                      handleSubSelect(sub.id);
+                    }}
+                    className="group relative rounded-2xl overflow-hidden focus:outline-none"
+                    style={{ aspectRatio: "4/3" }}
+                  >
+                    <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" style={{ background: gradientFor(i) }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+                    <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
+                    <div className="absolute bottom-0 right-0 left-0 p-3 text-right">
+                      <p className="font-semibold text-white text-sm leading-tight">{sub.title}</p>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          ) : (
+            /* Main category cards */
+            <div className="grid grid-cols-3 gap-3">
+              {MAIN_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => handleMainSelect(cat.id)}
+                  className="group relative rounded-2xl overflow-hidden focus:outline-none"
+                  style={{ height: "300px" }}
+                >
+                  <img src={cat.img} alt={cat.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
+                  <div className="absolute bottom-0 right-0 left-0 p-4 text-right">
+                    <p className="font-bold text-white text-xl leading-tight mb-1">{cat.title}</p>
+                    <p className="text-xs text-white/65 leading-snug">{cat.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div>
