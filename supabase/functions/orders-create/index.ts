@@ -195,19 +195,9 @@ Deno.serve(async (req) => {
     console.warn("customer order confirmation email failed:", e);
   }
 
-  const webhookUrl = Deno.env.get("VITE_ORDER_WEBHOOK_URL");
-  if (webhookUrl) {
-    fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        order: { ...order, customer_name: customer.fullName, customer_email: customer.email, customer_phone: customer.phone, payment_status: "not_required" },
-        items: orderItems.map((it) => ({ ...it, line_total: it.price_at_order * it.quantity })),
-        businessName: business.name,
-        totalItems: orderItems.reduce((s, i) => s + i.quantity, 0),
-      }),
-    }).catch((e) => console.warn("order webhook failed:", e));
-  }
+  // (The customer confirmation + merchant "new order" emails are already sent
+  // above via Resend. The old Make.com order webhook was removed - it only
+  // duplicated those notifications and leaked customer PII to a third party.)
 
   return json({ ok: true, order_id: order.id, total_price: order.total_price });
 });

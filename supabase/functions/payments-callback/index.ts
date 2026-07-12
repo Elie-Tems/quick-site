@@ -60,19 +60,9 @@ Deno.serve(async (req) => {
       status: "success", provider_transaction_id: parsed.transactionUid, metadata: { callback: payload }, updated_at: now,
     }).eq("order_id", order.id);
 
-    const webhookUrl = Deno.env.get("VITE_ORDER_WEBHOOK_URL");
-    if (webhookUrl) {
-      const { data: items } = await admin.from("order_items").select("*").eq("order_id", order.id);
-      const { data: business } = await admin.from("businesses").select("name, email, phone").eq("id", order.business_id).single();
-      fetch(webhookUrl, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          order: { ...order, payment_status: "paid", paid_at: now }, items: items || [],
-          businessName: business?.name ?? null, businessEmail: business?.email ?? null,
-          businessPhone: business?.phone ?? null, paid: true,
-        }),
-      }).catch((e) => console.warn("order webhook failed:", e));
-    }
+    // (Old Make.com order webhook removed - order/paid notifications are already
+    // sent directly via Resend; the webhook only duplicated them and shipped
+    // customer + business PII to a third party.)
   } else {
     await admin.from("orders").update({ payment_status: "failed", updated_at: now }).eq("id", order.id);
     // Release the coupon use we optimistically claimed in payments-create, so a
