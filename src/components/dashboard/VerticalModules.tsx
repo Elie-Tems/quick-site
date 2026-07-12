@@ -5,6 +5,7 @@ import ListingsManager from "./listings/ListingsManager";
 import DonationsManager from "./donations/DonationsManager";
 import SynagoguePledgesManager from "./synagogue/SynagoguePledgesManager";
 import SynagogueSeatsManager from "./synagogue/SynagogueSeatsManager";
+import SynagogueSettingsManager from "./synagogue/SynagogueSettingsManager";
 import LifecycleEmailsManager from "./LifecycleEmailsManager";
 
 /**
@@ -35,6 +36,7 @@ const VerticalModules = ({ business }: { business: (BusinessLike & { id: string 
         <>
           <SynagoguePledgesManager businessId={business.id} />
           <SynagogueSeatsManager businessId={business.id} />
+          <SynagogueSettingsManager businessId={business.id} slug={(business as { slug?: string | null }).slug} />
         </>
       )}
       {modules.includes("donations") && <DonationsManager businessId={business.id} />}

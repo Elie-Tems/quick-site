@@ -19,6 +19,7 @@ import { useResolvedTenant } from "@/hooks/useResolvedTenant";
 import ShabbatGate from "@/components/ShabbatGate";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import AdminOnlyRoute from "@/components/AdminOnlyRoute";
+import LanguageUrlSync from "@/components/LanguageUrlSync";
 import { captureUtm } from "@/lib/utmCapture";
 // Lazy-loaded: heavy or non-first-paint pages get their own chunk, loaded on
 // demand. This keeps the initial bundle small so navigation feels snappy.
@@ -30,6 +31,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const StoreAboutPage = lazy(() => import("./pages/StoreAboutPage"));
+const SynagogueScreen = lazy(() => import("./pages/SynagogueScreen"));
 const MyOrders = lazy(() => import("./pages/MyOrders"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -156,6 +158,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <LanguageUrlSync />
               <Suspense fallback={
                 <div className="min-h-screen flex items-center justify-center">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -179,6 +182,13 @@ const App = () => {
               ) : (
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  {/* Language homepages - crawlers get localized meta+hero+hreflang
+                      from the edge middleware; humans get the SPA with the chrome
+                      localized via LanguageUrlSync. */}
+                  <Route path="/en" element={<Index />} />
+                  <Route path="/ar" element={<Index />} />
+                  <Route path="/fr" element={<Index />} />
+                  <Route path="/ru" element={<Index />} />
                   <Route path="/register" element={<ShabbatGate><Register /></ShabbatGate>} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
@@ -235,6 +245,8 @@ const App = () => {
                   <Route path="/store/:slug/privacy" element={<StoreLegalPage docType="privacy" />} />
                   <Route path="/store/:slug/unsubscribe" element={<StoreUnsubscribe />} />
                   <Route path="/store/:slug/my-orders" element={<MyOrders />} />
+                  {/* Public synagogue display screen (open on a TV in the shul). */}
+                  <Route path="/shul/:slug/screen" element={<SynagogueScreen />} />
                   <Route path="/unsubscribe" element={<PlatformUnsubscribe />} />
                   <Route path="/dashboard" element={<DashboardRoute />} />
                   <Route path="/manage-x7k9" element={<AdminDashboard />} />

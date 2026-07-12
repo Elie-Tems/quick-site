@@ -38,6 +38,11 @@ verify_jwt = false
 [functions.leads-followup-run]
 verify_jwt = false
 
+# synagogue-zmanim serves the public display screen + storefront: fixed prayer times
+# + live zmanim/Hebrew-date (Hebcal). Public, reads only non-sensitive info.
+[functions.synagogue-zmanim]
+verify_jwt = false
+
 # billing-charge-run is the monthly self-managed billing cron (charges stored
 # tokens via cc/bill). Cron-only; optional CRON_SECRET guard.
 [functions.billing-charge-run]
