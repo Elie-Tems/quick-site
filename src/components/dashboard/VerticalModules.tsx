@@ -4,6 +4,7 @@ import LeadsBoard from "./crm/LeadsBoard";
 import ListingsManager from "./listings/ListingsManager";
 import DonationsManager from "./donations/DonationsManager";
 import SynagoguePledgesManager from "./synagogue/SynagoguePledgesManager";
+import SynagogueSeatsManager from "./synagogue/SynagogueSeatsManager";
 import LifecycleEmailsManager from "./LifecycleEmailsManager";
 
 /**
@@ -30,7 +31,12 @@ const VerticalModules = ({ business }: { business: (BusinessLike & { id: string 
           <LeadsBoard businessId={business.id} />
         </>
       )}
-      {modules.includes("synagogue") && <SynagoguePledgesManager businessId={business.id} />}
+      {modules.includes("synagogue") && (
+        <>
+          <SynagoguePledgesManager businessId={business.id} />
+          <SynagogueSeatsManager businessId={business.id} />
+        </>
+      )}
       {modules.includes("donations") && <DonationsManager businessId={business.id} />}
 
       {/* Edit / toggle the automatic customer emails for this vertical. */}
