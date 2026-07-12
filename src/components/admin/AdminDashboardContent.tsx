@@ -51,55 +51,56 @@ interface NavItem {
   group: string;
 }
 
+// 7 areas, plain Hebrew (no English acronyms / jargon), per the admin-dashboard spec.
+// Nothing is removed - every existing screen keeps working, just regrouped + relabeled.
 const NAV: NavItem[] = [
-  // ראשי
-  { id: "overview",       label: "סקירה כללית",    icon: LayoutDashboard, group: "ראשי" },
-  { id: "activity",       label: "פעילות חיה",      icon: Zap,             group: "ראשי" },
-  // לקוחות וחנויות
-  { id: "customers",      label: "לקוחות",          icon: Users,           group: "לקוחות וחנויות" },
-  { id: "businesses",     label: "חנויות",           icon: Building2,       group: "לקוחות וחנויות" },
-  // הזמנות ותשלומים
-  { id: "orders",         label: "הזמנות",           icon: ShoppingCart,    group: "הזמנות ותשלומים" },
-  { id: "payments",       label: "תשלומים",          icon: CreditCard,      group: "הזמנות ותשלומים" },
-  { id: "cancellations",  label: "ביטולים",          icon: XCircle,         group: "הזמנות ותשלומים" },
-  { id: "referrals",      label: "הפניות",           icon: Gift,            group: "הזמנות ותשלומים" },
-  { id: "payment-errors", label: "שגיאות תשלום",    icon: AlertCircle,     group: "הזמנות ותשלומים" },
-  // תמחור ושותפים
-  { id: "domains",        label: "דומיינים",          icon: Globe,           group: "תמחור ושותפים" },
-  { id: "email-pricing",  label: "מייל עסקי",         icon: AtSign,          group: "תמחור ושותפים" },
-  { id: "coupons",        label: "קופוני מנוי",      icon: Ticket,          group: "תמחור ושותפים" },
-  { id: "partners",       label: "רווחי שותפים",     icon: Handshake,       group: "תמחור ושותפים" },
-  { id: "marketing",      label: "פרסום ושיווק",     icon: Megaphone,       group: "תמחור ושותפים" },
-  // תקשורת ודיוור
-  { id: "whatsapp",       label: "וואטסאפ",           icon: MessageCircle,   group: "תקשורת ודיוור" },
-  { id: "whatsapp-bot",   label: "הבוט שלנו",         icon: MessageCircle,   group: "תקשורת ודיוור" },
-  { id: "unsubscribes",   label: "רשימת הסרות",      icon: MailX,           group: "תקשורת ודיוור" },
-  { id: "email-log",      label: "לוג מיילים",       icon: MailCheck,       group: "תקשורת ודיוור" },
-  // הכנסות
-  { id: "mrr",            label: "MRR / ARR",        icon: TrendingUp,      group: "הכנסות" },
-  { id: "funnel",         label: "Funnel",            icon: GitMerge,        group: "הכנסות" },
-  { id: "churn",          label: "נטישה",             icon: BarChart3,       group: "הכנסות" },
-  { id: "cohort",         label: "Cohort Retention", icon: Users2,          group: "הכנסות" },
-  // תובנות ושוק
-  { id: "analytics",      label: "צפיות",             icon: BarChart3,       group: "תובנות ושוק" },
-  { id: "marketplace",    label: "Marketplace",       icon: Globe,           group: "תובנות ושוק" },
-  { id: "top",            label: "Top Performers",   icon: Trophy,          group: "תובנות ושוק" },
-  { id: "dormant",        label: "רדומים",            icon: Moon,            group: "תובנות ושוק" },
-  { id: "categories",     label: "קטגוריות",          icon: PieChart,        group: "תובנות ושוק" },
-  // הגדרות
-  { id: "settings",       label: "הגדרות",            icon: Settings,        group: "הגדרות" },
+  // 1 · מרכז שליטה
+  { id: "overview",       label: "מרכז שליטה",       icon: LayoutDashboard, group: "מרכז שליטה" },
+  { id: "activity",       label: "פעילות חיה",        icon: Zap,             group: "מרכז שליטה" },
+  // 2 · ניהול הסוחרים
+  { id: "customers",      label: "לקוחות",            icon: Users,           group: "ניהול הסוחרים" },
+  { id: "businesses",     label: "חנויות",             icon: Building2,       group: "ניהול הסוחרים" },
+  { id: "dormant",        label: "רדומים",             icon: Moon,            group: "ניהול הסוחרים" },
+  { id: "orders",         label: "הזמנות",             icon: ShoppingCart,    group: "ניהול הסוחרים" },
+  // 3 · הכנסות ודוחות
+  { id: "mrr",            label: "הכנסה חודשית ושנתית", icon: TrendingUp,     group: "הכנסות ודוחות" },
+  { id: "funnel",         label: "מסלול הרשמה",       icon: GitMerge,        group: "הכנסות ודוחות" },
+  { id: "churn",          label: "נטישת מנויים",       icon: BarChart3,       group: "הכנסות ודוחות" },
+  { id: "cohort",         label: "שימור לאורך זמן",    icon: Users2,          group: "הכנסות ודוחות" },
+  { id: "analytics",      label: "צפיות וביקורים",     icon: BarChart3,       group: "הכנסות ודוחות" },
+  { id: "marketplace",    label: "תמונת שוק",          icon: Globe,           group: "הכנסות ודוחות" },
+  { id: "top",            label: "הסוחרים המובילים",   icon: Trophy,          group: "הכנסות ודוחות" },
+  { id: "categories",     label: "קטגוריות",           icon: PieChart,        group: "הכנסות ודוחות" },
+  // 4 · תשלומים
+  { id: "payments",       label: "תשלומים",            icon: CreditCard,      group: "תשלומים" },
+  { id: "cancellations",  label: "ביטולים",            icon: XCircle,         group: "תשלומים" },
+  { id: "payment-errors", label: "שגיאות תשלום",      icon: AlertCircle,     group: "תשלומים" },
+  // 5 · תמחור ושותפים
+  { id: "domains",        label: "דומיינים",           icon: Globe,           group: "תמחור ושותפים" },
+  { id: "email-pricing",  label: "מייל עסקי",          icon: AtSign,          group: "תמחור ושותפים" },
+  { id: "coupons",        label: "קופוני מנוי",        icon: Ticket,          group: "תמחור ושותפים" },
+  { id: "partners",       label: "רווחי שותפים",       icon: Handshake,       group: "תמחור ושותפים" },
+  { id: "marketing",      label: "פרסום ושיווק",       icon: Megaphone,       group: "תמחור ושותפים" },
+  { id: "referrals",      label: "הפניות",             icon: Gift,            group: "תמחור ושותפים" },
+  // 6 · תקשורת ודיוור
+  { id: "whatsapp",       label: "וואטסאפ",            icon: MessageCircle,   group: "תקשורת ודיוור" },
+  { id: "whatsapp-bot",   label: "הבוט שלנו",          icon: MessageCircle,   group: "תקשורת ודיוור" },
+  { id: "unsubscribes",   label: "רשימת הסרות",        icon: MailX,           group: "תקשורת ודיוור" },
+  { id: "email-log",      label: "יומן מיילים",        icon: MailCheck,       group: "תקשורת ודיוור" },
+  // 7 · מערכת
+  { id: "settings",       label: "מערכת",              icon: Settings,        group: "מערכת" },
 ];
 
-const GROUPS = ["ראשי", "לקוחות וחנויות", "הזמנות ותשלומים", "תמחור ושותפים", "תקשורת ודיוור", "הכנסות", "תובנות ושוק", "הגדרות"];
+const GROUPS = ["מרכז שליטה", "ניהול הסוחרים", "הכנסות ודוחות", "תשלומים", "תמחור ושותפים", "תקשורת ודיוור", "מערכת"];
 
 const VIEW_TITLES: Record<AdminView, string> = {
-  overview: "סקירה כללית", customers: "ניהול לקוחות", businesses: "חנויות",
+  overview: "מרכז שליטה", customers: "ניהול לקוחות", businesses: "חנויות",
   orders: "הזמנות", payments: "תשלומים", referrals: "הפניות",
   cancellations: "ביטולים", activity: "פעילות חיה",
-  mrr: "MRR / ARR", funnel: "Conversion Funnel", churn: "שיעור נטישה",
-  cohort: "Cohort Retention", analytics: "צפיות וביקורים",
-  top: "Top Performers", dormant: "עסקים רדומים", categories: "פילוח קטגוריות",
-  "payment-errors": "שגיאות תשלום", coupons: "קופוני מנוי", partners: "רווחי שותפים", marketing: "פרסום ושיווק", whatsapp: "וואטסאפ", "whatsapp-bot": "הבוט של Siango", marketplace: "Marketplace", domains: "תמחור דומיינים", "email-pricing": "תמחור מייל עסקי", unsubscribes: "רשימת הסרות (הסרות דיוור)", settings: "הגדרות מערכת",
+  mrr: "הכנסה חודשית ושנתית", funnel: "מסלול ההרשמה", churn: "נטישת מנויים",
+  cohort: "שימור לאורך זמן", analytics: "צפיות וביקורים",
+  top: "הסוחרים המובילים", dormant: "עסקים רדומים", categories: "פילוח קטגוריות",
+  "payment-errors": "שגיאות תשלום", coupons: "קופוני מנוי", partners: "רווחי שותפים", marketing: "פרסום ושיווק", whatsapp: "וואטסאפ", "whatsapp-bot": "הבוט שלנו", marketplace: "תמונת שוק", domains: "תמחור דומיינים", "email-pricing": "תמחור מייל עסקי", unsubscribes: "רשימת הסרות", settings: "מערכת",
 };
 
 function Sidebar({ current, onChange, collapsed, onToggle }: {
@@ -176,7 +177,7 @@ function ViewContent({ view, stats, statsLoading }: {
               <AdminActivityFeed />
             </div>
             <div>
-              <h3 className="text-sm font-semibold mb-3 text-muted-foreground">MRR</h3>
+              <h3 className="text-sm font-semibold mb-3 text-muted-foreground">הכנסה חודשית</h3>
               <AdminMRR />
             </div>
           </div>
