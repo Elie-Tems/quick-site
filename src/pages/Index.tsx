@@ -372,12 +372,9 @@ const Index = () => {
                     </h1>
                   </motion.div>
                 </AnimatePresence>
-                <div className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start">
+                <div className="flex items-center justify-center lg:justify-start">
                   <Link to="/register" className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
                     התחילו עכשיו <ArrowLeft className="w-5 h-5" />
-                  </Link>
-                  <Link to={a.to} className="inline-flex items-center gap-2 px-6 py-4 rounded-2xl pv-surface2 border pv-border pv-strong font-semibold pv-hover transition-colors">
-                    צפו בדוגמה <ArrowLeft className="w-4 h-4" />
                   </Link>
                 </div>
                 <p className="text-sm pv-muted mt-4">מחיר חודשי · ללא התחייבות · ללא ידע טכני</p>
@@ -398,48 +395,39 @@ const Index = () => {
           </div>
         </section>
 
-        {/* PER-TAB SUBTITLE SECTION — before / after split */}
-        <section className="relative py-20 px-4 overflow-hidden" style={{ background: "var(--pv-surface2)" }}>
-          {/* faint green ambient */}
-          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(152 60% 45% / 0.06), transparent)" }} />
-          <div className="relative max-w-5xl mx-auto">
+        {/* PER-TAB SUBTITLE SECTION */}
+        <section className="relative py-28 px-4 overflow-hidden">
+          {/* Rich layered background */}
+          <div className="absolute inset-0" style={{ background: "linear-gradient(160deg, #080e08 0%, #0b1a10 45%, #091510 100%)" }} />
+          {/* Green bloom — solution side (left in RTL) */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 55% 70% at 20% 50%, rgba(34,197,94,0.13) 0%, transparent 70%)" }} />
+          {/* Dim bloom — problem side (right in RTL) */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 40% 60% at 80% 50%, rgba(255,255,255,0.02) 0%, transparent 70%)" }} />
+
+          <div className="relative max-w-6xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div key={a.key}
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }}
-                transition={{ duration: 0.45 }}
-                className="grid md:grid-cols-[1fr_auto_1fr] gap-6 md:gap-0 items-stretch">
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.4 }}
+                className="grid md:grid-cols-2 items-center">
 
-                {/* LEFT panel — problem */}
-                <div className="flex flex-col justify-center text-right p-8 md:p-10 rounded-3xl md:rounded-r-3xl md:rounded-l-none"
-                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                  <span className="inline-block text-xs font-semibold tracking-widest uppercase mb-4 self-end"
-                    style={{ color: "var(--pv-faint)" }}>המצב היום</span>
-                  <p className="text-lg md:text-xl leading-relaxed" style={{ color: "var(--pv-muted)" }}>{a.subtitle[0]}</p>
+                {/* RIGHT (RTL first) — problem, faded */}
+                <div className="text-right px-6 md:px-14 py-10 relative">
+                  {/* thin glowing separator on left edge */}
+                  <div className="hidden md:block absolute left-0 inset-y-8 w-px"
+                    style={{ background: "linear-gradient(to bottom, transparent, rgba(34,197,94,0.35) 50%, transparent)" }} />
+                  <p className="text-xs tracking-[0.2em] uppercase font-medium mb-5"
+                    style={{ color: "rgba(255,255,255,0.25)" }}>לפני סיאנגו</p>
+                  <p className="text-2xl md:text-3xl leading-snug font-light"
+                    style={{ color: "rgba(255,255,255,0.32)" }}>{a.subtitle[0]}</p>
                 </div>
 
-                {/* CENTER divider with arrow */}
-                <div className="hidden md:flex flex-col items-center justify-center px-2 relative">
-                  <div className="flex-1 w-px" style={{ background: "linear-gradient(to bottom, transparent, rgba(34,197,94,0.3), transparent)" }} />
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 my-3 z-10"
-                    style={{ background: "linear-gradient(135deg, #22c55e22, #22c55e44)", border: "1px solid rgba(34,197,94,0.4)", boxShadow: "0 0 20px rgba(34,197,94,0.2)" }}>
-                    <ArrowLeft className="w-4 h-4 rotate-180" style={{ color: "#22c55e" }} />
-                  </div>
-                  <div className="flex-1 w-px" style={{ background: "linear-gradient(to bottom, transparent, rgba(34,197,94,0.3), transparent)" }} />
-                </div>
-                {/* mobile arrow */}
-                <div className="flex md:hidden justify-center">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center"
-                    style={{ background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)" }}>
-                    <ArrowLeft className="w-3.5 h-3.5 -rotate-90" style={{ color: "#22c55e" }} />
-                  </div>
-                </div>
-
-                {/* RIGHT panel — solution */}
-                <div className="flex flex-col justify-center text-right p-8 md:p-10 rounded-3xl md:rounded-l-3xl md:rounded-r-none relative overflow-hidden"
-                  style={{ background: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.22)", boxShadow: "inset 0 0 60px rgba(34,197,94,0.05)" }}>
-                  <span className="inline-block text-xs font-semibold tracking-widest uppercase mb-4 self-end"
-                    style={{ color: "#22c55e", opacity: 0.8 }}>עם סיאנגו</span>
-                  <p className="text-lg md:text-xl leading-relaxed font-semibold" style={{ color: "var(--pv-strong)" }}>{a.subtitle[1]}</p>
+                {/* LEFT (RTL second) — solution, vivid */}
+                <div className="text-right px-6 md:px-14 py-10">
+                  <p className="text-xs tracking-[0.2em] uppercase font-bold mb-5"
+                    style={{ color: "#4ade80" }}>עם סיאנגו</p>
+                  <p className="text-2xl md:text-3xl leading-snug font-bold"
+                    style={{ color: "#fff" }}>{a.subtitle[1]}</p>
                 </div>
 
               </motion.div>
