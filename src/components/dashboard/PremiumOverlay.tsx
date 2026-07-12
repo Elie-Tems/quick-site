@@ -1,4 +1,4 @@
-import { Lock, Crown, Check } from "lucide-react";
+import { Lock, Crown, Check, Loader2 } from "lucide-react";
 
 interface PremiumOverlayProps {
   locked: boolean;
@@ -7,13 +7,15 @@ interface PremiumOverlayProps {
   bullets?: string[];
   priceLabel?: string;
   onUpgrade: () => void;
+  /** Shows a spinner + disables the button while the upgrade charge is in flight. */
+  busy?: boolean;
   children: React.ReactNode;
 }
 
 // Wraps a premium screen. When locked, shoppers/merchants can still SEE the feature
 // (a live demo), but it's non-interactive and topped with an upgrade banner. When
 // unlocked, children render normally.
-const PremiumOverlay = ({ locked, title, description, bullets, priceLabel, onUpgrade, children }: PremiumOverlayProps) => {
+const PremiumOverlay = ({ locked, title, description, bullets, priceLabel, onUpgrade, busy, children }: PremiumOverlayProps) => {
   if (!locked) return <>{children}</>;
 
   return (
@@ -38,7 +40,12 @@ const PremiumOverlay = ({ locked, title, description, bullets, priceLabel, onUpg
               </ul>
             )}
             <div className="mt-4 flex items-center gap-3 flex-wrap">
-              <button onClick={onUpgrade} className="rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-sm font-semibold hover:bg-primary/90 transition-colors">
+              <button
+                onClick={onUpgrade}
+                disabled={busy}
+                className="rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 inline-flex items-center gap-2"
+              >
+                {busy && <Loader2 className="w-4 h-4 animate-spin" />}
                 הפעילו עכשיו
               </button>
               {priceLabel && <span className="text-sm text-muted-foreground">{priceLabel}</span>}

@@ -71,6 +71,36 @@ const Dashboard = () => {
   const [currentView, setCurrentView] = useState<DashboardView>('home');
   const { entitled: crmEntitled } = useCrmEntitled();
   const { entitled: analyticsEntitled } = useAnalyticsEntitled();
+  const [subscribingAddon, setSubscribingAddon] = useState<string | null>(null);
+
+  // Charge the merchant's saved token for a recurring add-on (CRM/analytics) and
+  // unlock it, mirroring DashboardReviews.tsx's proven addon-subscribe flow. The
+  // "הפעילו עכשיו" buttons on the CRM/analytics paywalls previously just navigated
+  // to other screens with no actual purchase action anywhere - a dead end.
+  const subscribeAddon = useCallback(async (addon: "crm" | "analytics") => {
+    if (!business?.id) { toast.error("לא נבחרה חנות. נסה לרענן את הדף."); return; }
+    setSubscribingAddon(addon);
+    try {
+      const { data, error } = await supabase.functions.invoke("addon-subscribe", { body: { addon, businessId: business.id } });
+      if (error) throw error;
+      if (data?.needsSubscription) { toast.error(data.message || "צריך מנוי פרסום פעיל כדי להוסיף תוספת."); setCurrentView('subscription'); return; }
+      if (data?.needsCard) { toast.error(data.message || "אין כרטיס שמור. יש לפרסם אתר תחילה."); setCurrentView('subscription'); return; }
+      if (data?.declined) { toast.error(data.error || "התשלום נדחה. בדקו את הכרטיס ונסו שוב."); return; }
+      if (!data?.ok) throw new Error(data?.error || "failed");
+      const label = addon === "crm" ? "CRM" : "אנליטיקה";
+      toast.success(
+        data.alreadyActive || data.alreadyCharged
+          ? `${label} פעיל 🎉`
+          : `${label} הופעל! חויב חלק יחסי (₪${data.proratedIls ?? ""}) ומהחודש הבא יצטרף לחשבונית המנוי.`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["crm-entitled", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["analytics-entitled", user?.id] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "לא הצלחנו להפעיל כרגע. נסו שוב.");
+    } finally {
+      setSubscribingAddon(null);
+    }
+  }, [business?.id, queryClient, user?.id]);
 
   // Refetch business data when returning from payment
   useEffect(() => {
@@ -609,7 +639,8 @@ const Dashboard = () => {
             description="כל ניהול המכירות במקום אחד: לקוחות עם היסטוריה וסגמנטים, ניהול ספקים, ודוחות רווחיות אמיתיים."
             bullets={["כרטיס לקוח מלא + סגמנטים + תגיות/הערות", "תזכורת רכישה חוזרת + שליחת הטבה בוואטסאפ", "כרטיסי ספק: פרטי קשר, הערות ומוצרים", "רווח ואחוז רווח לכל מוצר + רווח לפי ספק"]}
             priceLabel="הפעלה ב-₪49 לחודש"
-            onUpgrade={() => setCurrentView('subscription')}
+            onUpgrade={() => subscribeAddon('crm')}
+            busy={subscribingAddon === 'crm'}
           >
             <DashboardCRM orders={orders} businessId={business?.id} demoMode={!crmEntitled} initialTab={currentView === 'profitability' ? 'profitability' : 'customers'} />
           </PremiumOverlay>
@@ -647,7 +678,8 @@ const Dashboard = () => {
             description="מי הלקוחות שלך, מאיפה הם מגיעים, ואיפה אפשר להשתפר. הנתונים שמאפשרים לקבל החלטות מבוססות."
             bullets={["כמה מבקרים הגיעו לחנות ומתי", "מקורות הגעה - גוגל, ישיר, רשתות חברתיות", "תובנות לשיפור המכירות", "תקציב פרסום ומעקב קמפיינים"]}
             priceLabel="הפעלה ב-₪29 לחודש (או כחלק מ-CRM)"
-            onUpgrade={() => setCurrentView('upgrades')}
+            onUpgrade={() => subscribeAddon('analytics')}
+            busy={subscribingAddon === 'analytics'}
           >
             <div className="space-y-4">
               <div className="flex gap-1 border-b border-border overflow-x-auto">

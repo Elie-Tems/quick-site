@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { gtm } from "@/lib/gtm";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, useSearchParams, useLocation, Link } from "react-router-dom";
-import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight, RefreshCw, XCircle, Trash2, ShieldCheck, Eye, Ticket } from "lucide-react";
+import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight, RefreshCw, XCircle, Trash2, ShieldCheck, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,9 +48,10 @@ const PublishPayment = () => {
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid' | 'completed' | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [approvalNum, setApprovalNum] = useState<string>("");
-  // Three-stage flow: (1) show the finished store first ("here's your store!"),
-  // (2) a clear terms-of-charge confirmation, (3) the actual payment iframe.
-  const [showPayment, setShowPayment] = useState(false);
+  // Two-stage flow: (1) a clear terms-of-charge confirmation, (2) the actual
+  // payment iframe. The earlier "here's your store!" preview interstitial was
+  // removed - it just delayed reaching the terms/coupon screen below, which
+  // covers the same confirmation.
   const [confirmed, setConfirmed] = useState(false);
   const [agreedTerms, setAgreedTerms] = useState(false);
   // Self-managed billing (iCount token) - gated by the build flag OR a ?billing=token
@@ -523,84 +524,7 @@ const PublishPayment = () => {
     );
   }
 
-  const previewSlug = (myBusiness as any)?.slug as string | undefined;
-
-  // ── Stage 1: show the finished store, then let them continue to payment ──
-  if (!showPayment) {
-    return (
-      <>
-        <SEOHead title="פרסום אתר | סיאנגו" noindex={true} />
-        <div className="min-h-screen bg-surface-1 flex flex-col">
-          <div className="w-full max-w-5xl mx-auto px-4 py-8 flex flex-col gap-6 flex-1">
-            <div className="flex items-center justify-between">
-              <Button variant="ghost" asChild>
-                <Link to="/dashboard" className="gap-2"><ArrowRight className="w-4 h-4" /> לדשבורד</Link>
-              </Button>
-              <div className="w-[90px]" />
-            </div>
-
-            <div className="text-center space-y-2">
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground">החנות שלך מוכנה! 🎉</h1>
-              <p className="text-muted-foreground text-lg">כך היא תיראה ללקוחות. פרסמו כדי להעלות אותה לאוויר.</p>
-            </div>
-
-            {previewSlug ? (
-              <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xl">
-                <div className="h-9 bg-muted/60 border-b border-border flex items-center gap-1.5 px-3">
-                  <span className="w-3 h-3 rounded-full bg-red-400" />
-                  <span className="w-3 h-3 rounded-full bg-yellow-400" />
-                  <span className="w-3 h-3 rounded-full bg-green-400" />
-                  <div className="mx-auto text-xs text-muted-foreground bg-background rounded px-3 py-0.5" dir="ltr">
-                    siango.app/store/{previewSlug}
-                  </div>
-                </div>
-                {/* Preview opens in a NEW TAB at top level, where the owner's auth
-                    session is reliably available. An inline iframe does NOT work: modern
-                    browsers partition iframe storage by top-level site, so the store's
-                    preview-auth check can't see the session and shows "not published" -
-                    on desktop too (confirmed). A true inline render needs the storefront
-                    rendered as components (no iframe); tracked as a follow-up. */}
-                <div className="flex flex-col items-center justify-center gap-4 py-14 px-6 text-center bg-gradient-to-b from-muted/20 to-transparent">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                    <Eye className="w-8 h-8 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-foreground">החנות שלכם מוכנה לתצוגה</p>
-                    <p className="text-sm text-muted-foreground mt-1">לחצו לצפייה בחנות המלאה - בדיוק כפי שהלקוחות יראו אותה.</p>
-                  </div>
-                  <Button asChild variant="outline" size="lg" className="gap-2">
-                    <a href={`/store/${previewSlug}?preview=true`} target="_blank" rel="noopener noreferrer">
-                      <Eye className="w-5 h-5" /> צפו בחנות שלכם
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-border p-10 text-center text-muted-foreground">
-                התצוגה תיטען לאחר שמירת החנות.
-              </div>
-            )}
-
-            <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 max-w-3xl mx-auto w-full">
-              <div className="text-center sm:text-right">
-                <p className="text-lg font-bold text-foreground">פרסמו את החנות</p>
-                <p className="text-sm text-muted-foreground">₪{fee}/חודש + מע"מ · ללא התחייבות, ביטול בכל עת</p>
-              </div>
-              <Button size="lg" variant="hero" onClick={() => setShowPayment(true)} className="gap-2 text-base px-8">
-                פרסמו עכשיו
-                <ArrowRight className="w-5 h-5 rotate-180" />
-              </Button>
-            </div>
-
-
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  // ── Stage 2: crystal-clear terms of the recurring charge, before payment ──
+  // ── Stage 1: crystal-clear terms of the recurring charge, before payment ──
   if (!confirmed) {
     const gross = withVatTotal(fee);
     const vatPct = Math.round(VAT_RATE * 100);
@@ -641,9 +565,8 @@ const PublishPayment = () => {
         <div className="min-h-screen bg-surface-1 flex flex-col">
           <div className="w-full max-w-2xl mx-auto px-4 py-8 flex flex-col gap-6 flex-1">
             <div className="flex items-center justify-between">
-              <Button variant="ghost" onClick={() => setShowPayment(false)} className="gap-2">
-                <ArrowRight className="w-4 h-4" />
-                חזרה לתצוגה
+              <Button variant="ghost" asChild>
+                <Link to="/dashboard" className="gap-2"><ArrowRight className="w-4 h-4" /> לדשבורד</Link>
               </Button>
               <div className="w-[90px]" />
             </div>

@@ -15,11 +15,17 @@ const VAT_RATE = 0.18;
 const gross = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
 
 // Server-authoritative recurring add-on registry. netIls is PRE-VAT monthly.
-// `flag` is the businesses column flipped true once the add-on is active.
-const ADDONS: Record<string, { netIls: number; description: string; flag?: string }> = {
-  reviews:  { netIls: 14, description: "ביקורות Google", flag: "reviews_paid" },
-  email:    { netIls: 19, description: "מייל עסקי" },
-  whatsapp: { netIls: 89, description: "וואטסאפ עסקי" },
+// `flag` is a businesses column flipped true once the add-on is active.
+// `subFlag` is a subscriptions column flipped true instead, for add-ons whose
+// entitlement lives on the subscription row (crm/analytics - see
+// useCrmEntitled/useAnalyticsEntitled, and the protect_subscription_billing
+// trigger that locks these columns to service-role-only writes).
+const ADDONS: Record<string, { netIls: number; description: string; flag?: string; subFlag?: string }> = {
+  reviews:   { netIls: 14, description: "ביקורות Google", flag: "reviews_paid" },
+  email:     { netIls: 19, description: "מייל עסקי" },
+  whatsapp:  { netIls: 89, description: "וואטסאפ עסקי" },
+  crm:       { netIls: 49, description: "CRM - ניהול לקוחות", subFlag: "crm_addon_enabled" },
+  analytics: { netIls: 29, description: "אנליטיקה", subFlag: "analytics_addon_enabled" },
 };
 
 const cors = {
@@ -135,7 +141,7 @@ Deno.serve(async (req) => {
 });
 
 // deno-lint-ignore no-explicit-any
-async function activate(admin: any, o: { user: { id: string }; businessId: string; addonType: string; addon: { description: string; flag?: string }; monthGross: number }) {
+async function activate(admin: any, o: { user: { id: string }; businessId: string; addonType: string; addon: { description: string; flag?: string; subFlag?: string }; monthGross: number }) {
   const now = new Date().toISOString();
   await admin.from("subscription_addons").upsert({
     user_id: o.user.id, business_id: o.businessId, addon_type: o.addonType,
@@ -144,5 +150,8 @@ async function activate(admin: any, o: { user: { id: string }; businessId: strin
   }, { onConflict: "user_id,addon_type" });
   if (o.addon.flag) {
     await admin.from("businesses").update({ [o.addon.flag]: true, updated_at: now }).eq("id", o.businessId);
+  }
+  if (o.addon.subFlag) {
+    await admin.from("subscriptions").update({ [o.addon.subFlag]: true, updated_at: now }).eq("user_id", o.user.id);
   }
 }
