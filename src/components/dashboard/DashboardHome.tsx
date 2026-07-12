@@ -64,6 +64,16 @@ const TYPE_LABELS: Record<BusinessType, {
     todosProductsLabel: "הוסיפו פרויקטים / מיזמים",
     todosPaymentLabel: "הגדירו קבלת תרומות אונליין",
   },
+  synagogue: {
+    items: { label: "פרויקטים", shortLabel: "פרויקטים", icon: Heart },
+    transactions: { label: "תרומות ועליות", shortLabel: "תרומות", icon: HandCoins },
+    revenue: { label: "סכום שגויס" },
+    contacts: { label: "מתפללים ותורמים", icon: Users },
+    productsNav: "products",
+    ordersNav: "orders",
+    todosProductsLabel: "הוסיפו פרויקטים / מיזמים",
+    todosPaymentLabel: "הגדירו קבלת תרומות אונליין",
+  },
   realestate: {
     items: { label: "נכסים", shortLabel: "נכסים", icon: Building2 },
     transactions: { label: "לידים", shortLabel: "לידים", icon: Users },

@@ -61,6 +61,7 @@ const PRODUCT_LABELS: Record<import("@/lib/businessModules").BusinessType, { tit
   products:   { title: 'מוצרים',    addBtn: 'הוסיפו מוצר',    addForm: 'הוספת מוצר',    editForm: 'עריכת מוצר',    emptyFirst: 'הוסיפו מוצר ראשון' },
   services:   { title: 'מוצרים',    addBtn: 'הוסיפו פריט',    addForm: 'הוספת פריט',    editForm: 'עריכת פריט',    emptyFirst: 'הוסיפו פריט ראשון' },
   nonprofit:  { title: 'פרויקטים', addBtn: 'הוסיפו פרויקט', addForm: 'הוספת פרויקט', editForm: 'עריכת פרויקט', emptyFirst: 'הוסיפו פרויקט ראשון' },
+  synagogue:  { title: 'פרויקטים', addBtn: 'הוסיפו פרויקט', addForm: 'הוספת פרויקט', editForm: 'עריכת פרויקט', emptyFirst: 'הוסיפו פרויקט ראשון' },
   realestate: { title: 'נכסים',     addBtn: 'הוסיפו נכס',     addForm: 'הוספת נכס',     editForm: 'עריכת נכס',     emptyFirst: 'הוסיפו נכס ראשון' },
 };
 

@@ -51,6 +51,12 @@ const STATUS_BY_TYPE: Record<BusinessType, StatusCfg> = {
     completed: { label: 'נקלטה', variant: 'default' },
     cancelled: { label: 'בוטלה', variant: 'destructive' },
   },
+  synagogue: {
+    received: { label: 'התקבלה', variant: 'secondary' },
+    pending_payment: { label: 'בבדיקה', variant: 'outline' },
+    completed: { label: 'נקלטה', variant: 'default' },
+    cancelled: { label: 'בוטלה', variant: 'destructive' },
+  },
   realestate: {
     received: { label: 'ליד חדש', variant: 'secondary' },
     pending_payment: { label: 'בטיפול', variant: 'outline' },
@@ -79,6 +85,12 @@ const LABELS: Record<BusinessType, { title: string; single: string; contact: str
     emptyDesc: 'ברגע שמישהו יתרום דרך האתר, התרומה תופיע כאן.',
     listItem: 'פריטים',
   },
+  synagogue: {
+    title: 'תרומות', single: 'תרומה', contact: 'פרטי תורם', items: 'פרויקט / יעד',
+    empty: 'עדיין לא התקבלו תרומות',
+    emptyDesc: 'ברגע שמישהו יתרום דרך האתר, התרומה תופיע כאן.',
+    listItem: 'פריטים',
+  },
   realestate: {
     title: 'לידים', single: 'ליד', contact: 'פרטי מתעניין', items: 'נכסים שהתעניין',
     empty: 'עדיין לא הגיעו לידים',
@@ -91,6 +103,7 @@ const TYPE_ICON: Record<BusinessType, React.ComponentType<{ className?: string }
   products: ShoppingCart,
   services: ShoppingCart,
   nonprofit: Heart,
+  synagogue: Heart,
   realestate: Users,
 };
 

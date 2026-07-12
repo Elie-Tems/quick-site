@@ -43,6 +43,14 @@ const TYPE_CONFIG: Record<BusinessType, {
       orders: { label: "תרומות", shortLabel: "תרומות", icon: Heart },
     },
   },
+  synagogue: {
+    managementGroupLabel: "ניהול בית הכנסת",
+    hiddenItems: ['shipping', 'coupons', 'visualization-studio'],
+    itemOverrides: {
+      products: { label: "פרויקטים / מיזמים", shortLabel: "פרויקטים", icon: Heart },
+      orders: { label: "תרומות ועליות", shortLabel: "תרומות", icon: Heart },
+    },
+  },
   realestate: {
     managementGroupLabel: "ניהול לידים",
     hiddenItems: ['shipping', 'coupons'] as DashboardView[],

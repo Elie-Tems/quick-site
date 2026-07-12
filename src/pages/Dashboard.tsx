@@ -474,6 +474,7 @@ const Dashboard = () => {
   // enabled; the label follows the primary module.
   const verticalModules = getEnabledModules(business as any).filter((m) => m !== "commerce");
   const verticalsLabel =
+    verticalModules.includes("synagogue") ? "בית הכנסת" :
     verticalModules.includes("booking") ? "יומן ותורים" :
     verticalModules.includes("listings") ? "לידים ונכסים" :
     verticalModules.includes("donations") ? "תרומות וקמפיינים" : undefined;

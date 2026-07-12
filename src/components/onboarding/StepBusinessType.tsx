@@ -16,7 +16,7 @@ const SUB_TYPE_TO_CATEGORY: Record<string, BusinessCategory> = {
   education: 'other', social: 'other', animals: 'pets', 'torah-center': 'other',
 };
 
-export type BusinessType = "products" | "services" | "realestate" | "nonprofit";
+export type BusinessType = "products" | "services" | "realestate" | "nonprofit" | "synagogue";
 
 interface Props {
   data: OnboardingData;
@@ -80,12 +80,14 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string }[]> = {
   nonprofit: [
     { id: "charity",       title: "תרומות כלליות"            },
     { id: "crowdfunding",  title: "גיוס המונים"              },
+    { id: "synagogue",     title: "בית כנסת"                 },
     { id: "community",     title: "קהילה"                    },
     { id: "education",     title: "חינוך / עמותת ילדים"      },
     { id: "social",        title: "רווחה חברתית"             },
     { id: "animals",       title: "הגנת בעלי חיים"           },
     { id: "torah-center",  title: "מרכז תורני / ישיבה"       },
   ],
+  synagogue: [],
 };
 
 const SHOW_INITIAL = 6;
@@ -95,6 +97,11 @@ const SHOW_INITIAL = 6;
 // business_type='realestate' so the listings module turns on (see businessModules.ts),
 // while the 3-card UI stays exactly as designed.
 const LISTINGS_SUBTYPES = new Set(["broker", "developer", "vacation", "commercial", "car-dealer"]);
+
+// A synagogue is a nonprofit that also gets the synagogue module (עליות/נדרים,
+// מקומות, זמני תפילה). Picking it saves business_type='synagogue' while it stays a
+// card under "עמותה / ארגון" (same trick as LISTINGS_SUBTYPES -> realestate).
+const SYNAGOGUE_SUBTYPES = new Set(["synagogue"]);
 
 // Flat list of all sub-categories with their parent type, for global search
 const ALL_SUBS_FLAT = (Object.entries(SUB_CATEGORIES) as [BusinessType, typeof SUB_CATEGORIES[BusinessType]][])
@@ -130,6 +137,8 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
       // Real-estate / vehicle sub-types unlock the listings module regardless of
       // which main card they sit under.
       ...(LISTINGS_SUBTYPES.has(subId) ? { businessType: 'realestate' as BusinessType } : {}),
+      // A synagogue keeps donations + adds the synagogue tools module.
+      ...(SYNAGOGUE_SUBTYPES.has(subId) ? { businessType: 'synagogue' as BusinessType } : {}),
     });
     onNext();
   };

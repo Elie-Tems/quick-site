@@ -20,6 +20,7 @@ const ABOUT_LABELS: Record<BusinessType, { title: string; desc: string; saveLabe
   products:   { title: "אודות העסק",  desc: "ספרו על העסק — הסיפור, הערכים, מה מייחד אתכם.",                   saveLabel: "שמרו אודות העסק"   },
   services:   { title: "אודות העסק",  desc: "ספרו על השירות, הניסיון, ומה מייחד אתכם.",                        saveLabel: "שמרו אודות העסק"   },
   nonprofit:  { title: "על הארגון",   desc: "ספרו על מטרת הארגון, הפעילות, ומה מניע אתכם לפעול.",              saveLabel: "שמרו על הארגון"    },
+  synagogue:  { title: "על בית הכנסת", desc: "ספרו על הקהילה, נוסח התפילה, השיעורים והפעילות.",                saveLabel: "שמרו על בית הכנסת" },
   realestate: { title: "על המשרד",    desc: "ספרו על משרד הנדל\"ן, הניסיון, ואזורי הפעילות שלכם.",             saveLabel: "שמרו על המשרד"     },
 };
 

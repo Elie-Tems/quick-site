@@ -8,9 +8,9 @@
  * Pure logic, no React/UI deps - safe to import anywhere (frontend + edge fns).
  */
 
-export type BusinessType = "products" | "services" | "realestate" | "nonprofit";
+export type BusinessType = "products" | "services" | "realestate" | "nonprofit" | "synagogue";
 
-export type ModuleKey = "commerce" | "booking" | "listings" | "donations";
+export type ModuleKey = "commerce" | "booking" | "listings" | "donations" | "synagogue";
 
 export interface ModuleDef {
   key: ModuleKey;
@@ -25,6 +25,7 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
   booking: { key: "booking", label: "תורים ויומן", description: "הזמנת תור/תאריך, יומן וסנכרון יומנים", transaction: "booking" },
   listings: { key: "listings", label: "לוח ולידים", description: "נכסים/פריטים עם סינון ולכידת לידים", transaction: "lead" },
   donations: { key: "donations", label: "תרומות", description: "תרומה חד-פעמית/חוזרת וקמפיינים", transaction: "donation" },
+  synagogue: { key: "synagogue", label: "בית כנסת", description: "עליות ונדרים, מקומות, זמני תפילה", transaction: "donation" },
 };
 
 /**
@@ -37,6 +38,9 @@ export const DEFAULT_MODULES: Record<BusinessType, ModuleKey[]> = {
   services: ["booking", "commerce"],
   realestate: ["listings"],
   nonprofit: ["donations"],
+  // A synagogue is a nonprofit that also runs synagogue ops (עליות/נדרים, מקומות,
+  // זמני תפילה) - so it keeps donations + adds the synagogue module.
+  synagogue: ["donations", "synagogue"],
 };
 
 /** Capabilities every business has regardless of type. */
@@ -48,6 +52,7 @@ export const DEFAULT_LAYOUT: Record<BusinessType, "classic" | "service" | "prope
   services: "service",
   realestate: "property",
   nonprofit: "service",
+  synagogue: "service",
 };
 
 /** Minimal shape read off a `businesses` row. */
@@ -57,7 +62,7 @@ export interface BusinessLike {
   enabled_modules?: string[] | null;
 }
 
-const TYPES: readonly BusinessType[] = ["products", "services", "realestate", "nonprofit"];
+const TYPES: readonly BusinessType[] = ["products", "services", "realestate", "nonprofit", "synagogue"];
 
 /** Normalize a raw business_type value to a valid type, defaulting to products (legacy rows). */
 export function getBusinessType(b: BusinessLike | null | undefined): BusinessType {
