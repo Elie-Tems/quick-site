@@ -347,7 +347,7 @@ const Index = () => {
           <HeroBg />
           <div className="container relative z-10 pt-32 pb-16">
             {/* Engine switcher */}
-            <div className="flex justify-center mb-10">
+            <div className="flex justify-center mb-16">
               <div className="inline-flex flex-wrap justify-center gap-1 p-1 rounded-2xl pv-surface2 border pv-border">
                 {ENGINES.map((x, i) => (
                   <button key={x.key} onClick={() => setEng(i)}
@@ -361,7 +361,7 @@ const Index = () => {
 
             <div className="grid lg:grid-cols-2 gap-10 items-center">
               {/* Text */}
-              <div className="text-center lg:text-right">
+              <div className="min-w-0 text-center lg:text-right">
                 <AnimatePresence mode="wait">
                   <motion.div key={a.key}
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35 }}>
@@ -386,11 +386,11 @@ const Index = () => {
               {/* Preview image */}
                 <motion.div key={a.key}
                   initial={{ opacity: 0, scale: 0.96, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ duration: 0.4 }} className="relative">
+                  transition={{ duration: 0.4 }} className="relative min-w-0 overflow-hidden">
                   <div className="absolute -inset-6 bg-primary/15 rounded-[2rem] blur-3xl" />
                   <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                     <div className="relative aspect-[4/3]">
-                      <img src={a.img} alt={a.label} className="w-full h-full object-cover object-left-top" />
+                      <img src={a.img} alt={a.label} className="w-full h-full object-cover object-center" />
                     </div>
                   </div>
                 </motion.div>
