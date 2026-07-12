@@ -1,26 +1,18 @@
-import { useEffect } from "react";
 import SEOHead from "@/components/SEOHead";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import OnboardingComplete from "@/components/onboarding/OnboardingComplete";
 import type { OnboardingData } from "@/pages/Onboarding";
 
 /**
- * /onboarding/complete - requires onboarding payload in location.state (from publish flow).
+ * /onboarding/complete - shown after any successful publish payment. location.state
+ * carries the fresh onboarding payload when coming straight from the wizard; when
+ * absent (e.g. renewing a lapsed subscription on an existing store), OnboardingComplete
+ * fetches the business name/slug from the DB itself, so the celebration screen still
+ * shows either way instead of skipping straight to the dashboard.
  */
 const OnboardingCompleteGate = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const data = (location.state as { data?: OnboardingData } | null)?.data;
-
-  useEffect(() => {
-    if (!data) {
-      navigate("/dashboard?from_payment=true", { replace: true });
-    }
-  }, [data, navigate]);
-
-  if (!data) {
-    return null;
-  }
 
   return (
     <>

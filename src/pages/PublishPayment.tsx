@@ -90,18 +90,12 @@ const PublishPayment = () => {
   }, [location.state]);
 
   const goToComplete = useCallback(
-    (data: OnboardingData | null, slug?: string) => {
+    (data: OnboardingData | null) => {
       sessionStorage.removeItem(STORAGE_KEY);
-      // Always send the user to their live store if we know the slug
-      if (slug) {
-        window.location.href = `/store/${slug}`;
-        return;
-      }
-      if (data) {
-        navigate("/onboarding/complete?from_payment=true", { state: { onboardingData: data }, replace: true });
-      } else {
-        navigate("/dashboard?from_payment=true", { replace: true });
-      }
+      // Always route through the celebration screen - even with no onboarding
+      // payload (e.g. renewing a lapsed subscription on an existing store), it
+      // fetches the business name/slug from the DB itself (OnboardingComplete.tsx).
+      navigate("/onboarding/complete?from_payment=true", { state: data ? { data } : undefined, replace: true });
     },
     [navigate]
   );
