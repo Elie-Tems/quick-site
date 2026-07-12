@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -7,12 +7,34 @@ import { Input } from "@/components/ui/input";
 import {
   Search, ExternalLink, Mail, Phone, Globe,
   CheckCircle2, XCircle, Clock, ShoppingBag,
-  ChevronDown, ChevronUp, Eye, RotateCcw,
+  ChevronDown, ChevronUp, Eye, RotateCcw, StickyNote, Loader2, HeartPulse,
 } from "lucide-react";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { toast } from "sonner";
 import BillingChargesPanel from "./BillingChargesPanel";
+
+// ---- Merchant 360: lifecycle / health stage, computed from what we already have.
+// A real CRM header answer to "who is this merchant and what's their state" without
+// any new schema. Plain Hebrew, heuristic but honest.
+type Tone = "green" | "blue" | "amber" | "muted" | "red";
+function lifecycleStage(c: CustomerRow): { label: string; tone: Tone; hint: string } {
+  const b = c.business;
+  if (!b) return { label: "רשום · ללא חנות", tone: "muted", hint: "נרשם אך לא הקים חנות" };
+  const ageDays = (Date.now() - new Date(b.created_at).getTime()) / 86_400_000;
+  const paid = b.subscription_plan === "recommended" || b.subscription_plan === "premium";
+  if (!b.is_published) return { label: "בהקמה", tone: "amber", hint: "חנות נוצרה אך עוד לא פורסמה" };
+  if (paid) return { label: "פעיל · משלם", tone: "green", hint: "חנות פעילה עם מנוי בתשלום" };
+  if (ageDays <= 30) return { label: "חדש", tone: "blue", hint: "חנות פורסמה לאחרונה" };
+  return { label: "בסיכון", tone: "amber", hint: "חנות פורסמה, ללא מנוי בתשלום - יעד לשדרוג" };
+}
+const TONE_CLS: Record<Tone, string> = {
+  green: "text-green-700 bg-green-100",
+  blue: "text-blue-700 bg-blue-100",
+  amber: "text-amber-700 bg-amber-100",
+  red: "text-red-700 bg-red-100",
+  muted: "text-muted-foreground bg-muted",
+};
 
 interface CustomerRow {
   id: string;
@@ -60,6 +82,29 @@ function StatusBadge({ published }: { published: boolean | null }) {
 function CustomerCard({ c, onResetOnboarding }: { c: CustomerRow; onResetOnboarding: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const b = c.business;
+  const stage = lifecycleStage(c);
+
+  // Internal admin notes (real CRM). Loaded lazily on expand and saved to
+  // profiles.admin_notes. Guarded so a missing column (migration not applied)
+  // never breaks the card - it just hints to run the migration.
+  const [note, setNote] = useState<string | null>(null);
+  const [savingNote, setSavingNote] = useState(false);
+  useEffect(() => {
+    if (!expanded || note !== null) return;
+    (async () => {
+      try {
+        const { data } = await (supabase as any).from("profiles").select("admin_notes").eq("id", c.id).maybeSingle();
+        setNote((data?.admin_notes as string) ?? "");
+      } catch { setNote(""); }
+    })();
+  }, [expanded, note, c.id]);
+  const saveNote = async () => {
+    setSavingNote(true);
+    const { error } = await (supabase as any).from("profiles").update({ admin_notes: note ?? "" }).eq("id", c.id);
+    setSavingNote(false);
+    if (error) toast.error("להפעלת ההערות יש להריץ את מיגרציית admin_notes");
+    else toast.success("ההערה נשמרה");
+  };
 
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden transition-shadow hover:shadow-md">
@@ -93,6 +138,11 @@ function CustomerCard({ c, onResetOnboarding }: { c: CustomerRow; onResetOnboard
             </span>
           )}
         </div>
+
+        {/* Lifecycle stage (Merchant 360) */}
+        <span title={stage.hint} className={`hidden sm:inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${TONE_CLS[stage.tone]}`}>
+          {stage.label}
+        </span>
 
         {/* Plan */}
         {b?.subscription_plan && (
@@ -193,9 +243,34 @@ function CustomerCard({ c, onResetOnboarding }: { c: CustomerRow; onResetOnboard
               </p>
             )}
           </div>
+          {/* Merchant 360: health / lifecycle at a glance */}
+          <div className="md:col-span-3 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-3 py-2">
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground"><HeartPulse className="h-4 w-4" /> מחזור חיים</span>
+            <span title={stage.hint} className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full ${TONE_CLS[stage.tone]}`}>{stage.label}</span>
+            <span className="text-xs text-muted-foreground">{stage.hint}</span>
+          </div>
+
           {/* Subscription charges + admin refund (full width) */}
           <div className="md:col-span-3">
             <BillingChargesPanel userId={c.user_id} />
+          </div>
+
+          {/* Internal admin notes (real CRM) */}
+          <div className="md:col-span-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5 mb-1.5"><StickyNote className="h-3.5 w-3.5" /> הערות פנימיות</p>
+            <textarea
+              value={note ?? ""}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="הערות אדמין על הסוחר (נראה רק לנו)..."
+              rows={2}
+              className="w-full text-sm rounded-lg border border-border bg-background p-2.5 resize-y"
+              dir="rtl"
+            />
+            <div className="mt-1.5">
+              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={saveNote} disabled={savingNote || note === null}>
+                {savingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <StickyNote className="h-3.5 w-3.5" />} שמירת הערה
+              </Button>
+            </div>
           </div>
         </div>
       )}
