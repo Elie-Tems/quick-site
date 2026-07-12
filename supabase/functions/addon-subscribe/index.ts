@@ -10,6 +10,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { chargeToken, toMMYY } from "../_shared/cardcom/api.ts";
+import { chargeAmount, type CouponInfo } from "../_shared/billing/pricing.ts";
 
 const VAT_RATE = 0.18;
 const gross = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
@@ -50,7 +51,7 @@ Deno.serve(async (req) => {
   const { data: { user }, error: uErr } = await userClient.auth.getUser();
   if (uErr || !user) return json({ ok: false, error: "invalid session" }, 401);
 
-  let body: { addon?: string; businessId?: string };
+  let body: { addon?: string; businessId?: string; couponCode?: string };
   try { body = await req.json(); } catch { return json({ ok: false, error: "bad json" }, 400); }
 
   const addon = body.addon ? ADDONS[body.addon] : undefined;
@@ -101,6 +102,24 @@ Deno.serve(async (req) => {
   const daysLeft = Math.max(1, Math.min(30, Math.ceil((new Date(nextChargeAt).getTime() - nowMs) / 864e5)));
   const proratedGross = Math.max(1, Math.round(monthGross * (daysLeft / 30) * 100) / 100);
 
+  // Optional coupon: server-validated for THIS add-on (or scope 'all'). The
+  // discount applies to the first (prorated) charge only; the recurring price
+  // stays full and the consolidated monthly invoice bills the add-on at list
+  // price from next cycle. chargeAmount only ever REDUCES the amount, and we
+  // clamp to >= 1 so Cardcom always sees a real amount.
+  let coupon: CouponInfo | null = null;
+  let couponCode: string | null = null;
+  if (body.couponCode?.trim()) {
+    const code = body.couponCode.trim();
+    const { data: v } = await admin.rpc("validate_subscription_coupon", { p_code: code, p_product: addonType });
+    const row = Array.isArray(v) ? v[0] : v;
+    if (row?.valid) {
+      coupon = { discount_type: row.discount_type, discount_value: Number(row.discount_value), duration: row.duration };
+      couponCode = code;
+    }
+  }
+  const chargeGross = Math.max(1, chargeAmount(proratedGross, coupon, 0));
+
   const idem = `addon-sub:${user.id}:${addonType}:${new Date(nextChargeAt).toISOString().slice(0, 10)}`;
   const isTest = Deno.env.get("BILLING_TEST_MODE") === "true";
   const { data: existingCharge } = await admin.from("billing_charges").select("status").eq("idempotency_key", idem).maybeSingle();
@@ -111,16 +130,17 @@ Deno.serve(async (req) => {
   }
 
   const { error: insErr } = await admin.from("billing_charges").insert({
-    user_id: user.id, business_id: businessId, amount_ils: proratedGross, status: "pending",
-    is_test: isTest, idempotency_key: idem, payment_description: `${addon.description} - חלק יחסי (${daysLeft} ימים)`,
+    user_id: user.id, business_id: businessId, amount_ils: chargeGross, status: "pending",
+    is_test: isTest, idempotency_key: idem, coupon_code: couponCode,
+    payment_description: `${addon.description} - חלק יחסי (${daysLeft} ימים)`,
   });
   if (insErr) return json({ ok: false, error: "duplicate in flight" }, 409);
 
   const res = await chargeToken({
-    token: ccTokenId, expMMYY: toMMYY(expMonth, expYear), amountIls: proratedGross, externalUniqId: idem,
+    token: ccTokenId, expMMYY: toMMYY(expMonth, expYear), amountIls: chargeGross, externalUniqId: idem,
     doc: {
       docType: "TaxInvoiceAndReceipt", email, sendByEmail: true, vatFree: false,
-      products: [{ description: `${addon.description} - חלק יחסי (${daysLeft} ימים)`, quantity: 1, unitCost: proratedGross }],
+      products: [{ description: `${addon.description} - חלק יחסי (${daysLeft} ימים)`, quantity: 1, unitCost: chargeGross }],
     },
   });
   if (!res.ok) {
@@ -137,7 +157,7 @@ Deno.serve(async (req) => {
   // Activate the add-on line + its feature flag ONLY after a confirmed charge.
   await activate(admin, { user, businessId, addonType, addon, monthGross });
 
-  return json({ ok: true, proratedIls: proratedGross, monthlyIls: monthGross, invoiceUrl });
+  return json({ ok: true, proratedIls: chargeGross, monthlyIls: monthGross, invoiceUrl, couponApplied: !!coupon });
 });
 
 // deno-lint-ignore no-explicit-any

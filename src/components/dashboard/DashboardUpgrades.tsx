@@ -1,203 +1,265 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Globe, MessageCircle, Mail, Wand2, ArrowLeft, Check, Star, Users, Search, Sparkles } from "lucide-react";
+import {
+  Users, Star, Globe, Wand2, MessageCircle, Mail, Tag, Target, Clock, Crown,
+  Check, Eye, ShoppingCart, ArrowLeft, Sparkles,
+} from "lucide-react";
 import type { DashboardView } from "@/components/dashboard/DashboardNav";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
+import { useCrmEntitled } from "@/hooks/useCrmEntitled";
+import UpgradeCheckoutModal, { type CheckoutItem } from "./upgrades/UpgradeCheckoutModal";
 
-interface Props { onNavigate: (v: DashboardView) => void }
+/**
+ * "תוספות וכלים" - direction ו (vivid vitrine). Add-ons are grouped under plain
+ * business goals ("למכור יותר" / "להכיר לקוחות"...), each a colored band with a
+ * rich row + a live preview of the feature. Recurring add-ons drop into a sticky
+ * cart with a running monthly total; "המשך לתשלום" opens the real Cardcom
+ * checkout. Every card also has a secondary "צפייה בדמו" link - the primary
+ * button always goes to purchase, never to a demo dead-end.
+ */
+
+interface Props {
+  onNavigate: (v: DashboardView) => void;
+  business?: { id?: string; reviews_paid?: boolean } | null;
+}
+
+type Goal = "sell" | "know" | "pro" | "time";
+
+const GOALS: Record<Goal, { label: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; color: string; color2: string }> = {
+  sell: { label: "למכור יותר", icon: Target, color: "#e8820e", color2: "#f4a12e" },
+  know: { label: "להכיר לקוחות", icon: Users, color: "#0b9e77", color2: "#16c294" },
+  pro:  { label: "להיראות מקצועי", icon: Crown, color: "#6d4bd0", color2: "#8a63f0" },
+  time: { label: "לחסוך זמן", icon: Clock, color: "#1785c2", color2: "#33a6e0" },
+};
+
+type Product = {
+  view: DashboardView;       // dedicated screen / demo target
+  addon?: string;            // addon-subscribe key (recurring, cart-able)
+  navigateLabel?: string;    // for non-cart products (domain / AI): primary CTA label
+  title: string;
+  desc: string;
+  netIls?: number;           // pre-VAT monthly (recurring add-ons)
+  priceLabel: string;
+  goal: Goal;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  preview: "stars" | "bars" | "domain" | "gallery" | "chat" | "mail" | "tag";
+  show: boolean;
+  comingSoon?: boolean;
+};
+
+const PRODUCTS: Product[] = [
+  {
+    view: "reviews", addon: "reviews", title: "ביקורות Google", netIls: 14, priceLabel: '₪14/חודש + מע"מ',
+    desc: "דירוג הכוכבים האמיתי שלכם מגוגל, ישר בדף הבית - אמון לפני הקנייה שמגדיל מכירות.",
+    goal: "sell", icon: Star, preview: "stars", show: true,
+  },
+  {
+    view: "tracking", title: "תגי שיווק ומעקב", priceLabel: 'חד-פעמי ₪149 + מע"מ',
+    desc: "Google Ads, פיקסל פייסבוק וטיקטוק - מדידת המרות וקהלי ריטרגטינג.",
+    goal: "sell", icon: Tag, preview: "tag", show: true, comingSoon: true,
+  },
+  {
+    view: "customers", addon: "crm", title: "CRM - ניהול לקוחות", netIls: 49, priceLabel: '₪49/חודש + מע"מ',
+    desc: "כרטיס לקוח, אנליטיקה (מבקרים ומקורות הגעה), דוח רווחיות וריטרגטינג - הכל במקום אחד.",
+    goal: "know", icon: Users, preview: "bars", show: true,
+  },
+  {
+    view: "domains", navigateLabel: "חפשו ורכשו דומיין", title: "דומיין אישי", priceLabel: 'מ-₪50/שנה + מע"מ',
+    desc: "your-brand.co.il - כתובת מקצועית שמשדרת אמון. אחרי הרכישה אנחנו מחברים ומסנכרנים לבד.",
+    goal: "pro", icon: Globe, preview: "domain", show: true,
+  },
+  {
+    view: "ai-generated-images", navigateLabel: "צרו תמונות AI", title: "תמונות AI", priceLabel: "לפי חבילה",
+    desc: "תמונות מוצר מקצועיות שנוצרות ב-AI תוך שניות - בלי צלם ובלי מעצב.",
+    goal: "pro", icon: Wand2, preview: "gallery", show: true,
+  },
+  {
+    view: "whatsapp", addon: "whatsapp", title: "וואטסאפ עסקי", netIls: 89, priceLabel: '₪89/חודש + מע"מ',
+    desc: "התראות הזמנה אוטומטיות, דיוור לרשימת לקוחות, ובוט AI שעונה 24/7.",
+    goal: "time", icon: MessageCircle, preview: "chat", show: whatsappEnabled(), comingSoon: true,
+  },
+  {
+    view: "email", addon: "email", title: "מייל עסקי", netIls: 19, priceLabel: '₪19/חודש + מע"מ',
+    desc: "כתובת מקצועית info@your-brand.co.il - הרבה יותר אמין מ-Gmail אישי.",
+    goal: "time", icon: Mail, preview: "mail", show: emailEnabled(), comingSoon: true,
+  },
+];
 
 const fade = (d = 0) => ({ initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4, delay: d } });
+const vatGross = (net: number) => Math.round(net * 1.18);
 
-type Category = "הכל" | "שיווק" | "לקוחות" | "דומיין" | "תמונות";
+/* --- tiny live previews of each feature --- */
+const Preview = ({ kind, color }: { kind: Product["preview"]; color: string }) => {
+  const box = "h-24 rounded-xl border border-border flex items-center justify-center overflow-hidden bg-card";
+  if (kind === "stars")
+    return (
+      <div className={box}>
+        <div className="text-center">
+          <div className="flex gap-0.5 justify-center">{[0, 1, 2, 3, 4].map((i) => <Star key={i} className="w-4 h-4" style={{ color, fill: color }} />)}</div>
+          <div className="text-xs font-bold mt-1" style={{ color }}>4.9 · 213 ביקורות</div>
+        </div>
+      </div>
+    );
+  if (kind === "bars")
+    return (
+      <div className={box}>
+        <div className="flex items-end gap-1.5 h-14">
+          {[24, 40, 32, 52, 44, 60].map((h, i) => <span key={i} className="w-2.5 rounded-t" style={{ height: h, background: i % 2 ? color : `${color}99` }} />)}
+        </div>
+      </div>
+    );
+  if (kind === "domain")
+    return (
+      <div className={box}>
+        <div className="text-center">
+          <Globe className="w-6 h-6 mx-auto" style={{ color }} />
+          <div className="text-xs font-bold mt-1 font-mono" dir="ltr">your-brand.co.il</div>
+        </div>
+      </div>
+    );
+  if (kind === "gallery")
+    return (
+      <div className={box}>
+        <div className="grid grid-cols-4 gap-1 p-2 w-full h-full">
+          {Array.from({ length: 8 }).map((_, i) => <span key={i} className="rounded" style={{ background: i % 3 === 0 ? color : `${color}33` }} />)}
+        </div>
+      </div>
+    );
+  const Icon = (kind === "chat" ? MessageCircle : kind === "mail" ? Mail : Tag) as React.FC<{ className?: string; style?: React.CSSProperties }>;
+  return <div className={box}><Icon className="w-8 h-8" style={{ color, opacity: 0.5 }} /></div>;
+};
 
-const products: {
-  id: DashboardView;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-  gradient: string;
-  title: string;
-  price: string;
-  pitch: string;
-  bullets: string[];
-  category: Category;
-  show: boolean;
-  badge?: string;
-  comingSoon?: boolean;
-}[] = [
-  {
-    id: "customers", icon: Users, color: "#7c3aed", gradient: "from-violet-500 to-purple-600",
-    title: "CRM - ניהול לקוחות", price: '₪49/חודש + מע"מ',
-    pitch: "כל מה שצריך כדי להכיר את הלקוחות, לנהל את העסק, ולצמוח - במקום אחד.",
-    bullets: [
-      "כרטיס לקוח עם היסטוריית קניות מלאה",
-      "אנליטיקה - מבקרים, מקורות הגעה ומגמות",
-      "דוח רווחיות לפי מוצר ותקופה",
-      "סגמנטים חכמים ותגיות לקוח",
-      "ריטרגטינג ישיר בוואטסאפ",
-    ], category: "לקוחות", show: true, badge: "פופולרי",
-  },
-  {
-    id: "tracking", icon: Star, color: "#db2777", gradient: "from-pink-500 to-rose-600",
-    title: "תגי שיווק ומעקב", price: 'חד-פעמי ₪149 + מע"מ',
-    pitch: "חברו Google Ads, פיקסל פייסבוק וטיקטוק לחנות - מדדו המרות ובנו קהלי ריטרגטינג.",
-    bullets: ["מדידת המרות מדויקת", "קהלי ריטרגטינג", "כל הפלטפורמות"], category: "שיווק", show: true, badge: "חד-פעמי", comingSoon: true,
-  },
-  {
-    id: "reviews", icon: Star, color: "#f59e0b", gradient: "from-amber-400 to-orange-500",
-    title: "ביקורות Google", price: '₪14/חודש + מע"מ',
-    pitch: "לקוח שרואה 4.9 כוכבים לפני שהוא קונה - קונה בביטחון. מציגים את הביקורות האמיתיות שלכם מגוגל ישירות באתר, ומגדילים המרות.",
-    bullets: ["אמון מיידי לפני הקנייה", "דירוג הכוכבים שלכם בולט באתר", "מתעדכן אוטומטית מגוגל"], category: "שיווק", show: true,
-  },
-  {
-    id: "whatsapp", icon: MessageCircle, color: "#075E54", gradient: "from-green-600 to-emerald-700",
-    title: "וואטסאפ עסקי", price: '₪89/חודש + מע"מ',
-    pitch: "התראות הזמנה אוטומטיות, דיוור שיווקי לרשימת לקוחות, ובוט AI שעונה 24/7.",
-    bullets: ["יותר לקוחות חוזרים", "פחות עבודה ידנית", "בוט שירות חכם"], category: "תקשורת", show: whatsappEnabled(), comingSoon: true,
-  },
-  {
-    id: "email", icon: Mail, color: "#0f766e", gradient: "from-teal-500 to-cyan-700",
-    title: "מייל עסקי", price: '₪19/חודש + מע"מ',
-    pitch: "כתובת מייל מקצועית על הדומיין שלכם - info@your-brand.co.il. הרבה יותר אמין מ-Gmail אישי.",
-    bullets: ["אמון ומקצועיות", "עובד בכל מכשיר", "תיבות לפי מחלקה"], category: "תקשורת", show: emailEnabled(), comingSoon: true,
-  },
-  {
-    id: "domains", icon: Globe, color: "#2563eb", gradient: "from-blue-500 to-indigo-600",
-    title: "דומיין אישי", price: 'מ-₪50/שנה + מע"מ',
-    pitch: "כתובת אמיתית ומקצועית לאתר - your-brand.co.il. משדר אמון, נראה רציני, וקל לזכור.",
-    bullets: ["נראים מקצועיים", "כתובת קלה לזכירה", "חיבור אוטומטי לאתר"], category: "דומיין", show: true,
-  },
-  {
-    id: "ai-images", icon: Wand2, color: "#7c3aed", gradient: "from-purple-500 to-fuchsia-600",
-    title: "תמונות AI", price: "לפי חבילה",
-    pitch: "תמונות מקצועיות לחנות ולמוצרים, נוצרות ב-AI תוך שניות - בלי צלם ובלי מעצב.",
-    bullets: ["תמונות בקליק", "חוסך זמן וכסף", "מראה מקצועי"], category: "תמונות", show: true,
-  },
-].filter((p) => p.show);
+const DashboardUpgrades = ({ onNavigate, business }: Props) => {
+  const { entitled: crmEntitled } = useCrmEntitled();
+  const [cart, setCart] = useState<string[]>([]);
+  const [checkout, setCheckout] = useState(false);
 
-const CATEGORIES: Category[] = ["הכל", "שיווק", "לקוחות", "דומיין", "תמונות"];
+  const isActive = (p: Product) =>
+    (p.addon === "crm" && crmEntitled) || (p.addon === "reviews" && !!business?.reviews_paid);
 
-const DashboardUpgrades = ({ onNavigate }: Props) => {
-  const [activeCategory, setActiveCategory] = useState<Category>("הכל");
-  const [search, setSearch] = useState("");
+  const inCart = (addon?: string) => !!addon && cart.includes(addon);
+  const toggleCart = (addon?: string) => {
+    if (!addon) return;
+    setCart((c) => (c.includes(addon) ? c.filter((a) => a !== addon) : [...c, addon]));
+  };
 
-  const filtered = products.filter((p) => {
-    const matchCat = activeCategory === "הכל" || p.category === activeCategory;
-    const matchSearch = !search || p.title.includes(search) || p.pitch.includes(search);
-    return matchCat && matchSearch;
-  });
+  const cartItems: CheckoutItem[] = cart
+    .map((addon) => PRODUCTS.find((p) => p.addon === addon))
+    .filter((p): p is Product => !!p && !!p.netIls)
+    .map((p) => ({ addon: p.addon!, title: p.title, netIls: p.netIls!, color: GOALS[p.goal].color }));
+  const cartNet = cartItems.reduce((s, i) => s + i.netIls, 0);
+
+  const goalsInOrder: Goal[] = ["sell", "know", "pro", "time"];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6" dir="rtl">
-      {/* Hero */}
-      <motion.div {...fade()} className="rounded-2xl p-7 text-white relative overflow-hidden" style={{ background: "linear-gradient(135deg, #4f46e5, #7c3aed, #db2777)" }}>
-        <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+    <div className="max-w-4xl mx-auto px-4 py-6 pb-28" dir="rtl">
+      {/* hero */}
+      <motion.div {...fade()} className="rounded-2xl p-7 text-white relative overflow-hidden mb-6" style={{ background: "linear-gradient(120deg,#0b9e77,#1785c2,#6d4bd0)" }}>
+        <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
         <div className="relative z-10 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">
-            <Sparkles className="w-6 h-6" />
-          </div>
+          <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center shrink-0"><Sparkles className="w-6 h-6" /></div>
           <div>
             <h1 className="text-2xl font-bold leading-tight">תוספות וכלים</h1>
-            <p className="text-white/75 text-sm mt-0.5">כל הכלים שהופכים חנות לעסק אמיתי - בחרו מה שמתאים לכם</p>
+            <p className="text-white/80 text-sm mt-0.5">בחרו לפי מה שאתם רוצים להשיג - כל כלי עם תצוגה חיה, והכל מצטרף לסל אחד.</p>
           </div>
         </div>
       </motion.div>
 
-      {/* Search + filters */}
-      <motion.div {...fade(0.05)} className="space-y-3">
-        <div className="relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="חפש פיצ'ר..."
-            className="w-full h-10 pr-9 pl-4 rounded-xl border border-border bg-background text-sm focus:outline-none focus:border-primary"
-          />
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                activeCategory === cat
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Cards grid */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {filtered.map((p, i) => {
-          const Icon = p.icon;
+      {/* goal bands */}
+      <div className="space-y-6">
+        {goalsInOrder.map((goal) => {
+          const g = GOALS[goal];
+          const prods = PRODUCTS.filter((p) => p.goal === goal && p.show);
+          if (prods.length === 0) return null;
+          const GIcon = g.icon;
           return (
-            <motion.div key={p.id} {...fade(0.03 + i * 0.04)} className="rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
-              {/* Colored top strip */}
-              <div className={`h-1.5 bg-gradient-to-r ${p.gradient}`} />
-              <div className="p-5 flex flex-col flex-1">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${p.color}18` }}>
-                      <Icon className="w-5 h-5" style={{ color: p.color }} />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-foreground leading-tight">{p.title}</h3>
-                      {p.comingSoon ? (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">בקרוב</span>
-                      ) : p.badge && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${p.color}18`, color: p.color }}>
-                          {p.badge}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full shrink-0" style={{ background: `${p.color}12`, color: p.color }}>
-                    {p.price}
-                  </span>
-                </div>
-
-                <p className="text-sm text-muted-foreground leading-relaxed mb-3">{p.pitch}</p>
-
-                <ul className="space-y-1.5 mb-4 flex-1">
-                  {p.bullets.map((b, j) => (
-                    <li key={j} className="flex items-center gap-2 text-sm text-foreground">
-                      <Check className="w-3.5 h-3.5 shrink-0" style={{ color: p.color }} /> {b}
-                    </li>
-                  ))}
-                </ul>
-
-                {p.comingSoon ? (
-                  <button
-                    disabled
-                    className="mt-auto w-full rounded-xl py-2.5 font-semibold text-sm bg-muted text-muted-foreground cursor-not-allowed"
-                  >
-                    בקרוב
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => onNavigate(p.id)}
-                    className="mt-auto w-full rounded-xl py-2.5 font-semibold text-white text-sm inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                    style={{ background: `linear-gradient(135deg, ${p.color}, ${p.color}cc)` }}
-                  >
-                    הפעל עכשיו <ArrowLeft className="w-4 h-4" />
-                  </button>
-                )}
+            <section key={goal}>
+              <div className="inline-flex items-center gap-2 text-white text-sm font-bold px-4 py-1.5 rounded-full mb-3" style={{ background: `linear-gradient(100deg,${g.color},${g.color2})` }}>
+                <GIcon className="w-4 h-4" /> {g.label}
               </div>
-            </motion.div>
+              <div className="space-y-3">
+                {prods.map((p, i) => {
+                  const active = isActive(p);
+                  const Icon = p.icon;
+                  return (
+                    <motion.div key={p.view} {...fade(0.04 * i)} className="rounded-2xl border border-border bg-card overflow-hidden">
+                      <div className="grid md:grid-cols-2 gap-4 p-4 items-center" style={{ background: `linear-gradient(110deg,${g.color}0d,transparent)` }}>
+                        {/* text side */}
+                        <div className={i % 2 ? "md:order-2" : ""}>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${g.color}1a` }}>
+                              <Icon className="w-5 h-5" style={{ color: g.color }} />
+                            </span>
+                            <h3 className="font-bold text-foreground">{p.title}</h3>
+                            {active && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600">פעיל</span>}
+                            {p.comingSoon && !active && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">בקרוב</span>}
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed mb-2">{p.desc}</p>
+                          <div className="text-sm font-bold mb-3" style={{ color: g.color }}>{p.priceLabel}</div>
+
+                          {/* actions */}
+                          {active ? (
+                            <button onClick={() => onNavigate(p.view)} className="inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: g.color }}>
+                              נהל <ArrowLeft className="w-4 h-4" />
+                            </button>
+                          ) : p.comingSoon ? (
+                            <button disabled className="rounded-xl px-5 py-2 text-sm font-semibold bg-muted text-muted-foreground cursor-not-allowed">בקרוב</button>
+                          ) : (
+                            <div className="flex items-center gap-3 flex-wrap">
+                              {p.addon ? (
+                                <button
+                                  onClick={() => toggleCart(p.addon)}
+                                  className="rounded-xl px-5 py-2 text-sm font-semibold text-white inline-flex items-center gap-2 hover:opacity-90 transition-opacity"
+                                  style={{ background: inCart(p.addon) ? "#059669" : `linear-gradient(100deg,${g.color},${g.color2})` }}
+                                >
+                                  {inCart(p.addon) ? <><Check className="w-4 h-4" /> בסל</> : <><ShoppingCart className="w-4 h-4" /> הוסף לסל</>}
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => onNavigate(p.view)}
+                                  className="rounded-xl px-5 py-2 text-sm font-semibold text-white inline-flex items-center gap-2 hover:opacity-90 transition-opacity"
+                                  style={{ background: `linear-gradient(100deg,${g.color},${g.color2})` }}
+                                >
+                                  {p.navigateLabel || "המשך"} <ArrowLeft className="w-4 h-4" />
+                                </button>
+                              )}
+                              <button onClick={() => onNavigate(p.view)} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+                                <Eye className="w-4 h-4" /> צפייה בדמו
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        {/* preview side */}
+                        <div className={i % 2 ? "md:order-1" : ""}>
+                          <Preview kind={p.preview} color={g.color} />
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </section>
           );
         })}
       </div>
 
-      {filtered.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
-          <p>לא נמצאו פיצ'רים התואמים את החיפוש</p>
-        </div>
+      {/* sticky cart bar */}
+      {cartItems.length > 0 && (
+        <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed bottom-16 md:bottom-4 inset-x-0 z-30 px-4">
+          <div className="max-w-4xl mx-auto rounded-2xl shadow-xl text-white flex items-center gap-3 px-5 py-3" style={{ background: "linear-gradient(100deg,#0b9e77,#6d4bd0)" }}>
+            <ShoppingCart className="w-5 h-5 shrink-0" />
+            <div className="min-w-0">
+              <div className="font-bold leading-tight">₪{vatGross(cartNet)} <span className="text-xs font-normal opacity-85">/ חודש כולל מע"מ</span></div>
+              <div className="text-xs opacity-85">{cartItems.length} תוספים בסל · חיוב ראשון יחסי</div>
+            </div>
+            <button onClick={() => setCheckout(true)} className="mr-auto bg-white text-foreground font-bold text-sm px-5 py-2 rounded-xl hover:opacity-90 whitespace-nowrap">
+              המשך לתשלום
+            </button>
+          </div>
+        </motion.div>
       )}
+
+      <UpgradeCheckoutModal open={checkout} onClose={() => setCheckout(false)} items={cartItems} businessId={business?.id} />
     </div>
   );
 };

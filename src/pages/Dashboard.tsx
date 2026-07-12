@@ -715,7 +715,7 @@ const Dashboard = () => {
       case 'email':
         return <DashboardEmail businessId={business?.id} onGoToDomains={() => setCurrentView('domains')} />;
       case 'upgrades':
-        return <DashboardUpgrades onNavigate={(v) => setCurrentView(v)} />;
+        return <DashboardUpgrades onNavigate={(v) => setCurrentView(v)} business={business as any} />;
       case 'tracking':
         return <DashboardTracking businessId={business?.id} />;
       case 'reviews':
