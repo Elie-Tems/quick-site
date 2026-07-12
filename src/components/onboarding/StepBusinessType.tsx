@@ -67,7 +67,7 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: str
     { id: "broker",        title: 'מתווך / נדל"ן',           img: U("1582407947304-fd86f028f716") },
     { id: "developer",     title: 'יזם / פרויקט נדל"ן',      img: U("1486406146926-c627a92ad1ab") },
     { id: "vacation",      title: "צימר / נופש",             img: U("1499793983690-e29da59ef1c2") },
-    { id: "beauty",        title: "קוסמטיקה / יופי",         img: U("1560066984-138daaa83f0d") },
+    { id: "beauty",        title: "קוסמטיקה / יופי",         img: U("1487412947147-5cebf100ffc2") },
     { id: "renovation",    title: "שיפוצים / בנייה",          img: U("1504307651254-35680f356dfd") },
     { id: "health",        title: "בריאות / קליניקה",         img: U("1559839734-2b71ea197ec2") },
     { id: "consulting",    title: "ייעוץ עסקי / קריירה",      img: U("1552664730-d307ca884978") },
