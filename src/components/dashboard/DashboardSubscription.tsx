@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { gtm } from "@/lib/gtm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +47,7 @@ interface Subscription {
   monthly_total: number;
   cancel_at?: string | null;
   cancel_type?: "immediate" | "end_of_period" | null;
+  billing_cycle_count?: number | null;
 }
 
 interface ReferralStats {
@@ -63,6 +65,7 @@ const CANCEL_REASONS = [
 
 const DashboardSubscription = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: business } = useMyBusiness();
   const { data: usageStatus } = useBusinessUsage(business?.id);
   const { data: aiCredits } = useAICredits(business?.id);
@@ -333,11 +336,21 @@ const DashboardSubscription = () => {
                     תאריך תפוגה
                   </span>
                   <span className="font-medium">
-                    {subscription.paid_until 
+                    {subscription.paid_until
                       ? format(new Date(subscription.paid_until), 'dd MMMM yyyy', { locale: he })
                       : 'לא הוגדר'}
                   </span>
                 </div>
+
+                {/* Billing always aligns to the 1st of the month, and the first paid
+                    period is never cut short (min. 28 days) - so a mid-month signup's
+                    first cycle runs longer than the usual ~30 days. Explain it here so
+                    it doesn't read as a bug. */}
+                {(subscription.billing_cycle_count ?? 0) <= 1 && daysRemaining !== null && daysRemaining > 31 && (
+                  <p className="text-xs text-muted-foreground -mt-1">
+                    החודש הראשון תמיד מלא ומתואם לחיוב הבא ב-1 לחודש - לכן הוא ארוך מהרגיל.
+                  </p>
+                )}
 
                 {daysRemaining !== null && (
                   <div className="space-y-2">
@@ -458,20 +471,28 @@ const DashboardSubscription = () => {
               <span className="text-3xl font-bold">{aiCredits?.credits_remaining || 0}</span>
               <span className="text-muted-foreground mr-2">קרדיטים זמינים</span>
             </div>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!business?.id}
+              onClick={() => business?.id && navigate(`/ai-credits-payment?businessId=${business.id}`)}
+            >
               רכוש קרדיטים
             </Button>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {AI_CREDIT_PACKAGES.map((pkg) => (
-              <div 
-                key={pkg.id} 
-                className={`text-center p-3 rounded-lg border ${pkg.recommended ? 'border-primary bg-primary/5' : 'border-border'}`}
+              <button
+                key={pkg.id}
+                type="button"
+                disabled={!business?.id}
+                onClick={() => business?.id && navigate(`/ai-credits-payment?businessId=${business.id}&package=${pkg.id}`)}
+                className={`text-center p-3 rounded-lg border transition-colors hover:border-primary/60 hover:bg-primary/5 disabled:opacity-50 disabled:pointer-events-none ${pkg.recommended ? 'border-primary bg-primary/5' : 'border-border'}`}
               >
                 <div className="font-bold">{pkg.credits}</div>
                 <div className="text-xs text-muted-foreground">קרדיטים</div>
                 <div className="text-sm font-medium text-primary mt-1">{pkg.label} <span className="text-[10px] font-normal text-muted-foreground">+ מע"מ</span></div>
-              </div>
+              </button>
             ))}
           </div>
         </CardContent>

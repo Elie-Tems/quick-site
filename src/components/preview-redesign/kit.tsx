@@ -37,6 +37,7 @@ const PV_CSS = `
 .pv-muted{color:var(--pv-muted);}
 .pv-faint{color:var(--pv-faint);}
 .pv-hover:hover{background:var(--pv-hover);}
+.pv-text-hover:hover{color:var(--pv-strong);}
 .pv-card{background:var(--pv-surface);border:1px solid var(--pv-border);box-shadow:var(--pv-shadow);}
 `;
 

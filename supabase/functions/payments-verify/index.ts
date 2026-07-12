@@ -33,8 +33,15 @@ Deno.serve(async (req) => {
   if (!provider) return json({ error: `Unsupported provider: ${body.provider}` }, 400);
 
   const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-  const { data: business } = await admin.from("businesses").select("id, owner_id").eq("id", body.businessId).single();
-  if (!business || business.owner_id !== user.id) return json({ error: "Forbidden" }, 403);
+  // businesses.owner_id references profiles.id (not auth.uid), so resolve the
+  // caller's profile first, then match it against the business owner. (This was
+  // previously comparing owner_id directly to user.id, which can never match -
+  // it 403'd EVERY merchant trying to verify ANY payment provider connection.)
+  const { data: profile } = await admin.from("profiles").select("id").eq("user_id", user.id).maybeSingle();
+  const { data: business } = profile
+    ? await admin.from("businesses").select("id, owner_id").eq("id", body.businessId).eq("owner_id", profile.id).maybeSingle()
+    : { data: null };
+  if (!business) return json({ error: "Forbidden" }, 403);
 
   const result = await provider.verifyCredentials(
     { api_key: body.api_key, secret_key: body.secret_key, page_uid: body.page_uid, config: body.config ?? null },

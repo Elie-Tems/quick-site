@@ -128,6 +128,7 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
           email: data.orderEmail,
           slug: businessSlug,
           tagline: branding?.suggestedTagline,
+          aboutText: data.aboutText,
           primaryColor,
           colorPalette,
           brandStyle: branding?.brandStyle || 'modern',

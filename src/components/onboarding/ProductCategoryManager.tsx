@@ -88,7 +88,7 @@ const ProductCategoryManager = ({
           className={`w-full px-3 py-2 rounded-lg border transition-all flex items-center gap-2 text-right ${
             selectedCategoryId === null
               ? "border-primary bg-primary/5 text-primary"
-              : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
+              : "border-border pv-muted pv-text-hover hover:border-primary/30"
           }`}
         >
           <FolderOpen className="w-4 h-4 shrink-0" />
@@ -128,7 +128,7 @@ const ProductCategoryManager = ({
                 </button>
                 <button
                   onClick={handleCancelEdit}
-                  className="p-2 text-muted-foreground hover:bg-muted rounded-lg transition-colors"
+                  className="p-2 pv-muted hover:bg-muted rounded-lg transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -139,20 +139,20 @@ const ProductCategoryManager = ({
                   onClick={() => onSelectCategory(category.id)}
                   className="flex-1 flex items-center gap-2 text-right"
                 >
-                  <FolderOpen className={`w-4 h-4 shrink-0 ${selectedCategoryId === category.id ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className="text-sm font-medium flex-1 truncate text-foreground">{category.name}</span>
-                  <span className="text-xs text-muted-foreground shrink-0">{productsCountByCategory[category.id] || 0}</span>
+                  <FolderOpen className={`w-4 h-4 shrink-0 ${selectedCategoryId === category.id ? "text-primary" : "pv-muted"}`} />
+                  <span className="text-sm font-medium flex-1 truncate pv-strong">{category.name}</span>
+                  <span className="text-xs pv-muted shrink-0">{productsCountByCategory[category.id] || 0}</span>
                 </button>
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => handleStartEdit(category)}
-                    className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                    className="p-2 pv-muted pv-text-hover hover:bg-muted rounded-lg transition-colors"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => onRemoveCategory(category.id)}
-                    className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                    className="p-2 pv-muted hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -211,7 +211,7 @@ const ProductCategoryManager = ({
         <div className="mt-4">
           <button
             onClick={() => setShowExamples(!showExamples)}
-            className="w-full flex items-center justify-between text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="w-full flex items-center justify-between text-sm pv-muted pv-text-hover transition-colors"
           >
             <span>💡 דוגמאות לקטגוריות לפי תחום</span>
             {showExamples ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -221,7 +221,7 @@ const ProductCategoryManager = ({
             <div className="mt-3 space-y-3">
               {EXAMPLE_CATEGORIES.map((item) => (
                 <div key={item.industry} className="p-3 rounded-lg bg-muted/30 border border-border">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">{item.industry}:</p>
+                  <p className="text-xs font-medium pv-muted mb-2">{item.industry}:</p>
                   <div className="flex flex-wrap gap-2">
                     {item.examples.map((example) => (
                       <button

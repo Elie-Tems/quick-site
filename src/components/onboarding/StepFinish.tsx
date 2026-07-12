@@ -202,8 +202,8 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
           <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
             <Rocket className="w-7 h-7 text-primary animate-pulse" />
           </div>
-          <h1 className="text-2xl font-medium text-foreground">בונים את האתר שלך...</h1>
-          <p className="text-sm text-muted-foreground">{stage.label}</p>
+          <h1 className="text-2xl font-medium pv-strong">בונים את האתר שלך...</h1>
+          <p className="text-sm pv-muted">{stage.label}</p>
         </div>
 
         <div className="max-w-md mx-auto space-y-4">
@@ -213,7 +213,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
               style={{ width: `${publishProgress}%` }}
             />
           </div>
-          <p className="text-center text-xs font-medium text-muted-foreground">{Math.round(publishProgress)}%</p>
+          <p className="text-center text-xs font-medium pv-muted">{Math.round(publishProgress)}%</p>
 
           {/* Stage timeline */}
           <div className="space-y-2.5 pt-2">
@@ -228,7 +228,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
                   }`}>
                     {done ? <Check className="w-3.5 h-3.5" /> : active ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span className="w-1.5 h-1.5 rounded-full bg-current" />}
                   </div>
-                  <span className={active ? "text-foreground font-medium" : done ? "text-muted-foreground" : "text-muted-foreground/50"}>{s.label}</span>
+                  <span className={active ? "pv-strong font-medium" : done ? "pv-muted" : "pv-faint"}>{s.label}</span>
                 </div>
               );
             })}
@@ -246,8 +246,8 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
           <Rocket className="w-9 h-9 text-primary" />
           <span className="absolute -top-1 -right-1 text-lg">✨</span>
         </div>
-        <h1 className="text-3xl font-semibold text-foreground">כמעט שם!</h1>
-        <p className="text-sm text-muted-foreground mt-2">עוד לחיצה אחת - והחנות שלכם בשידור חי 🎉</p>
+        <h1 className="text-3xl font-semibold pv-strong">כמעט שם!</h1>
+        <p className="text-sm pv-muted mt-2">עוד לחיצה אחת - והחנות שלכם בשידור חי 🎉</p>
       </div>
 
       {/* Summary grid */}
@@ -261,7 +261,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
           <div key={item.label} className="rounded-xl border border-border bg-card p-4 flex items-start gap-3">
             <span className="text-xl leading-none mt-0.5">{item.emoji}</span>
             <div className="min-w-0 flex-1">
-              <p className="text-xs text-muted-foreground">{item.label}</p>
+              <p className="text-xs pv-muted">{item.label}</p>
               <p className="text-sm font-medium truncate mt-0.5">{item.value}</p>
             </div>
           </div>
@@ -271,7 +271,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
       {/* Payment upsell hint - compact */}
       <div className="rounded-xl bg-primary/5 border border-primary/15 p-3.5 flex items-start gap-2.5">
         <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-        <p className="text-xs text-foreground leading-relaxed">
+        <p className="text-xs pv-strong leading-relaxed">
           רוצים לקבל תשלומים בכרטיס / ביט ישירות באתר? אפשר להוסיף סליקה בכל רגע מלוח הניהול.
         </p>
       </div>
@@ -284,7 +284,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
           onChange={e => setLegalAcknowledged(e.target.checked)}
           className="mt-0.5 accent-primary w-4 h-4 shrink-0"
         />
-        <span className="text-xs text-muted-foreground leading-relaxed">
+        <span className="text-xs pv-muted leading-relaxed">
           קראתי ואני מסכים/ה ל
           <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1">תנאי השימוש</a>
           ול

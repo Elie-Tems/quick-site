@@ -206,6 +206,10 @@ export function useCreateBusiness() {
             phone: data.phone || null,
             email: data.email || null,
             tagline: data.tagline || null,
+            // Also written to about_page_body below (not just about_text) so it shows
+            // up immediately in the dashboard's "אודות העסק" tab, which reads about_text
+            // with a fallback to about_page_body (DashboardContent.tsx).
+            about_page_body: data.aboutText || null,
             owner_id: profileId,
             primary_color: data.primaryColor || '#7c3aed',
             color_palette: data.colorPalette || [],

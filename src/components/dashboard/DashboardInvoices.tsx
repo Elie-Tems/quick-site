@@ -91,7 +91,9 @@ const DashboardInvoices = () => {
                       <Download className="w-4 h-4" /> הורדה
                     </a>
                   ) : (
-                    <span className="text-xs text-muted-foreground">נשלח למייל</span>
+                    <span className="text-xs text-muted-foreground" title="החשבונית נשלחה ישירות מחברת הסליקה לכתובת המייל שלך">
+                      נשלחה למייל שלך
+                    </span>
                   )}
                 </div>
               </div>

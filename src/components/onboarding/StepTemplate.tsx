@@ -262,7 +262,7 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
 
       const result = await createBusiness.mutateAsync({
         businessName: data.businessName, phone: data.phone, email: data.orderEmail, slug: businessSlug,
-        tagline: branding?.suggestedTagline, primaryColor, colorPalette, brandStyle: branding?.brandStyle || 'modern',
+        tagline: branding?.suggestedTagline, aboutText: data.aboutText, primaryColor, colorPalette, brandStyle: branding?.brandStyle || 'modern',
         businessCategory: resolvedCategory, customCategoryName: effectiveCustomName,
         isReligiousAudience: data.isReligiousAudience,
         businessType: data.businessType,

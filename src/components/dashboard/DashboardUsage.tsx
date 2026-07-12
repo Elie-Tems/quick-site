@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Gauge, Image as ImageIcon, AlertTriangle, Bot, CreditCard, Zap } from "lucide-react";
+import { Gauge, Image as ImageIcon, AlertTriangle, CreditCard, Zap } from "lucide-react";
+import { AI_CREDIT_PACKAGES } from "@/lib/pricingConfig";
 
 /**
  * Usage & AI — lets the merchant see how much of the paid AI (image generation)
@@ -41,6 +42,16 @@ const DashboardUsage = ({ businessId }: Props) => {
     },
   });
 
+  // The credits payment page (/ai-credits-payment) requires BOTH businessId and a
+  // package in the URL - it has no in-page package picker, so linking without them
+  // (as this button previously did) immediately bounces the merchant back with a
+  // "no valid package selected" error toast. Pre-select the recommended package so
+  // the button actually goes to a working checkout.
+  const recommendedPackage = AI_CREDIT_PACKAGES.find((p) => p.recommended) ?? AI_CREDIT_PACKAGES[0];
+  const creditsLink = businessId && recommendedPackage
+    ? `/ai-credits-payment?businessId=${businessId}&package=${recommendedPackage.id}`
+    : null;
+
   const remaining = credits?.credits_remaining ?? 0;
   const purchased = credits?.total_credits_purchased ?? 0;
   const total = FREE_CREDITS + purchased;
@@ -78,12 +89,14 @@ const DashboardUsage = ({ businessId }: Props) => {
           <div className="flex items-center gap-2 text-foreground font-semibold">
             <Zap className="w-5 h-5 text-primary" /> קרדיטים ליצירת תמונות AI
           </div>
-          <Link
-            to="/ai-credits-payment"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-white text-sm font-medium px-3.5 py-2 hover:brightness-105"
-          >
-            <CreditCard className="w-4 h-4" /> טען קרדיטים
-          </Link>
+          {creditsLink ? (
+            <Link
+              to={creditsLink}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-white text-sm font-medium px-3.5 py-2 hover:brightness-105"
+            >
+              <CreditCard className="w-4 h-4" /> טען קרדיטים
+            </Link>
+          ) : null}
         </div>
 
         <div className="flex items-end gap-2 mb-3">
@@ -103,21 +116,12 @@ const DashboardUsage = ({ businessId }: Props) => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-            <ImageIcon className="w-4 h-4" /> תמונות AI שנוצרו
-          </div>
-          <div className="text-2xl font-bold text-foreground">{imagesCount ?? 0}</div>
-          <p className="text-xs text-muted-foreground mt-1">כל יצירה/שדרוג תמונה מנכה קרדיט אחד.</p>
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+          <ImageIcon className="w-4 h-4" /> תמונות AI שנוצרו
         </div>
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-            <Bot className="w-4 h-4" /> בוט שירות ותמיכה
-          </div>
-          <div className="text-lg font-bold text-primary">כלול בתוכנית</div>
-          <p className="text-xs text-muted-foreground mt-1">ללא הגבלת שימוש וללא צריכת קרדיטים.</p>
-        </div>
+        <div className="text-2xl font-bold text-foreground">{imagesCount ?? 0}</div>
+        <p className="text-xs text-muted-foreground mt-1">כל יצירה/שדרוג תמונה מנכה קרדיט אחד.</p>
       </div>
 
       <p className="text-xs text-muted-foreground text-center">
