@@ -17,7 +17,7 @@ const AdminCohortRetention = () => {
   return (
     <div className="bg-card rounded-xl border border-border p-6 space-y-4">
       <h3 className="font-semibold text-lg flex items-center gap-2">
-        <Users2 className="h-5 w-5 text-primary" /> Cohort Retention
+        <Users2 className="h-5 w-5 text-primary" /> שימור לקוחות לאורך זמן
       </h3>
 
       {isLoading ? (

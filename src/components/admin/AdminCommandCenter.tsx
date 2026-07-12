@@ -28,8 +28,8 @@ const AdminCommandCenter = () => {
   ];
 
   const kpis = [
-    { label: "MRR (הכנסה חודשית)", value: k ? ils(k.mrr) : undefined, icon: TrendingUp },
-    { label: "ARR (שנתי)", value: k ? ils(k.arr) : undefined, icon: TrendingUp },
+    { label: "הכנסה חודשית", value: k ? ils(k.mrr) : undefined, icon: TrendingUp },
+    { label: "הכנסה שנתית", value: k ? ils(k.arr) : undefined, icon: TrendingUp },
     { label: "חנויות פעילות", value: k ? fmt(k.activeStores) : undefined, icon: Building2 },
     { label: "סה\"כ משתמשים", value: k ? fmt(k.totalUsers) : undefined, icon: Users },
   ];

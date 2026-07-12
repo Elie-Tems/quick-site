@@ -19,8 +19,8 @@ const AdminMRR = () => {
       {/* KPI cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: "MRR נוכחי", value: fmt(latest?.mrr ?? 0), icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-          { label: "ARR (שנתי)", value: fmt(arr), icon: TrendingUp, color: "text-blue-500", bg: "bg-blue-500/10" },
+          { label: "הכנסה חודשית נוכחית", value: fmt(latest?.mrr ?? 0), icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+          { label: "הכנסה שנתית", value: fmt(arr), icon: TrendingUp, color: "text-blue-500", bg: "bg-blue-500/10" },
           { label: "צמיחה חודש-חודש", value: `${growth > 0 ? "+" : ""}${growth}%`, icon: growth >= 0 ? TrendingUp : TrendingDown, color: growth >= 0 ? "text-green-500" : "text-red-500", bg: growth >= 0 ? "bg-green-500/10" : "bg-red-500/10" },
         ].map((card) => (
           <div key={card.label} className="bg-card rounded-xl border border-border p-6">
@@ -38,7 +38,7 @@ const AdminMRR = () => {
       {/* MRR chart */}
       <div className="bg-card rounded-xl border border-border p-6">
         <h3 className="font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-primary" /> MRR לאורך זמן
+          <TrendingUp className="h-5 w-5 text-primary" /> הכנסה חודשית לאורך זמן
         </h3>
         {isLoading ? (
           <Skeleton className="h-64 w-full" />

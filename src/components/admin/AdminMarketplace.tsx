@@ -74,7 +74,7 @@ const AdminMarketplace = () => {
         <div className="flex items-start gap-3">
           <Globe className="w-7 h-7 text-primary shrink-0" />
           <div>
-            <h2 className="text-xl font-bold text-foreground">Marketplace - מבט-על על כל החנויות</h2>
+            <h2 className="text-xl font-bold text-foreground">תמונת שוק - מבט-על על כל החנויות</h2>
             <p className="text-sm text-muted-foreground mt-0.5">מחזור החנויות והתנהגות הקונים בכל הפלטפורמה (לא ההכנסה של סיאנגו).</p>
           </div>
         </div>

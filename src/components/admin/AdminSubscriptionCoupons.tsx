@@ -16,7 +16,7 @@ import { Ticket, Plus, Power, Trash2 } from "lucide-react";
 const SCOPES: { value: string; label: string }[] = [
   { value: "all", label: "כל הפיצ'רים בתשלום" },
   { value: "publish", label: "פרסום אתר (מנוי)" },
-  { value: "crm", label: "CRM" },
+  { value: "crm", label: "ניהול לקוחות" },
   { value: "whatsapp", label: "וואטסאפ" },
   { value: "email", label: "מייל עסקי" },
   { value: "domains", label: "דומיינים" },
