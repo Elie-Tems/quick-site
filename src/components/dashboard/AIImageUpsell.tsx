@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Wand2, Coins, Check, CreditCard, Gift, Loader2 } from "lucide-react";
 import { CREDIT_PACKAGES, useAICredits, useGrantFreeCredits } from "@/hooks/useAIImageEngine";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AIImageUpsellProps {
   businessId?: string;
@@ -141,22 +143,63 @@ interface CreditPurchaseModalProps {
 export const CreditPurchaseModal = ({ open, onOpenChange, businessId }: CreditPurchaseModalProps) => {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const queryClient = useQueryClient();
 
   const handlePurchase = async (packageId: string) => {
-    if (!businessId) return;
-    
+    if (!businessId || isPurchasing) return;
+
     setSelectedPackage(packageId);
     setIsPurchasing(true);
 
-    // TODO: Integrate with payment system
-    setTimeout(() => {
-      toast({
-        title: "מערכת התשלום בהקמה",
-        description: "בקרוב תוכל לרכוש קרדיטים ישירות. צור קשר בינתיים לרכישה.",
+    try {
+      // Charge the merchant's saved Cardcom token via the server-side charge-addon
+      // engine (server decides price + credits; idempotent per requestId; credits
+      // granted only after a confirmed charge). No hosted page / redirect.
+      const requestId =
+        (typeof crypto !== "undefined" && "randomUUID" in crypto)
+          ? crypto.randomUUID()
+          : `${businessId}-${packageId}-${Date.now()}`;
+      const { data, error } = await supabase.functions.invoke("charge-addon", {
+        body: { product: `ai_credits_${packageId}`, businessId, requestId },
       });
+      if (error) throw error;
+
+      if (data?.ok) {
+        await queryClient.invalidateQueries({ queryKey: ["ai-credits", businessId] });
+        toast({
+          title: "התשלום בוצע ✓",
+          description: "הקרדיטים נוספו לחשבונכם. חשבונית נשלחה למייל.",
+        });
+        onOpenChange(false);
+      } else if (data?.needsCard) {
+        toast({
+          title: "אין כרטיס שמור",
+          description: data.message || "יש לפרסם אתר (מנוי) כדי לשמור כרטיס אשראי תחילה.",
+          variant: "destructive",
+        });
+      } else if (data?.declined) {
+        toast({
+          title: "החיוב נדחה",
+          description: "הכרטיס נדחה. נסו כרטיס אחר או פנו לתמיכה.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "שגיאה ברכישה",
+          description: data?.error || "לא הצלחנו להשלים את הרכישה. נסו שוב מאוחר יותר.",
+          variant: "destructive",
+        });
+      }
+    } catch {
+      toast({
+        title: "שגיאה ברכישה",
+        description: "אירעה תקלה בתקשורת. נסו שוב.",
+        variant: "destructive",
+      });
+    } finally {
       setIsPurchasing(false);
       setSelectedPackage(null);
-    }, 1000);
+    }
   };
 
   return (

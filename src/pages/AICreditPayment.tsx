@@ -235,7 +235,7 @@ const AICreditPayment = () => {
                   src={checkoutUrl}
                   className="w-full grow min-h-[min(80vh,800px)] border-0 bg-background"
                   allow="payment *"
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-top-navigation-by-user-activation"
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation-by-user-activation"
                 />
                 <div className="px-4 py-3 border-t border-border bg-muted/20 text-center">
                   <a

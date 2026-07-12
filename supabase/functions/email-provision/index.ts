@@ -12,6 +12,14 @@ const corsHeaders = {
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
+// Constant-time string compare for the internal shared secret.
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let out = 0;
+  for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return out === 0;
+}
+
 // OpenSRS email-API call (mailbox create). Endpoint/creds via env; returns a
 // provider ref or throws. Stubbed safe: if creds aren't set we mark it pending
 // (no fake "active") so go-live just needs the secrets.
@@ -48,7 +56,8 @@ Deno.serve(async (req) => {
 
   // Authorize: internal secret OR the owning merchant.
   const internal = req.headers.get("x-internal-secret");
-  let authorized = !!Deno.env.get("EMAIL_INTERNAL_SECRET") && internal === Deno.env.get("EMAIL_INTERNAL_SECRET");
+  const emailSecret = Deno.env.get("EMAIL_INTERNAL_SECRET");
+  let authorized = !!emailSecret && safeEqual(internal ?? "", emailSecret);
   if (!authorized) {
     const authHeader = req.headers.get("Authorization");
     if (authHeader?.startsWith("Bearer ")) {

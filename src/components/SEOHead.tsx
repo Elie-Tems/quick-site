@@ -55,13 +55,19 @@ const SEOHead = ({
     "name": siteName,
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
-    // Single real price: 69 ILS/month + VAT. The previous 99/199/299 tiers were
-    // never real. Extra features (e.g. CRM) are priced separately and are not
-    // part of this core offer.
+    // Single real price: 69 ILS/month, VAT NOT included (added on top, per Israeli
+    // Consumer Protection Law disclosure). The previous 99/199/299 tiers were never
+    // real. Extra features (e.g. CRM) are priced separately, not part of this offer.
     "offers": {
       "@type": "Offer",
       "priceCurrency": "ILS",
-      "price": "69"
+      "price": "69",
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": "69",
+        "priceCurrency": "ILS",
+        "valueAddedTaxIncluded": false
+      }
     }
     // aggregateRating removed: it was a fabricated 4.8/150 rating. Google penalizes
     // fake review markup, and the project rule forbids invented numbers. Re-add only

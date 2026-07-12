@@ -72,6 +72,20 @@ Deno.serve(async (req) => {
 
   // If approval number provided, find business_id
   if (approvalNum) {
+    // SECURITY (free-publish bypass): this manual approval-number path SELF-ASSERTS
+    // payment - it sets payment_verified_at without verifying the number against
+    // iCount (there is no iCount IPN in this codebase to verify it against). So a
+    // merchant could publish for free by submitting any digits. The live flow is
+    // Cardcom -> billing-cardcom-webhook (verified charge). Restrict this legacy
+    // path to admins, who use it only after confirming a real iCount payment
+    // out-of-band. Regular merchants must go through the paid Cardcom checkout.
+    const { data: isAdmin } = await userClient.rpc("has_role", { _user_id: user.id, _role: "admin" });
+    if (!isAdmin) {
+      return new Response(
+        JSON.stringify({ error: "אישור ידני זמין לצוות בלבד. הפרסום מתבצע לאחר תשלום בדף הסליקה.", paymentRequired: true }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
     // Approval number provided by the merchant from their iCount receipt.
     // We need businessId to know which business to publish. It can come from:
     // 1. An existing pending session for this user (most common path)

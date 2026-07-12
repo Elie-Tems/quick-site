@@ -59,6 +59,18 @@ const DashboardReviews = ({ businessId }: Props) => {
     if (data) setShowOnStore(data.reviews_show_on_store ?? true);
   }, [data]);
 
+  // Is the Google reviews integration actually configured (Siango's Google key
+  // present)? If not, the add-on can't fetch any reviews, so we must NOT let a
+  // merchant pay for it. Defaults to "configured" until we hear otherwise so a
+  // transient error never blocks a working feature.
+  const { data: reviewsConfigured = true } = useQuery({
+    queryKey: ["reviews-configured"],
+    queryFn: async () => {
+      const { data } = await supabase.functions.invoke("google-reviews", { body: { action: "status" } });
+      return data?.configured !== false;
+    },
+  });
+
   const paid = !!data?.reviews_paid;
   const connected = !!data?.google_place_id;
   const cache = data?.google_reviews_cache;
@@ -68,6 +80,10 @@ const DashboardReviews = ({ businessId }: Props) => {
   // subscription invoice. No redirect - charged server-side on the saved token.
   const startPayment = async () => {
     if (!businessId) return;
+    if (!reviewsConfigured) {
+      toast.error("התכונה בהקמה - חיבור הביקורות לגוגל טרם הופעל. אל דאגה, לא חויבתם.");
+      return;
+    }
     setBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("addon-subscribe", { body: { addon: "reviews", businessId } });
@@ -170,6 +186,9 @@ const DashboardReviews = ({ businessId }: Props) => {
               <div className="flex-1 mx-3 h-5 rounded bg-background text-[10px] text-muted-foreground flex items-center px-2">
                 החנות שלך · siango.app
               </div>
+              <span className="text-[10px] font-semibold text-muted-foreground bg-background rounded px-2 py-0.5 whitespace-nowrap">
+                הדגמה
+              </span>
             </div>
 
             <div className="p-5 space-y-4" dir="rtl">
@@ -234,10 +253,15 @@ const DashboardReviews = ({ businessId }: Props) => {
                 <div className="text-3xl font-extrabold text-foreground">₪{REVIEWS_ADDON_PRICE_ILS}</div>
                 <div className="text-xs text-muted-foreground">לחודש + מע"מ</div>
               </div>
-              <button onClick={startPayment}
-                className="inline-flex items-center gap-2 rounded-xl bg-amber-500 text-white font-bold px-6 h-11 hover:bg-amber-600 transition-colors whitespace-nowrap">
-                <Star className="w-4 h-4 fill-white" /> הפעל עכשיו
+              <button onClick={startPayment} disabled={!reviewsConfigured || busy}
+                className="inline-flex items-center gap-2 rounded-xl bg-amber-500 text-white font-bold px-6 h-11 hover:bg-amber-600 transition-colors whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed">
+                <Star className="w-4 h-4 fill-white" /> {reviewsConfigured ? "הפעל עכשיו" : "בקרוב"}
               </button>
+              {!reviewsConfigured && (
+                <p className="text-xs text-muted-foreground max-w-[12rem]">
+                  חיבור הביקורות לגוגל בהקמה - יופעל בקרוב.
+                </p>
+              )}
             </div>
           </div>
         </motion.div>

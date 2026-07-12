@@ -363,9 +363,9 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
                     />
                     <span className="text-xs text-muted-foreground leading-relaxed">
                       קראתי ואני מסכים/ה ל
-                      <a href="/terms" target="_blank" className="text-primary hover:underline mx-1">תנאי השימוש</a>
+                      <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1">תנאי השימוש</a>
                       ול
-                      <a href="/privacy" target="_blank" className="text-primary hover:underline mx-1">מדיניות הפרטיות</a>
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1">מדיניות הפרטיות</a>
                     </span>
                   </label>
                   <button

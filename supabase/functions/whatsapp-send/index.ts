@@ -13,6 +13,14 @@ const corsHeaders = {
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
+// Constant-time string compare for the internal shared secret.
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let out = 0;
+  for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return out === 0;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
@@ -32,7 +40,7 @@ Deno.serve(async (req) => {
   // Authorize: internal secret (server triggers) OR the owning merchant's JWT.
   const internal = req.headers.get("x-internal-secret");
   const expected = Deno.env.get("WHATSAPP_INTERNAL_SECRET");
-  let authorized = !!expected && internal === expected;
+  let authorized = !!expected && safeEqual(internal ?? "", expected);
   if (!authorized) {
     const authHeader = req.headers.get("Authorization");
     if (authHeader?.startsWith("Bearer ")) {

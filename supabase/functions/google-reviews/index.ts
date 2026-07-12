@@ -5,6 +5,7 @@
 //   - "refresh": fetch the caller's saved place_id details -> cache on the row
 // The public storefront reads the cached reviews directly (no per-visitor API call).
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -82,6 +83,12 @@ Deno.serve(async (req) => {
   let body: { action?: string; query?: string; placeId?: string };
   try { body = await req.json(); } catch { return json({ ok: false, error: "Invalid JSON" }, 400); }
 
+  // Configuration probe (no paid gate): lets the dashboard check whether the
+  // Google key is set BEFORE letting a merchant pay for the reviews add-on, so
+  // nobody is charged for a feature that can't deliver. If the key were missing
+  // we'd already have returned configured:false above.
+  if (body.action === "status") return json({ ok: true, configured: true });
+
   const admin = createClient(supabaseUrl, serviceKey);
   const { data: biz } = await admin
     .from("businesses")
@@ -90,6 +97,14 @@ Deno.serve(async (req) => {
     .maybeSingle();
   if (!biz) return json({ ok: false, error: "No business" }, 404);
   if (!(biz as any).reviews_paid) return json({ ok: false, error: "not_paid" }, 402);
+
+  // Cost guard: the search/refresh actions hit the paid Google Places API, so cap
+  // them per merchant to prevent a paid account from burning the shared quota.
+  if (body.action === "search" || body.action === "refresh") {
+    if (!(await consumeRateLimit(admin, `greviews:${user.id}`, 60, 3600))) {
+      return json({ ok: false, error: "rate_limited" }, 429);
+    }
+  }
 
   try {
     if (body.action === "search") {

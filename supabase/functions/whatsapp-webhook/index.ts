@@ -113,9 +113,13 @@ Deno.serve(async (req) => {
 
   const form = await parseForm(req);
 
-  // Reject forged requests. Enforced when the Twilio auth token is configured.
+  // Reject forged requests. Fail CLOSED: if the Twilio auth token is not set we
+  // reject rather than trust an unauthenticated inbound payload - this endpoint
+  // creates products, sends WhatsApp messages, and spends AI credits, so it must
+  // never process a request it cannot verify. (WhatsApp is build-only today;
+  // going live requires setting TWILIO_AUTH_TOKEN, which this now enforces.)
   const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
-  if (twilioAuthToken && !(await validTwilioSignature(req, form, twilioAuthToken))) {
+  if (!twilioAuthToken || !(await validTwilioSignature(req, form, twilioAuthToken))) {
     return new Response("forbidden", { status: 403, headers: corsHeaders });
   }
 
