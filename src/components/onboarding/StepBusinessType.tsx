@@ -81,10 +81,10 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: str
   nonprofit: [
     { id: "charity",       title: "תרומות כלליות",            img: U("1532629345422-7515f3d16bb6") },
     { id: "crowdfunding",  title: "גיוס המונים",              img: U("1559526324-593bc073d938") },
-    { id: "synagogue",     title: "מרכז תורני / קהילה",       img: U("1545164313-4dc36e85e1a2") },
+    { id: "synagogue",     title: "מרכז תורני / קהילה",       img: U("1507003211169-0a1dd7228f2d") },
     { id: "community",     title: "קהילה",                    img: U("1529156069898-49953e39b3ac") },
     { id: "education",     title: "חינוך / עמותת ילדים",      img: U("1580582932707-520aed937b7b") },
-    { id: "social",        title: "רווחה חברתית",             img: U("1488521787991-ed7bbaae773c") },
+    { id: "social",        title: "רווחה חברתית",             img: U("1469571486292-0ba58a3f068b") },
     { id: "animals",       title: "הגנת בעלי חיים",           img: U("1548767797-d8c844163c4a") },
     { id: "torah-center",  title: "מרכז תורני / ישיבה",       img: U("1524055988636-436cfa9e0201") },
   ],
