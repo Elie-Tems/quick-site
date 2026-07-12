@@ -1,6 +1,6 @@
-﻿import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { OnboardingData } from "@/pages/Onboarding";
-import { Loader2, Wand2, Globe, FileText, Mic, MicOff, Check } from "lucide-react";
+import { Loader2, Wand2, Globe, FileText, Mic, MicOff, Check, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,6 +25,13 @@ interface GeneratedContent {
 
 const PROGRESS_STEPS = ["מנתח תיאור...", "מייצר כותרות...", "כותב טקסט אודות...", "מסיים פרטים..."];
 
+const METHODS = [
+  { id: "text" as Method,  icon: Wand2,     label: "תיאור חופשי",  color: "from-violet-500 to-purple-600" },
+  { id: "url" as Method,   icon: Globe,     label: "אתר קיים",     color: "from-sky-500 to-blue-600" },
+  { id: "file" as Method,  icon: FileText,  label: "קובץ / PDF",   color: "from-amber-500 to-orange-600" },
+  { id: "voice" as Method, icon: Mic,       label: "הקלטה קולית",  color: "from-rose-500 to-pink-600" },
+];
+
 const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
   const [method, setMethod] = useState<Method>("text");
   const [textInput, setTextInput] = useState("");
@@ -40,19 +47,15 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       promoText: data.promoText || "",
     } : null
   );
-  // Voice recording
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return () => {
-      if (mediaRecorderRef.current?.state === "recording") {
-        mediaRecorderRef.current.stop();
-      }
+      if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
     };
   }, []);
 
@@ -68,14 +71,11 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       toast({ title: "יש להזין תיאור של לפחות 10 תווים", variant: "destructive" });
       return;
     }
-
     setIsGenerating(true);
     setProgressStep(0);
-
     const interval = setInterval(() => {
       setProgressStep(p => Math.min(p + 1, PROGRESS_STEPS.length - 1));
     }, 900);
-
     try {
       const { data: result, error } = await supabase.functions.invoke("generate-content", {
         body: {
@@ -85,11 +85,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
           businessType: data.businessType,
         },
       });
-
-      if (error || !result?.heroTitle) {
-        throw new Error(error?.message || "תגובה לא תקינה מהשרת");
-      }
-
+      if (error || !result?.heroTitle) throw new Error(error?.message || "תגובה לא תקינה מהשרת");
       const content: GeneratedContent = {
         heroTitle: result.heroTitle,
         tagline: result.tagline,
@@ -97,11 +93,10 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
         heroBenefits: result.heroBenefits,
         promoText: result.promoText,
       };
-
       setGenerated(content);
       updateData(content);
       toast({ title: "התכנים נוצרו בהצלחה ✨" });
-    } catch (err) {
+    } catch {
       toast({ title: "שגיאה ביצירת תכנים", description: "נסו שוב", variant: "destructive" });
     } finally {
       clearInterval(interval);
@@ -115,11 +110,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      const text = reader.result as string;
-      setTextInput(text.slice(0, 2000));
-      setMethod("text");
-    };
+    reader.onload = () => { setTextInput((reader.result as string).slice(0, 2000)); setMethod("text"); };
     reader.readAsText(file);
   };
 
@@ -129,17 +120,13 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       const mr = new MediaRecorder(stream);
       mediaRecorderRef.current = mr;
       audioChunksRef.current = [];
-
       mr.ondataavailable = e => audioChunksRef.current.push(e.data);
       mr.onstop = async () => {
         stream.getTracks().forEach(t => t.stop());
-        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        await transcribeAudio(blob);
+        await transcribeAudio(new Blob(audioChunksRef.current, { type: "audio/webm" }));
       };
-
       mr.start();
       setIsRecording(true);
-      toast({ title: "מקליט... לחצו שוב כדי לסיים" });
     } catch {
       toast({ title: "לא ניתן לגשת למיקרופון", variant: "destructive" });
     }
@@ -157,13 +144,10 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
     try {
       const formData = new FormData();
       formData.append("file", blob, "recording.webm");
-      const { data: result, error } = await supabase.functions.invoke("transcribe-products", {
-        body: formData,
-      });
+      const { data: result, error } = await supabase.functions.invoke("transcribe-products", { body: formData });
       if (error || !result?.text) throw new Error("תמלול נכשל");
       const text = result.text as string;
       setTranscript(text);
-      toast({ title: "ההקלטה תומללה" });
       await generate(text);
     } catch {
       toast({ title: "שגיאה בתמלול", description: "נסו שוב", variant: "destructive" });
@@ -178,37 +162,41 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
     (method === "voice" && transcript.length > 10)
   );
 
+  const activeMethod = METHODS.find(m => m.id === method)!;
+
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-display font-bold pv-strong mb-1">
-          ספרו לנו על העסק שלכם
-        </h2>
-        <p className="text-sm pv-muted">נכתוב עבורכם את כל הטקסטים לאתר אוטומטית</p>
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="text-center space-y-1">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 mb-3">
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs text-primary font-medium">כתיבה אוטומטית</span>
+        </div>
+        <h2 className="text-2xl font-display font-bold pv-strong">ספרו לנו על העסק שלכם</h2>
+        <p className="text-sm pv-muted">נכתוב את כל הטקסטים לאתר - כותרות, אודות, תיאורים</p>
       </div>
 
       {/* Method selector */}
       <div className="grid grid-cols-4 gap-2">
-        {([
-          { id: "text", icon: Wand2, label: "תיאור חופשי" },
-          { id: "url", icon: Globe, label: "אתר קיים" },
-          { id: "file", icon: FileText, label: "קובץ / PDF" },
-          { id: "voice", icon: Mic, label: "הקלטה קולית" },
-        ] as const).map(({ id, icon: Icon, label }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => { setMethod(id); if (id === "file") fileInputRef.current?.click(); }}
-            className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border text-xs font-medium transition-all ${
-              method === id
-                ? "border-primary/60 bg-primary/10 text-primary"
-                : "border-border pv-surface2 pv-muted hover:border-primary/30"
-            }`}
-          >
-            <Icon className="w-5 h-5" />
-            {label}
-          </button>
-        ))}
+        {METHODS.map(({ id, icon: Icon, label, color }) => {
+          const on = method === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => { setMethod(id); if (id === "file") fileInputRef.current?.click(); }}
+              className={`relative flex flex-col items-center gap-2 py-3.5 px-2 rounded-xl border text-xs font-medium transition-all overflow-hidden ${
+                on ? "border-transparent text-white shadow-lg" : "border-border pv-surface2 pv-muted hover:border-primary/30"
+              }`}
+            >
+              {on && (
+                <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-90`} />
+              )}
+              <Icon className={`w-5 h-5 relative z-10 ${on ? "text-white" : ""}`} />
+              <span className="relative z-10">{label}</span>
+            </button>
+          );
+        })}
       </div>
 
       <input ref={fileInputRef} type="file" accept=".txt,.pdf,.doc,.docx" onChange={handleFileChange} className="hidden" />
@@ -220,25 +208,26 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
             <textarea
               value={textInput}
               onChange={e => setTextInput(e.target.value)}
-              placeholder={`ספרו מה העסק שלכם עושה, מה מייחד אתכם, למי אתם מיועדים...\n\nלמשל: "מאפיית בוטיק ביתית בתל אביב. אופים לחם שאור מקמח מקומי, עוגות לאירועים ומאפים טריים כל בוקר. הכל ביתי, בלי חומרים משמרים."`}
-              rows={5}
-              className="w-full rounded-xl border border-border pv-surface2 pv-text placeholder:pv-faint text-sm p-4 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="ספרו מה מייחד אתכם, למי אתם מיועדים..."
+              rows={4}
+              maxLength={1000}
+              className="w-full rounded-xl border border-border pv-surface2 pv-text placeholder:pv-faint text-sm p-4 resize-none focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40"
             />
             <p className="text-xs pv-faint mt-1 text-left">{textInput.length} / 1000</p>
           </motion.div>
         )}
 
         {method === "url" && (
-          <motion.div key="url" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+          <motion.div key="url" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-2">
             <input
               type="url"
               value={urlInput}
               onChange={e => setUrlInput(e.target.value)}
               placeholder="https://my-business.co.il"
-              className="w-full h-12 rounded-xl border border-border pv-surface2 pv-text placeholder:pv-faint text-sm px-4 focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full h-12 rounded-xl border border-border pv-surface2 pv-text placeholder:pv-faint text-sm px-4 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40"
               dir="ltr"
             />
-            <p className="text-xs pv-faint mt-2">נשתמש בתוכן האתר לכתיבת הטקסטים</p>
+            <p className="text-xs pv-faint">נשתמש בתוכן האתר לכתיבת הטקסטים</p>
           </motion.div>
         )}
 
@@ -250,10 +239,10 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full py-8 rounded-xl border-2 border-dashed border-border hover:border-primary/40 text-sm pv-muted flex flex-col items-center gap-2 transition-colors"
+                className="w-full py-8 rounded-xl border-2 border-dashed border-amber-500/30 hover:border-amber-500/60 bg-amber-500/5 text-sm pv-muted flex flex-col items-center gap-2 transition-colors"
               >
-                <FileText className="w-8 h-8 pv-faint" />
-                לחצו לבחירת קובץ טקסט / PDF
+                <FileText className="w-8 h-8 text-amber-500/60" />
+                <span>לחצו לבחירת קובץ טקסט / PDF</span>
               </button>
             )}
           </motion.div>
@@ -264,7 +253,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
             {transcript ? (
               <div className="w-full rounded-xl border border-border pv-surface2 p-4 text-sm pv-text">{transcript}</div>
             ) : (
-              <p className="text-sm pv-muted">לחצו על המיקרופון וספרו על העסק שלכם</p>
+              <p className="text-sm pv-muted">{isRecording ? "" : "לחצו על המיקרופון וספרו על העסק שלכם"}</p>
             )}
             <button
               type="button"
@@ -272,13 +261,13 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
               disabled={isGenerating}
               className={`w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 ${
                 isRecording
-                  ? "bg-red-500 border-red-500 text-white animate-pulse"
-                  : "border-primary bg-primary/10 text-primary hover:bg-primary/20"
+                  ? "bg-rose-500 border-rose-500 text-white animate-pulse shadow-lg shadow-rose-500/40"
+                  : "border-rose-500/50 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
               }`}
             >
               {isRecording ? <MicOff className="w-7 h-7" /> : <Mic className="w-7 h-7" />}
             </button>
-            {isRecording && <p className="text-xs text-red-500">מקליט... לחצו שוב לסיום</p>}
+            {isRecording && <p className="text-xs text-rose-400 font-medium">מקליט... לחצו שוב לסיום</p>}
           </motion.div>
         )}
       </AnimatePresence>
@@ -288,60 +277,51 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
         type="button"
         onClick={handleGenerate}
         disabled={!canGenerate}
-        className="w-full h-12 rounded-xl bg-primary text-white font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-40 transition-opacity"
+        className={`w-full h-13 py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
+          canGenerate
+            ? `bg-gradient-to-l ${activeMethod.color} text-white shadow-lg hover:opacity-90`
+            : "bg-primary/20 text-primary/40 cursor-not-allowed"
+        }`}
       >
         {isGenerating ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            {PROGRESS_STEPS[progressStep]}
-          </>
+          <><Loader2 className="w-4 h-4 animate-spin" />{PROGRESS_STEPS[progressStep]}</>
         ) : generated ? (
-          <><Wand2 className="w-4 h-4" /> צרו מחדש</>
+          <><Sparkles className="w-4 h-4" />צרו מחדש</>
         ) : (
-          <><Wand2 className="w-4 h-4" /> צרו לי את התכנים</>
+          <><Sparkles className="w-4 h-4" />צרו לי את התכנים</>
         )}
       </button>
 
-      {/* Explicit skip — the texts can always be written/edited later in the dashboard. */}
       {!generated && !isGenerating && (
         <button
           type="button"
           onClick={onNext}
-          className="w-full text-center text-sm pv-muted underline underline-offset-4 hover:text-primary transition-colors"
+          className="w-full text-center text-xs pv-faint hover:pv-muted underline underline-offset-4 transition-colors"
         >
           דלגו לעכשיו - אפשר למלא ולערוך את כל הטקסטים מאזור הניהול
         </button>
       )}
 
-      {/* Success state — no content preview, surprise reveal in StepTemplate */}
       {generated && !isGenerating && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl border border-primary/30 bg-primary/5"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl border border-primary/30 bg-gradient-to-l from-primary/10 to-emerald-500/10"
         >
-          <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
-            <Check className="w-4 h-4 text-primary" />
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shrink-0 shadow-md shadow-primary/30">
+            <Check className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="text-sm font-medium text-primary">התכנים מוכנים</p>
+            <p className="text-sm font-semibold text-primary">התכנים מוכנים</p>
             <p className="text-xs pv-muted">תראו אותם באתר בשלב הבא</p>
           </div>
         </motion.div>
       )}
 
-      {/* Reassurance */}
-      <p className="text-center text-xs pv-faint" style={{ fontFamily: "Georgia, serif", fontStyle: "italic" }}>
-        כל הטקסטים ניתנים לעריכה מלאה מאזור הניהול
-      </p>
-
       <StepNavigation
         onNext={onNext}
         onBack={onBack}
         nextLabel="הבא ←"
-        // Show the forward button once content is generated. Before generation the
-        // underlined "דלגו לעכשיו" link above is the forward path; after generation
-        // that link is hidden, so without this the user would be stuck with only "חזרה".
         showPreview={!!generated}
         showSave={false}
       />
