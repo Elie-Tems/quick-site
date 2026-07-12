@@ -774,7 +774,14 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
               <input
                 autoFocus
                 defaultValue={product.name}
-                onBlur={e => { handleUpdateProduct(product.id, { name: e.target.value || product.name }); setEditingFieldProductId(null); }}
+                onBlur={e => {
+                  handleUpdateProduct(product.id, { name: e.target.value || product.name });
+                  // Only close if focus didn't move to the sibling price input
+                  const related = e.relatedTarget as HTMLElement | null;
+                  if (!related || !e.currentTarget.parentElement?.contains(related)) {
+                    setEditingFieldProductId(null);
+                  }
+                }}
                 onKeyDown={e => { if (e.key === "Enter" || e.key === "Escape") (e.target as HTMLInputElement).blur(); }}
                 className="flex-1 min-w-0 h-8 rounded-lg border border-primary/50 bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/40"
                 dir="rtl"
@@ -784,19 +791,24 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 type="number"
                 min="0"
                 placeholder="₪"
-                onBlur={e => { handleUpdateProduct(product.id, { price: Number(e.target.value) || 0 }); }}
-                onKeyDown={e => { if (e.key === "Enter" || e.key === "Escape") (e.target as HTMLInputElement).blur(); }}
+                onBlur={e => { handleUpdateProduct(product.id, { price: Number(e.target.value) || 0 }); setEditingFieldProductId(null); }}
+                onKeyDown={e => {
+                  if (e.key === "Enter" || e.key === "Escape") {
+                    handleUpdateProduct(product.id, { price: Number(e.currentTarget.value) || 0 });
+                    setEditingFieldProductId(null);
+                  }
+                }}
                 className="w-20 h-8 rounded-lg border border-primary/50 bg-background px-2 text-sm text-left focus:outline-none focus:ring-1 focus:ring-primary/40"
                 dir="ltr"
               />
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 group/name">
+            <div className="flex items-center gap-1.5">
               <p className="text-sm font-medium truncate">{product.name}</p>
               <span className="text-sm text-muted-foreground shrink-0">· ₪{product.price}</span>
               <button
                 onClick={e => { e.stopPropagation(); setEditingFieldProductId(product.id); }}
-                className="p-0.5 opacity-0 group-hover/name:opacity-100 hover:text-primary transition-all shrink-0"
+                className="p-0.5 opacity-40 hover:opacity-100 hover:text-primary transition-all shrink-0"
                 title="ערוך שם ומחיר"
               >
                 <Pencil className="w-3 h-3" />
