@@ -123,18 +123,29 @@ Deno.serve(async (req) => {
   const idem = `addon-sub:${user.id}:${addonType}:${new Date(nextChargeAt).toISOString().slice(0, 10)}`;
   const isTest = Deno.env.get("BILLING_TEST_MODE") === "true";
   const { data: existingCharge } = await admin.from("billing_charges").select("status").eq("idempotency_key", idem).maybeSingle();
-  if (existingCharge && (existingCharge as { status?: string }).status === "success") {
+  const existingStatus = (existingCharge as { status?: string } | null)?.status;
+  if (existingStatus === "success") {
     // Charge already happened; just ensure the add-on + flag are active.
     await activate(admin, { user, businessId, addonType, addon, monthGross });
     return json({ ok: true, alreadyCharged: true });
   }
 
-  const { error: insErr } = await admin.from("billing_charges").insert({
+  const chargeRow = {
     user_id: user.id, business_id: businessId, amount_ils: chargeGross, status: "pending",
-    is_test: isTest, idempotency_key: idem, coupon_code: couponCode,
+    is_test: isTest, idempotency_key: idem, coupon_code: couponCode, error_code: null,
     payment_description: `${addon.description} - חלק יחסי (${daysLeft} ימים)`,
-  });
-  if (insErr) return json({ ok: false, error: "duplicate in flight" }, 409);
+  };
+  if (existingCharge) {
+    // A prior attempt left a pending/failed row for the SAME idem key (e.g. the
+    // merchant double-clicked, or a previous run crashed before completing).
+    // Re-use it and retry instead of hard-failing with a 409 the user can never
+    // recover from. The token charge below sends the same externalUniqId, so
+    // Cardcom itself de-dupes - a genuinely-completed charge can't double.
+    await admin.from("billing_charges").update(chargeRow).eq("idempotency_key", idem);
+  } else {
+    const { error: insErr } = await admin.from("billing_charges").insert(chargeRow);
+    if (insErr) return json({ ok: false, error: "לא הצלחנו לפתוח חיוב כרגע. נסו שוב עוד רגע." }, 409);
+  }
 
   const res = await chargeToken({
     token: ccTokenId, expMMYY: toMMYY(expMonth, expYear), amountIls: chargeGross, externalUniqId: idem,

@@ -76,12 +76,12 @@ const PRODUCTS: Product[] = [
   {
     view: "whatsapp", addon: "whatsapp", title: "וואטסאפ עסקי", netIls: 89, priceLabel: '₪89/חודש + מע"מ',
     desc: "התראות הזמנה אוטומטיות, דיוור לרשימת לקוחות, ובוט AI שעונה 24/7.",
-    goal: "time", icon: MessageCircle, preview: "chat", show: whatsappEnabled(), comingSoon: true,
+    goal: "time", icon: MessageCircle, preview: "chat", show: true, comingSoon: !whatsappEnabled(),
   },
   {
     view: "email", addon: "email", title: "מייל עסקי", netIls: 19, priceLabel: '₪19/חודש + מע"מ',
     desc: "כתובת מקצועית info@your-brand.co.il - הרבה יותר אמין מ-Gmail אישי.",
-    goal: "time", icon: Mail, preview: "mail", show: emailEnabled(), comingSoon: true,
+    goal: "time", icon: Mail, preview: "mail", show: true, comingSoon: !emailEnabled(),
   },
 ];
 
@@ -169,7 +169,9 @@ const DashboardUpgrades = ({ onNavigate, business }: Props) => {
       <div className="space-y-6">
         {goalsInOrder.map((goal) => {
           const g = GOALS[goal];
-          const prods = PRODUCTS.filter((p) => p.goal === goal && p.show);
+          // Live tools in each goal band; everything "בקרוב" is collected into one
+          // section at the very bottom instead of scattered inside the bands.
+          const prods = PRODUCTS.filter((p) => p.goal === goal && p.show && !p.comingSoon);
           if (prods.length === 0) return null;
           const GIcon = g.icon;
           return (
@@ -241,6 +243,39 @@ const DashboardUpgrades = ({ onNavigate, business }: Props) => {
             </section>
           );
         })}
+
+        {/* "בקרוב" - all upcoming tools collected at the bottom */}
+        {(() => {
+          const soon = PRODUCTS.filter((p) => p.show && p.comingSoon);
+          if (soon.length === 0) return null;
+          return (
+            <section>
+              <div className="inline-flex items-center gap-2 text-muted-foreground text-sm font-bold px-4 py-1.5 rounded-full mb-3 bg-muted">
+                <Clock className="w-4 h-4" /> בקרוב
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {soon.map((p) => {
+                  const Icon = p.icon;
+                  return (
+                    <div key={p.view} className="rounded-2xl border border-border bg-card/60 p-4 flex items-center gap-3 opacity-80">
+                      <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-muted">
+                        <Icon className="w-5 h-5 text-muted-foreground" />
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-foreground">{p.title}</h3>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">בקרוב</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-snug mt-0.5 line-clamp-2">{p.desc}</p>
+                        <div className="text-xs font-semibold text-muted-foreground mt-1">{p.priceLabel}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })()}
       </div>
 
       {/* sticky cart bar */}

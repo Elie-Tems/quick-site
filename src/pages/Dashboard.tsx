@@ -57,6 +57,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useReferralRewardNotification } from "@/hooks/useReferralRewardNotification";
 import { Loader2, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { edgeErrorMessage } from "@/lib/edgeError";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -99,7 +100,7 @@ const Dashboard = () => {
     setSubscribingAddon(addon);
     try {
       const { data, error } = await supabase.functions.invoke("addon-subscribe", { body: { addon, businessId: business.id } });
-      if (error) throw error;
+      if (error) { toast.error(await edgeErrorMessage(error, "לא הצלחנו להפעיל כרגע. נסו שוב עוד רגע.")); return; }
       if (data?.needsSubscription) { toast.error(data.message || "צריך מנוי פרסום פעיל כדי להוסיף תוספת."); setCurrentView('subscription'); return; }
       if (data?.needsCard) { toast.error(data.message || "אין כרטיס שמור. יש לפרסם אתר תחילה."); setCurrentView('subscription'); return; }
       if (data?.declined) { toast.error(data.error || "התשלום נדחה. בדקו את הכרטיס ונסו שוב."); return; }

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Confetti from "@/components/ui/confetti";
+import { edgeErrorMessage } from "@/lib/edgeError";
 
 /**
  * The add-on checkout. Charges each selected recurring add-on on the merchant's
@@ -80,8 +81,9 @@ const UpgradeCheckoutModal = ({
           body: { addon: item.addon, businessId, couponCode: couponState === "valid" ? coupon.trim() : undefined },
         });
         if (error) {
-          // Transport / server error - we never reached a card decision.
-          setStates((s) => ({ ...s, [item.addon]: { status: "failed", msg: "בעיה זמנית - לא בוצע חיוב. נסו שוב." } }));
+          // Non-2xx from the function - surface the real reason from the body.
+          const msg = await edgeErrorMessage(error, "בעיה זמנית - לא בוצע חיוב. נסו שוב.");
+          setStates((s) => ({ ...s, [item.addon]: { status: "failed", msg } }));
           continue;
         }
         if (data?.needsSubscription) {

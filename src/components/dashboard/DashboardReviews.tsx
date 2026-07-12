@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Star, Check, Loader2, Lock, Search, RefreshCw, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { edgeErrorMessage } from "@/lib/edgeError";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
 import { REVIEWS_ADDON_PRICE_ILS } from "@/lib/publishPaymentConfig";
 import { toast } from "sonner";
@@ -87,7 +88,7 @@ const DashboardReviews = ({ businessId }: Props) => {
     setBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("addon-subscribe", { body: { addon: "reviews", businessId } });
-      if (error) throw error;
+      if (error) { toast.error(await edgeErrorMessage(error, "לא הצלחנו להפעיל כרגע. נסו שוב עוד רגע.")); return; }
       if (data?.needsSubscription) { toast.error(data.message || "צריך מנוי פרסום פעיל כדי להוסיף ביקורות."); return; }
       if (data?.needsCard) { toast.error(data.message || "אין כרטיס שמור. יש לפרסם אתר תחילה."); return; }
       if (data?.declined) { toast.error(data.error || "התשלום נדחה. בדקו את הכרטיס ונסו שוב."); return; }
