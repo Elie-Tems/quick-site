@@ -44,8 +44,8 @@ const fallback = (i: number) => FALLBACK_GRADIENTS[i % FALLBACK_GRADIENTS.length
 
 const MAIN_CATEGORIES = [
   { id: "products" as BusinessType,  title: "מכירת מוצרים", desc: "חנות, בוטיק, מאפייה, מוצרים",                      img: U("1556742049-0cfed4f6a45d") },
-  { id: "services" as BusinessType,  title: "נותן/ת שירות",  desc: 'קוסמטיקה, כושר, ייעוץ, נדל"ן, טיפולים',           img: U("1521737604893-d14cc237f11d") },
-  { id: "nonprofit" as BusinessType, title: "עמותה / ארגון", desc: "תרומות, גיוס המונים, קהילה",                        img: U("1469571486292-0ba58a3f068b") },
+  { id: "services" as BusinessType,  title: "נותני שירות",   desc: 'קוסמטיקה, כושר, ייעוץ, נדל"ן, טיפולים',           img: U("1521737604893-d14cc237f11d") },
+  { id: "nonprofit" as BusinessType, title: "עמותה / ארגון", desc: "תרומות, גיוס המונים, קהילה",                        img: U("1559027615-cd4628902d4a") },
 ];
 
 const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: string }[]> = {
