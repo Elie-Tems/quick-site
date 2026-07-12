@@ -2,11 +2,10 @@ import { useEffect, useState, useCallback } from "react";
 import { gtm } from "@/lib/gtm";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, useSearchParams, useLocation, Link } from "react-router-dom";
-import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight, RefreshCw, XCircle, Trash2, ShieldCheck, Ticket } from "lucide-react";
+import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight, RefreshCw, XCircle, ShieldCheck, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyBusiness } from "@/hooks/useBusiness";
@@ -52,7 +51,6 @@ const PublishPayment = () => {
   // removed - it just delayed reaching the terms/coupon screen below, which
   // covers the same confirmation.
   const [confirmed, setConfirmed] = useState(false);
-  const [agreedTerms, setAgreedTerms] = useState(false);
   // Self-managed billing (iCount token) - gated by the build flag OR a ?billing=token
   // URL override, so we can test the new flow in isolation before flipping it live.
   const selfManaged = import.meta.env.VITE_BILLING_SELF_MANAGED === "true" || searchParams.get("billing") === "token";
@@ -527,60 +525,33 @@ const PublishPayment = () => {
           : Math.max(0, fee - couponInfo.discount_value))
       : fee;
     const hasDiscount = !!couponInfo && discNet < fee;
-    const terms = [
-      {
-        icon: RefreshCw,
-        title: "מנוי חודשי מתחדש",
-        body: `החיוב הוא הוראת קבע חודשית של ₪${fee}, שמתחדשת אוטומטית בכל חודש כל עוד החנות מפורסמת.`,
-      },
-      {
-        icon: XCircle,
-        title: "ביטול בכל עת - החיוב נעצר מיד",
-        body: 'אפשר לבטל בכל רגע דרך "התוכנית שלי" בדשבורד. ברגע הביטול החיוב החודשי נפסק - אין התחייבות ואין קנס.',
-      },
-      {
-        icon: Trash2,
-        title: "מחיקת החנות מבטלת את המנוי",
-        body: "אם תמחקו את החנות, המנוי מתבטל אוטומטית ולא תחויבו יותר.",
-      },
-      {
-        icon: ShieldCheck,
-        title: "תשלום מאובטח דרך Cardcom",
-        body: "הסליקה מתבצעת בעמוד המאובטח של חברת הסליקה (Cardcom). סיאנגו לא רואה ולא שומרת את פרטי כרטיס האשראי שלכם.",
-      },
-    ];
     return (
       <>
         <SEOHead title="אישור תשלום | סיאנגו" noindex={true} />
         <div className="min-h-screen bg-surface-1 flex flex-col">
-          <div className="w-full max-w-2xl mx-auto px-4 py-8 flex flex-col gap-6 flex-1">
-            <div className="flex items-center justify-between">
-              <Button variant="ghost" asChild>
-                <Link to="/dashboard" className="gap-2"><ArrowRight className="w-4 h-4" /> לדשבורד</Link>
-              </Button>
-              <div className="w-[90px]" />
+          <div className="w-full max-w-md mx-auto px-4 py-10 flex flex-col gap-6 flex-1">
+
+            {/* Header */}
+            <div className="text-center space-y-1">
+              <div className="text-4xl mb-2">🎉</div>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">מוכנים לפרסם!</h1>
+              <p className="text-muted-foreground text-sm">החנות שלכם מוכנה - פעולה אחת ואתם חיים</p>
             </div>
 
-            <div className="text-center space-y-2">
-              <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-1">
-                <CreditCard className="w-7 h-7 text-primary" />
-              </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground">רגע לפני שמפרסמים</h1>
-              <p className="text-muted-foreground">הנה בדיוק על מה אתם משלמים - חשוב לנו שיהיה ברור.</p>
-            </div>
-
+            {/* Price card */}
             <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-5 text-center">
-              <p className="text-3xl font-extrabold text-foreground">
-                ₪{discNet} <span className="text-lg font-semibold text-muted-foreground">לחודש</span>
-                {hasDiscount && <span className="text-lg font-semibold text-muted-foreground line-through mr-2">₪{fee}</span>}
+              <p className="text-4xl font-extrabold text-foreground">
+                ₪{discNet}
+                {hasDiscount && <span className="text-xl font-semibold text-muted-foreground line-through mr-2">₪{fee}</span>}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 {hasDiscount
-                  ? `מבצע: ${couponInfo!.discount_type === "percent" ? `${couponInfo!.discount_value}% הנחה` : `₪${couponInfo!.discount_value} הנחה`}${couponInfo!.duration === "first_month" ? " (חודש ראשון)" : ""}`
-                  : "חיוב חודשי מתחדש · ללא התחייבות"}
+                  ? `${couponInfo!.discount_type === "percent" ? `${couponInfo!.discount_value}% הנחה` : `₪${couponInfo!.discount_value} הנחה`}${couponInfo!.duration === "first_month" ? " לחודש הראשון" : ""} · אחר כך ₪${fee}/חודש`
+                  : "לחודש · ביטול בכל עת · ללא התחייבות"}
               </p>
             </div>
 
+            {/* Coupon */}
             {selfManaged && (
               <div className="rounded-2xl border border-border bg-card p-4">
                 <div className="flex items-center gap-2 mb-2 text-sm font-semibold text-foreground"><Ticket className="w-4 h-4 text-primary" /> יש לכם קוד קופון?</div>
@@ -592,43 +563,42 @@ const PublishPayment = () => {
               </div>
             )}
 
-            <div className="space-y-3">
-              {terms.map(({ icon: Icon, title, body }) => (
-                <div key={title} className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
-                  <div className="mt-0.5 shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-foreground">{title}</p>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
-                  </div>
+            {/* 3 key points */}
+            <div className="space-y-2">
+              {[
+                { icon: RefreshCw, text: `מנוי חודשי מתחדש של ₪${fee} - מתחדש אוטומטית כל חודש` },
+                { icon: XCircle,   text: 'ביטול בכל עת דרך "התוכנית שלי" - החיוב נעצר מיד, אין קנס' },
+                { icon: ShieldCheck, text: "תשלום מאובטח דרך Cardcom - סיאנגו לא רואה את פרטי הכרטיס" },
+              ].map(({ icon: Icon, text }) => (
+                <div key={text} className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <Icon className="w-4 h-4 shrink-0 text-primary/60" />
+                  <span>{text}</span>
                 </div>
               ))}
             </div>
 
-            <label className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 cursor-pointer select-none">
-              <Checkbox
-                checked={agreedTerms}
-                onCheckedChange={(v) => setAgreedTerms(v === true)}
-                className="mt-0.5"
-              />
-              <span className="text-sm text-foreground">
-                קראתי והבנתי - אני מאשר/ת חיוב חודשי מתחדש של ₪{fee}, שאפשר לבטל בכל עת.
-              </span>
-            </label>
-
+            {/* CTA */}
             <Button
               size="lg"
               variant="hero"
-              disabled={!agreedTerms || startingCheckout}
+              disabled={startingCheckout}
               onClick={handleConfirm}
-              className="gap-2 text-base"
+              className="gap-2 text-base mt-2"
             >
-              {startingCheckout ? <><Loader2 className="w-5 h-5 animate-spin" /> מכינים תשלום...</> : <>אישור - המשך לתשלום <ArrowRight className="w-5 h-5 rotate-180" /></>}
+              {startingCheckout ? <><Loader2 className="w-5 h-5 animate-spin" /> מכינים תשלום...</> : <>פרסום החנות - המשך לתשלום <ArrowRight className="w-5 h-5 rotate-180" /></>}
             </Button>
-            <p className="text-center text-xs text-muted-foreground -mt-2">
-              תעברו לעמוד הסליקה המאובטח של Cardcom רק אחרי האישור.
+
+            <p className="text-center text-xs text-muted-foreground -mt-3">
+              תועברו לעמוד הסליקה המאובטח של Cardcom
             </p>
+
+            {/* Escape hatch - small and low-prominence */}
+            <div className="text-center pt-2">
+              <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4">
+                חזרה לדשבורד
+              </Link>
+            </div>
+
           </div>
         </div>
       </>
