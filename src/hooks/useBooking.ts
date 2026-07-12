@@ -34,6 +34,10 @@ export interface Appointment {
   notes: string | null; price_at_booking: number; deposit_amount: number;
   deposit_status: "none" | "pending" | "paid" | "refunded";
 }
+export interface Blackout {
+  id: string; business_id: string; staff_id: string | null;
+  starts_at: string; ends_at: string; reason: string | null;
+}
 
 // ---- Merchant reads ----
 export const useBookingServices = (businessId?: string) =>
@@ -86,7 +90,43 @@ export const useAppointments = (businessId?: string, opts?: { from?: string; to?
     },
   });
 
+export const useBlackouts = (businessId?: string) =>
+  useQuery({
+    queryKey: ["booking-blackouts", businessId],
+    enabled: !!businessId,
+    queryFn: async (): Promise<Blackout[]> => {
+      const { data, error } = await sb.from("booking_blackouts")
+        .select("*").eq("business_id", businessId).order("starts_at");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
 // ---- Merchant mutations ----
+export const useAddBlackout = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (v: { business_id: string; starts_at: string; ends_at: string; reason?: string | null }) => {
+      const { error } = await sb.from("booking_blackouts").insert({
+        business_id: v.business_id, starts_at: v.starts_at, ends_at: v.ends_at, reason: v.reason || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["booking-blackouts", v.business_id] }),
+  });
+};
+
+export const useDeleteBlackout = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (v: { id: string; business_id: string }) => {
+      const { error } = await sb.from("booking_blackouts").delete().eq("id", v.id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["booking-blackouts", v.business_id] }),
+  });
+};
+
 /** Ensure a business has at least one bookable staff (single-operator default). */
 async function ensureDefaultStaff(businessId: string): Promise<string> {
   const { data: existing } = await sb.from("booking_staff")

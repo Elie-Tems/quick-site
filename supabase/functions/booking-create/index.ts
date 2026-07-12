@@ -118,10 +118,15 @@ Deno.serve(async (req) => {
   // Best-effort; never blocks the response.
   const emailBookingConfirm = async () => {
     if (!customer.email) return;
+    // Self-cancel link (HMAC token) so the customer can cancel without an account,
+    // exactly what the reminder email promises ("...דרך הקישור בהזמנה").
+    const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
+    const cancelUrl = `${siteUrl}/booking/cancel?a=${appointmentId}&t=${encodeURIComponent(cancelToken)}`;
     try {
       await sendLifecycleEmail(admin, {
         businessId, key: "booking_confirm", to: customer.email, name: customer.fullName,
         vars: { service: service.name },
+        extraHtml: `<p style="margin:16px 0 0;font-size:13px;color:#6b7280">צריך לבטל את התור? <a href="${cancelUrl}" style="color:#2e8b6a;font-weight:600">לחצו כאן לביטול</a></p>`,
       });
     } catch (e) { console.warn("booking confirm email failed:", appointmentId, String(e)); }
   };

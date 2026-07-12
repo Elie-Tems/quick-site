@@ -43,6 +43,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const PublishPayment = lazy(() => import("./pages/PublishPayment"));
 const EmailMarketingPreview = lazy(() => import("./pages/EmailMarketingPreview"));
 const Presentation = lazy(() => import("./pages/Presentation"));
+const BookingCancel = lazy(() => import("./pages/BookingCancel"));
 const AICreditPayment = lazy(() => import("./pages/AICreditPayment"));
 const PreviewPayments = lazy(() => import("./pages/PreviewPayments"));
 const PreviewEmails = lazy(() => import("./pages/PreviewEmails"));
@@ -187,6 +188,7 @@ const App = () => {
                   <Route path="/publish-payment" element={<PublishPayment />} />
                   <Route path="/thank-you" element={<ThankYou />} />
                   <Route path="/ai-credits-payment" element={<AICreditPayment />} />
+                  <Route path="/booking/cancel" element={<BookingCancel />} />
 
                   {/* Internal-only pages (investor deck, platform-UI mockups with
                       sample data). Admin-gated so Moti/Daniel can review them but

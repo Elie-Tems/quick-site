@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
-import { Plus, Clock, Calendar, Check, X, Loader2, Scissors } from "lucide-react";
+import { Plus, Clock, Calendar, Check, X, Loader2, Scissors, CalendarX, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   useBookingServices, useBookingStaff, useAppointments,
   useUpsertService, useSetWorkingHours, useWorkingHours, useUpdateAppointmentStatus,
+  useBlackouts, useAddBlackout, useDeleteBlackout,
   type Appointment,
 } from "@/hooks/useBooking";
 import CalendarConnect from "./CalendarConnect";
@@ -32,11 +33,29 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
   const now = new Date().toISOString();
   const { data: appts = [] } = useAppointments(businessId, { from: now });
 
+  const { data: blackouts = [] } = useBlackouts(businessId);
   const upsertService = useUpsertService();
   const setHours = useSetWorkingHours();
   const updateStatus = useUpdateAppointmentStatus();
+  const addBlackout = useAddBlackout();
+  const deleteBlackout = useDeleteBlackout();
 
   const [newSvc, setNewSvc] = useState({ name: "", duration: "45", price: "" });
+  const [newBlackout, setNewBlackout] = useState({ from: "", to: "", reason: "" });
+
+  const saveBlackout = () => {
+    if (!newBlackout.from) return;
+    const to = newBlackout.to || newBlackout.from;
+    addBlackout.mutate(
+      {
+        business_id: businessId,
+        starts_at: `${newBlackout.from}T00:00:00Z`,
+        ends_at: `${to}T23:59:59Z`,
+        reason: newBlackout.reason.trim() || null,
+      },
+      { onSuccess: () => setNewBlackout({ from: "", to: "", reason: "" }) },
+    );
+  };
 
   const hoursByDay = useMemo(() => {
     const m: Record<number, { start: string; end: string }> = {};
@@ -115,6 +134,44 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
         <Button onClick={saveHours} disabled={setHours.isPending || !primaryStaff} className="mt-3">
           {setHours.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "שמור שעות"}
         </Button>
+      </section>
+
+      {/* Blackout dates (days off / vacations) */}
+      <section>
+        <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2"><CalendarX className="w-5 h-5 text-primary" /> ימים חסומים</h3>
+        <p className="text-sm text-muted-foreground mb-3">חסמו ימים שבהם אין תורים (חופשה, חג, יום סגור). התאריכים האלה לא יוצעו ללקוחות.</p>
+        <div className="space-y-2 mb-3">
+          {blackouts.length === 0 && <p className="text-sm text-muted-foreground">אין ימים חסומים.</p>}
+          {blackouts.map((b) => {
+            const from = new Date(b.starts_at).toLocaleDateString("he-IL", { dateStyle: "medium" });
+            const to = new Date(b.ends_at).toLocaleDateString("he-IL", { dateStyle: "medium" });
+            return (
+              <div key={b.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-foreground">{from === to ? from : `${from} - ${to}`}</div>
+                  {b.reason && <div className="text-xs text-muted-foreground truncate">{b.reason}</div>}
+                </div>
+                <Button size="icon" variant="ghost" onClick={() => deleteBlackout.mutate({ id: b.id, business_id: businessId })} title="הסר">
+                  <Trash2 className="w-4 h-4 text-rose-500" />
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap gap-2 items-end">
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">מתאריך</label>
+            <Input type="date" value={newBlackout.from} onChange={(e) => setNewBlackout({ ...newBlackout, from: e.target.value })} className="max-w-[160px]" />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">עד (אופציונלי)</label>
+            <Input type="date" value={newBlackout.to} onChange={(e) => setNewBlackout({ ...newBlackout, to: e.target.value })} className="max-w-[160px]" />
+          </div>
+          <Input placeholder="סיבה (אופציונלי)" value={newBlackout.reason} onChange={(e) => setNewBlackout({ ...newBlackout, reason: e.target.value })} className="max-w-[180px]" />
+          <Button onClick={saveBlackout} disabled={addBlackout.isPending || !newBlackout.from}>
+            {addBlackout.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4 ml-1" /> חסום</>}
+          </Button>
+        </div>
       </section>
 
       {/* Upcoming appointments */}
