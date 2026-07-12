@@ -154,7 +154,6 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
   const [customColor, setCustomColor] = useState(data.extractedBranding?.primaryColor || '#22c55e');
   const [hue, setHue] = useState(() => hexToHue(data.extractedBranding?.primaryColor || '#22c55e'));
   const [hexInput, setHexInput] = useState(data.extractedBranding?.primaryColor || '#22c55e');
-  const [showColorPicker, setShowColorPicker] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [legalAcknowledged, setLegalAcknowledged] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -173,7 +172,7 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
     });
   };
 
-  const handlePaletteSelect = (id: ColorPaletteId) => { setSelectedPalette(id); setShowColorPicker(id === 'custom'); commit(selectedLayout, id, customColor); };
+  const handlePaletteSelect = (id: ColorPaletteId) => { setSelectedPalette(id); commit(selectedLayout, id, customColor); };
 
   const businessSlug = data.businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^֐-׿a-z0-9-]/g, '');
 
@@ -256,9 +255,11 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
           </div>
         </div>
 
-          {/* Color palette */}
-        <div className="px-3 pb-3">
-          <p className="text-[10px] font-semibold pv-faint uppercase tracking-wider mb-2">צבע האתר</p>
+        {/* Color palette */}
+        <div className="px-3 pb-3 space-y-3">
+          <p className="text-[10px] font-semibold pv-faint uppercase tracking-wider">צבע האתר</p>
+
+          {/* Preset swatches */}
           <div className="grid grid-cols-5 gap-1.5">
             {paletteList.map(p => (
               <button
@@ -275,76 +276,70 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
                 }}
               />
             ))}
-            <button
-              onClick={() => { handlePaletteSelect('custom'); setShowColorPicker(v => !v); }}
-              title="צבע חופשי"
-              className="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110"
-              style={{
-                borderColor: selectedPalette === 'custom' ? 'hsl(var(--primary))' : 'var(--pv-border,#444)',
-                background: selectedPalette === 'custom' ? customColor : 'transparent',
-                opacity: selectedPalette === 'custom' ? 1 : 0.6,
-              }}
-            >
-              {selectedPalette !== 'custom' && <Pipette className="w-3 h-3 pv-muted" />}
-            </button>
           </div>
-          {showColorPicker && selectedPalette === 'custom' && (
-            <div className="mt-3 space-y-2">
-              {/* Hue slider */}
-              <div>
-                <p className="text-[9px] pv-faint mb-1">גוון</p>
-                <div className="relative h-4 rounded-full overflow-hidden" style={{
-                  background: 'linear-gradient(to left, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)'
-                }}>
-                  <input
-                    type="range" min="0" max="360" value={hue}
-                    onChange={e => {
-                      const h = Number(e.target.value);
-                      setHue(h);
-                      const hex = hslToHex(h, 70, 45);
-                      setHexInput(hex);
-                      setCustomColor(hex);
-                      commit(selectedLayout, 'custom', hex);
-                    }}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white shadow-md pointer-events-none"
-                    style={{ left: `${(hue / 360) * 100}%`, transform: 'translate(-50%, -50%)', background: hslToHex(hue, 70, 45) }} />
-                </div>
-              </div>
-              {/* Hex input */}
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md shrink-0 border border-white/20" style={{ background: customColor }} />
+
+          {/* Custom color — always visible */}
+          <div className="rounded-xl border p-2.5 space-y-2" style={{ borderColor: 'var(--pv-border,#444)', background: 'var(--pv-surface,rgba(255,255,255,0.04))' }}>
+            <p className="text-[9px] font-semibold pv-faint uppercase tracking-wider flex items-center gap-1">
+              <Pipette className="w-3 h-3" /> צבע מותאם אישית
+            </p>
+            {/* Hue slider */}
+            <div>
+              <p className="text-[9px] pv-faint mb-1">גוון</p>
+              <div className="relative h-5 rounded-full overflow-hidden" style={{
+                background: 'linear-gradient(to left, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)'
+              }}>
                 <input
-                  type="text"
-                  value={hexInput}
-                  maxLength={7}
-                  placeholder="#000000"
+                  type="range" min="0" max="360" value={hue}
                   onChange={e => {
-                    const val = e.target.value.startsWith('#') ? e.target.value : '#' + e.target.value;
-                    setHexInput(val);
-                    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
-                      setCustomColor(val);
-                      setHue(hexToHue(val));
-                      commit(selectedLayout, 'custom', val);
-                    }
+                    const h = Number(e.target.value);
+                    setHue(h);
+                    const hex = hslToHex(h, 70, 45);
+                    setHexInput(hex);
+                    setCustomColor(hex);
+                    setSelectedPalette('custom');
+                    commit(selectedLayout, 'custom', hex);
                   }}
-                  className="flex-1 text-xs font-mono px-2 py-1.5 rounded-lg border focus:outline-none focus:ring-1 focus:ring-primary"
-                  style={{ background: 'var(--pv-surface,rgba(255,255,255,0.07))', borderColor: 'var(--pv-border,#444)', color: 'var(--pv-text,#fff)' }}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
+                <div className="absolute top-1/2 w-5 h-5 rounded-full border-2 border-white shadow-md pointer-events-none"
+                  style={{ left: `${(hue / 360) * 100}%`, transform: 'translate(-50%, -50%)', background: hslToHex(hue, 70, 45) }} />
               </div>
             </div>
-          )}
+            {/* Hex input */}
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg shrink-0 border-2 border-white/20 shadow-inner" style={{ background: customColor }} />
+              <input
+                type="text"
+                value={hexInput}
+                maxLength={7}
+                placeholder="#000000"
+                dir="ltr"
+                onChange={e => {
+                  const val = e.target.value.startsWith('#') ? e.target.value : '#' + e.target.value;
+                  setHexInput(val);
+                  if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+                    setCustomColor(val);
+                    setHue(hexToHue(val));
+                    setSelectedPalette('custom');
+                    commit(selectedLayout, 'custom', val);
+                  }
+                }}
+                className="flex-1 text-xs font-mono px-2 py-1.5 rounded-lg border focus:outline-none focus:ring-1 focus:ring-primary"
+                style={{ background: 'var(--pv-surface,rgba(255,255,255,0.07))', borderColor: 'var(--pv-border,#444)', color: 'var(--pv-text,#fff)' }}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* CTA */}
-        <div className="mt-auto px-3 pb-4 pt-2 border-t space-y-2" style={{ borderColor: 'var(--pv-border,#333)' }}>
+        {/* CTA — big and prominent */}
+        <div className="mt-auto px-3 pb-5 pt-3 border-t" style={{ borderColor: 'var(--pv-border,#333)' }}>
           <button
             onClick={() => setShowPublishModal(true)}
-            className="w-full py-3 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-1.5 transition-all hover:opacity-90 active:scale-[0.97]"
-            style={{ background: 'linear-gradient(135deg,#22c55e,#16a34a)', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}
+            className="w-full py-5 rounded-2xl text-white font-extrabold text-base flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.97]"
+            style={{ background: 'linear-gradient(135deg,#22c55e,#16a34a)', boxShadow: '0 6px 24px rgba(34,197,94,0.4)' }}
           >
-            <Rocket className="w-4 h-4" />
+            <Rocket className="w-5 h-5" />
             פרסמו את האתר ←
           </button>
         </div>
