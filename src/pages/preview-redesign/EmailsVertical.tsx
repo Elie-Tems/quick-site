@@ -232,6 +232,21 @@ const EmailsVertical = () => {
             </Body>
           </Email>
 
+          {/* Daily follow-up digest to the merchant */}
+          <Email from="נדל״ן לדוגמה (סיכום יומי)" subject="🔔 3 לידים לחזור אליהם היום">
+            <Header name="לחזור אליהם היום" initial="🔔" tag="סיכום מעקב יומי" />
+            <Body>
+              <Hero icon={Bell} title="יש לך 3 לידים לחזור אליהם 🔔" sub="אלה הלידים שסימנת לחזור אליהם עד היום - שלא ייפול אף אחד בין הכיסאות." />
+              <Box>
+                <Row icon={User} label="דוד כהן · דירת 4 חד' רמת גן" value="היום" accent />
+                <Row icon={User} label="מיכל לוי · פנטהאוז הרצליה" value="באיחור יומיים" />
+                <Row icon={User} label="יוסי א' · משרד להשכרה" value="היום" />
+              </Box>
+              <div style={{ textAlign: "center" }}><Button>פתיחת הלידים</Button></div>
+              <p style={{ fontSize: 12, color: MUTED, textAlign: "center", margin: "16px 0 0" }}>נשלח פעם ביום · אתם קובעים לכל ליד מתי לחזור, וכשטיפלתם - הוא יורד מהרשימה.</p>
+            </Body>
+          </Email>
+
           {/* ── Nonprofit ── */}
           {/* Donation thank you */}
           <Email from="עמותת לדוגמה" subject="💚 תודה על תרומתך">
