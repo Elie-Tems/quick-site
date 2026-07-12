@@ -1,7 +1,15 @@
 # Security headers for all pages (served by Cloudflare Pages).
-# CSP is shipped as Report-Only first (logs violations to the console, blocks
-# nothing) so we can watch for legitimate domains we missed before enforcing.
-# To enforce: rename the header to Content-Security-Policy and drop -Report-Only.
+#
+# CSP is now ENFORCED. The allow-list covers every third party the app legitimately
+# loads: Supabase, Google Fonts, and the storefront marketing-tags add-on
+# (Google Tag Manager / GA4 / Google Ads, Meta Pixel, TikTok Pixel) + the payment
+# gateways (PayPlus / iCount / Cardcom). A merchant pixel from a domain NOT listed
+# here will be blocked - that's the deliberate trade-off for locking down the
+# same-origin storefront (see StoreTracking custom_head hardening).
+#
+# To roll back fast if something legit is blocked: rename the header below to
+# `Content-Security-Policy-Report-Only` (logs, blocks nothing) and add the missing
+# domain, then re-enforce.
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Content-Type-Options: nosniff
@@ -9,4 +17,4 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(self), camera=(self), payment=(self)
   X-XSS-Protection: 0
-  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://api.openai.com; frame-src 'self' https://*.payplus.co.il https://*.icount.co.il; object-src 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://connect.facebook.net https://analytics.tiktok.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://www.facebook.com https://analytics.tiktok.com https://static.cloudflareinsights.com; frame-src 'self' https://*.payplus.co.il https://*.icount.co.il https://*.cardcom.solutions; object-src 'none'; base-uri 'self'; form-action 'self' https://*.payplus.co.il https://*.icount.co.il https://*.cardcom.solutions

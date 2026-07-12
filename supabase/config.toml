@@ -185,3 +185,8 @@ verify_jwt = false
 verify_jwt = false
 [functions.calendar-sync]
 verify_jwt = false
+
+# provision-custom-domain: merchant provisions their PURCHASED domain as a
+# Cloudflare custom hostname (SSL + routing). Merchant-authenticated.
+[functions.provision-custom-domain]
+verify_jwt = true
