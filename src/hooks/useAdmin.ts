@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { subscriptionMonthly, isActivePaid } from "@/lib/billing/subscriptionRevenue";
 
 export interface PlatformStats {
   total_businesses: number;
@@ -110,8 +111,8 @@ export function usePlatformStats() {
         .select('paid_until, monthly_total, status');
       const nowTs = new Date();
       const siangoRevenue = (subs || [])
-        .filter((s: any) => s.paid_until && new Date(s.paid_until) > nowTs && s.status === 'active')
-        .reduce((sum: number, s: any) => sum + (Number(s.monthly_total) || 69), 0);
+        .filter((s: any) => isActivePaid(s, nowTs))
+        .reduce((sum: number, s: any) => sum + subscriptionMonthly(s), 0);
 
       const stats: PlatformStats = {
         total_businesses: businesses?.length || 0,
@@ -310,21 +311,14 @@ export function useMRR() {
         .order("created_at", { ascending: true });
       if (error) throw error;
 
-      const planPrice: Record<string, number> = {
-        basic: 69,
-        recommended: 69,
-        premium: 69,
-      };
-
       const byMonth: Record<string, { new_mrr: number; churned_mrr: number }> = {};
       const now = new Date();
 
       (data || []).forEach((sub: any) => {
-        // Only count subscriptions that were ACTUALLY paid (real revenue), not
-        // every signup row — otherwise the dashboard shows demo/fake money.
-        const reallyPaid = sub.paid_until && new Date(sub.paid_until) > now && sub.status === "active";
-        if (!reallyPaid) return;
-        const price = Number(sub.monthly_total) || planPrice[sub.plan_name?.toLowerCase()] || 69;
+        // Single source of truth (subscriptionRevenue.ts): only count really-paid
+        // subscriptions, and price them the same way usePlatformStats does.
+        if (!isActivePaid(sub, now)) return;
+        const price = subscriptionMonthly(sub);
         const createdMonth = sub.created_at?.slice(0, 7);
         if (createdMonth) {
           if (!byMonth[createdMonth]) byMonth[createdMonth] = { new_mrr: 0, churned_mrr: 0 };

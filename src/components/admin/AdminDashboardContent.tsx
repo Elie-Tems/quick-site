@@ -36,6 +36,7 @@ import AdminWhatsApp from "./AdminWhatsApp";
 import AdminWhatsAppBot from "./AdminWhatsAppBot";
 import AdminEmailSettings from "./AdminEmailSettings";
 import AdminUnsubscribes from "./AdminUnsubscribes";
+import AdminSystem from "./AdminSystem";
 
 type AdminView =
   | "overview" | "customers" | "businesses" | "orders" | "payments"
@@ -210,13 +211,7 @@ function ViewContent({ view, stats, statsLoading }: {
     case "dormant":        return <AdminDormant />;
     case "categories":     return <AdminCategoryMap />;
     case "payment-errors": return <AdminPaymentErrors />;
-    case "settings":
-      return (
-        <div className="bg-card rounded-xl border border-border p-6">
-          <h2 className="text-xl font-bold mb-2">הגדרות מערכת</h2>
-          <p className="text-muted-foreground">הגדרות נוספות יתווספו בקרוב...</p>
-        </div>
-      );
+    case "settings":       return <AdminSystem />;
     default:
       return null;
   }
