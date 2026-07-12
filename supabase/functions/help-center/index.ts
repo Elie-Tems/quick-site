@@ -8,8 +8,8 @@ const corsHeaders = {
 };
 
 const clientIp = (req: Request) =>
-  req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-  req.headers.get("cf-connecting-ip") || "ip";
+  req.headers.get("cf-connecting-ip") ||
+  req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "ip";
 
 const SYSTEM_PROMPT = `אתה עוזר ידידותי של Siango - פלטפורמה ליצירת אתרי מכירות מהירים ומקצועיים.
 התפקיד שלך הוא לעזור למשתמשים לא-טכנולוגיים להבין איך להשתמש במערכת.

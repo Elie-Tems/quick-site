@@ -8,8 +8,8 @@ const corsHeaders = {
 };
 
 const clientIp = (req: Request) =>
-  req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-  req.headers.get("cf-connecting-ip") || "ip";
+  req.headers.get("cf-connecting-ip") ||
+  req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "ip";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });

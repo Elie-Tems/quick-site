@@ -91,10 +91,23 @@ serve(async (req) => {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-    } else if (role === "anon") {
-      return new Response(JSON.stringify({ ok: false, error: "forbidden" }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    } else if (role !== "service_role") {
+      // Authenticated (non service-role) callers may only send a platform
+      // lifecycle email to THEIR OWN address. This stops any signed-up user from
+      // using our DKIM-signed domain to send Siango-branded mail (with
+      // ctx-supplied button links) to an arbitrary victim - i.e. phishing.
+      // Bulk lifecycle sends (onboarding/dunning/recovery) run as the service
+      // role via cron and are exempt. anon tokens resolve to no user -> blocked.
+      const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+      const authClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      const { data: { user } } = await authClient.auth.getUser(token);
+      const callerEmail = user?.email?.toLowerCase();
+      const target = String(Array.isArray(to) ? to[0] : to).toLowerCase();
+      if (!callerEmail || callerEmail !== target) {
+        return new Response(JSON.stringify({ ok: false, error: "recipient must be your own address" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Honor unsubscribe for marketing emails (transactional ones always send).

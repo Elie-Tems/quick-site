@@ -35,7 +35,11 @@ jobs:
           VITE_SUPABASE_URL: https://ytqgeoviokgxxwalieev.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cWdlb3Zpb2tneHh3YWxpZWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzMTA0NjYsImV4cCI6MjA4Njg4NjQ2Nn0.jeSSSbTP3CbKVjlzqlYavwoGqooLW7bLV9JQTY9RhD8
           VITE_WEBSITE_URL: siango.app
-          VITE_ORDER_WEBHOOK_URL: https://hook.eu2.make.com/09a6csp2wh8vgncyi5q88mcd9brwzdnu
+          # VITE_ORDER_WEBHOOK_URL is a SERVER-side secret (read via Deno.env in
+          # orders-create + payments-callback); it is NOT used in the frontend
+          # bundle, so it must live only as a Supabase Edge Function secret - never
+          # committed here. Rotate the Make.com scenario URL (the old one is in git
+          # history) and set the new value in the Supabase dashboard.
           # LIVE (2026-07-09): Cardcom is the gateway. skip=false -> onboarding routes
           # to the publish-payment page instead of publishing free; self-managed ON ->
           # that page runs the Cardcom checkout (charge + save token + invoice) and the

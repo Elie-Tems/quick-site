@@ -6,11 +6,17 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendViaResend } from "../_shared/email/resend.ts";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+// Trust the platform-populated client IP (cf-connecting-ip is unspoofable);
+// fall back to the last x-forwarded-for hop, never the client-supplied first one.
+const clientIp = (req: Request) =>
+  req.headers.get("cf-connecting-ip") ||
+  req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "ip";
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 const esc = (s: string) => String(s ?? "").replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]!));
@@ -26,6 +32,13 @@ Deno.serve(async (req) => {
   if (!body.businessId || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: "invalid" }, 400);
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+  // Abuse guard: cap per IP (mass injection / spam relay) and per (business,email)
+  // so an attacker can't forge consent records or trigger welcome-email blasts.
+  if (!(await consumeRateLimit(admin, `emailsub:ip:${clientIp(req)}`, 15, 3600)) ||
+      !(await consumeRateLimit(admin, `emailsub:be:${body.businessId}:${email}`, 3, 3600))) {
+    return json({ error: "rate_limited" }, 429);
+  }
 
   const { data: biz } = await admin.from("businesses").select("id, user_id, name, slug").eq("id", body.businessId).single();
   if (!biz?.user_id) return json({ error: "store not found" }, 404);

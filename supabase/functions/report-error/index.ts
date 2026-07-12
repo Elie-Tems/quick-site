@@ -16,8 +16,8 @@ const corsHeaders = {
 const ALERT_RECIPIENTS = ["moti4384@gmail.com", "furmand713@gmail.com"];
 
 const clientIp = (req: Request) =>
-  req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-  req.headers.get("cf-connecting-ip") || "ip";
+  req.headers.get("cf-connecting-ip") ||
+  req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "ip";
 
 // Endpoint is public (anon) so it can catch client errors - but that also means it
 // could be spammed to email-bomb the admins. Rate-limit per IP + globally; drop

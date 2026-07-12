@@ -8,11 +8,15 @@
 // so the merchant always sees a profitable price. Tune MARKUP / USD_TO_ILS.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+const clientIp = (req: Request) =>
+  req.headers.get("cf-connecting-ip") ||
+  req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "ip";
 
 const OP_BASE = "https://api.openprovider.eu/v1beta";
 // Extensions we offer first (Israel-focused). .co.il first - most merchants want it.
@@ -47,6 +51,16 @@ serve(async (req) => {
       });
     }
 
+    // Throttle per IP: each call hits Openprovider (auth/login + domains/check),
+    // so an unbounded loop could exhaust the account's API quota. Public endpoint
+    // (used during onboarding), so gate by the unspoofable client IP, not auth.
+    const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    if (!(await consumeRateLimit(sb, `domsearch:${clientIp(req)}`, 30, 3600))) {
+      return new Response(JSON.stringify({ ok: false, error: "rate_limited" }), {
+        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const token = await openproviderToken();
 
     const res = await fetch(`${OP_BASE}/domains/check`, {
@@ -63,7 +77,6 @@ serve(async (req) => {
     }
 
     // Admin-managed pricing (margin % + coupon %), read server-side.
-    const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data: cfg } = await sb
       .from("domain_settings")
       .select("margin_percent, coupon_percent, usd_to_ils")
@@ -97,7 +110,10 @@ serve(async (req) => {
         const floor = Math.ceil((costIls * 1.1) / 5) * 5;
         customerIls = Math.max(Math.min(customerIls, maxPrice), floor);
       }
-      return { domain, available, costUsd, listIls, customerIls };
+      // costUsd (reseller cost) is business-intelligence and must never leave the
+      // server. listIls is the customer-facing pre-discount anchor price (shown
+      // struck-through in the UI), so it stays.
+      return { domain, available, listIls, customerIls };
     });
 
     return new Response(JSON.stringify({ ok: true, query: name, results }), {

@@ -1,9 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Prefer the platform-populated client IP (cf-connecting-ip is set by Cloudflare
+// and cannot be spoofed by the caller); fall back to the last x-forwarded-for hop.
+const clientIp = (req: Request) =>
+  req.headers.get("cf-connecting-ip") ||
+  req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "ip";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -11,6 +19,12 @@ serve(async (req) => {
   }
 
   try {
+    // Cost-abuse guard (LLM): cap per IP, matching generate-about-text.
+    const rl = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    if (!(await consumeRateLimit(rl, `improvetext:${clientIp(req)}`, 30, 3600))) {
+      return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const { currentText, businessName, businessCategory } = await req.json();
 
     if (!currentText || currentText.trim().length < 10) {

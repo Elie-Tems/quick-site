@@ -9,11 +9,16 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendLifecycleEmail } from "../_shared/email/lifecycle.ts";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+// Unspoofable client IP (Cloudflare-populated); fall back to the last proxy hop.
+const clientIp = (req: Request) =>
+  req.headers.get("cf-connecting-ip") ||
+  req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "ip";
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
@@ -39,7 +44,19 @@ Deno.serve(async (req) => {
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-  // Lead-spam guard: cap rapid repeat leads from the same phone per business.
+  // Lead-spam guard 1: per-IP cap. The phone-based check below is bypassable by
+  // rotating the phone value, so also throttle by (unspoofable) client IP to stop
+  // mass CRM pollution / lead_reply email amplification against a known business.
+  if (!(await consumeRateLimit(admin, `lead:ip:${clientIp(req)}`, 20, 3600))) {
+    return json({ error: "rate_limited" }, 429);
+  }
+
+  // Only accept leads for a real business (avoids polluting the CRM of arbitrary
+  // UUIDs and sending lead_reply mail on behalf of a non-existent store).
+  const { data: bizRow } = await admin.from("businesses").select("id").eq("id", businessId).maybeSingle();
+  if (!bizRow) return json({ error: "store not found" }, 404);
+
+  // Lead-spam guard 2: cap rapid repeat leads from the same phone per business.
   const since = new Date(Date.now() - 60_000).toISOString();
   const { count } = await admin.from("contacts")
     .select("id", { count: "exact", head: true })

@@ -3,6 +3,11 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const BASE_URL = "https://siango.app";
 
+// Escape XML metacharacters. Slugs are normally [a-z0-9-], but a stray '&' in a
+// slug would otherwise break (or inject into) the sitemap document.
+const xmlEsc = (s: string) =>
+  String(s).replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c]!));
+
 const staticRoutes = [
   { path: "/",           priority: "1.0", changefreq: "weekly" },
   { path: "/register",   priority: "0.9", changefreq: "monthly" },
@@ -57,7 +62,7 @@ serve(async () => {
 ${allUrls
   .map(
     (u) => `  <url>
-    <loc>${u.loc}</loc>
+    <loc>${xmlEsc(u.loc)}</loc>
     <lastmod>${u.lastmod}</lastmod>
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>

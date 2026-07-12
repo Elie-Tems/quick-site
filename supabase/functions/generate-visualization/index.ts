@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,6 +58,24 @@ serve(async (req) => {
     } = body;
 
     if (!businessId) throw new Error("businessId required");
+
+    // Ownership + cost guard. The caller must OWN this business (otherwise they
+    // could write files into another merchant's storage prefix below), and
+    // gpt-image-1 at high quality is the priciest path in the codebase, so cap
+    // it per user.
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: ownsBiz } = await admin
+      .from("businesses").select("id").eq("id", businessId).eq("user_id", user.id).maybeSingle();
+    if (!ownsBiz) {
+      return new Response(JSON.stringify({ error: "forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!(await consumeRateLimit(admin, `genviz:${user.id}`, 20, 3600))) {
+      return new Response(JSON.stringify({ error: "rate_limited" }), {
+        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const viewLabel = type === "interior" ? "interior architectural visualization" : "exterior architectural visualization";
     const styleDesc = STYLE_PROMPTS[style] ?? STYLE_PROMPTS.modern;
