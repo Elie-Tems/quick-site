@@ -4,7 +4,8 @@ import PayplusConnectForm from "@/components/payments/PayplusConnectForm";
 import IcountConnectForm from "@/components/payments/IcountConnectForm";
 import PaymentApprovalKit from "@/components/payments/PaymentApprovalKit";
 import type { BusinessSettings } from "@/components/dashboard/DashboardSettings";
-import { PARTNER_LINKS, providerLogo } from "@/lib/partnerLinks";
+import { PARTNER_LINKS } from "@/lib/partnerLinks";
+import { ProviderLogo } from "@/components/payments/ProviderLogo";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardPaymentsProps {
@@ -97,7 +98,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
             {PARTNER_LINKS.map((p) => (
               <div key={p.id} className="rounded-2xl border border-border bg-card p-4 flex flex-col hover:border-[#639922]/40 transition-colors">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <img src={providerLogo(p.domain)} alt={p.name} className="h-6 w-6 rounded" loading="lazy" />
+                  <ProviderLogo domain={p.domain} name={p.name} className="h-6 w-6" />
                   <p className="font-bold text-foreground">{p.name}</p>
                   <span className="text-[10px] font-medium text-muted-foreground bg-muted rounded-full px-1.5 py-0.5">{p.category}</span>
                 </div>
@@ -135,7 +136,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
                   provider === p.id ? "border-[#639922] bg-[#eaf3de] text-[#27500a]" : "border-border text-muted-foreground hover:border-[#639922]/40"
                 }`}
               >
-                <img src={providerLogo(p.domain)} alt={p.name} className="h-4 w-4 rounded" loading="lazy" />
+                <ProviderLogo domain={p.domain} name={p.name} className="h-4 w-4" />
                 {p.name}
               </button>
             ))}

@@ -338,8 +338,11 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       <StepNavigation
         onNext={onNext}
         onBack={onBack}
-        nextLabel={generated ? "הבא ←" : "דלגו"}
-        showPreview={false}
+        nextLabel="הבא ←"
+        // Show the forward button once content is generated. Before generation the
+        // underlined "דלגו לעכשיו" link above is the forward path; after generation
+        // that link is hidden, so without this the user would be stuck with only "חזרה".
+        showPreview={!!generated}
         showSave={false}
       />
     </div>

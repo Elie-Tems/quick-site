@@ -176,7 +176,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
           className={`relative overflow-hidden bg-muted flex-shrink-0 ${aspectClass} cursor-pointer`}
           onClick={() => handleProductClick(product)}
         >
-          {product.imageUrl ? (
+          {product.imageUrl?.trim() ? (
             <img
               src={product.imageUrl}
               alt={product.name}

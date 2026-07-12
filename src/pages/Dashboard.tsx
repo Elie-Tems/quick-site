@@ -45,6 +45,7 @@ import DashboardLegal from "@/components/dashboard/DashboardLegal";
 import DashboardAdBudget from "@/components/dashboard/DashboardAdBudget";
 import { useMyBusiness, useProfile } from "@/hooks/useBusiness";
 import { getBusinessType, getEnabledModules } from "@/lib/businessModules";
+import { cleanImageUrl, cleanImageList } from "@/lib/imageUrl";
 import VerticalModules from "@/components/dashboard/VerticalModules";
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useOrders, useUpdateOrder } from "@/hooks/useOrders";
@@ -365,9 +366,9 @@ const Dashboard = () => {
       description: p.description || "",
       price: p.price,
       sku: (p as any).sku || undefined,
-      imageUrl: p.image_url || undefined,
+      imageUrl: cleanImageUrl(p.image_url),
       videoUrl: (p as any).video_url || undefined,
-      additionalImages: Array.isArray((p as any).additional_images) ? (p as any).additional_images : [],
+      additionalImages: cleanImageList((p as any).additional_images),
       active: p.active ?? true,
       sale_price: (p as any).sale_price || null,
       is_on_sale: (p as any).is_on_sale || false,
@@ -415,7 +416,7 @@ const Dashboard = () => {
       setBanners(dbBanners.map(b => ({
         id: b.id,
         internalTitle: b.title || "",
-        imageUrl: b.image_url || undefined,
+        imageUrl: cleanImageUrl(b.image_url),
         text: b.text || "",
         ctaText: b.cta_text || undefined,
         ctaTarget: b.cta_url || undefined,

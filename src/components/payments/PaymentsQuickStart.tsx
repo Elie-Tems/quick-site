@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronDown, HelpCircle, ExternalLink, Check } from "lucide-react";
-import { providerLogo } from "@/lib/partnerLinks";
+import { ProviderLogo } from "@/components/payments/ProviderLogo";
 import { PAYPLUS_SIGNUP_URL } from "@/hooks/usePayplus";
 
 // Prominent, plain-language "where are you with payments?" guide. Written for
@@ -28,7 +28,7 @@ const SLIQA_PROVIDERS: Provider[] = [
 const ProviderCard = ({ p }: { p: Provider }) => (
   <a href={p.url} target="_blank" rel="noopener noreferrer"
     className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary/40 transition-colors">
-    <img src={providerLogo(p.domain)} alt={p.name} className="h-8 w-8 rounded shrink-0" loading="lazy" />
+    <ProviderLogo domain={p.domain} name={p.name} className="h-8 w-8" />
     <div className="min-w-0 flex-1">
       <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
       <p className="text-[11px] text-muted-foreground truncate">{p.blurb}</p>

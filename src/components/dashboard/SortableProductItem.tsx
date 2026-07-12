@@ -103,7 +103,7 @@ const SortableProductItem = ({
 
       {/* Image */}
       <div className="w-full h-28 rounded-lg bg-muted overflow-hidden">
-        {product.imageUrl ? (
+        {product.imageUrl?.trim() ? (
           <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

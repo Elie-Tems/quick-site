@@ -25,8 +25,8 @@ const ProductDetailModal = ({
   if (!isOpen || !product) return null;
 
   const allImages = [
-    ...(product.imageUrl ? [product.imageUrl] : []),
-    ...(product.additionalImages || []),
+    ...(product.imageUrl?.trim() ? [product.imageUrl] : []),
+    ...(product.additionalImages || []).filter((img) => img?.trim()),
   ];
   const hasGallery = allImages.length > 1;
   const activeImage = allImages[activeIdx] || null;

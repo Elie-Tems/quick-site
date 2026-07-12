@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { gtm } from "@/lib/gtm";
+import { cleanImageUrl, cleanImageList } from "@/lib/imageUrl";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Loader2, Store } from "lucide-react";
@@ -210,8 +211,8 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       description: p.description || undefined,
       price: p.is_on_sale && p.sale_price ? p.sale_price : p.price,
       originalPrice: p.is_on_sale && p.sale_price ? p.price : undefined,
-      imageUrl: p.image_url || undefined,
-      additionalImages: Array.isArray(p.additional_images) ? p.additional_images as string[] : [],
+      imageUrl: cleanImageUrl(p.image_url),
+      additionalImages: cleanImageList(p.additional_images),
       active: p.active ?? true,
       sku: p.sku || undefined,
       isSale: p.is_on_sale || false,
@@ -237,7 +238,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
             description: cp.description || undefined,
             price: cp.sale_price ?? cp.price,
             originalPrice: cp.sale_price ? cp.price : undefined,
-            imageUrl: cp.image_url || undefined,
+            imageUrl: cleanImageUrl(cp.image_url),
             active: true,
             isSale: !!cp.sale_price,
             isHot: false,
@@ -287,7 +288,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       id: b.id,
       title: b.title || undefined,
       text: b.text || undefined,
-      imageUrl: b.image_url || undefined,
+      imageUrl: cleanImageUrl(b.image_url),
       ctaText: b.cta_text || undefined,
       ctaUrl: b.cta_url || undefined,
     }));
@@ -304,7 +305,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         id: cb.id,
         title: cb.title || undefined,
         text: cb.text || undefined,
-        imageUrl: cb.image_url || undefined,
+        imageUrl: cleanImageUrl(cb.image_url),
         ctaText: cb.cta_text || undefined,
         ctaUrl: cb.cta_url || undefined,
       }));

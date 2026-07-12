@@ -1148,7 +1148,14 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       {displayProducts.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">{displayProducts.length} מוצרים</p>
+            <p className="text-sm font-medium">
+              {displayProducts.length}{" "}
+              {(() => {
+                const one = data.businessType === 'nonprofit' ? 'פרויקט' : data.businessType === 'realestate' ? 'נכס' : 'מוצר';
+                const many = data.businessType === 'nonprofit' ? 'פרויקטים' : data.businessType === 'realestate' ? 'נכסים' : 'מוצרים';
+                return displayProducts.length === 1 ? one : many;
+              })()}
+            </p>
             {data.products.some(p => !p.imageUrl) && (
               <button
                 onClick={handleGenerateAllImages}

@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Pipette, Loader2, Rocket, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -11,8 +11,10 @@ import { getTemplate, type StoreLayoutId } from "@/lib/storeTemplates";
 import { paletteList, type ColorPaletteId } from "@/lib/colorPalettes";
 import { getCategoryConfig, BusinessCategory } from "@/lib/categoryConfig";
 import { getPublishFeeIls } from "@/lib/publishPaymentConfig";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
+import SoftErrorBoundary from "@/components/SoftErrorBoundary";
 
-const StorePreviewPanel = lazy(() => import("./StorePreviewPanel"));
+const StorePreviewPanel = lazyWithRetry(() => import("./StorePreviewPanel"));
 
 const skipPublishPayment = import.meta.env.VITE_PUBLISH_SKIP_PAYMENT === "true";
 
@@ -232,13 +234,28 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
 
       {/* Full-screen store preview */}
       <div className="flex-1 overflow-auto">
-        <Suspense fallback={
-          <div className="flex items-center justify-center min-h-screen">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        }>
-          <StorePreviewPanel data={data} layoutId={selectedLayout} paletteId={selectedPalette} fullscreen />
-        </Suspense>
+        {/* The preview is non-critical: if its chunk fails to load, degrade to a
+            friendly message WITHOUT reloading (which would reset the whole wizard
+            and lose progress). Publishing uses the in-memory data, not the preview,
+            so the toolbar below stays fully functional. */}
+        <SoftErrorBoundary
+          fallback={
+            <div className="flex items-center justify-center min-h-screen px-6 text-center">
+              <p className="text-sm text-muted-foreground max-w-sm">
+                לא הצלחנו לטעון את התצוגה המקדימה כרגע. אפשר להמשיך ולפרסם - האתר ייבנה כרגיל,
+                ותוכלו לראות ולערוך הכל בלוח הניהול.
+              </p>
+            </div>
+          }
+        >
+          <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          }>
+            <StorePreviewPanel data={data} layoutId={selectedLayout} paletteId={selectedPalette} fullscreen />
+          </Suspense>
+        </SoftErrorBoundary>
       </div>
 
       {/* Floating toolbar — two rows */}

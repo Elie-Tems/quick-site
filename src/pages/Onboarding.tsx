@@ -23,6 +23,7 @@ import { useMyBusiness } from "@/hooks/useBusiness";
 import { useProducts } from "@/hooks/useProducts";
 import { useBanners } from "@/hooks/useBanners";
 import { useProductCategories } from "@/hooks/useProductCategories";
+import { cleanImageUrl } from "@/lib/imageUrl";
 
 const ONBOARDING_STEPS = [
   { id: 1, label: "תחום", icon: Store },
@@ -189,7 +190,7 @@ const Onboarding = () => {
           description: p.description || "",
           price: p.price,
           sku: (p as any).sku,
-          imageUrl: p.image_url || undefined,
+          imageUrl: cleanImageUrl(p.image_url),
           categoryId: (p as any).category_id,
         }));
       }
