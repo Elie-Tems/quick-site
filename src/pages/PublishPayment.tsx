@@ -6,6 +6,8 @@ import { Loader2, CreditCard, ExternalLink, CheckCircle2, ArrowRight, RefreshCw,
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyBusiness } from "@/hooks/useBusiness";
@@ -62,6 +64,9 @@ const PublishPayment = () => {
   // Surfaced when the first charge fails / the card couldn't be saved / no IPN
   // arrived - so the customer isn't left staring at an endless spinner.
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [termsScrolled, setTermsScrolled] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const fee = getPublishFeeIls();
   const basePaymentUrl = (import.meta.env.VITE_ICOUNT_PAYMENT_BASE_URL || "").trim();
@@ -528,6 +533,80 @@ const PublishPayment = () => {
     return (
       <>
         <SEOHead title="אישור תשלום | סיאנגו" noindex={true} />
+
+        {/* Terms dialog - must scroll to bottom to enable checkbox */}
+        <Dialog open={termsOpen} onOpenChange={setTermsOpen}>
+          <DialogContent className="max-w-lg max-h-[90vh] flex flex-col gap-0 p-0 overflow-hidden">
+            <DialogHeader className="px-6 pt-6 pb-3 border-b border-border shrink-0">
+              <DialogTitle className="text-right">תנאי שימוש ומדיניות פרטיות</DialogTitle>
+            </DialogHeader>
+
+            {/* Scrollable body */}
+            <div
+              className="overflow-y-auto flex-1 px-6 py-4 text-sm text-foreground leading-relaxed space-y-4"
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                if (!termsScrolled && el.scrollTop + el.clientHeight >= el.scrollHeight - 20) {
+                  setTermsScrolled(true);
+                }
+              }}
+            >
+              <p className="text-xs text-muted-foreground">עדכון אחרון: ינואר 2025</p>
+
+              <h3 className="font-bold text-base">1. המנוי</h3>
+              <p>על ידי לחיצה על "פרסום החנות" אתם מאשרים הצטרפות למנוי חודשי מתחדש של סיאנגו בסך <strong>₪{fee} לחודש</strong>. המנוי מאפשר פרסום ותפעול חנות דיגיטלית פעילה תחת הפלטפורמה.</p>
+
+              <h3 className="font-bold text-base">2. חידוש אוטומטי וחיוב</h3>
+              <p>החיוב מתבצע מדי חודש באמצעות כרטיס האשראי שתזינו. המנוי מתחדש אוטומטית כל עוד לא בוטל. סיאנגו תשלח הודעת מייל לפני כל חיוב.</p>
+
+              <h3 className="font-bold text-base">3. ביטול</h3>
+              <p>ניתן לבטל את המנוי בכל עת דרך "התוכנית שלי" בדשבורד. הביטול נכנס לתוקף מיידית - לא תחויבו בחודש הבא. לא מוחזר תשלום על חודש שכבר נגבה.</p>
+
+              <h3 className="font-bold text-base">4. מחיקת חנות</h3>
+              <p>מחיקת החנות מבטלת את המנוי אוטומטית. החנות ותכניה ייסגרו ולא יהיו נגישים ללקוחות.</p>
+
+              <h3 className="font-bold text-base">5. שימוש בשירות</h3>
+              <p>אתם מתחייבים לא לעשות שימוש בפלטפורמה למטרות בלתי חוקיות, למכירת מוצרים אסורים, או בדרך שמפרה זכויות צד שלישי. סיאנגו שומרת לעצמה את הזכות להשעות חנות שמפרה את התנאים.</p>
+
+              <h3 className="font-bold text-base">6. אחריות</h3>
+              <p>סיאנגו מספקת את הפלטפורמה "כפי שהיא" ואינה אחראית לנזקים עקיפים, אובדן רווחים, או תקלות שאינן בשליטתה. האחריות הכוללת של סיאנגו לא תעלה על סכום המנוי ששולם בחודשיים האחרונים.</p>
+
+              <h3 className="font-bold text-base">7. מדיניות פרטיות</h3>
+              <p>אנו אוספים מידע הנדרש לתפעול השירות - פרטי קשר, פרטי עסק, ונתוני הזמנות. המידע לא נמסר לצדדים שלישיים אלא לצורך מתן השירות (למשל: חברת הסליקה). לפרטים מלאים:{" "}
+                <Link to="/privacy" target="_blank" className="text-primary underline">מדיניות פרטיות מלאה</Link>.
+              </p>
+
+              <h3 className="font-bold text-base">8. תנאים מלאים</h3>
+              <p>תנאי שימוש המלאים זמינים בקישור:{" "}
+                <Link to="/terms" target="_blank" className="text-primary underline">תקנון סיאנגו</Link>.
+                בכל סתירה בין תמצית זו לתקנון המלא - התקנון המלא גובר.
+              </p>
+
+              <div className="h-4" />
+            </div>
+
+            {/* Footer - checkbox enabled only after scrolling */}
+            <div className="px-6 py-4 border-t border-border bg-muted/30 shrink-0 space-y-3">
+              {!termsScrolled && (
+                <p className="text-xs text-muted-foreground text-center">גללו עד הסוף כדי לאשר</p>
+              )}
+              <label className={`flex items-start gap-3 cursor-pointer select-none ${!termsScrolled ? "opacity-40 pointer-events-none" : ""}`}>
+                <Checkbox
+                  checked={termsAccepted}
+                  onCheckedChange={(v) => {
+                    setTermsAccepted(v === true);
+                    if (v === true) setTermsOpen(false);
+                  }}
+                  className="mt-0.5"
+                />
+                <span className="text-sm text-foreground leading-snug">
+                  קראתי ומסכים/ה לתנאי השימוש ולמדיניות הפרטיות של סיאנגו
+                </span>
+              </label>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <div className="min-h-screen bg-surface-1 flex flex-col">
           <div className="w-full max-w-md mx-auto px-4 py-10 flex flex-col gap-6 flex-1">
 
@@ -541,13 +620,13 @@ const PublishPayment = () => {
             {/* Price card */}
             <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-5 text-center">
               <p className="text-4xl font-extrabold text-foreground">
-                ₪{discNet}
-                {hasDiscount && <span className="text-xl font-semibold text-muted-foreground line-through mr-2">₪{fee}</span>}
+                {hasDiscount && <span className="text-xl font-semibold text-muted-foreground line-through ml-2">₪{fee}</span>}
+                ₪{discNet} <span className="text-lg font-semibold text-muted-foreground">ש"ח לחודש</span>
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 {hasDiscount
-                  ? `${couponInfo!.discount_type === "percent" ? `${couponInfo!.discount_value}% הנחה` : `₪${couponInfo!.discount_value} הנחה`}${couponInfo!.duration === "first_month" ? " לחודש הראשון" : ""} · אחר כך ₪${fee}/חודש`
-                  : "לחודש · ביטול בכל עת · ללא התחייבות"}
+                  ? `${couponInfo!.discount_type === "percent" ? `${couponInfo!.discount_value}% הנחה` : `₪${couponInfo!.discount_value} הנחה`}${couponInfo!.duration === "first_month" ? " לחודש הראשון" : ""} · אחר כך ₪${fee} ש"ח לחודש`
+                  : "ביטול בכל עת · ללא התחייבות"}
               </p>
             </div>
 
@@ -566,8 +645,8 @@ const PublishPayment = () => {
             {/* 3 key points */}
             <div className="space-y-2">
               {[
-                { icon: RefreshCw, text: `מנוי חודשי מתחדש של ₪${fee} - מתחדש אוטומטית כל חודש` },
-                { icon: XCircle,   text: 'ביטול בכל עת דרך "התוכנית שלי" - החיוב נעצר מיד, אין קנס' },
+                { icon: RefreshCw,   text: `מנוי חודשי מתחדש של ₪${fee} ש"ח - מתחדש אוטומטית כל חודש` },
+                { icon: XCircle,     text: 'ביטול בכל עת דרך "התוכנית שלי" - החיוב נעצר מיד, אין קנס' },
                 { icon: ShieldCheck, text: "תשלום מאובטח דרך Cardcom - סיאנגו לא רואה את פרטי הכרטיס" },
               ].map(({ icon: Icon, text }) => (
                 <div key={text} className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -577,13 +656,34 @@ const PublishPayment = () => {
               ))}
             </div>
 
+            {/* Terms acceptance row */}
+            <div
+              className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 cursor-pointer"
+              onClick={() => { if (!termsAccepted) { setTermsScrolled(false); setTermsOpen(true); } }}
+            >
+              <Checkbox
+                checked={termsAccepted}
+                onCheckedChange={(v) => {
+                  if (v === true) { setTermsScrolled(false); setTermsOpen(true); }
+                  else setTermsAccepted(false);
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+              <span className="text-sm text-foreground leading-snug">
+                {termsAccepted
+                  ? <span className="text-green-600 font-medium">אישרתי תנאי שימוש ומדיניות פרטיות ✓</span>
+                  : <>קראתי ומסכים/ה ל<button type="button" className="text-primary underline" onClick={(e) => { e.stopPropagation(); setTermsScrolled(false); setTermsOpen(true); }}>תנאי שימוש ומדיניות פרטיות</button></>
+                }
+              </span>
+            </div>
+
             {/* CTA */}
             <Button
               size="lg"
               variant="hero"
-              disabled={startingCheckout}
+              disabled={!termsAccepted || startingCheckout}
               onClick={handleConfirm}
-              className="gap-2 text-base mt-2"
+              className="gap-2 text-base"
             >
               {startingCheckout ? <><Loader2 className="w-5 h-5 animate-spin" /> מכינים תשלום...</> : <>פרסום החנות - המשך לתשלום <ArrowRight className="w-5 h-5 rotate-180" /></>}
             </Button>
@@ -592,8 +692,7 @@ const PublishPayment = () => {
               תועברו לעמוד הסליקה המאובטח של Cardcom
             </p>
 
-            {/* Escape hatch - small and low-prominence */}
-            <div className="text-center pt-2">
+            <div className="text-center pt-1">
               <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4">
                 חזרה לדשבורד
               </Link>
