@@ -31,14 +31,6 @@ export const PARTNER_LINKS: PartnerLink[] = [
     blurb: "פתרון סליקה מלא, אפליקציה לניהול וחשבוניות אוטומטיות. בתנאים מועדפים.",
     highlight: true,
   },
-  {
-    id: "icount",
-    name: "iCount",
-    url: "https://www.icount.co.il/r?aff=471310",
-    domain: "icount.co.il",
-    category: "חשבוניות",
-    blurb: "חשבוניות והנהלת חשבונות אוטומטית - ישירות מהמערכת.",
-  },
 ];
 
 // The PayPlus affiliate signup link lives in usePayplus.ts (PAYPLUS_SIGNUP_URL),
