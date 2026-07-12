@@ -1,7 +1,7 @@
-/** מחיר לפרסום (הצגה + שמירה ב־publish_checkout_sessions). ברירת מחדל 69 ₪/חודש. */
+/** מחיר לפרסום (הצגה + שמירה ב־publish_checkout_sessions). ברירת מחדל 79 ₪/חודש. */
 export function getPublishFeeIls(): number {
   const n = Number(import.meta.env.VITE_PUBLISH_FEE_ILS);
-  return Number.isFinite(n) && n > 0 ? n : 69;
+  return Number.isFinite(n) && n > 0 ? n : 79;
 }
 
 /** iframe (ברירת מחדל) או קישור חיצוני - אם iCount חוסמים iframe, הגדרו VITE_ICOUNT_PAYMENT_EMBED_MODE=link */

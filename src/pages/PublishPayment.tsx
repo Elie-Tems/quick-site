@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { VAT_RATE, withVatTotal } from "@/lib/pricingConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyBusiness } from "@/hooks/useBusiness";
@@ -520,8 +519,6 @@ const PublishPayment = () => {
 
   // ── Stage 1: crystal-clear terms of the recurring charge, before payment ──
   if (!confirmed) {
-    const gross = withVatTotal(fee);
-    const vatPct = Math.round(VAT_RATE * 100);
     // Discounted price when a coupon is applied (self-managed billing). Mirrors the
     // server-side computation; the server recomputes the real charge at checkout.
     const discNet = couponInfo
@@ -529,13 +526,12 @@ const PublishPayment = () => {
           ? Math.max(0, fee * (1 - Math.min(100, couponInfo.discount_value) / 100))
           : Math.max(0, fee - couponInfo.discount_value))
       : fee;
-    const discGross = withVatTotal(discNet);
     const hasDiscount = !!couponInfo && discNet < fee;
     const terms = [
       {
         icon: RefreshCw,
         title: "מנוי חודשי מתחדש",
-        body: `החיוב הוא הוראת קבע חודשית של ₪${fee} + מע"מ (סה"כ כ-₪${gross} כולל מע"מ ${vatPct}%), שמתחדשת אוטומטית בכל חודש כל עוד החנות מפורסמת.`,
+        body: `החיוב הוא הוראת קבע חודשית של ₪${fee}, שמתחדשת אוטומטית בכל חודש כל עוד החנות מפורסמת.`,
       },
       {
         icon: XCircle,
@@ -575,13 +571,13 @@ const PublishPayment = () => {
 
             <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-5 text-center">
               <p className="text-3xl font-extrabold text-foreground">
-                ₪{discGross} <span className="text-lg font-semibold text-muted-foreground">לחודש</span>
-                {hasDiscount && <span className="text-lg font-semibold text-muted-foreground line-through mr-2">₪{gross}</span>}
+                ₪{discNet} <span className="text-lg font-semibold text-muted-foreground">לחודש</span>
+                {hasDiscount && <span className="text-lg font-semibold text-muted-foreground line-through mr-2">₪{fee}</span>}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 {hasDiscount
-                  ? `מבצע: ${couponInfo!.discount_type === "percent" ? `${couponInfo!.discount_value}% הנחה` : `₪${couponInfo!.discount_value} הנחה`}${couponInfo!.duration === "first_month" ? " (חודש ראשון)" : ""} · כולל מע"מ`
-                  : `₪${fee} + מע"מ ${vatPct}% · חיוב חודשי מתחדש`}
+                  ? `מבצע: ${couponInfo!.discount_type === "percent" ? `${couponInfo!.discount_value}% הנחה` : `₪${couponInfo!.discount_value} הנחה`}${couponInfo!.duration === "first_month" ? " (חודש ראשון)" : ""}`
+                  : "חיוב חודשי מתחדש · ללא התחייבות"}
               </p>
             </div>
 
@@ -617,7 +613,7 @@ const PublishPayment = () => {
                 className="mt-0.5"
               />
               <span className="text-sm text-foreground">
-                קראתי והבנתי - אני מאשר/ת חיוב חודשי מתחדש של ₪{gross} כולל מע"מ, שאפשר לבטל בכל עת.
+                קראתי והבנתי - אני מאשר/ת חיוב חודשי מתחדש של ₪{fee}, שאפשר לבטל בכל עת.
               </span>
             </label>
 
