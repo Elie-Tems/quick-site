@@ -61,7 +61,7 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: str
     { id: "cosmetics",     title: "קוסמטיקה / טיפוח",        img: U("1522335789203-aabd1fc54bc9") },
     { id: "pets",          title: "חיות מחמד",               img: U("1548199973-03cce0bbc87b") },
     { id: "books",         title: "ספרים / לוח",             img: U("1524995997946-a1c2e315a42f") },
-    { id: "flowers",       title: "פרחים ומתנות",            img: U("1487530811015-780f3b5b7e7e") },
+    { id: "flowers",       title: "פרחים ומתנות",            img: U("1490750967868-88338961fd3c") },
   ],
   services: [
     { id: "broker",        title: 'מתווך / נדל"ן',           img: U("1582407947304-fd86f028f716") },
