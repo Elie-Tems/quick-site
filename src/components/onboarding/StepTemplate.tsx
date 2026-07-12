@@ -1,6 +1,6 @@
 import { useState, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Pipette, Loader2, Rocket, ChevronLeft } from "lucide-react";
+import { Pipette, Loader2, Rocket, ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateBusiness } from "@/hooks/useCreateBusiness";
@@ -97,85 +97,6 @@ interface Props {
   onBack: () => void;
 }
 
-// CSS-only mock storefront thumbnail: shows visual layout cues without rendering actual components
-const MockPreview = ({ layoutId, gradient }: { layoutId: StoreLayoutId; gradient: string }) => {
-  const isService = layoutId === 'service';
-  const isProperty = layoutId === 'property';
-  const isCharity = layoutId === 'charity';
-  const isBoutique = layoutId === 'boutique' || layoutId === 'beauty-spa';
-
-  return (
-    <div className="w-full h-full flex flex-col overflow-hidden rounded-t-xl" style={{ background: '#f8f8f8' }}>
-      {/* Mock nav */}
-      <div className="h-5 flex items-center px-2 gap-1 border-b border-gray-200" style={{ background: '#fff' }}>
-        <div className="w-8 h-2 rounded" style={{ background: gradient.slice(0, -1).replace('linear-gradient(135deg,', '').split(' ')[0] }} />
-        <div className="flex-1" />
-        {[1,2,3].map(i => <div key={i} className="w-5 h-1.5 rounded bg-gray-200 ml-1" />)}
-      </div>
-      {/* Mock hero */}
-      <div className="h-14 flex items-center justify-center relative overflow-hidden" style={{ background: gradient }}>
-        <div className="w-16 h-2 rounded-full bg-white/80" />
-        <div className="absolute bottom-2 left-0 right-0 flex justify-center">
-          <div className="w-10 h-1.5 rounded-full bg-white/50" />
-        </div>
-      </div>
-      {/* Mock content */}
-      {isService || isCharity ? (
-        <div className="flex-1 p-2 flex flex-col gap-1.5">
-          <div className="grid grid-cols-2 gap-1.5">
-            {[1,2,3,4].map(i => (
-              <div key={i} className="rounded bg-white border border-gray-100 p-1.5 flex flex-col gap-0.5">
-                <div className="w-6 h-6 rounded-full mx-auto" style={{ background: gradient }} />
-                <div className="w-10 h-1.5 rounded bg-gray-200 mx-auto" />
-                <div className="w-8 h-1 rounded bg-gray-100 mx-auto" />
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : isProperty ? (
-        <div className="flex-1 p-2 grid grid-cols-2 gap-1.5">
-          {[1,2,3,4].map(i => (
-            <div key={i} className="rounded bg-gray-200 overflow-hidden aspect-[4/3]">
-              <div className="w-full h-3/5" style={{ background: `linear-gradient(135deg, #ddd ${i*10}%, #bbb)` }} />
-              <div className="p-1 flex flex-col gap-0.5">
-                <div className="w-10 h-1.5 rounded bg-gray-300" />
-                <div className="w-7 h-1 rounded bg-gray-200" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : isBoutique ? (
-        <div className="flex-1 p-2">
-          <div className="grid grid-cols-2 gap-1.5">
-            {[1,2,3,4].map(i => (
-              <div key={i} className="rounded overflow-hidden bg-gray-200">
-                <div className="h-12 w-full" style={{ background: `hsl(${i*60+30},20%,${75+i*3}%)` }} />
-                <div className="p-1 bg-white">
-                  <div className="w-10 h-1.5 rounded bg-gray-200 mb-0.5" />
-                  <div className="w-6 h-1 rounded bg-gray-100" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 p-2">
-          <div className="grid grid-cols-3 gap-1">
-            {[1,2,3,4,5,6].map(i => (
-              <div key={i} className="rounded bg-white border border-gray-100 overflow-hidden">
-                <div className="h-8 w-full bg-gray-100" style={{ opacity: 0.5 + i*0.05 }} />
-                <div className="p-1">
-                  <div className="w-full h-1 rounded bg-gray-200 mb-0.5" />
-                  <div className="w-2/3 h-1 rounded bg-gray-100" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const StepTemplate = ({ data, updateData, onBack }: Props) => {
   const navigate = useNavigate();
@@ -184,12 +105,6 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
 
   const businessType = data.businessType ?? '';
   const subTypeDefaults = data.businessSubType ? SUB_TYPE_TO_TEMPLATE[data.businessSubType] : undefined;
-
-  // Show max 4 templates: relevant ones first, then fill with others
-  const orderedTemplates = [
-    ...ALL_TEMPLATES.filter(t => t.forTypes.includes(businessType)),
-    ...ALL_TEMPLATES.filter(t => !t.forTypes.includes(businessType)),
-  ].filter(Boolean).slice(0, 4);
 
   const [selectedLayout, setSelectedLayout] = useState<StoreLayoutId>(() => {
     const t = data.storeTemplate || '';
@@ -230,7 +145,6 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
     });
   };
 
-  const handleLayoutSelect = (id: StoreLayoutId) => { setSelectedLayout(id); commit(id, selectedPalette, customColor); };
   const handlePaletteSelect = (id: ColorPaletteId) => { setSelectedPalette(id); setShowColorPicker(id === 'custom'); commit(selectedLayout, id, customColor); };
 
   const businessSlug = data.businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^֐-׿a-z0-9-]/g, '');
@@ -297,8 +211,6 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
     }
   };
 
-  const selectedTpl = ALL_TEMPLATES.find(t => t.id === selectedLayout) ?? ALL_TEMPLATES[0];
-
   return (
     <div className="flex h-[100dvh] overflow-hidden" dir="rtl">
 
@@ -312,47 +224,11 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
           </button>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold pv-strong leading-tight truncate">{data.businessName || 'האתר שלכם'}</p>
-            <p className="text-[10px] pv-faint leading-tight">{selectedTpl.name}</p>
+            <p className="text-[10px] pv-faint leading-tight">בחרו צבע לאתר</p>
           </div>
         </div>
 
-        {/* Templates */}
-        <div className="px-3 pt-3 pb-1">
-          <p className="text-[10px] font-semibold pv-faint uppercase tracking-wider mb-2">עיצוב תבנית</p>
-          <div className="grid grid-cols-2 gap-1.5">
-            {orderedTemplates.map(tpl => (
-              <button
-                key={tpl.id}
-                onClick={() => handleLayoutSelect(tpl.id)}
-                className="relative rounded-lg overflow-hidden transition-all focus:outline-none"
-                style={{
-                  height: 58,
-                  border: selectedLayout === tpl.id ? '2px solid hsl(var(--primary))' : '2px solid transparent',
-                  opacity: selectedLayout === tpl.id ? 1 : 0.55,
-                  boxShadow: selectedLayout === tpl.id ? '0 0 0 1px hsl(var(--primary)/0.4)' : undefined,
-                }}
-                title={tpl.name}
-              >
-                <div style={{ pointerEvents: 'none', height: '100%' }}>
-                  <MockPreview layoutId={tpl.id} gradient={tpl.gradient} />
-                </div>
-                {selectedLayout === tpl.id && (
-                  <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-primary flex items-center justify-center">
-                    <Check className="w-2 h-2 text-white" />
-                  </div>
-                )}
-                <div className="absolute bottom-0 left-0 right-0 py-0.5 px-1" style={{ background: 'rgba(0,0,0,0.55)' }}>
-                  <p className="text-[8px] text-white/90 text-center leading-tight truncate">{tpl.name}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="mx-3 my-3 border-t" style={{ borderColor: 'var(--pv-border,#333)' }} />
-
-        {/* Color palette */}
+          {/* Color palette */}
         <div className="px-3 pb-3">
           <p className="text-[10px] font-semibold pv-faint uppercase tracking-wider mb-2">צבע האתר</p>
           <div className="grid grid-cols-5 gap-1.5">
@@ -422,13 +298,7 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
         </div>
         {/* Live preview — scrollable */}
         <div className="flex-1 overflow-y-auto" style={{ background: '#f0f0f0' }}>
-          <SoftErrorBoundary
-            fallback={
-              <div className="w-full h-full">
-                <MockPreview layoutId={selectedLayout} gradient={selectedTpl.gradient} />
-              </div>
-            }
-          >
+          <SoftErrorBoundary fallback={<div className="w-full h-full bg-gray-100" />}>
             <Suspense fallback={
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
