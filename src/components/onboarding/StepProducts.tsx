@@ -258,6 +258,9 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   // Categories
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
+  // Dashboard features expand
+  const [showDashboardFeatures, setShowDashboardFeatures] = useState(false);
+
   const productsCountByCategory = useMemo(() => {
     const counts: Record<string, number> = {};
     data.products.forEach(p => {
@@ -903,85 +906,48 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
 
       {/* Dashboard upsell card */}
       <div className="rounded-2xl overflow-hidden text-right" style={{ background: "var(--pv-surface2, var(--card))", border: "1px solid var(--pv-border, var(--border))" }}>
-        {/* Gradient banner */}
         <div className="px-5 py-4" style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)" }}>
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0 mt-0.5">
-              <Sparkles className="w-4.5 h-4.5 text-white" style={{ width: 18, height: 18 }} />
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+              <Sparkles style={{ width: 18, height: 18, color: "white" }} />
             </div>
-            <div>
-              <p className="text-white font-semibold text-sm leading-snug mb-0.5">הוסיפו כמה מוצרים עכשיו - גם מוצרי דמו</p>
-              <p className="text-white/75 text-xs leading-relaxed">תמונות, תיאורים מלאים ומחירי מבצע - עושים בנחת בדשבורד הניהול אחרי שהאתר באוויר.</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-semibold text-sm leading-snug">הוסיפו כמה מוצרים עכשיו - גם מוצרי דמו</p>
+              <p className="text-white/75 text-xs mt-0.5">תמונות ותיאורים מלאים - בנחת בדשבורד הניהול.</p>
+            </div>
+            <button
+              onClick={() => setShowDashboardFeatures(v => !v)}
+              className="shrink-0 text-xs text-white/80 hover:text-white underline underline-offset-2 transition-colors"
+            >
+              {showDashboardFeatures ? "סגור" : "מה מחכה לכם?"}
+            </button>
+          </div>
+        </div>
+        {showDashboardFeatures && (
+          <div className="px-5 py-4">
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { Icon: Images,   title: "גלריית תמונות",      desc: "כמה תמונות לכל מוצר" },
+                { Icon: Video,    title: "וידאו מוצר",         desc: "סרטון בדף המוצר" },
+                { Icon: Tag,      title: "מבצעים ותגיות",      desc: "מחיר מבצע, חם, חדש" },
+                { Icon: Folder,   title: "קטגוריות וגרירה",    desc: "ארגון וסידור ידני" },
+                { Icon: FileText, title: "שדות מותאמים",       desc: "מידות, חומרים, אחריות" },
+                { Icon: EyeOff,   title: "הסתרת מוצרים",       desc: "מלאי ועונתיות בקלות" },
+              ].map(({ Icon, title, desc }) => (
+                <div key={title} className="flex items-start gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--pv-surface, color-mix(in srgb, var(--background) 60%, transparent))" }}>
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-foreground leading-snug">{title}</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-        {/* Features grid */}
-        <div className="px-5 py-4">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">מה מחכה לכם בדשבורד הניהול</p>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { Icon: Images,   title: "גלריית תמונות",      desc: "כמה תמונות לכל מוצר" },
-              { Icon: Video,    title: "וידאו מוצר",         desc: "סרטון בדף המוצר" },
-              { Icon: Tag,      title: "מבצעים ותגיות",      desc: "מחיר מבצע, חם, חדש" },
-              { Icon: Folder,   title: "קטגוריות וגרירה",    desc: "ארגון וסידור ידני" },
-              { Icon: FileText, title: "שדות מותאמים",       desc: "מידות, חומרים, אחריות" },
-              { Icon: EyeOff,   title: "הסתרת מוצרים",       desc: "מלאי ועונתיות בקלות" },
-            ].map(({ Icon, title, desc }) => (
-              <div key={title} className="flex items-start gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--pv-surface, color-mix(in srgb, var(--background) 60%, transparent))" }}>
-                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon className="w-3.5 h-3.5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold text-foreground leading-snug">{title}</p>
-                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
-
-      {/* Organization toggle */}
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          onClick={() => updateData({ productOrganization: "free" })}
-          className={`p-3 rounded-xl border-2 text-right transition-all ${data.productOrganization === "free" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <List className={`w-4 h-4 ${data.productOrganization === "free" ? "text-primary" : "text-muted-foreground"}`} />
-            <span className={`text-sm font-medium ${data.productOrganization === "free" ? "text-primary" : "text-foreground"}`}>רשימה חופשית</span>
-          </div>
-          <p className="text-xs text-muted-foreground">כל המוצרים במקום אחד</p>
-        </button>
-        <button
-          onClick={() => updateData({ productOrganization: "categories" })}
-          className={`p-3 rounded-xl border-2 text-right transition-all ${data.productOrganization === "categories" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <LayoutGrid className={`w-4 h-4 ${data.productOrganization === "categories" ? "text-primary" : "text-muted-foreground"}`} />
-            <span className={`text-sm font-medium ${data.productOrganization === "categories" ? "text-primary" : "text-foreground"}`}>לפי קטגוריות</span>
-          </div>
-          <p className="text-xs text-muted-foreground">חולצות, מכנסיים, נעליים...</p>
-        </button>
-      </div>
-
-      {/* Categories sidebar (only when categories mode active) */}
-      {data.productOrganization === "categories" && (
-        <div className="p-4 rounded-xl border border-border bg-card">
-          <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
-            <FolderOpen className="w-4 h-4 text-primary" /> קטגוריות
-          </h3>
-          <ProductCategoryManager
-            categories={data.productCategories}
-            selectedCategoryId={selectedCategoryId}
-            onAddCategory={handleAddCategory}
-            onRemoveCategory={handleRemoveCategory}
-            onSelectCategory={setSelectedCategoryId}
-            onUpdateCategory={handleUpdateCategory}
-            productsCountByCategory={productsCountByCategory}
-          />
-        </div>
-      )}
 
       {/* Method selector */}
       <div className="grid grid-cols-3 gap-3">
