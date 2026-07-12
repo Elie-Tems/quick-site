@@ -22,7 +22,7 @@ const ENGINES = [
     type: "אתר מכירות",
     subtitle: ["תמיד רציתם אתר מכירות, אבל העלויות, הדומיינים והבלגן עצרו אתכם.", 'עם סיאנגו זה אפשרי במהירות ובקלות: חנות מקצועית תוך כמה דקות ב-69 ₪ + מע"מ לחודש בלבד.'],
     to: "/preview/redesign/home-multi",
-    img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
+    img: "/screenshots/hero-commerce.png",
     steps: [
       { title: "בוחרים סוג חנות", desc: "חנות מוצרים, בוטיק, מאפייה — בוחרים ואנחנו מתאימים את הכלים" },
       { title: "מגדירים שם, לוגו ופרטים", desc: "שם העסק, לוגו, פרטי קשר ושעות פעילות — הכל בכמה שניות" },
@@ -34,7 +34,7 @@ const ENGINES = [
     type: "אתר לנותני שירות\nוקביעת תורים",
     subtitle: ["תמיד קיבלתם הזמנות בוואטסאפ ובמייל ולפעמים הדברים נופלים בין הכיסאות.", "עכשיו לקוחות קובעים תור לבד ואפילו משלמים מראש, ממש מהאתר שלכם."],
     to: "/preview/redesign/services",
-    img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80",
+    img: "/screenshots/hero-booking.png",
     steps: [
       { title: "בוחרים סוג שירות", desc: "יופי, בריאות, עיצוב, חינוך — בוחרים ואנחנו מתאימים את הכלים" },
       { title: "מגדירים שם, לוגו ופרטים", desc: "שם העסק, לוגו, פרטי קשר ושעות פעילות — הכל בכמה שניות" },
@@ -46,7 +46,7 @@ const ENGINES = [
     type: "אתר לעמותה",
     subtitle: ["תמיד רציתם אתר שבו תוכלו להראות מה העמותה עושה, להיראות מכובדים, לקבל תרומות ולהתרחב. אבל לא ידעתם מאיפה להתחיל.", "עם סיאנגו זה אפשרי בכמה דקות ובעלות מינימלית של 69 ש\"ח לחודש ללא התחייבות."],
     to: "/preview/redesign/nonprofit",
-    img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=900&q=80",
+    img: "/screenshots/hero-donations.png",
     steps: [
       { title: "בוחרים סוג עמותה", desc: "חינוך, בריאות, קהילה, דת — בוחרים ואנחנו מתאימים את הכלים" },
       { title: "מגדירים שם, לוגו ופרטים", desc: "שם העמותה, לוגו, פרטי קשר ומידע על הארגון — הכל בכמה שניות" },
@@ -109,7 +109,7 @@ const PROCESS_IMGS = [
   { src: "/onboarding/ספרו לנו על העסק.jpeg", caption: "A — בוחרים סוג עסק ומגדירים פרטים", pos: "left top" },
   { src: "/onboarding/פרטי יצירתקשר.jpeg", caption: "B — מוסיפים פרטי יצירת קשר", pos: "left top" },
   { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80", caption: "C — מוסיפים מוצרים ושירותים", pos: "center center" },
-  { src: "/onboarding/דוגמה חיה של האתר.png", caption: "", pos: "center top" },
+  { src: "/screenshots/process-finale.png", caption: "", pos: "center top" },
 ];
 
 const HeroBg = () => (
@@ -398,19 +398,50 @@ const Index = () => {
           </div>
         </section>
 
-        {/* PER-TAB SUBTITLE SECTION */}
-        <section className="py-24 px-4 border-y pv-border pv-surface2">
-          <div className="max-w-2xl mx-auto text-center">
+        {/* PER-TAB SUBTITLE SECTION — before / after split */}
+        <section className="relative py-20 px-4 overflow-hidden" style={{ background: "var(--pv-surface2)" }}>
+          {/* faint green ambient */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(152 60% 45% / 0.06), transparent)" }} />
+          <div className="relative max-w-5xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div key={a.key}
-                initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-8">
-                <p className="text-xl md:text-2xl leading-relaxed pv-muted font-light">{a.subtitle[0]}</p>
-                <div className="flex justify-center">
-                  <div className="w-10 border-t pv-border" style={{ borderColor: "var(--color-primary, #22c55e)", opacity: 0.4 }} />
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }}
+                transition={{ duration: 0.45 }}
+                className="grid md:grid-cols-[1fr_auto_1fr] gap-6 md:gap-0 items-stretch">
+
+                {/* LEFT panel — problem */}
+                <div className="flex flex-col justify-center text-right p-8 md:p-10 rounded-3xl md:rounded-r-3xl md:rounded-l-none"
+                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  <span className="inline-block text-xs font-semibold tracking-widest uppercase mb-4 self-end"
+                    style={{ color: "var(--pv-faint)" }}>המצב היום</span>
+                  <p className="text-lg md:text-xl leading-relaxed" style={{ color: "var(--pv-muted)" }}>{a.subtitle[0]}</p>
                 </div>
-                <p className="text-xl md:text-2xl leading-snug pv-strong font-semibold">{a.subtitle[1]}</p>
+
+                {/* CENTER divider with arrow */}
+                <div className="hidden md:flex flex-col items-center justify-center px-2 relative">
+                  <div className="flex-1 w-px" style={{ background: "linear-gradient(to bottom, transparent, rgba(34,197,94,0.3), transparent)" }} />
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 my-3 z-10"
+                    style={{ background: "linear-gradient(135deg, #22c55e22, #22c55e44)", border: "1px solid rgba(34,197,94,0.4)", boxShadow: "0 0 20px rgba(34,197,94,0.2)" }}>
+                    <ArrowLeft className="w-4 h-4 rotate-180" style={{ color: "#22c55e" }} />
+                  </div>
+                  <div className="flex-1 w-px" style={{ background: "linear-gradient(to bottom, transparent, rgba(34,197,94,0.3), transparent)" }} />
+                </div>
+                {/* mobile arrow */}
+                <div className="flex md:hidden justify-center">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{ background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)" }}>
+                    <ArrowLeft className="w-3.5 h-3.5 -rotate-90" style={{ color: "#22c55e" }} />
+                  </div>
+                </div>
+
+                {/* RIGHT panel — solution */}
+                <div className="flex flex-col justify-center text-right p-8 md:p-10 rounded-3xl md:rounded-l-3xl md:rounded-r-none relative overflow-hidden"
+                  style={{ background: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.22)", boxShadow: "inset 0 0 60px rgba(34,197,94,0.05)" }}>
+                  <span className="inline-block text-xs font-semibold tracking-widest uppercase mb-4 self-end"
+                    style={{ color: "#22c55e", opacity: 0.8 }}>עם סיאנגו</span>
+                  <p className="text-lg md:text-xl leading-relaxed font-semibold" style={{ color: "var(--pv-strong)" }}>{a.subtitle[1]}</p>
+                </div>
+
               </motion.div>
             </AnimatePresence>
           </div>
