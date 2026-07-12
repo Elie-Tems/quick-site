@@ -92,6 +92,38 @@ export const storeLayouts: Record<StoreLayoutId, StoreLayout> = {
     suitedFor: ['products'],
     defaultPalette: 'bold-violet',
   },
+  boutique: {
+    id: 'boutique',
+    name: 'Boutique',
+    description: 'מינימליסטי ואלגנטי. מתאים לאופנה, תכשיטים ועיצוב.',
+    previewImage: 'https://images.unsplash.com/photo-1445205170230-053b83016050',
+    suitedFor: ['products', 'services'],
+    defaultPalette: 'rose-soft',
+  },
+  'beauty-spa': {
+    id: 'beauty-spa',
+    name: 'Beauty & Spa',
+    description: 'עדין ורומנטי. מתאים לקוסמטיקה, ספא וטיפולים.',
+    previewImage: 'https://images.unsplash.com/photo-1560066984-138daaa83f0d',
+    suitedFor: ['services'],
+    defaultPalette: 'rose-soft',
+  },
+  'home-pro': {
+    id: 'home-pro',
+    name: 'Home Pro',
+    description: 'מקצועי ואמין. מתאים לשיפוצים, בנייה ושירותי בית.',
+    previewImage: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd',
+    suitedFor: ['services'],
+    defaultPalette: 'warm-earth',
+  },
+  charity: {
+    id: 'charity',
+    name: 'Charity',
+    description: 'מרגש ומניע לפעולה. מתאים לעמותות, גיוס תרומות וקהילות.',
+    previewImage: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6',
+    suitedFor: ['nonprofit'],
+    defaultPalette: 'sage-green',
+  },
 };
 
 export const layoutList = Object.values(storeLayouts);

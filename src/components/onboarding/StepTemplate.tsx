@@ -193,13 +193,11 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
   ].filter(Boolean);
 
   const [selectedLayout, setSelectedLayout] = useState<StoreLayoutId>(() => {
-    const validLayouts = ['classic', 'service', 'property', 'market'] as StoreLayoutId[];
     const t = data.storeTemplate || '';
     const maybeLayout = t.split('-')[0] as StoreLayoutId;
-    if (validLayouts.includes(maybeLayout)) return maybeLayout;
-    if (subTypeDefaults && validLayouts.includes(subTypeDefaults.layout)) return subTypeDefaults.layout;
-    const firstValid = orderedTemplates.find(tpl => validLayouts.includes(tpl.id));
-    return firstValid?.id ?? 'classic';
+    if (ALL_TEMPLATES.find(tpl => tpl.id === maybeLayout)) return maybeLayout;
+    if (subTypeDefaults) return subTypeDefaults.layout;
+    return orderedTemplates[0]?.id ?? 'classic';
   });
 
   const [selectedPalette, setSelectedPalette] = useState<ColorPaletteId>(() => {
