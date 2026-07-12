@@ -6,6 +6,7 @@ import {
   Plus, Trash2, Package, FileSpreadsheet, Upload, X, Download,
   AlertCircle, Loader2, LayoutGrid, List, FolderOpen,
   Mic, MicOff, Pencil, ImagePlus, Wand2,
+  Images, Video, Tag, Folder, FileText, EyeOff, Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -850,29 +851,38 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       })()}
 
       {/* Dashboard upsell card */}
-      <div className="rounded-xl border border-border overflow-hidden text-right">
-        <div className="flex items-start gap-3 px-4 py-3 bg-primary/8 border-b border-primary/20">
-          <svg className="w-4 h-4 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <p className="text-sm text-primary leading-relaxed">
-            כדאי להוסיף כמה מוצרים עכשיו - אפילו מוצרי דמו. את כל השאר - תמונות, תיאורים מלאים, מחירי מבצע - עושים בנחת בדשבורד הניהול אחרי שהאתר באוויר.
-          </p>
+      <div className="rounded-2xl overflow-hidden text-right" style={{ background: "var(--pv-surface2, var(--card))", border: "1px solid var(--pv-border, var(--border))" }}>
+        {/* Gradient banner */}
+        <div className="px-5 py-4" style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)" }}>
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0 mt-0.5">
+              <Sparkles className="w-4.5 h-4.5 text-white" style={{ width: 18, height: 18 }} />
+            </div>
+            <div>
+              <p className="text-white font-semibold text-sm leading-snug mb-0.5">הוסיפו כמה מוצרים עכשיו - גם מוצרי דמו</p>
+              <p className="text-white/75 text-xs leading-relaxed">תמונות, תיאורים מלאים ומחירי מבצע - עושים בנחת בדשבורד הניהול אחרי שהאתר באוויר.</p>
+            </div>
+          </div>
         </div>
-        <div className="px-4 py-3 bg-card">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">מה מיוחד בדשבורד הניהול</p>
-          <div className="grid gap-2">
+        {/* Features grid */}
+        <div className="px-5 py-4">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">מה מחכה לכם בדשבורד הניהול</p>
+          <div className="grid grid-cols-2 gap-3">
             {[
-              { icon: "📷", title: "גלריית תמונות לכל מוצר", desc: "כמה תמונות לכל מוצר - הלקוח רואה מכל הזוויות" },
-              { icon: "🎬", title: "וידאו מוצר", desc: "צירוף סרטון לכל מוצר - מוצג ישירות בדף המוצר" },
-              { icon: "🏷️", title: "מבצעים ותגיות", desc: "מחיר מבצע, סימון חם ו-חדש, מוצרים מובילים בראש הדף" },
-              { icon: "📂", title: "קטגוריות וסדר גרירה", desc: "ארגון בקטגוריות וסידור ידני בגרירה" },
-              { icon: "📋", title: "שדות מותאמים אישית", desc: "מידות, חומרים, אחריות - כל מידע נוסף שצריך" },
-              { icon: "👁️", title: "הסתרת מוצרים", desc: "להפעיל ולכבות כל מוצר ללא מחיקה - שימושי למלאי ועונתיות" },
-            ].map(({ icon, title, desc }) => (
-              <div key={title} className="flex items-start gap-2.5">
-                <span className="text-sm mt-0.5 shrink-0">{icon}</span>
-                <div>
-                  <span className="text-sm font-medium text-foreground">{title} </span>
-                  <span className="text-sm text-muted-foreground">{desc}</span>
+              { Icon: Images,   title: "גלריית תמונות",      desc: "כמה תמונות לכל מוצר" },
+              { Icon: Video,    title: "וידאו מוצר",         desc: "סרטון בדף המוצר" },
+              { Icon: Tag,      title: "מבצעים ותגיות",      desc: "מחיר מבצע, חם, חדש" },
+              { Icon: Folder,   title: "קטגוריות וגרירה",    desc: "ארגון וסידור ידני" },
+              { Icon: FileText, title: "שדות מותאמים",       desc: "מידות, חומרים, אחריות" },
+              { Icon: EyeOff,   title: "הסתרת מוצרים",       desc: "מלאי ועונתיות בקלות" },
+            ].map(({ Icon, title, desc }) => (
+              <div key={title} className="flex items-start gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--pv-surface, color-mix(in srgb, var(--background) 60%, transparent))" }}>
+                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-foreground leading-snug">{title}</p>
+                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{desc}</p>
                 </div>
               </div>
             ))}
@@ -925,24 +935,34 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       {/* Method selector */}
       <div className="grid grid-cols-3 gap-3">
         {([
-          { id: "quick" as Method, icon: Plus, title: "הוספה מהירה", desc: `שורה אחת לכל ${data.businessType === 'nonprofit' ? 'פרויקט' : data.businessType === 'realestate' ? 'נכס' : 'מוצר'}` },
-          { id: "catalog" as Method, icon: FileSpreadsheet, title: "ייבוא אקסל", desc: "העלו קובץ או הורידו תבנית" },
-          { id: "voice" as Method, icon: Mic, title: "הכתבה קולית", desc: "דברו, אנחנו נרשום" },
-        ] as const).map(({ id, icon: Icon, title, desc }) => (
-          <button
-            key={id}
-            onClick={() => setActiveMethod(id)}
-            className={`p-3 rounded-xl border-2 text-center transition-all ${
-              activeMethod === id
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/30"
-            }`}
-          >
-            <Icon className={`w-5 h-5 mx-auto mb-1.5 ${activeMethod === id ? "text-primary" : "text-muted-foreground"}`} />
-            <p className="text-xs font-medium">{title}</p>
-            <p className="text-[10px] text-muted-foreground">{desc}</p>
-          </button>
-        ))}
+          { id: "quick" as Method, icon: Plus, title: "הוספה מהירה", desc: `שורה אחת לכל ${data.businessType === 'nonprofit' ? 'פרויקט' : data.businessType === 'realestate' ? 'נכס' : 'מוצר'}`, gradient: "linear-gradient(135deg, #10b981, #059669)" },
+          { id: "catalog" as Method, icon: FileSpreadsheet, title: "ייבוא אקסל", desc: "העלו קובץ או הורידו תבנית", gradient: "linear-gradient(135deg, #0ea5e9, #2563eb)" },
+          { id: "voice" as Method, icon: Mic, title: "הכתבה קולית", desc: "דברו, אנחנו נרשום", gradient: "linear-gradient(135deg, #f59e0b, #ea580c)" },
+        ] as const).map(({ id, icon: Icon, title, desc, gradient }) => {
+          const isActive = activeMethod === id;
+          return (
+            <button
+              key={id}
+              onClick={() => setActiveMethod(id)}
+              className="relative rounded-xl border-2 text-center transition-all overflow-hidden"
+              style={{
+                borderColor: isActive ? "transparent" : "var(--border)",
+                background: isActive ? gradient : undefined,
+                boxShadow: isActive ? "0 4px 14px rgba(0,0,0,0.15)" : undefined,
+                transform: isActive ? "translateY(-1px)" : undefined,
+              }}
+            >
+              {!isActive && <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity" style={{ background: gradient, opacity: 0.06 }} />}
+              <div className="px-2 py-3.5">
+                <div className={`w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center ${isActive ? "bg-white/20" : "bg-muted"}`}>
+                  <Icon className={`w-5 h-5 ${isActive ? "text-white" : "text-muted-foreground"}`} />
+                </div>
+                <p className={`text-xs font-semibold leading-tight ${isActive ? "text-white" : "text-foreground"}`}>{title}</p>
+                <p className={`text-[10px] mt-0.5 leading-snug ${isActive ? "text-white/75" : "text-muted-foreground"}`}>{desc}</p>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Quick add pane ── */}
