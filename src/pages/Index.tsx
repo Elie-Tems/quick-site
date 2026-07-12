@@ -20,7 +20,7 @@ const ENGINES = [
   {
     key: "commerce", label: "חנויות אונליין", icon: ShoppingBag,
     type: "אתר מכירות",
-    subtitle: ["תמיד רציתם אתר מכירות, אבל העלויות, הדומיינים והבלגן עצרו אתכם.", "עם סיאנגו זה אפשרי במהירות ובקלות: חנות מקצועית תוך כמה דקות ב-69 ₪ לחודש בלבד."],
+    subtitle: ["תמיד רציתם אתר מכירות, אבל העלויות, הדומיינים והבלגן עצרו אתכם.", "עם סיאנגו זה אפשרי במהירות ובקלות: חנות מקצועית תוך כמה דקות ב-69 ₪ + מע"מ לחודש בלבד."],
     to: "/preview/redesign/home-multi",
     img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
   },
@@ -278,7 +278,7 @@ const HowItWorks = () => {
                 <p className="text-lg font-bold" style={{ color: imgIdx === 3 ? "#22c55e" : "var(--pv-strong)" }}>
                   והופ! האתר עלה לאוויר
                 </p>
-                <p className="text-sm mt-0.5" style={{ color: "var(--pv-muted)" }}>תוך 5 דקות — ב-69 ₪ בלבד</p>
+                <p className="text-sm mt-0.5" style={{ color: "var(--pv-muted)" }}>תוך 5 דקות — ב-69 ₪ + מע"מ בלבד</p>
               </div>
             </motion.div>
           </div>
@@ -367,7 +367,7 @@ const Index = () => {
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
                       <span className="block pv-strong" style={{ whiteSpace: "pre-line" }}>{a.type}</span>
                       <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">תוך 5 דקות</span>
-                      <span className="block pv-strong">ב-69 ₪</span>
+                      <span className="block pv-strong">ב-69 ₪<span className="text-base font-normal pv-muted"> + מע"מ</span></span>
                     </h1>
                   </motion.div>
                 </AnimatePresence>
@@ -453,7 +453,7 @@ const Index = () => {
                           <ArrowLeft className="w-5 h-5 text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                         </div>
                       </div>
-                      <div className="px-4 py-2.5 text-xs pv-muted text-right">69 ₪ לחודש · ללא התחייבות</div>
+                      <div className="px-4 py-2.5 text-xs pv-muted text-right">69 ₪ + מע"מ לחודש · ללא התחייבות</div>
                     </Card>
                   </Link>
                 </motion.div>
@@ -496,7 +496,7 @@ const Index = () => {
               <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">בלי כאב ראש.</span>
             </h2>
             <p className="text-lg pv-muted mb-2">כמה דקות ויש לכם אתר מדהים.</p>
-            <p className="text-lg font-semibold pv-strong mb-6">69 ₪ לחודש, ללא התחייבות.</p>
+            <p className="text-lg font-semibold pv-strong mb-6">69 ₪ + מע"מ לחודש, ללא התחייבות.</p>
             <Link to="/register" className="inline-flex items-center gap-2 px-9 py-4 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
               התחילו עכשיו <ArrowLeft className="w-5 h-5" />
             </Link>

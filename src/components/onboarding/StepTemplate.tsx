@@ -473,7 +473,7 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
                   <div className="text-center">
                     <div className="text-4xl mb-3">🚀</div>
                     <h2 className="text-xl font-bold text-foreground">מוכנים לפרסם?</h2>
-                    <p className="text-sm text-muted-foreground mt-1">69 ₪ לחודש · ביטול בכל עת · ללא התחייבות</p>
+                    <p className="text-sm text-muted-foreground mt-1">69 ₪ לחודש + מע"מ · ביטול בכל עת · ללא התחייבות</p>
                   </div>
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input
