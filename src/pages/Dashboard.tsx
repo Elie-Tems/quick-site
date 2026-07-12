@@ -55,7 +55,7 @@ import { useProductCategories } from "@/hooks/useProductCategories";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useReferralRewardNotification } from "@/hooks/useReferralRewardNotification";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 const Dashboard = () => {
@@ -70,6 +70,22 @@ const Dashboard = () => {
   useReferralRewardNotification();
   
   const [currentView, setCurrentView] = useState<DashboardView>('home');
+  // Lightweight navigation history so every drill-in screen (e.g. an add-on demo
+  // opened from "תוספות וכלים") has a working "חזרה" button. User navigation goes
+  // through `goToView`; internal tab-redirects keep using setCurrentView directly
+  // so they don't pollute the back stack.
+  const [viewHistory, setViewHistory] = useState<DashboardView[]>([]);
+  const goToView = (v: DashboardView) => {
+    setViewHistory((h) => (currentView !== v ? [...h, currentView] : h));
+    setCurrentView(v);
+  };
+  const goBack = () => {
+    setViewHistory((h) => {
+      if (!h.length) return h;
+      setCurrentView(h[h.length - 1]);
+      return h.slice(0, -1);
+    });
+  };
   const { entitled: crmEntitled } = useCrmEntitled();
   const { entitled: analyticsEntitled } = useAnalyticsEntitled();
   const [subscribingAddon, setSubscribingAddon] = useState<string | null>(null);
@@ -551,7 +567,7 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (currentView) {
       case 'home':
-        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} businessType={getBusinessType(business)} onNavigate={setCurrentView} />;
+        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} businessType={getBusinessType(business)} onNavigate={goToView} />;
       case 'verticals':
         return <VerticalModules business={business as any} />;
       case 'lifecycle-emails':
@@ -715,7 +731,7 @@ const Dashboard = () => {
       case 'email':
         return <DashboardEmail businessId={business?.id} onGoToDomains={() => setCurrentView('domains')} />;
       case 'upgrades':
-        return <DashboardUpgrades onNavigate={(v) => setCurrentView(v)} business={business as any} />;
+        return <DashboardUpgrades onNavigate={goToView} business={business as any} />;
       case 'tracking':
         return <DashboardTracking businessId={business?.id} />;
       case 'reviews':
@@ -826,13 +842,13 @@ const Dashboard = () => {
           businessName={settings.name}
           siteUrl={business?.slug ? `/store/${business.slug}` : "/store"}
           merchantLogoUrl={(business as any)?.logo_url || undefined}
-          onNavigate={setCurrentView}
+          onNavigate={goToView}
         />
         
         <div className="flex">
           <DashboardNav
             currentView={currentView}
-            onViewChange={setCurrentView}
+            onViewChange={goToView}
             businessType={getBusinessType(business)}
             canUseCampaigns={hasProducts}
             canUseCoupons={hasProducts}
@@ -844,6 +860,16 @@ const Dashboard = () => {
           
           <main className="flex-1 pb-20 md:pb-0">
             <SubscriptionAlert onManage={() => setCurrentView('subscription')} />
+            {viewHistory.length > 0 && (
+              <div className="px-4 pt-4 -mb-2">
+                <button
+                  onClick={goBack}
+                  className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg px-2.5 py-1.5 hover:bg-muted transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" /> חזרה
+                </button>
+              </div>
+            )}
             {renderContent()}
           </main>
         </div>
