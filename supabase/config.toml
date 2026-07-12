@@ -33,6 +33,11 @@ verify_jwt = false
 [functions.onboarding-abandoned]
 verify_jwt = false
 
+# leads-followup-run is a daily cron (no user JWT) that emails each merchant a digest
+# of leads whose follow-up reminder is due today/overdue. Optional CRON_SECRET guard.
+[functions.leads-followup-run]
+verify_jwt = false
+
 # billing-charge-run is the monthly self-managed billing cron (charges stored
 # tokens via cc/bill). Cron-only; optional CRON_SECRET guard.
 [functions.billing-charge-run]

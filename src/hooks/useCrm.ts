@@ -61,6 +61,19 @@ export const useMoveCard = () => {
   });
 };
 
+/** Set (or clear, with null) a lead's follow-up date. Powers the reminders strip
+ *  and the daily merchant digest (leads-followup-run cron). */
+export const useSetFollowUp = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ cardId, at }: { cardId: string; at: string | null }) => {
+      const { error } = await sb.from("pipeline_cards").update({ follow_up_at: at }).eq("id", cardId);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["pipeline"] }),
+  });
+};
+
 export const useCreateLead = () => {
   const qc = useQueryClient();
   return useMutation({
