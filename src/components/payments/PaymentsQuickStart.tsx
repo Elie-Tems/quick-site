@@ -8,7 +8,15 @@ import { PAYPLUS_SIGNUP_URL } from "@/hooks/usePayplus";
 // Facts are paraphrased from public knowledge (incl. how Israeli credit-card
 // processing works) - never copied verbatim.
 
-interface Provider { id: string; name: string; domain: string; blurb: string; url: string; }
+interface Provider { id: string; name: string; domain: string; blurb: string; url: string; comingSoon?: boolean; }
+
+// Community / donation platforms most Israeli synagogues + nonprofits already use.
+// Marked "בקרוב" - the integration is built server-side but stays off until a real
+// nonprofit connects and we run a live test charge (money = verify, never assume).
+const COMMUNITY_PROVIDERS: Provider[] = [
+  { id: "nedarimplus", name: "נדרים פלוס", domain: "nedarimplus.com", blurb: "סליקה + הוראת קבע לעמותות ובתי כנסת", url: "https://www.matara.pro/nedarimplus/", comingSoon: true },
+  { id: "kehilot", name: "קהילות", domain: "kehilot.co.il", blurb: "ניהול קהילה + תשלומים", url: "#", comingSoon: true },
+];
 
 // Providers that complete a payment page + invoicing on top of an existing terminal.
 const INVOICING_PROVIDERS: Provider[] = [
@@ -25,17 +33,30 @@ const SLIQA_PROVIDERS: Provider[] = [
   { id: "paypal", name: "PayPal", domain: "paypal.com", blurb: "תשלומים מחו\"ל. לא מפיק חשבונית מס בישראל.", url: "https://www.paypal.com/il/business" },
 ];
 
-const ProviderCard = ({ p }: { p: Provider }) => (
-  <a href={p.url} target="_blank" rel="noopener noreferrer"
-    className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary/40 transition-colors">
-    <ProviderLogo domain={p.domain} name={p.name} className="h-8 w-8" />
-    <div className="min-w-0 flex-1">
-      <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
-      <p className="text-[11px] text-muted-foreground truncate">{p.blurb}</p>
-    </div>
-    <ExternalLink className="h-3.5 w-3.5 text-primary shrink-0" />
-  </a>
-);
+const ProviderCard = ({ p }: { p: Provider }) => {
+  const inner = (
+    <>
+      <ProviderLogo domain={p.domain} name={p.name} className="h-8 w-8" />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
+        <p className="text-[11px] text-muted-foreground truncate">{p.blurb}</p>
+      </div>
+      {p.comingSoon
+        ? <span className="text-[10px] font-bold text-primary bg-primary/12 rounded-full px-2 py-0.5 shrink-0">בקרוב</span>
+        : <ExternalLink className="h-3.5 w-3.5 text-primary shrink-0" />}
+    </>
+  );
+  // Coming-soon providers aren't connectable yet -> render as a non-link card.
+  if (p.comingSoon) {
+    return <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 opacity-90">{inner}</div>;
+  }
+  return (
+    <a href={p.url} target="_blank" rel="noopener noreferrer"
+      className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary/40 transition-colors">
+      {inner}
+    </a>
+  );
+};
 
 const STATES = [
   { n: "1", title: "אין לי בכלל סליקה וחשבוניות", sub: "מתחילים מאפס" },
@@ -126,6 +147,14 @@ const PaymentsQuickStart = ({ onConnect }: { onConnect?: () => void }) => {
           </>
         )}
       </div>
+
+      {/* Community / synagogue + nonprofit platforms (coming soon) */}
+      <div className="mt-3 rounded-xl border border-border bg-card p-4">
+        <p className="text-sm font-semibold text-foreground">עמותה או בית כנסת?</p>
+        <p className="text-xs text-muted-foreground mb-3">אנחנו מחברים את פלטפורמות התרומות שהעולם הזה כבר עובד איתן - כולל הוראת קבע. בקרוב.</p>
+        <div className="grid gap-2 sm:grid-cols-2">{COMMUNITY_PROVIDERS.map((p) => <ProviderCard key={p.id} p={p} />)}</div>
+      </div>
+
       <p className="text-[11px] text-muted-foreground mt-2">לא בטוחים? כתבו לנו במרכז הידע / לבוט - נעזור לכם למצוא את הדרך המתאימה לעסק.</p>
     </div>
   );
