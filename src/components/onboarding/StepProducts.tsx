@@ -913,13 +913,13 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white font-semibold text-sm leading-snug">הוסיפו כמה מוצרים עכשיו - גם מוצרי דמו</p>
-              <p className="text-white/75 text-xs mt-0.5">תמונות ותיאורים מלאים - בנחת בדשבורד הניהול.</p>
+              <p className="text-white font-medium text-xs mt-0.5">תמונות ותיאורים מלאים — בנחת בדשבורד הניהול</p>
             </div>
             <button
               onClick={() => setShowDashboardFeatures(v => !v)}
-              className="shrink-0 text-xs text-white/80 hover:text-white underline underline-offset-2 transition-colors"
+              className="shrink-0 text-xs text-white/80 hover:text-white underline underline-offset-2 transition-colors whitespace-nowrap"
             >
-              {showDashboardFeatures ? "סגור" : "מה מחכה לכם?"}
+              {showDashboardFeatures ? "סגור" : "מה מחכה לכם בדשבורד >"}
             </button>
           </div>
         </div>
