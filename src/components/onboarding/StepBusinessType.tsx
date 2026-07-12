@@ -158,17 +158,20 @@ const PhotoCard = ({
   );
 };
 
+const normalizeSearch = (s: string) => s.replace(/[״"]/g, '"').toLowerCase();
+
 const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
   const [activeMain, setActiveMain] = useState<BusinessType | null>(data.businessType ?? null);
   const [search, setSearch] = useState("");
   const [showAll, setShowAll] = useState(false);
 
-  const globalSearchResults = search.trim()
-    ? ALL_SUBS_FLAT.filter(s => s.title.includes(search.trim()))
+  const searchNorm = normalizeSearch(search.trim());
+  const globalSearchResults = searchNorm
+    ? ALL_SUBS_FLAT.filter(s => normalizeSearch(s.title).includes(searchNorm))
     : [];
 
   const allSubs = activeMain ? SUB_CATEGORIES[activeMain] : [];
-  const filteredSubs = allSubs.filter(s => !search || s.title.includes(search));
+  const filteredSubs = allSubs.filter(s => !search || normalizeSearch(s.title).includes(searchNorm));
   const visibleSubs = search || showAll ? filteredSubs : filteredSubs.slice(0, SHOW_INITIAL);
   const hasMore = !search && !showAll && filteredSubs.length > SHOW_INITIAL;
 
