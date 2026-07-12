@@ -59,14 +59,8 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
   const lastGeneratedCategory = useRef<string | null>(null);
   const autoGenTriggered = useRef(false);
 
-  // Auto-generate on mount if no image yet and category is known
-  useEffect(() => {
-    if (autoGenTriggered.current) return;
-    if (heroPreview) return;
-    if (!data.businessCategory || data.businessCategory === 'other') return;
-    autoGenTriggered.current = true;
-    generateHeroImage(false);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // No auto-generate — user picks their preferred method first
+  useEffect(() => { autoGenTriggered.current = true; }, []);
 
   const saveHeroImage = (url: string, method: UploadMethod) => {
     setHeroPreview(url);
@@ -180,10 +174,10 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
       {/* Header */}
       <div className="text-center">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-          תמונת נושא (סליידר ראשי) לאתר
+          תמונה ראשית לאתר
         </h1>
         <p className="text-muted-foreground">
-          התמונה הראשית שתופיע בראש האתר שלכם
+          בחרו איך תרצו להוסיף תמונה לראש האתר שלכם
         </p>
       </div>
 
