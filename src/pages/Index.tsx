@@ -101,6 +101,20 @@ const hasStoredSession = () => {
   return false;
 };
 
+// True right after an OAuth provider redirect, when the URL still carries the
+// auth result (?code= for PKCE, #access_token= for implicit) or an error. Google
+// login's redirect can land on the apex "/" (Supabase Site-URL fallback), and at
+// that instant the session isn't persisted yet - so hasStoredSession() is still
+// false. Without this we briefly render the marketing home before the auth state
+// resolves and routes the user to their workspace (the "home flash"). Detecting
+// the return params lets us show the spinner immediately instead.
+const hasOAuthReturn = () => {
+  try {
+    const s = `${window.location.search}${window.location.hash}`;
+    return /[?&#](code|access_token|error_description)=/.test(s);
+  } catch { return false; }
+};
+
 const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }) => {
   const { t } = useLanguage();
   const [imgIdx, setImgIdx] = useState(0);
@@ -253,7 +267,7 @@ const Index = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const isPreview = new URLSearchParams(window.location.search).has("preview");
-  const [resolving, setResolving] = useState(!isPreview && hasStoredSession);
+  const [resolving, setResolving] = useState(() => !isPreview && (hasStoredSession() || hasOAuthReturn()));
   const [eng, setEng] = useState(0);
 
   const ENGINES = ENGINE_CONFIG.map(cfg => ({
