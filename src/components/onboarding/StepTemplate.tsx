@@ -299,65 +299,29 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
   };
 
   const selectedTpl = ALL_TEMPLATES.find(t => t.id === selectedLayout) ?? ALL_TEMPLATES[0];
+  // 3 alternatives = the next templates in order after the selected one
+  const alternatives = orderedTemplates.filter(t => t.id !== selectedLayout).slice(0, 3);
 
   return (
-    <div className="space-y-5" dir="rtl">
+    <div className="space-y-4" dir="rtl">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-display font-bold pv-strong mb-1">בחרו את מראה האתר</h2>
-        <p className="text-sm pv-muted">בחרו תבנית וצבעים - אפשר לשנות בכל עת מהדשבורד</p>
+        <h2 className="text-2xl font-display font-bold pv-strong mb-1">כך נראה האתר שלכם</h2>
+        <p className="text-sm pv-muted">המערכת בחרה את התבנית המתאימה לכם — אפשר לשנות</p>
       </div>
 
-      {/* Template selector grid */}
-      <div className="grid grid-cols-2 gap-3">
-        {orderedTemplates.map((tpl, i) => {
-          const isActive = selectedLayout === tpl.id;
-          const isRecommended = i === 0 && tpl.forTypes.includes(businessType) && tpl.id !== 'classic';
-          return (
-            <button
-              key={tpl.id}
-              onClick={() => handleLayoutSelect(tpl.id)}
-              className="relative group text-right rounded-2xl overflow-hidden transition-all focus:outline-none"
-              style={{
-                border: isActive ? '2px solid var(--color-primary, #22c55e)' : '2px solid var(--pv-border, #333)',
-                boxShadow: isActive ? '0 0 0 3px rgba(34,197,94,0.15)' : undefined,
-              }}
-            >
-              {/* Visual mock preview */}
-              <div className="aspect-[16/9] overflow-hidden relative">
-                <MockPreview layoutId={tpl.id} gradient={tpl.gradient} />
-                {isActive && (
-                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(34,197,94,0.08)' }}>
-                    <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
-                      <Check className="w-4 h-4 text-white" />
-                    </div>
-                  </div>
-                )}
-                {isRecommended && (
-                  <div className="absolute top-1.5 right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ background: tpl.gradient }}>
-                    מומלץ
-                  </div>
-                )}
-              </div>
-              {/* Label */}
-              <div className="px-2.5 py-2" style={{ background: 'var(--pv-surface2, #111)' }}>
-                <p className={`text-xs font-semibold ${isActive ? 'text-green-400' : 'pv-strong'}`}>{tpl.name}</p>
-                <p className="text-[10px] pv-faint">{tpl.desc}</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Live preview of selected template */}
-      <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--pv-border, #333)' }}>
+      {/* Big live preview */}
+      <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--pv-border,#333)' }}>
+        {/* Browser chrome */}
         <div className="px-3 py-2 flex items-center gap-2" style={{ background: 'var(--pv-surface2,#111)', borderBottom: '1px solid var(--pv-border,#333)' }}>
           <span className="w-2.5 h-2.5 rounded-full bg-red-400/70" />
           <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/70" />
           <span className="w-2.5 h-2.5 rounded-full bg-green-400/70" />
-          <span className="mx-auto text-[11px] pv-faint font-mono">תצוגה מקדימה — {selectedTpl.name}</span>
+          <span className="mx-auto text-[11px] pv-faint font-mono truncate max-w-[200px]">
+            {data.businessName || 'האתר שלכם'} — {selectedTpl.name}
+          </span>
         </div>
-        <div style={{ height: 280, background: '#f0f0f0', overflow: 'hidden', position: 'relative' }}>
+        <div style={{ height: 500, background: '#f0f0f0', overflow: 'hidden', position: 'relative' }}>
           <SoftErrorBoundary
             fallback={
               <div className="flex items-center justify-center h-full" style={{ background: '#f0f0f0' }}>
@@ -380,6 +344,30 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
           </SoftErrorBoundary>
         </div>
       </div>
+
+      {/* Alternative templates */}
+      {alternatives.length > 0 && (
+        <div>
+          <p className="text-xs pv-muted mb-2">רוצים עיצוב שונה?</p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {alternatives.map(tpl => (
+              <button
+                key={tpl.id}
+                onClick={() => handleLayoutSelect(tpl.id)}
+                className="flex-shrink-0 rounded-xl overflow-hidden transition-all focus:outline-none"
+                style={{ border: '2px solid var(--pv-border,#333)', width: 88 }}
+              >
+                <div style={{ height: 52, overflow: 'hidden', pointerEvents: 'none' }}>
+                  <MockPreview layoutId={tpl.id} gradient={tpl.gradient} />
+                </div>
+                <div className="py-1 px-1.5 text-center" style={{ background: 'var(--pv-surface2,#111)' }}>
+                  <p className="text-[9px] pv-muted leading-tight">{tpl.name}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Color palette */}
       <div className="rounded-xl p-3" style={{ background: 'var(--pv-surface2,#111)', border: '1px solid var(--pv-border,#333)' }}>
