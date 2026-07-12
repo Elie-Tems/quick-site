@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
 import { BusinessCategory, businessCategoryList } from "@/lib/categoryConfig";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsAdmin } from "@/hooks/useAdmin";
 
 export type { BusinessCategory };
 
@@ -125,6 +126,7 @@ const categories = businessCategoryList.map(({ id, label }) => ({
 const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProps) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { data: isAdmin } = useIsAdmin();
   const [formData, setFormData] = useState(settings);
   const [isResettingOnboarding, setIsResettingOnboarding] = useState(false);
 
@@ -779,22 +781,26 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
           שמרו הגדרות
         </Button>
 
-        {/* Dev: reset onboarding */}
-        <div className="border-t border-border pt-4 mt-2">
-          <p className="text-xs text-muted-foreground mb-2 text-right">בדיקות ופיתוח</p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="w-full text-amber-700 border-amber-300 hover:bg-amber-50"
-            onClick={handleResetOnboarding}
-            disabled={isResettingOnboarding}
-          >
-            {isResettingOnboarding && <Loader2 className="h-3.5 w-3.5 animate-spin ml-2" />}
-            <RefreshCw className="h-3.5 w-3.5 ml-2" />
-            אפס Onboarding — עבור לאשף מחדש
-          </Button>
-        </div>
+        {/* Dev: reset onboarding — admin-only. This wipes onboarding_completed_at and
+            throws the account back into the setup wizard, so it must never be exposed
+            to real merchants. */}
+        {isAdmin && (
+          <div className="border-t border-border pt-4 mt-2">
+            <p className="text-xs text-muted-foreground mb-2 text-right">בדיקות ופיתוח (אדמין)</p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full text-amber-700 border-amber-300 hover:bg-amber-50"
+              onClick={handleResetOnboarding}
+              disabled={isResettingOnboarding}
+            >
+              {isResettingOnboarding && <Loader2 className="h-3.5 w-3.5 animate-spin ml-2" />}
+              <RefreshCw className="h-3.5 w-3.5 ml-2" />
+              אפס Onboarding - עבור לאשף מחדש
+            </Button>
+          </div>
+        )}
       </form>
     </div>
   );

@@ -102,7 +102,7 @@ const DashboardUpgrades = ({ onNavigate }: Props) => {
             <Sparkles className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold leading-tight">חנות הפיצ'רים</h1>
+            <h1 className="text-2xl font-bold leading-tight">תוספות וכלים</h1>
             <p className="text-white/75 text-sm mt-0.5">כל הכלים שהופכים חנות לעסק אמיתי - בחרו מה שמתאים לכם</p>
           </div>
         </div>

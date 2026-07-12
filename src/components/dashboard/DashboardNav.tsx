@@ -24,7 +24,7 @@ interface DashboardNavProps {
 
 // Sidebar groups (desktop shows these as section headers). Order here = display order.
 // Redesigned IA: 6 focused groups instead of the old sprawling list.
-const NAV_GROUPS = ["בית", "חנות פיצ'רים", "תוכן", "עריכה ועיצוב", "ניהול מכירות", "שיווק", "הגדרות"] as const;
+const NAV_GROUPS = ["בית", "תוספות וכלים", "תוכן", "עריכה ועיצוב", "ניהול מכירות", "שיווק", "הגדרות"] as const;
 type NavGroup = (typeof NAV_GROUPS)[number];
 
 // Per-business-type overrides: which nav items to hide, and label/icon overrides.
@@ -85,8 +85,8 @@ const navItems: {
   { id: "shipping", label: "משלוחים", icon: Truck, group: "ניהול מכירות" },
   { id: "payments", label: "סליקה", icon: CreditCard, group: "ניהול מכירות" },
 
-  // חנות פיצ'רים - כניסה לחנות בלבד; הפירוט נמצא בתוך החנות עצמה
-  { id: "upgrades", label: "כל הפיצ'רים", shortLabel: "פיצ'רים", icon: Sparkles, group: "חנות פיצ'רים" },
+  // תוספות וכלים - כניסה לחנות בלבד; הפירוט נמצא בתוך החנות עצמה
+  { id: "upgrades", label: "כל התוספות", shortLabel: "תוספות", icon: Sparkles, group: "תוספות וכלים" },
 
   // שיווק
   { id: "campaigns", label: "פרסום באתר", icon: Megaphone, group: "שיווק" },
@@ -194,12 +194,12 @@ const DashboardNav = ({
                 onClick={() => singleItemId ? onViewChange(singleItemId) : toggleGroup(group)}
                 className={cn(
                   "w-full flex items-center justify-between px-3 pt-3 pb-1.5 text-[11px] font-semibold tracking-wider transition-colors",
-                  group === "חנות פיצ'רים"
+                  group === "תוספות וכלים"
                     ? "text-primary hover:text-primary/80"
                     : "text-muted-foreground/70 hover:text-foreground"
                 )}
               >
-                <span className={group === "חנות פיצ'רים" ? "font-bold text-[12px]" : ""}>{displayGroupLabel}</span>
+                <span className={group === "תוספות וכלים" ? "font-bold text-[12px]" : ""}>{displayGroupLabel}</span>
                 {!singleItemId && <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open ? "" : "-rotate-90")} />}
               </button>
               {open && groupItems.map((item) => {
