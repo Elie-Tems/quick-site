@@ -8,8 +8,14 @@ import { MessageCircleQuestion } from "lucide-react";
  */
 const FloatingHelpButton = () => {
   const { pathname } = useLocation();
-  // Hide on the storefront, the help page itself, and previews.
-  if (pathname.startsWith("/store") || pathname.startsWith("/help") || pathname.startsWith("/preview")) {
+  // Hide on the storefront, the help page itself, previews, and onboarding
+  // (the onboarding sidebar has its own publish CTA at the same viewport position).
+  if (
+    pathname.startsWith("/store") ||
+    pathname.startsWith("/help") ||
+    pathname.startsWith("/preview") ||
+    pathname.startsWith("/onboarding")
+  ) {
     return null;
   }
 

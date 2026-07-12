@@ -9,6 +9,18 @@ import type { Product } from '@/components/storefront/StoreProducts';
 const NOOP = () => {};
 const INNER_W = 1100;
 
+// Demo product names per business category, used when user hasn't added products yet
+const DEMO_BY_CATEGORY: Record<string, { names: string[]; prices: string[] }> = {
+  bakery:     { names: ['לחם כפרי', 'עוגת שוקולד', 'קרואסון חמאה', 'עוגיות שיבולת שועל', 'בגט פריז', 'מאפה גבינה'], prices: ['18', '95', '12', '32', '14', '22'] },
+  restaurant: { names: ['סלט קיסר', 'המבורגר ביף', 'פסטה ארביאטה', 'פיצה מרגריטה', 'שניצל וינאי', 'קינוח שוקולד'], prices: ['52', '89', '72', '65', '84', '38'] },
+  cafe:       { names: ['קפה אמריקאו', 'לאטה וניל', 'ספייסי לאטה', 'קרואסון שוקולד', 'עוגת גבינה', 'טוסט אבוקדו'], prices: ['16', '22', '24', '18', '42', '38'] },
+  clothing:   { names: ['חולצה לבנה', 'ג\'ינס כחול', 'שמלת קיץ', 'מעיל עור', 'סריג בז\'', 'מכנסי פשתן'], prices: ['149', '299', '249', '599', '199', '189'] },
+  jewelry:    { names: ['שרשרת זהב', 'עגילי יהלום', 'צמיד כסף', 'טבעת אמרלד', 'תליון לב', 'ברסלט זהב'], prices: ['890', '2400', '450', '1800', '650', '980'] },
+  beauty:     { names: ['קרם פנים', 'שמפו ארגן', 'ליפגלוס ורוד', 'מסכת לחות', 'פרפיום ורד', 'סרום ויטמין C'], prices: ['89', '65', '42', '78', '195', '128'] },
+  home:       { names: ['כרית דקורטיבית', 'מנורת שולחן', 'שטיח ברבר', 'מראה קיר', 'פרחים מלאכותיים', 'נר ריחני'], prices: ['89', '245', '450', '320', '78', '55'] },
+  default:    { names: ['מוצר א', 'מוצר ב', 'מוצר ג', 'מוצר ד', 'מוצר ה', 'מוצר ו'], prices: ['99', '149', '79', '199', '129', '89'] },
+};
+
 const FALLBACK_IMAGES: Record<string, string[]> = {
   bakery:     ['https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80','https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&q=80','https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&q=80','https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=600&q=80','https://images.unsplash.com/photo-1464219551459-ac14ae01fbe0?w=600&q=80'],
   restaurant: ['https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=600&q=80','https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80','https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&q=80','https://images.unsplash.com/photo-1562967914-608f82629710?w=600&q=80','https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600&q=80'],
@@ -77,13 +89,32 @@ const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Pr
   // Convert product File images → object URLs
   const products: Product[] = useMemo(() => {
     const blobUrls: string[] = [];
+    const cat = data.businessCategory ?? 'default';
+
+    // When user hasn't added products yet — show 6 realistic demo items so the
+    // preview looks like a real store instead of an empty skeleton.
+    if (!data.products || data.products.length === 0) {
+      const demo = DEMO_BY_CATEGORY[cat] ?? DEMO_BY_CATEGORY.default;
+      return Array.from({ length: 6 }, (_, idx) => ({
+        id: `demo-${idx}`,
+        name: demo.names[idx] ?? `מוצר ${idx + 1}`,
+        price: demo.prices[idx] ?? '99',
+        description: '',
+        imageUrl: getFallbackImage(cat, idx),
+        active: true,
+        isSale: idx === 1,
+        isHot: idx === 0,
+        categoryId: undefined,
+      }));
+    }
+
     const result = data.products.map((p, idx): Product => {
       let imageUrl = p.imageUrl;
       if (!imageUrl && p.image instanceof File) {
         imageUrl = URL.createObjectURL(p.image);
         blobUrls.push(imageUrl);
       }
-      if (!imageUrl) imageUrl = getFallbackImage(data.businessCategory, idx);
+      if (!imageUrl) imageUrl = getFallbackImage(cat, idx);
       return {
         id: p.id || `prev-${Math.random()}`,
         name: p.name,
@@ -98,7 +129,7 @@ const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Pr
     });
     // Revoke on next memo run
     return Object.assign(result, { _blobs: blobUrls });
-  }, [data.products]);
+  }, [data.products, data.businessCategory]);
 
   useEffect(() => {
     const blobs = (products as any)._blobs as string[] | undefined;
@@ -107,11 +138,17 @@ const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Pr
 
   const template = useMemo(() => buildTemplate(layoutId, paletteId), [layoutId, paletteId]);
 
+  // For 'custom' palette, the palette itself is a fallback (bw-classic) and the
+  // real color lives in extractedBranding.primaryColor.
+  const effectivePrimaryColor =
+    (paletteId === 'custom' ? data.extractedBranding?.primaryColor : null)
+    || template.theme.primaryColor;
+
   // CSS vars scoped to this container so the layout colors don't bleed into onboarding UI
   const cssVars = useMemo((): React.CSSProperties => {
     try {
       return {
-        '--primary':    hexToHsl(template.theme.primaryColor),
+        '--primary':    hexToHsl(effectivePrimaryColor),
         '--background': hexToHsl(template.theme.backgroundColor),
         '--foreground': hexToHsl(template.theme.foregroundColor),
         '--card':       hexToHsl(template.theme.cardColor),
@@ -121,7 +158,8 @@ const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Pr
     } catch {
       return {};
     }
-  }, [template]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [template, effectivePrimaryColor]);
 
   const layoutProps: StorefrontLayoutProps = {
     businessName: data.businessName || 'שם העסק שלכם',
@@ -134,10 +172,12 @@ const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Pr
     heroBenefits: data.heroBenefits,
     promoText: data.promoText,
     heroImageUrl: data.extractedBranding?.heroImageUrl,
-    primaryColor: template.theme.primaryColor,
+    primaryColor: effectivePrimaryColor,
     template,
     products,
-    categories: data.productCategories.map(c => ({ id: c.id, name: c.name })),
+    categories: data.productCategories.length
+      ? data.productCategories.map(c => ({ id: c.id, name: c.name }))
+      : [{ id: 'demo-cat', name: 'מוצרים' }],
     selectedCategoryId: null,
     onSelectCategory: NOOP,
     banners: [],
