@@ -14,7 +14,7 @@ interface Props {
 const StepContact = ({ data, updateData, onNext, onBack }: Props) => {
   const isValid = !!data.orderEmail;
 
-  const inputCls = "h-12 rounded-xl [background:var(--pv-surface2)] [border-color:var(--pv-border)] [color:var(--pv-text)] placeholder:[color:var(--pv-faint)] focus-visible:ring-primary/40";
+  const inputCls = "h-12 rounded-xl bg-[var(--pv-surface2)] border-[var(--pv-border)] text-[var(--pv-text)] placeholder:text-[var(--pv-faint)] focus-visible:ring-primary/40";
   const labelCls = "font-medium pv-text flex items-center gap-2";
 
   return (

@@ -70,7 +70,7 @@ const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
           placeholder={labels.namePlaceholder}
           value={data.businessName}
           onChange={e => updateData({ businessName: e.target.value })}
-          className="h-12 text-base rounded-xl [background:var(--pv-surface2)] [border-color:var(--pv-border)] [color:var(--pv-text)] placeholder:[color:var(--pv-faint)] focus-visible:ring-primary/40"
+          className="h-12 text-base rounded-xl bg-[var(--pv-surface2)] border-[var(--pv-border)] text-[var(--pv-text)] placeholder:text-[var(--pv-faint)] focus-visible:ring-primary/40"
         />
       </div>
 
