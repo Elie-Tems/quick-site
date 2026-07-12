@@ -98,6 +98,32 @@ interface Props {
 }
 
 
+const hslToHex = (h: number, s: number, l: number): string => {
+  s /= 100; l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+};
+
+const hexToHue = (hex: string): number => {
+  const clean = hex.replace('#', '');
+  if (clean.length !== 6) return 0;
+  const r = parseInt(clean.slice(0, 2), 16) / 255;
+  const g = parseInt(clean.slice(2, 4), 16) / 255;
+  const b = parseInt(clean.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  if (max === min) return 0;
+  let h = 0;
+  if (max === r) h = ((g - b) / (max - min) + (g < b ? 6 : 0)) / 6;
+  else if (max === g) h = ((b - r) / (max - min) + 2) / 6;
+  else h = ((r - g) / (max - min) + 4) / 6;
+  return Math.round(h * 360);
+};
+
 const StepTemplate = ({ data, updateData, onBack }: Props) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -126,6 +152,8 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
   });
 
   const [customColor, setCustomColor] = useState(data.extractedBranding?.primaryColor || '#22c55e');
+  const [hue, setHue] = useState(() => hexToHue(data.extractedBranding?.primaryColor || '#22c55e'));
+  const [hexInput, setHexInput] = useState(data.extractedBranding?.primaryColor || '#22c55e');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [legalAcknowledged, setLegalAcknowledged] = useState(false);
@@ -261,12 +289,51 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
             </button>
           </div>
           {showColorPicker && selectedPalette === 'custom' && (
-            <input
-              type="color"
-              value={customColor}
-              onChange={e => { setCustomColor(e.target.value); commit(selectedLayout, 'custom', e.target.value); }}
-              className="mt-2 w-full h-8 rounded-lg cursor-pointer border border-border p-0.5"
-            />
+            <div className="mt-3 space-y-2">
+              {/* Hue slider */}
+              <div>
+                <p className="text-[9px] pv-faint mb-1">גוון</p>
+                <div className="relative h-4 rounded-full overflow-hidden" style={{
+                  background: 'linear-gradient(to left, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)'
+                }}>
+                  <input
+                    type="range" min="0" max="360" value={hue}
+                    onChange={e => {
+                      const h = Number(e.target.value);
+                      setHue(h);
+                      const hex = hslToHex(h, 70, 45);
+                      setHexInput(hex);
+                      setCustomColor(hex);
+                      commit(selectedLayout, 'custom', hex);
+                    }}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white shadow-md pointer-events-none"
+                    style={{ left: `${(hue / 360) * 100}%`, transform: 'translate(-50%, -50%)', background: hslToHex(hue, 70, 45) }} />
+                </div>
+              </div>
+              {/* Hex input */}
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md shrink-0 border border-white/20" style={{ background: customColor }} />
+                <input
+                  type="text"
+                  value={hexInput}
+                  maxLength={7}
+                  placeholder="#000000"
+                  onChange={e => {
+                    const val = e.target.value.startsWith('#') ? e.target.value : '#' + e.target.value;
+                    setHexInput(val);
+                    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+                      setCustomColor(val);
+                      setHue(hexToHue(val));
+                      commit(selectedLayout, 'custom', val);
+                    }
+                  }}
+                  className="flex-1 text-xs font-mono px-2 py-1.5 rounded-lg border focus:outline-none focus:ring-1 focus:ring-primary"
+                  style={{ background: 'var(--pv-surface,rgba(255,255,255,0.07))', borderColor: 'var(--pv-border,#444)', color: 'var(--pv-text,#fff)' }}
+                />
+              </div>
+            </div>
           )}
         </div>
 
@@ -285,17 +352,6 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
 
       {/* ── PREVIEW ── */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Browser chrome */}
-        <div className="px-4 py-2.5 flex items-center gap-2 shrink-0" style={{ background: 'var(--pv-surface2,#111)', borderBottom: '1px solid var(--pv-border,#333)' }}>
-          <span className="w-3 h-3 rounded-full bg-red-400/80" />
-          <span className="w-3 h-3 rounded-full bg-yellow-400/80" />
-          <span className="w-3 h-3 rounded-full bg-green-400/80" />
-          <div className="flex-1 mx-4">
-            <div className="max-w-xs mx-auto text-center text-[11px] pv-faint font-mono px-3 py-1 rounded-md" style={{ background: 'var(--pv-surface,rgba(255,255,255,0.05))' }}>
-              siango.app/{businessSlug || 'האתר-שלכם'}
-            </div>
-          </div>
-        </div>
         {/* Live preview — scrollable */}
         <div className="flex-1 overflow-y-auto" style={{ background: '#f0f0f0' }}>
           <SoftErrorBoundary fallback={<div className="w-full h-full bg-gray-100" />}>

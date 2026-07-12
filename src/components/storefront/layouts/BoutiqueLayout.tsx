@@ -9,14 +9,14 @@ const FALLBACK_PRODUCT_IMG = "https://images.unsplash.com/photo-1585487000160-6e
 export default function BoutiqueLayout(props: StorefrontLayoutProps) {
   const {
     businessName, tagline, heroTitle, promoText, aboutText,
-    logoUrl, phone, products, categories, banners,
+    logoUrl, phone, products, categories, banners, heroImageUrl,
     cartItems, onAddToCart, onUpdateQuantity, onRemoveFromCart,
     onCheckout, favoriteIds, onToggleFavorite,
     selectedCategoryId, onSelectCategory, customLabels,
   } = props;
 
   const [cartOpen, setCartOpen] = useState(false);
-  const heroImg = banners?.[0]?.imageUrl || FALLBACK_HERO;
+  const heroImg = heroImageUrl || banners?.[0]?.imageUrl || FALLBACK_HERO;
   const cats = [{ id: null, name: "הכל" }, ...categories.map(c => ({ id: c.id, name: c.name }))];
   const visible = selectedCategoryId
     ? products.filter(p => p.categoryId === selectedCategoryId)
