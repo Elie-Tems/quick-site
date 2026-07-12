@@ -10,14 +10,18 @@ interface SEOHeadProps {
 }
 
 const SEOHead = ({
-  title = "סיאנגו - אתר מכירתי לעסק שלך תוך 5 דקות",
-  description = "צור אתר מכירתי מקצועי לעסק שלך תוך 5 דקות בלבד. ללא מתכנת, ללא עיצוב, תשלום חודשי נמוך. מושלם לעסקים קטנים ובינוניים בישראל.",
+  // Broadened beyond "אתר מכירתי" to the terms Israelis actually search for
+  // (בניית אתר לעסק / חנות אונליין / אתר מכירות), covering the verticals - the
+  // homepage uses these defaults; other pages pass their own.
+  title = "בניית אתר לעסק וחנות אונליין תוך 5 דקות | סיאנגו",
+  description = "בונים אתר מקצועי לעסק תוך 5 דקות - חנות אונליין, אתר מכירות, אתר לנותני שירות וקביעת תורים או אתר לעמותה. בלי מתכנת ובלי עיצוב, החל מ-69 ₪ לחודש. מותאם לעסקים בישראל.",
   canonical = "https://siango.app/",
   ogImage = "https://siango.app/og-image.png",
   ogType = "website",
   noindex = false,
 }: SEOHeadProps) => {
   const siteName = "סיאנגו";
+  const keywords = "בניית אתר לעסק, חנות אונליין, אתר מכירות, בניית אתרים, אתר לעסק קטן, אתר אינטרנט לעסק, חנות וירטואלית, אתר לנותני שירות, קביעת תורים אונליין, אתר לעמותה, בניית אתר בזול, אתר לעסק ללא מתכנת";
   
   // Organization Schema
   const organizationSchema = {
@@ -120,6 +124,7 @@ const SEOHead = ({
       <title>{title}</title>
       <meta name="title" content={title} />
       <meta name="description" content={description} />
+      <meta name="keywords" content={keywords} />
       {noindex && <meta name="robots" content="noindex, nofollow" />}
       
       {/* Canonical URL */}
