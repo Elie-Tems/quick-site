@@ -60,6 +60,9 @@ const PublishPayment = () => {
   const [couponInfo, setCouponInfo] = useState<{ discount_type: string; discount_value: number; duration: string } | null>(null);
   const [couponMsg, setCouponMsg] = useState("");
   const [startingCheckout, setStartingCheckout] = useState(false);
+  // Cardcom hosted-page (LowProfile) URL, rendered inside our own iframe so the
+  // customer stays on Siango instead of being redirected off-site.
+  const [cardcomUrl, setCardcomUrl] = useState("");
   const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
   // Surfaced when the first charge fails / the card couldn't be saved / no IPN
   // arrived - so the customer isn't left staring at an endless spinner.
@@ -366,11 +369,12 @@ const PublishPayment = () => {
         body: { businessId: effectiveBusinessId, couponCode: couponInfo ? couponCode.trim() : undefined },
       });
       if (error) throw error;
-      // Cardcom returns a full hosted-page URL. Redirect the top window straight to
-      // it (verified working) instead of embedding in an iframe - the old iframe path
-      // was gated on the legacy iCount basePaymentUrl and never rendered for Cardcom.
-      // Cardcom sends the customer back to ?paid=1, where we poll is_published.
-      if ((data as any)?.saleUrl) { window.location.href = (data as any).saleUrl; return; }
+      // Cardcom returns a hosted LowProfile page URL. Render it inside our own
+      // iframe (below) so the customer stays on Siango. Cardcom's post-payment
+      // SuccessRedirectUrl (?paid=1) navigates the top window out of the frame
+      // (sandbox allow-top-navigation; App.tsx also force-escapes app nesting).
+      // If Cardcom refuses to be framed, the fallback link does the full redirect.
+      if ((data as any)?.saleUrl) { setCardcomUrl((data as any).saleUrl); return; }
       else throw new Error((data as any)?.error || "לא ניתן להתחיל תשלום");
     } catch (e: unknown) {
       toast({ title: "לא ניתן להתחיל תשלום", description: e instanceof Error ? e.message : "נסו שוב", variant: "destructive" });
@@ -384,6 +388,54 @@ const PublishPayment = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
       </div>
+    );
+  }
+
+  // Cardcom hosted payment page, embedded in our own iframe so the customer never
+  // leaves Siango. The sandbox allows top-navigation so Cardcom's post-payment
+  // redirect (?paid=1) escapes the frame back to the top window. The fallback link
+  // does a full redirect in case Cardcom refuses to be framed (never blocks paying).
+  if (cardcomUrl) {
+    return (
+      <>
+        <SEOHead title="תשלום לפרסום האתר | סיאנגו" noindex={true} />
+        <div className="min-h-screen bg-surface-1 flex flex-col">
+          <div className="w-full px-4 py-6 flex flex-col gap-4 flex-1">
+            <div className="w-full max-w-5xl mx-auto flex items-center justify-between">
+              <Button variant="ghost" onClick={() => setCardcomUrl("")} className="gap-2">
+                <ArrowRight className="w-4 h-4" />
+                חזרה
+              </Button>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">תשלום מאובטח</h1>
+              <div className="w-[90px]" />
+            </div>
+            <div className="w-full max-w-5xl mx-auto grow flex">
+              <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-lg flex flex-col w-full">
+                <div className="px-4 py-3 border-b border-border bg-gradient-to-r from-primary/10 to-accent/10 text-sm font-medium text-foreground text-center flex items-center justify-center gap-2">
+                  <ShieldCheck className="w-4 h-4" />
+                  תשלום מאובטח דרך Cardcom - סיאנגו לא רואה את פרטי הכרטיס
+                </div>
+                <iframe
+                  title="תשלום מאובטח Cardcom"
+                  src={cardcomUrl}
+                  className="w-full grow min-h-[min(80vh,820px)] border-0 bg-white"
+                  allow="payment *"
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-top-navigation-by-user-activation"
+                />
+                <div className="px-4 py-3 border-t border-border bg-muted/20 text-center">
+                  <a
+                    href={cardcomUrl}
+                    className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    התשלום לא נטען? המשיכו לעמוד הסליקה
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
