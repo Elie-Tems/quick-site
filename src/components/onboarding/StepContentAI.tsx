@@ -144,11 +144,16 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
   const transcribeAudio = async (blob: Blob) => {
     setIsGenerating(true);
     try {
-      const formData = new FormData();
-      formData.append("file", blob, "recording.webm");
-      const { data: result, error } = await supabase.functions.invoke("transcribe-products", { body: formData });
-      if (error || !result?.text) throw new Error("תמלול נכשל");
-      const text = result.text as string;
+      const ab = await blob.arrayBuffer();
+      const bytes = new Uint8Array(ab);
+      let binary = "";
+      bytes.forEach(b => { binary += String.fromCharCode(b); });
+      const base64 = btoa(binary);
+      const { data: result, error } = await supabase.functions.invoke("transcribe-products", {
+        body: { audio: base64, mimeType: blob.type },
+      });
+      if (error || !result?.transcript) throw new Error("תמלול נכשל");
+      const text = result.transcript as string;
       setTranscript(text);
       await generate(text);
     } catch {
