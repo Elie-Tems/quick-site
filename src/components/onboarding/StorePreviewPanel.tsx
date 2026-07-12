@@ -221,23 +221,13 @@ const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Pr
   return (
     <div
       ref={containerRef}
-      className="relative rounded-xl overflow-hidden"
-      style={{
-        width: '100%',
-        height: Math.round(680 * scale),
-        ...cssVars,
-      }}
+      className="relative w-full"
+      style={cssVars}
     >
-      {/* Click blocker — preview is read-only */}
-      <div className="absolute inset-0 z-10" />
       <div
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
           width: INNER_W,
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
+          zoom: scale,
           pointerEvents: 'none',
         }}
       >

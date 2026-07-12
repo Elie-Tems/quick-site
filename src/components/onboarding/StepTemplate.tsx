@@ -45,16 +45,16 @@ const SUB_TYPE_LABELS: Record<string, string> = {
   other: 'אחר',
 };
 
-// All available templates with visual descriptions
+// Templates with visual style names (not business-type names)
 const ALL_TEMPLATES: { id: StoreLayoutId; name: string; desc: string; gradient: string; forTypes: string[] }[] = [
-  { id: 'classic',    name: 'חנות קלאסית',   desc: 'רשת מוצרים, 3 עמודות',        gradient: 'linear-gradient(135deg,#6366f1 0%,#4338ca 100%)', forTypes: ['products','realestate','nonprofit','services',''] },
-  { id: 'market',     name: 'שוק / מארקט',   desc: 'עיצוב חי עם תמונות גדולות',   gradient: 'linear-gradient(135deg,#f59e0b 0%,#ea580c 100%)', forTypes: ['products',''] },
-  { id: 'boutique',   name: 'בוטיק יוקרה',   desc: 'מינימליסטי ואלגנטי',          gradient: 'linear-gradient(135deg,#ec4899 0%,#be185d 100%)', forTypes: ['products','services',''] },
-  { id: 'service',    name: 'כרטיסי שירות',  desc: 'לנותני שירות ויועצים',        gradient: 'linear-gradient(135deg,#14b8a6 0%,#0d9488 100%)', forTypes: ['services','nonprofit',''] },
-  { id: 'beauty-spa', name: 'יופי וספא',      desc: 'עדין ורומנטי לטיפוח',        gradient: 'linear-gradient(135deg,#f472b6 0%,#a855f7 100%)', forTypes: ['services',''] },
-  { id: 'home-pro',   name: 'בית ושיפוצים',  desc: 'מקצועי לבית ותשתיות',        gradient: 'linear-gradient(135deg,#78716c 0%,#44403c 100%)', forTypes: ['services',''] },
-  { id: 'property',   name: 'נדל"ן / נופש',  desc: 'תמונות גדולות לנכסים',        gradient: 'linear-gradient(135deg,#0ea5e9 0%,#1d4ed8 100%)', forTypes: ['realestate','services',''] },
-  { id: 'charity',    name: 'עמותה / ארגון', desc: 'גיוס תרומות וקהילה',          gradient: 'linear-gradient(135deg,#22c55e 0%,#15803d 100%)', forTypes: ['nonprofit',''] },
+  { id: 'classic',    name: 'קלאסי',    desc: 'רשת נקייה ומסודרת',         gradient: 'linear-gradient(135deg,#6366f1 0%,#4338ca 100%)', forTypes: ['products','realestate','nonprofit','services',''] },
+  { id: 'boutique',   name: 'אלגנטי',   desc: 'מינימליסטי ויוקרתי',        gradient: 'linear-gradient(135deg,#ec4899 0%,#be185d 100%)', forTypes: ['products','services',''] },
+  { id: 'market',     name: 'תוסס',     desc: 'צבעוני עם תמונות גדולות',   gradient: 'linear-gradient(135deg,#f59e0b 0%,#ea580c 100%)', forTypes: ['products',''] },
+  { id: 'service',    name: 'מקצועי',   desc: 'כרטיסי שירות ברורים',       gradient: 'linear-gradient(135deg,#14b8a6 0%,#0d9488 100%)', forTypes: ['services','nonprofit',''] },
+  { id: 'beauty-spa', name: 'עדין',     desc: 'עיצוב רך ורומנטי',          gradient: 'linear-gradient(135deg,#f472b6 0%,#a855f7 100%)', forTypes: ['services',''] },
+  { id: 'home-pro',   name: 'עוצמתי',   desc: 'כהה ומכובד',                gradient: 'linear-gradient(135deg,#78716c 0%,#44403c 100%)', forTypes: ['services',''] },
+  { id: 'property',   name: 'גלריה',    desc: 'תמונות גדולות ומרשימות',    gradient: 'linear-gradient(135deg,#0ea5e9 0%,#1d4ed8 100%)', forTypes: ['realestate','services',''] },
+  { id: 'charity',    name: 'קהילתי',   desc: 'לארגונים ועמותות',          gradient: 'linear-gradient(135deg,#22c55e 0%,#15803d 100%)', forTypes: ['nonprofit',''] },
 ];
 
 const SUB_TYPE_TO_TEMPLATE: Record<string, { layout: StoreLayoutId; palette: ColorPaletteId }> = {
@@ -185,12 +185,11 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
   const businessType = data.businessType ?? '';
   const subTypeDefaults = data.businessSubType ? SUB_TYPE_TO_TEMPLATE[data.businessSubType] : undefined;
 
-  // Sort templates: recommended for this business type first
+  // Show max 4 templates: relevant ones first, then fill with others
   const orderedTemplates = [
-    ...ALL_TEMPLATES.filter(t => t.forTypes.includes(businessType) && t.id !== 'classic'),
-    ALL_TEMPLATES.find(t => t.id === 'classic')!,
-    ...ALL_TEMPLATES.filter(t => !t.forTypes.includes(businessType) && t.id !== 'classic'),
-  ].filter(Boolean);
+    ...ALL_TEMPLATES.filter(t => t.forTypes.includes(businessType)),
+    ...ALL_TEMPLATES.filter(t => !t.forTypes.includes(businessType)),
+  ].filter(Boolean).slice(0, 4);
 
   const [selectedLayout, setSelectedLayout] = useState<StoreLayoutId>(() => {
     const t = data.storeTemplate || '';
@@ -421,8 +420,8 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
             </div>
           </div>
         </div>
-        {/* Live preview — fills remaining height */}
-        <div className="flex-1 overflow-hidden" style={{ background: '#f0f0f0' }}>
+        {/* Live preview — scrollable */}
+        <div className="flex-1 overflow-y-auto" style={{ background: '#f0f0f0' }}>
           <SoftErrorBoundary
             fallback={
               <div className="w-full h-full">
