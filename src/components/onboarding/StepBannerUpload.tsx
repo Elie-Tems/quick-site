@@ -79,8 +79,15 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
   };
 
   const generateHeroImage = async (forceRegenerate = false) => {
-    if (!data.businessCategory) return;
-    if (data.businessCategory === "other" && !data.customCategoryName) return;
+    // Resolve a usable category with fallbacks so the "generate" button NEVER
+    // silently no-ops. businessCategory defaults to "other" and customCategoryName
+    // can be empty, which previously made this return early with no toast and no
+    // spinner - the button looked dead. Fall back to the business name / a generic
+    // label so we always attempt a generation.
+    const resolvedCategory =
+      (data.businessCategory && data.businessCategory !== "other")
+        ? data.businessCategory
+        : (data.customCategoryName?.trim() || data.businessName?.trim() || "עסק");
 
     const categoryForCache = data.businessCategory === "other"
       ? `other-${data.customCategoryName}`
@@ -100,9 +107,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
         websiteTitle: data.extractedBranding.websiteTitle,
       } : undefined;
 
-      const categoryToUse = data.businessCategory === "other"
-        ? data.customCategoryName
-        : data.businessCategory;
+      const categoryToUse = resolvedCategory;
 
       const { data: heroData, error } = await supabase.functions.invoke('generate-hero-image', {
         body: {
@@ -173,10 +178,10 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+        <h1 className="text-2xl md:text-3xl font-bold pv-strong mb-2">
           תמונה ראשית לאתר
         </h1>
-        <p className="text-muted-foreground">
+        <p className="pv-muted">
           בחרו איך תרצו להוסיף תמונה לראש האתר שלכם
         </p>
       </div>
@@ -192,7 +197,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
           className="flex flex-col items-center justify-center gap-4 py-12"
         >
           <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <p className="text-sm text-muted-foreground">יוצר תמונה מותאמת לעסק שלכם...</p>
+          <p className="text-sm pv-muted">יוצר תמונה מותאמת לעסק שלכם...</p>
         </motion.div>
       )}
 
@@ -209,9 +214,9 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
               onClick={handleUploadClick}
               className="p-6 rounded-2xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-center flex flex-col items-center justify-center min-h-[140px]"
             >
-              <Upload className="w-8 h-8 mb-3 text-muted-foreground" />
-              <p className="text-sm font-medium text-foreground">העלאה</p>
-              <p className="text-xs text-muted-foreground mt-1">מהמחשב</p>
+              <Upload className="w-8 h-8 mb-3 pv-muted" />
+              <p className="text-sm font-medium pv-strong">העלאה</p>
+              <p className="text-xs pv-faint mt-1">מהמחשב</p>
             </motion.button>
 
             {/* URL */}
@@ -225,9 +230,9 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
                 selectedMethod === 'url' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50 hover:bg-primary/5'
               }`}
             >
-              <Link className="w-8 h-8 mb-3 text-muted-foreground" />
-              <p className="text-sm font-medium text-foreground">קישור</p>
-              <p className="text-xs text-muted-foreground mt-1">מהאינטרנט</p>
+              <Link className="w-8 h-8 mb-3 pv-muted" />
+              <p className="text-sm font-medium pv-strong">קישור</p>
+              <p className="text-xs pv-faint mt-1">מהאינטרנט</p>
             </motion.button>
 
             {/* AI Generate */}
@@ -242,7 +247,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
             >
               <Wand2 className="w-8 h-8 text-primary mb-3" />
               <p className="text-sm font-medium text-primary">תיצרו לי אתם</p>
-              <p className="text-xs text-muted-foreground mt-1">באמצעות AI ✨</p>
+              <p className="text-xs pv-muted mt-1">באמצעות AI ✨</p>
             </motion.button>
           </div>
 
@@ -343,7 +348,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
         onBack={onBack}
         nextLabel={heroPreview ? "הבא ←" : "דלג"}
         saveLabel={heroPreview ? 'שמרו והמשיכו' : undefined}
-        showPreview={false}
+        showPreview={!heroPreview}
         showSave={!!heroPreview}
       />
     </div>
