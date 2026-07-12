@@ -299,32 +299,133 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
   };
 
   const selectedTpl = ALL_TEMPLATES.find(t => t.id === selectedLayout) ?? ALL_TEMPLATES[0];
-  // 3 alternatives = the next templates in order after the selected one
-  const alternatives = orderedTemplates.filter(t => t.id !== selectedLayout).slice(0, 3);
 
   return (
-    <div className="space-y-4" dir="rtl">
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-display font-bold pv-strong mb-1">כך נראה האתר שלכם</h2>
-        <p className="text-sm pv-muted">המערכת בחרה את התבנית המתאימה לכם — אפשר לשנות</p>
+    <div className="flex h-[100dvh] overflow-hidden" dir="rtl">
+
+      {/* ── SIDEBAR ── */}
+      <div className="w-52 shrink-0 flex flex-col border-l overflow-y-auto" style={{ borderColor: 'var(--pv-border,#333)', background: 'var(--pv-surface2,#111)' }}>
+
+        {/* Logo + back */}
+        <div className="px-4 py-3 border-b flex items-center gap-2" style={{ borderColor: 'var(--pv-border,#333)' }}>
+          <button onClick={onBack} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors" title="חזרה">
+            <ChevronLeft className="w-4 h-4 pv-muted" />
+          </button>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold pv-strong leading-tight truncate">{data.businessName || 'האתר שלכם'}</p>
+            <p className="text-[10px] pv-faint leading-tight">{selectedTpl.name}</p>
+          </div>
+        </div>
+
+        {/* Templates */}
+        <div className="px-3 pt-3 pb-1">
+          <p className="text-[10px] font-semibold pv-faint uppercase tracking-wider mb-2">עיצוב תבנית</p>
+          <div className="grid grid-cols-2 gap-1.5">
+            {orderedTemplates.map(tpl => (
+              <button
+                key={tpl.id}
+                onClick={() => handleLayoutSelect(tpl.id)}
+                className="relative rounded-lg overflow-hidden transition-all focus:outline-none"
+                style={{
+                  height: 58,
+                  border: selectedLayout === tpl.id ? '2px solid hsl(var(--primary))' : '2px solid transparent',
+                  opacity: selectedLayout === tpl.id ? 1 : 0.55,
+                  boxShadow: selectedLayout === tpl.id ? '0 0 0 1px hsl(var(--primary)/0.4)' : undefined,
+                }}
+                title={tpl.name}
+              >
+                <div style={{ pointerEvents: 'none', height: '100%' }}>
+                  <MockPreview layoutId={tpl.id} gradient={tpl.gradient} />
+                </div>
+                {selectedLayout === tpl.id && (
+                  <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-primary flex items-center justify-center">
+                    <Check className="w-2 h-2 text-white" />
+                  </div>
+                )}
+                <div className="absolute bottom-0 left-0 right-0 py-0.5 px-1" style={{ background: 'rgba(0,0,0,0.55)' }}>
+                  <p className="text-[8px] text-white/90 text-center leading-tight truncate">{tpl.name}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="mx-3 my-3 border-t" style={{ borderColor: 'var(--pv-border,#333)' }} />
+
+        {/* Color palette */}
+        <div className="px-3 pb-3">
+          <p className="text-[10px] font-semibold pv-faint uppercase tracking-wider mb-2">צבע האתר</p>
+          <div className="grid grid-cols-5 gap-1.5">
+            {paletteList.map(p => (
+              <button
+                key={p.id}
+                onClick={() => handlePaletteSelect(p.id)}
+                title={p.name}
+                className="w-7 h-7 rounded-full border-2 transition-all hover:scale-110"
+                style={{
+                  background: `linear-gradient(135deg, ${p.swatch[0]}, ${p.swatch[1] || p.swatch[0]})`,
+                  borderColor: selectedPalette === p.id ? 'hsl(var(--primary))' : 'transparent',
+                  boxShadow: selectedPalette === p.id ? '0 0 0 2px hsl(var(--primary)/0.4)' : undefined,
+                  opacity: selectedPalette === p.id ? 1 : 0.6,
+                  transform: selectedPalette === p.id ? 'scale(1.15)' : undefined,
+                }}
+              />
+            ))}
+            <button
+              onClick={() => { handlePaletteSelect('custom'); setShowColorPicker(v => !v); }}
+              title="צבע חופשי"
+              className="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110"
+              style={{
+                borderColor: selectedPalette === 'custom' ? 'hsl(var(--primary))' : 'var(--pv-border,#444)',
+                background: selectedPalette === 'custom' ? customColor : 'transparent',
+                opacity: selectedPalette === 'custom' ? 1 : 0.6,
+              }}
+            >
+              {selectedPalette !== 'custom' && <Pipette className="w-3 h-3 pv-muted" />}
+            </button>
+          </div>
+          {showColorPicker && selectedPalette === 'custom' && (
+            <input
+              type="color"
+              value={customColor}
+              onChange={e => { setCustomColor(e.target.value); commit(selectedLayout, 'custom', e.target.value); }}
+              className="mt-2 w-full h-8 rounded-lg cursor-pointer border border-border p-0.5"
+            />
+          )}
+        </div>
+
+        {/* CTA */}
+        <div className="mt-auto px-3 pb-4 pt-2 border-t space-y-2" style={{ borderColor: 'var(--pv-border,#333)' }}>
+          <button
+            onClick={() => setShowPublishModal(true)}
+            className="w-full py-3 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-1.5 transition-all hover:opacity-90 active:scale-[0.97]"
+            style={{ background: 'linear-gradient(135deg,#22c55e,#16a34a)', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}
+          >
+            <Rocket className="w-4 h-4" />
+            פרסמו את האתר ←
+          </button>
+        </div>
       </div>
 
-      {/* Big live preview */}
-      <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--pv-border,#333)' }}>
+      {/* ── PREVIEW ── */}
+      <div className="flex-1 min-w-0 flex flex-col">
         {/* Browser chrome */}
-        <div className="px-3 py-2 flex items-center gap-2" style={{ background: 'var(--pv-surface2,#111)', borderBottom: '1px solid var(--pv-border,#333)' }}>
-          <span className="w-2.5 h-2.5 rounded-full bg-red-400/70" />
-          <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/70" />
-          <span className="w-2.5 h-2.5 rounded-full bg-green-400/70" />
-          <span className="mx-auto text-[11px] pv-faint font-mono truncate max-w-[200px]">
-            {data.businessName || 'האתר שלכם'} — {selectedTpl.name}
-          </span>
+        <div className="px-4 py-2.5 flex items-center gap-2 shrink-0" style={{ background: 'var(--pv-surface2,#111)', borderBottom: '1px solid var(--pv-border,#333)' }}>
+          <span className="w-3 h-3 rounded-full bg-red-400/80" />
+          <span className="w-3 h-3 rounded-full bg-yellow-400/80" />
+          <span className="w-3 h-3 rounded-full bg-green-400/80" />
+          <div className="flex-1 mx-4">
+            <div className="max-w-xs mx-auto text-center text-[11px] pv-faint font-mono px-3 py-1 rounded-md" style={{ background: 'var(--pv-surface,rgba(255,255,255,0.05))' }}>
+              siango.app/{businessSlug || 'האתר-שלכם'}
+            </div>
+          </div>
         </div>
-        <div style={{ height: 500, background: '#f0f0f0', overflow: 'hidden', position: 'relative' }}>
+        {/* Live preview — fills remaining height */}
+        <div className="flex-1 overflow-hidden" style={{ background: '#f0f0f0' }}>
           <SoftErrorBoundary
             fallback={
-              <div className="flex items-center justify-center h-full" style={{ background: '#f0f0f0' }}>
+              <div className="w-full h-full">
                 <MockPreview layoutId={selectedLayout} gradient={selectedTpl.gradient} />
               </div>
             }
@@ -343,84 +444,6 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
             </Suspense>
           </SoftErrorBoundary>
         </div>
-      </div>
-
-      {/* Alternative templates */}
-      {alternatives.length > 0 && (
-        <div>
-          <p className="text-xs pv-muted mb-2">רוצים עיצוב שונה?</p>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {alternatives.map(tpl => (
-              <button
-                key={tpl.id}
-                onClick={() => handleLayoutSelect(tpl.id)}
-                className="flex-shrink-0 rounded-xl overflow-hidden transition-all focus:outline-none"
-                style={{ border: '2px solid var(--pv-border,#333)', width: 88 }}
-              >
-                <div style={{ height: 52, overflow: 'hidden', pointerEvents: 'none' }}>
-                  <MockPreview layoutId={tpl.id} gradient={tpl.gradient} />
-                </div>
-                <div className="py-1 px-1.5 text-center" style={{ background: 'var(--pv-surface2,#111)' }}>
-                  <p className="text-[9px] pv-muted leading-tight">{tpl.name}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Color palette */}
-      <div className="rounded-xl p-3" style={{ background: 'var(--pv-surface2,#111)', border: '1px solid var(--pv-border,#333)' }}>
-        <p className="text-xs pv-muted mb-2.5 font-medium">צבע האתר</p>
-        <div className="flex flex-wrap gap-2">
-          {paletteList.map(p => (
-            <button
-              key={p.id}
-              onClick={() => handlePaletteSelect(p.id)}
-              title={p.name}
-              className={`flex gap-0.5 p-1 rounded-lg transition-all ${selectedPalette === p.id ? 'ring-2 ring-primary ring-offset-1 ring-offset-transparent' : 'opacity-60 hover:opacity-100'}`}
-            >
-              {p.swatch.slice(0, 2).map((hex, j) => (
-                <span key={j} className="w-4 h-4 rounded-full border border-black/10" style={{ backgroundColor: hex }} />
-              ))}
-            </button>
-          ))}
-          <button
-            onClick={() => { handlePaletteSelect('custom'); setShowColorPicker(v => !v); }}
-            title="צבע חופשי"
-            className={`p-1 rounded-lg transition-all ${selectedPalette === 'custom' ? 'ring-2 ring-primary ring-offset-1 ring-offset-transparent' : 'opacity-60 hover:opacity-100'}`}
-          >
-            <Pipette className="w-4 h-4 pv-muted" />
-          </button>
-          {showColorPicker && selectedPalette === 'custom' && (
-            <input
-              type="color"
-              value={customColor}
-              onChange={e => { setCustomColor(e.target.value); commit(selectedLayout, 'custom', e.target.value); }}
-              className="w-8 h-8 rounded-lg cursor-pointer p-0.5 border border-border"
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Bottom navigation */}
-      <div className="flex gap-3 pb-2">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 px-4 h-12 rounded-xl border text-sm transition-colors"
-          style={{ borderColor: 'var(--pv-border,#333)', color: 'var(--pv-muted)' }}
-        >
-          <ChevronLeft className="w-4 h-4" />
-          חזרה
-        </button>
-        <button
-          onClick={() => setShowPublishModal(true)}
-          className="flex-1 h-12 rounded-xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{ background: 'linear-gradient(135deg, var(--color-primary,#22c55e) 0%, #16a34a 100%)', boxShadow: '0 4px 20px rgba(34,197,94,0.35)' }}
-        >
-          <Rocket className="w-5 h-5" />
-          סיימתי — פרסמו את האתר
-        </button>
       </div>
 
       {/* Publish modal */}
