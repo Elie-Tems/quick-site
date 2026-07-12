@@ -244,6 +244,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   const [generatingProgress, setGeneratingProgress] = useState({ current: 0, total: 0 });
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [editPrompt, setEditPrompt] = useState("");
+  const [editingFieldProductId, setEditingFieldProductId] = useState<string | null>(null);
 
   // Manual photo upload per product
   const [uploadingForProductId, setUploadingForProductId] = useState<string | null>(null);
@@ -663,6 +664,8 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     updateData({ productCategories: data.productCategories.map(c => c.id === id ? { ...c, ...updates } : c) });
 
   const handleRemoveProduct = (id: string) => updateData({ products: data.products.filter(p => p.id !== id) });
+  const handleUpdateProduct = (id: string, patch: Partial<{ name: string; price: number }>) =>
+    updateData({ products: data.products.map(p => p.id === id ? { ...p, ...patch } : p) });
 
   // Continue to the next step. If the merchant is skipping with an empty store,
   // seed 5 demo products so the site isn't blank, and tell them they're editable.
@@ -766,10 +769,42 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{product.name}</p>
+          {editingFieldProductId === product.id ? (
+            <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+              <input
+                autoFocus
+                defaultValue={product.name}
+                onBlur={e => { handleUpdateProduct(product.id, { name: e.target.value || product.name }); setEditingFieldProductId(null); }}
+                onKeyDown={e => { if (e.key === "Enter" || e.key === "Escape") (e.target as HTMLInputElement).blur(); }}
+                className="flex-1 min-w-0 h-8 rounded-lg border border-primary/50 bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/40"
+                dir="rtl"
+              />
+              <input
+                defaultValue={product.price || ""}
+                type="number"
+                min="0"
+                placeholder="₪"
+                onBlur={e => { handleUpdateProduct(product.id, { price: Number(e.target.value) || 0 }); }}
+                onKeyDown={e => { if (e.key === "Enter" || e.key === "Escape") (e.target as HTMLInputElement).blur(); }}
+                className="w-20 h-8 rounded-lg border border-primary/50 bg-background px-2 text-sm text-left focus:outline-none focus:ring-1 focus:ring-primary/40"
+                dir="ltr"
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 group/name">
+              <p className="text-sm font-medium truncate">{product.name}</p>
+              <span className="text-sm text-muted-foreground shrink-0">· ₪{product.price}</span>
+              <button
+                onClick={e => { e.stopPropagation(); setEditingFieldProductId(product.id); }}
+                className="p-0.5 opacity-0 group-hover/name:opacity-100 hover:text-primary transition-all shrink-0"
+                title="ערוך שם ומחיר"
+              >
+                <Pencil className="w-3 h-3" />
+              </button>
+            </div>
+          )}
           {product.description && <p className="text-xs text-muted-foreground truncate">{product.description}</p>}
         </div>
-        <span className="text-sm font-semibold shrink-0">₪{product.price}</span>
         <button onClick={() => handleRemoveProduct(product.id)} className="p-1.5 hover:bg-destructive/10 rounded-lg transition-colors shrink-0">
           <Trash2 className="w-3.5 h-3.5 text-destructive" />
         </button>
