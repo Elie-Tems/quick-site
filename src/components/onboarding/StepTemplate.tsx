@@ -1,5 +1,4 @@
 import { useState, Suspense } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Pipette, Loader2, Rocket, ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -154,10 +153,7 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
   const [customColor, setCustomColor] = useState(data.extractedBranding?.primaryColor || '#22c55e');
   const [hue, setHue] = useState(() => hexToHue(data.extractedBranding?.primaryColor || '#22c55e'));
   const [hexInput, setHexInput] = useState(data.extractedBranding?.primaryColor || '#22c55e');
-  const [showPublishModal, setShowPublishModal] = useState(false);
-  const [legalAcknowledged, setLegalAcknowledged] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [publishProgress, setPublishProgress] = useState(0);
 
   const commit = (layoutId: StoreLayoutId, paletteId: ColorPaletteId, color: string) => {
     const primaryColor = paletteId === 'custom'
@@ -179,8 +175,6 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
   const handlePublish = async () => {
     if (!user) { toast({ title: 'נדרשת התחברות', variant: 'destructive' }); navigate('/login'); return; }
     setIsPublishing(true);
-    setPublishProgress(5);
-    const iv = setInterval(() => setPublishProgress(p => p < 88 ? p + Math.max(1, Math.round((88 - p) / 10)) : p), 350);
 
     try {
       const branding = data.extractedBranding;
@@ -213,9 +207,6 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
         products: data.products.map(p => ({ id: p.id, name: p.name, description: p.description, price: p.price, image: p.image, imageUrl: p.imageUrl, categoryId: p.categoryId })),
       });
 
-      clearInterval(iv);
-      setPublishProgress(100);
-
       if (skipPublishPayment && user) {
         const token = crypto.randomUUID();
         const { error: sessErr } = await supabase.from('publish_checkout_sessions').insert({
@@ -231,7 +222,6 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
       }
       navigate(`/publish-payment?businessId=${encodeURIComponent(result.businessId)}`, { state: { onboardingData: data } });
     } catch (err: any) {
-      clearInterval(iv);
       toast({ title: 'שגיאה בפרסום', description: err.message || 'משהו השתבש, נסה שוב', variant: 'destructive' });
       setIsPublishing(false);
       setPublishProgress(0);
@@ -335,12 +325,12 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
         {/* CTA — big and prominent */}
         <div className="mt-auto px-3 pb-5 pt-3 border-t" style={{ borderColor: 'var(--pv-border,#333)' }}>
           <button
-            onClick={() => setShowPublishModal(true)}
-            className="w-full py-5 rounded-2xl text-white font-extrabold text-base flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.97]"
+            onClick={handlePublish}
+            disabled={isPublishing}
+            className="w-full py-5 rounded-2xl text-white font-extrabold text-base flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-70"
             style={{ background: 'linear-gradient(135deg,#22c55e,#16a34a)', boxShadow: '0 6px 24px rgba(34,197,94,0.4)' }}
           >
-            <Rocket className="w-5 h-5" />
-            פרסמו את האתר ←
+            {isPublishing ? <><Loader2 className="w-5 h-5 animate-spin" /> בונים את האתר...</> : <><Rocket className="w-5 h-5" /> פרסמו את האתר ←</>}
           </button>
         </div>
       </div>
@@ -366,75 +356,6 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
         </div>
       </div>
 
-      {/* Publish modal */}
-      <AnimatePresence>
-        {showPublishModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
-            onClick={() => !isPublishing && setShowPublishModal(false)}
-          >
-            <motion.div
-              initial={{ y: 80, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 80, opacity: 0 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="w-full max-w-lg rounded-t-3xl p-6 space-y-5"
-              style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
-              onClick={e => e.stopPropagation()}
-            >
-              {isPublishing ? (
-                <div className="text-center space-y-4 py-4">
-                  <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
-                  <p className="font-semibold text-foreground">מקים את האתר שלכם...</p>
-                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'hsl(var(--muted))' }}>
-                    <motion.div
-                      className="h-full rounded-full bg-primary"
-                      animate={{ width: `${publishProgress}%` }}
-                      transition={{ duration: 0.4 }}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">עוד כמה רגעים ויש לכם לינק לאתר 🎉</p>
-                </div>
-              ) : (
-                <>
-                  <div className="text-center">
-                    <div className="text-4xl mb-3">🚀</div>
-                    <h2 className="text-xl font-bold text-foreground">מוכנים לפרסם?</h2>
-                    <p className="text-sm text-muted-foreground mt-1">79 ש"ח לחודש · ביטול בכל עת · ללא התחייבות</p>
-                  </div>
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={legalAcknowledged}
-                      onChange={e => setLegalAcknowledged(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 accent-primary shrink-0"
-                    />
-                    <span className="text-xs text-muted-foreground leading-relaxed">
-                      קראתי ואני מסכים/ה ל
-                      <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1">תנאי השימוש</a>
-                      ול
-                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1">מדיניות הפרטיות</a>
-                    </span>
-                  </label>
-                  <button
-                    onClick={handlePublish}
-                    disabled={!legalAcknowledged}
-                    className="w-full py-4 rounded-2xl bg-primary text-white font-bold text-base flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-all"
-                    style={{ boxShadow: '0 6px 24px hsl(var(--primary) / 0.35)' }}
-                  >
-                    <Rocket className="w-5 h-5" />
-                    פרסמו את האתר ←
-                  </button>
-                </>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
