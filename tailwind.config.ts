@@ -18,7 +18,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Heebo", "system-ui", "sans-serif"],
+        sans: ["Rubik", "Heebo", "system-ui", "sans-serif"],
         display: ["Secular One", "sans-serif"],
       },
       fontSize: {

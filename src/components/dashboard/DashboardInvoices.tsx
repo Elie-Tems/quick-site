@@ -49,7 +49,7 @@ const DashboardInvoices = () => {
         <CardTitle className="flex items-center gap-2">
           <ReceiptText className="w-5 h-5 text-primary" /> חשבוניות וקבלות
         </CardTitle>
-        <CardDescription>החשבוניות והקבלות שלך - לצפייה והורדה בכל עת.</CardDescription>
+        <CardDescription>חשבונית המס הרשמית נשלחת אליכם במייל מחברת הסליקה (Cardcom) עם כל חיוב. כאן מרוכזים כל החיובים - עם קישור להורדה כשקיים.</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -63,7 +63,7 @@ const DashboardInvoices = () => {
         ) : !charges.length ? (
           <div className="py-10 text-center text-muted-foreground">
             <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">אין עדיין חשבוניות. הן יופיעו כאן אוטומטית לאחר החיוב הראשון.</p>
+            <p className="text-sm">אין עדיין חיובים. אחרי החיוב הראשון, החשבונית תישלח למייל שלכם מ-Cardcom ותופיע גם כאן.</p>
           </div>
         ) : (
           <div className="divide-y divide-border">

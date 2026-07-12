@@ -48,7 +48,7 @@ const IcountConnectForm = ({ businessId }: { businessId: string }) => {
       </div>
       <p className="text-xs text-muted-foreground leading-relaxed">
         הזינו את פרטי ה-API של חשבון ה-iCount שלכם. הכסף נכנס ישירות לחשבון שלכם, וסיאנגו לא רואה ולא שומרת פרטי כרטיס אשראי.
-        את ה-API Token מוצאים ב-iCount → הגדרות → API. {" "}
+        את ה-API Token מוצאים ב-iCount → הגדרות → אוטומציה → לשונית "API Tokens". {" "}
         <a href="https://app.icount.co.il" target="_blank" rel="noopener noreferrer" className="text-[#3b6d11] hover:underline inline-flex items-center gap-0.5">
           פתח iCount <ExternalLink className="w-3 h-3" />
         </a>
@@ -71,8 +71,8 @@ const IcountConnectForm = ({ businessId }: { businessId: string }) => {
             <div className="mt-1.5 rounded-lg bg-white border border-[#639922]/30 p-3 text-xs text-muted-foreground leading-relaxed space-y-1">
               <ol className="list-decimal pr-4 space-y-1">
                 <li>היכנסו לחשבון ה-iCount שלכם.</li>
-                <li>בתפריט לכו ל-<b>הגדרות</b> ← <b>API</b> (עמוד ה-API Tokens).</li>
-                <li>העתיקו את ה-API Token המוצג שם (אם אין - צרו טוקן חדש).</li>
+                <li>בתפריט לכו ל-<b>הגדרות</b> ← <b>אוטומציה</b> ← לשונית <b>"API Tokens"</b>.</li>
+                <li>לחצו <b>"יצירת טוקן API"</b> (או העתיקו טוקן קיים) והדביקו כאן.</li>
               </ol>
               <a
                 href="https://apiv3.icount.co.il/"
@@ -114,7 +114,7 @@ const IcountConnectForm = ({ businessId }: { businessId: string }) => {
               <ol className="list-decimal pr-4 space-y-1">
                 <li>אם עדיין אין לכם "עמוד סליקה" ב-iCount: <b>מערכת</b> ← <b>הגדרות</b> ← <b>מודולים</b>, והפעילו את מודול <b>"עמודי סליקה"</b>.</li>
                 <li>אחרי ההפעלה יופיע פריט תפריט חדש בשם <b>"עמודי סליקה"</b> - היכנסו אליו וצרו עמוד סליקה (או פתחו קיים).</li>
-                <li>שימו לב לכתובת של עמוד הסליקה שנוצר, למשל: <code dir="ltr" className="bg-muted px-1 rounded">app.icount.co.il/m/123456</code> - <b>המספר בסוף הכתובת הוא ה-Paypage ID</b> (כאן: <code dir="ltr">123456</code>).</li>
+                <li>העתיקו את <b>כתובת עמוד הסליקה</b> המלאה (למשל <code dir="ltr" className="bg-muted px-1 rounded">app.icount.co.il/m/31ff3/abc...</code> או <code dir="ltr" className="bg-muted px-1 rounded">app.icount.co.il/m/123456</code>) והדביקו כאן - אנחנו נזהה את המזהה אוטומטית.</li>
               </ol>
               <p className="text-destructive/90">
                 שימו לב: לא כל קישור תשלום מ-iCount הוא "עמוד סליקה" - קישורים אחרים (כמו קישור לתשלום חד-פעמי) לא יעבדו כאן.
@@ -131,7 +131,7 @@ const IcountConnectForm = ({ businessId }: { businessId: string }) => {
           <input
             value={page}
             onChange={(e) => { setPage(e.target.value); setVerifyState("idle"); }}
-            placeholder="למשל 123456 (לא כתובת מלאה)"
+            placeholder="הדביקו את כתובת עמוד הסליקה או המזהה"
             className="w-full h-10 mt-1 rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:border-[#639922]"
             dir="ltr"
           />

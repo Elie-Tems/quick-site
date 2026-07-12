@@ -123,7 +123,7 @@
   }
 
   html {
-    font-family: 'Heebo', system-ui, sans-serif;
+    font-family: 'Rubik', 'Heebo', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -131,7 +131,7 @@
   }
 
   h1, h2, h3, .font-display {
-    font-family: 'Heebo', sans-serif;
+    font-family: 'Rubik', 'Heebo', sans-serif;
   }
   
   /* Dashboard headings - normal weight (400) */

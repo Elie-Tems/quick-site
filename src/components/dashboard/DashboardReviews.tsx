@@ -239,7 +239,7 @@ const DashboardReviews = ({ businessId }: Props) => {
               <h2 className="text-lg font-bold text-foreground">הביקורות שלכם בגוגל - ישר בחנות</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 מחברים את כרטיס Google Business שלכם ואנחנו מציגים את הדירוג + הביקורות בדף הבית של החנות.<br />
-                כל מה שצריך: <b>שם העסק</b>. אנחנו מוצאים אותו - בלי קוד.
+                כל מה שצריך: <b>שם העסק</b>. אנחנו מוצאים אתכם ומחברים תוך רגע.
               </p>
               <p className="text-xs text-muted-foreground">
                 אין לכם עדיין כרטיס בגוגל?{" "}

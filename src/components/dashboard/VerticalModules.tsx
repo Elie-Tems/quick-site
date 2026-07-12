@@ -6,7 +6,6 @@ import DonationsManager from "./donations/DonationsManager";
 import SynagoguePledgesManager from "./synagogue/SynagoguePledgesManager";
 import SynagogueSeatsManager from "./synagogue/SynagogueSeatsManager";
 import SynagogueSettingsManager from "./synagogue/SynagogueSettingsManager";
-import LifecycleEmailsManager from "./LifecycleEmailsManager";
 
 /**
  * Feature-gate consumption: given the current business, render only the vertical
@@ -40,9 +39,6 @@ const VerticalModules = ({ business }: { business: (BusinessLike & { id: string 
         </>
       )}
       {modules.includes("donations") && <DonationsManager businessId={business.id} />}
-
-      {/* Edit / toggle the automatic customer emails for this vertical. */}
-      <LifecycleEmailsManager business={business} />
     </div>
   );
 };

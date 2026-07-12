@@ -37,12 +37,20 @@ function refFromPayload(payload: Record<string, unknown> | undefined): string | 
   return r != null ? String(r) : null;
 }
 
+// The merchant may paste either a bare paypage id ("123456") or the full paypage
+// URL ("app.icount.co.il/m/31ff3/abc..."). Extract the id (the path after /m/).
+function normalizePaypageId(raw: string): string {
+  const s = (raw || "").trim();
+  const m = s.match(/\/m\/([^?#]+)/i);
+  return m ? m[1].replace(/\/+$/, "") : s;
+}
+
 export const icount: PaymentProvider = {
   id: "icount",
 
   async createPaymentPage(c: ProviderCredentials, input: CreatePageInput, _env: PaymentEnv): Promise<CreatePageResult> {
     const token = c.api_key ?? "";
-    const paypageId = c.page_uid ?? "";
+    const paypageId = normalizePaypageId(c.page_uid ?? "");
     if (!token || !paypageId) return { ok: false, error: "iCount לא מחובר (חסר API token או מזהה עמוד סליקה)" };
 
     // Our unique order ref - echoed on the IPN AND used to look the sale up for the

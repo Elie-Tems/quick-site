@@ -9,6 +9,7 @@ import {
   type Appointment,
 } from "@/hooks/useBooking";
 import CalendarConnect from "./CalendarConnect";
+import BookingCalendar from "./BookingCalendar";
 
 /**
  * Merchant-side booking management (services / weekly hours / appointments).
@@ -85,6 +86,9 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
 
   return (
     <div className="space-y-8">
+      {/* Big month calendar - the main surface for running the day. */}
+      <BookingCalendar businessId={businessId} />
+
       {/* Services */}
       <section>
         <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2"><Scissors className="w-5 h-5 text-primary" /> השירותים שלי</h3>

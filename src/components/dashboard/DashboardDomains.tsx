@@ -53,7 +53,7 @@ const DashboardDomains = ({ businessId }: Props) => {
         <Globe className="h-7 w-7 text-primary" />
         <div>
           <h1 className="text-2xl font-bold text-foreground">דומיין משלך</h1>
-          <p className="text-sm text-muted-foreground">כתובת אמיתית ומקצועית לאתר - חפשו ורכשו בקליק, נחבר אוטומטית.</p>
+          <p className="text-sm text-muted-foreground">כתובת אמיתית ומקצועית לאתר - חפשו ורכשו בקליק. אחרי הרכישה אנחנו מחברים את הדומיין לאתר שלכם ומסנכרנים אותו - בלי שתצטרכו לגעת בהגדרות. תוך זמן קצר האתר עולה על הכתובת החדשה.</p>
         </div>
       </div>
 

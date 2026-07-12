@@ -47,6 +47,7 @@ import { useMyBusiness, useProfile } from "@/hooks/useBusiness";
 import { getBusinessType, getEnabledModules } from "@/lib/businessModules";
 import { cleanImageUrl, cleanImageList } from "@/lib/imageUrl";
 import VerticalModules from "@/components/dashboard/VerticalModules";
+import LifecycleEmailsManager from "@/components/dashboard/LifecycleEmailsManager";
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useOrders, useUpdateOrder } from "@/hooks/useOrders";
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner } from "@/hooks/useBanners";
@@ -553,6 +554,8 @@ const Dashboard = () => {
         return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} businessType={getBusinessType(business)} onNavigate={setCurrentView} />;
       case 'verticals':
         return <VerticalModules business={business as any} />;
+      case 'lifecycle-emails':
+        return <LifecycleEmailsManager business={business as any} />;
       case 'products':
       case 'categories':
       case 'sales':

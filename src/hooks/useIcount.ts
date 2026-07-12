@@ -39,7 +39,12 @@ export async function verifyIcountCredentials(input: {
   const { data, error } = await supabase.functions.invoke("payments-verify", {
     body: { ...input, provider: "icount" },
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) {
+    // A transport-level failure (function unreachable / temporary load) shouldn't
+    // read like the credentials are wrong - it's a pre-check, and saving still works.
+    const transient = /failed to send|fetch|network|timeout/i.test(error.message || "");
+    return { ok: false, error: transient ? "לא הצלחנו לבדוק את החיבור כרגע (עומס זמני). אפשר לשמור ולנסות שוב מאוחר יותר." : error.message };
+  }
   return data as { ok: boolean; error?: string };
 }
 

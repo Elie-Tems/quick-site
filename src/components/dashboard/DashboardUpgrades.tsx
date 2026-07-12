@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Globe, MessageCircle, Mail, Wand2, ArrowLeft, Crown, Check, BarChart3, Star, Users, Search, Sparkles } from "lucide-react";
+import { Globe, MessageCircle, Mail, Wand2, ArrowLeft, Check, Star, Users, Search, Sparkles } from "lucide-react";
 import type { DashboardView } from "@/components/dashboard/DashboardNav";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 
@@ -37,12 +37,6 @@ const products: {
     ], category: "לקוחות", show: true, badge: "פופולרי",
   },
   {
-    id: "insights", icon: BarChart3, color: "#0891b2", gradient: "from-cyan-500 to-sky-600",
-    title: "אנליטיקה", price: '₪29/חודש + מע"מ',
-    pitch: "מי הלקוחות שלך, מאיפה הם מגיעים, ואיפה אפשר להשתפר - במקום לנחש.",
-    bullets: ["כמות מבקרים ומגמות", "מקורות הגעה מדויקים", "תובנות לשיפור מכירות"], category: "שיווק", show: true,
-  },
-  {
     id: "tracking", icon: Star, color: "#db2777", gradient: "from-pink-500 to-rose-600",
     title: "תגי שיווק ומעקב", price: 'חד-פעמי ₪149 + מע"מ',
     pitch: "חברו Google Ads, פיקסל פייסבוק וטיקטוק לחנות - מדדו המרות ובנו קהלי ריטרגטינג.",
@@ -51,8 +45,8 @@ const products: {
   {
     id: "reviews", icon: Star, color: "#f59e0b", gradient: "from-amber-400 to-orange-500",
     title: "ביקורות Google", price: '₪14/חודש + מע"מ',
-    pitch: "הציגו את דירוג הכוכבים והביקורות מגוגל בדף הבית של החנות - בונה אמון ומגדיל מכירות.",
-    bullets: ["אמון מיידי מלקוחות", "דירוג כוכבים בולט", "בלי קוד"], category: "שיווק", show: true,
+    pitch: "לקוח שרואה 4.9 כוכבים לפני שהוא קונה - קונה בביטחון. מציגים את הביקורות האמיתיות שלכם מגוגל ישירות באתר, ומגדילים המרות.",
+    bullets: ["אמון מיידי לפני הקנייה", "דירוג הכוכבים שלכם בולט באתר", "מתעדכן אוטומטית מגוגל"], category: "שיווק", show: true,
   },
   {
     id: "whatsapp", icon: MessageCircle, color: "#075E54", gradient: "from-green-600 to-emerald-700",
