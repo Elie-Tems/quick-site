@@ -47,6 +47,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       promoText: data.promoText || "",
     } : null
   );
+  const [showSuccess, setShowSuccess] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -95,7 +96,8 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       };
       setGenerated(content);
       updateData(content);
-      toast({ title: "התכנים נוצרו בהצלחה ✨" });
+      setShowSuccess(true);
+      setTimeout(() => onNext(), 2000);
     } catch {
       toast({ title: "שגיאה ביצירת תכנים", description: "נסו שוב", variant: "destructive" });
     } finally {
@@ -165,7 +167,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
   const activeMethod = METHODS.find(m => m.id === method)!;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 relative">
       {/* Header */}
       <div className="text-center space-y-1">
         <h2 className="text-2xl font-display font-bold pv-strong">ספרו לנו על העסק שלכם</h2>
@@ -281,8 +283,6 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       >
         {isGenerating ? (
           <><Loader2 className="w-4 h-4 animate-spin" />{PROGRESS_STEPS[progressStep]}</>
-        ) : generated ? (
-          <><Sparkles className="w-4 h-4" />צרו מחדש</>
         ) : (
           <><Sparkles className="w-4 h-4" />צרו לי את התכנים</>
         )}
@@ -298,29 +298,51 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
         </button>
       )}
 
-      {generated && !isGenerating && (
-        <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl border border-primary/30 bg-gradient-to-l from-primary/10 to-emerald-500/10"
-        >
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shrink-0 shadow-md shadow-primary/30">
-            <Check className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-primary">התכנים מוכנים</p>
-            <p className="text-xs pv-muted">תראו אותם באתר בשלב הבא</p>
-          </div>
-        </motion.div>
-      )}
-
       <StepNavigation
         onNext={onNext}
         onBack={onBack}
         nextLabel="הבא ←"
-        showPreview={!!generated}
+        showPreview={false}
         showSave={false}
       />
+
+      {/* Success overlay - shown after generation, auto-advances */}
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center rounded-2xl"
+            style={{ background: "var(--pv-surface)" }}
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.1 }}
+              className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-primary flex items-center justify-center shadow-xl shadow-emerald-500/30 mb-5"
+            >
+              <Check className="w-10 h-10 text-white" />
+            </motion.div>
+            <motion.h3
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="text-2xl font-display font-bold pv-strong mb-2"
+            >
+              קיבלנו!
+            </motion.h3>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-sm pv-muted"
+            >
+              האתר שלכם מוכן - עוד שניה רואים את זה חי
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
