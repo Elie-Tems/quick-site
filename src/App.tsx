@@ -32,6 +32,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const StoreAboutPage = lazy(() => import("./pages/StoreAboutPage"));
 const SynagogueScreen = lazy(() => import("./pages/SynagogueScreen"));
+const SynagogueSite = lazy(() => import("./pages/SynagogueSite"));
 const MyOrders = lazy(() => import("./pages/MyOrders"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -245,7 +246,8 @@ const App = () => {
                   <Route path="/store/:slug/privacy" element={<StoreLegalPage docType="privacy" />} />
                   <Route path="/store/:slug/unsubscribe" element={<StoreUnsubscribe />} />
                   <Route path="/store/:slug/my-orders" element={<MyOrders />} />
-                  {/* Public synagogue display screen (open on a TV in the shul). */}
+                  {/* Public synagogue site + member self-service, and the display screen. */}
+                  <Route path="/shul/:slug" element={<SynagogueSite />} />
                   <Route path="/shul/:slug/screen" element={<SynagogueScreen />} />
                   <Route path="/unsubscribe" element={<PlatformUnsubscribe />} />
                   <Route path="/dashboard" element={<DashboardRoute />} />

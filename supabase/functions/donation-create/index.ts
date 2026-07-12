@@ -27,6 +27,7 @@ interface ReqBody {
   amount: number;
   recurring?: boolean;
   campaignId?: string;
+  pledgeId?: string;   // paying a synagogue aliyah/neder pledge - marked paid on callback
   // idNumber (ת"ז) is required to report to תרומות ישראל for a Section-46 credit;
   // anonymous donors skip it (valid receipt, no credit).
   donor: { name: string; email?: string; phone?: string; idNumber?: string; anonymous?: boolean };
@@ -80,6 +81,7 @@ Deno.serve(async (req) => {
   const details: Record<string, unknown> = {
     recurring, frequency: recurring ? "monthly" : "once",
     campaign_id: campaignId ?? null, section46_eligible: section46,
+    pledge_id: body.pledgeId ?? null,
     donor_name: donor.name, donor_email: donor.email ?? null, donor_phone: donor.phone ?? null,
     // For תרומות ישראל reporting (donation-callback issues the receipt on payment).
     donor_id_number: donor.anonymous ? null : (donor.idNumber ?? null),

@@ -43,6 +43,11 @@ verify_jwt = false
 [functions.synagogue-zmanim]
 verify_jwt = false
 
+# synagogue-member: a member looks up their own open pledges by phone on the shul
+# site (to pay). Public, phone-gated + rate-limited.
+[functions.synagogue-member]
+verify_jwt = false
+
 # billing-charge-run is the monthly self-managed billing cron (charges stored
 # tokens via cc/bill). Cron-only; optional CRON_SECRET guard.
 [functions.billing-charge-run]

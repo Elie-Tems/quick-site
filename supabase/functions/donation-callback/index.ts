@@ -123,6 +123,12 @@ Deno.serve(async (req) => {
       console.warn("donor thank-you email failed:", txn.id, String(e));
     }
 
+    // Synagogue: if this paid a specific aliyah/neder pledge, close that debt.
+    const pledgeId = (txn.details as { pledge_id?: string } | null)?.pledge_id;
+    if (pledgeId) {
+      await admin.from("synagogue_pledges").update({ status: "paid", paid_at: now }).eq("id", pledgeId);
+    }
+
     // Refresh the campaign's cached raised/backers totals, if this gift targeted one.
     const campaignId = (txn.details as { campaign_id?: string } | null)?.campaign_id;
     if (campaignId) {

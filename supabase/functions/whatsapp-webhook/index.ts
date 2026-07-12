@@ -78,6 +78,31 @@ function parseCaption(caption: string): { name: string; price: number | null; de
   return { name, price, description: null };
 }
 
+/** Gabbai WhatsApp commands (synagogue vertical): update a prayer time, log an
+ *  aliyah/neder pledge, or set the display-screen announcement. Returns null if the
+ *  message isn't a recognized command. */
+function parseGabbaiCommand(text: string):
+  | { kind: "prayer"; key: string; label: string; time: string }
+  | { kind: "pledge"; pledgeType: "aliyah" | "neder"; name: string; amount: number }
+  | { kind: "announce"; text: string }
+  | null {
+  const t = (text || "").trim();
+  const timeM = t.match(/([0-2]?\d:[0-5]\d)/);
+  const PRAYERS: [RegExp, string, string][] = [
+    [/שחרית/, "shacharit", "שחרית"],
+    [/מנחה/, "mincha", "מנחה"],
+    [/ער(ב|ו)ית|מעריב/, "maariv", "ערבית"],
+    [/כניסת שבת|הדלקת נרות/, "shabbat_in", "כניסת שבת"],
+    [/דף יומי/, "daf_yomi", "דף יומי"],
+  ];
+  if (timeM) for (const [re, key, label] of PRAYERS) if (re.test(t)) return { kind: "prayer", key, label, time: timeM[1] };
+  const pledgeM = t.match(/^(עלייה|עליה|נדר)\s+(.+?)\s+(\d+)\s*(?:ש"?ח|₪)?$/);
+  if (pledgeM) return { kind: "pledge", pledgeType: pledgeM[1].startsWith("נדר") ? "neder" : "aliyah", name: pledgeM[2].trim(), amount: Number(pledgeM[3]) };
+  const annM = t.match(/^הודעה[:\s]+(.+)$/);
+  if (annM) return { kind: "announce", text: annM[1].trim() };
+  return null;
+}
+
 /** AI service-bot reply: generate a response to a customer using the merchant's
  *  prompt, via the Lovable AI gateway (same as the rest of the app). Best-effort. */
 async function generateBotReply(botPrompt: string, customerMsg: string): Promise<string | null> {
@@ -144,9 +169,11 @@ Deno.serve(async (req) => {
       // Map the sender phone -> a business (via the owner profile's phone).
       const { data: prof } = await admin.from("profiles").select("id, phone").eq("phone", from).maybeSingle();
       let businessId: string | null = null;
+      let businessType: string | null = null;
       if (prof) {
-        const { data: b } = await admin.from("businesses").select("id").eq("owner_id", prof.id).order("created_at", { ascending: true }).limit(1).maybeSingle();
+        const { data: b } = await admin.from("businesses").select("id, business_type").eq("owner_id", prof.id).order("created_at", { ascending: true }).limit(1).maybeSingle();
         businessId = b?.id || null;
+        businessType = (b as any)?.business_type || null;
       }
       const creds = twilioCreds();
       const reply = async (msg: string) => { if (creds && siangoBot) await sendWhatsAppText(creds, siangoBot, from, msg); };
@@ -186,6 +213,31 @@ Deno.serve(async (req) => {
         }
         return ack();
       }
+      // Synagogue gabbai commands (update times / log a pledge / set an announcement).
+      // Updates the site + display screen instantly. Gated on a synagogue business.
+      if (businessType === "synagogue" && numMedia === 0 && bodyText.trim()) {
+        const cmd = parseGabbaiCommand(bodyText);
+        if (cmd?.kind === "prayer") {
+          const { data: s } = await admin.from("synagogue_settings").select("prayer_times").eq("business_id", businessId).maybeSingle();
+          const pt = { ...((s?.prayer_times as Record<string, string>) ?? {}), [cmd.key]: cmd.time };
+          await admin.from("synagogue_settings").upsert({ business_id: businessId, prayer_times: pt, updated_at: new Date().toISOString() }, { onConflict: "business_id" });
+          await reply(`✅ ${cmd.label} עודכן ל-${cmd.time}. האתר והמסך בבית הכנסת מתעדכנים.`);
+          return ack();
+        }
+        if (cmd?.kind === "pledge") {
+          await admin.from("synagogue_pledges").insert({ business_id: businessId, member_name: cmd.name, pledge_type: cmd.pledgeType, amount: cmd.amount, status: "open" });
+          await reply(`✅ נרשם חוב ₪${cmd.amount} ל${cmd.name} (${cmd.pledgeType === "neder" ? "נדר" : "עלייה"}).`);
+          return ack();
+        }
+        if (cmd?.kind === "announce") {
+          await admin.from("synagogue_settings").upsert({ business_id: businessId, announcements: cmd.text, updated_at: new Date().toISOString() }, { onConflict: "business_id" });
+          await reply("✅ ההודעה עודכנה על המסך בבית הכנסת.");
+          return ack();
+        }
+        await reply("היי גבאי! 🕍 אפשר לעדכן מכאן:\n· \"מנחה 17:15\" - זמן תפילה\n· \"עלייה דוד 250\" - רישום עלייה/נדר\n· \"הודעה שיעור הערב 20:15\" - הודעה למסך");
+        return ack();
+      }
+
       // Text-only to the bot: a friendly help reply.
       await reply("היי! 👋 כדי להוסיף מוצר - שלח/י לי תמונה של המוצר עם כיתוב: שם | מחיר | תיאור. לדוגמה: \"חולצה כחולה | 89 | כותנה 100%\".");
       return ack();
