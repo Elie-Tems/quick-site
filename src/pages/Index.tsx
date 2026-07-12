@@ -14,88 +14,56 @@ import SEOHead from "@/components/SEOHead";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { PreviewThemeRoot, Card } from "@/components/preview-redesign/kit";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-// 4 main engines (tabs in the hero)
-const ENGINES = [
-  {
-    key: "commerce", label: "חנויות אונליין", icon: ShoppingBag,
-    type: "אתר מכירות",
-    subtitle: ["תמיד רציתם אתר מכירות, אבל העלויות, הדומיינים והבלגן עצרו אתכם.", "עם סיאנגו זה אפשרי במהירות ובקלות: חנות מקצועית תוך כמה דקות ב-79 ש\"ח לחודש בלבד."],
-    to: "/preview/redesign/home-multi",
-    img: "/screenshots/hero-commerce.png",
-    steps: [
-      { title: "בוחרים סוג חנות", desc: "חנות מוצרים, בוטיק, מאפייה — בוחרים ואנחנו מתאימים את הכלים" },
-      { title: "מגדירים שם, לוגו ופרטים", desc: "שם העסק, לוגו, פרטי קשר ושעות פעילות — הכל בכמה שניות" },
-      { title: "מוסיפים מוצרים", desc: "מוצרים עם תמונה, מחיר ותיאור קצר — אפשר להוסיף CSV גם" },
-    ],
-  },
-  {
-    key: "booking", label: "שירותי מקצוע", icon: CalendarClock,
-    type: "אתר לנותני שירות\nוקביעת תורים",
-    subtitle: ["תמיד קיבלתם הזמנות בוואטסאפ ובמייל ולפעמים הדברים נופלים בין הכיסאות.", "עכשיו לקוחות קובעים תור לבד ואפילו משלמים מראש, ממש מהאתר שלכם."],
-    to: "/preview/redesign/services",
-    img: "/screenshots/hero-booking.png",
-    steps: [
-      { title: "בוחרים סוג שירות", desc: "יופי, בריאות, עיצוב, חינוך — בוחרים ואנחנו מתאימים את הכלים" },
-      { title: "מגדירים שם, לוגו ופרטים", desc: "שם העסק, לוגו, פרטי קשר ושעות פעילות — הכל בכמה שניות" },
-      { title: "מוסיפים שירותים ותורים", desc: "שירותים עם מחיר ומשך זמן — לקוחות קובעים ומשלמים מהאתר" },
-    ],
-  },
-  {
-    key: "donations", label: "עמותות", icon: Heart,
-    type: "אתר לעמותה",
-    subtitle: ["תמיד רציתם אתר שבו תוכלו להראות מה העמותה עושה, להיראות מכובדים, לקבל תרומות ולהתרחב. אבל לא ידעתם מאיפה להתחיל.", "עם סיאנגו זה אפשרי בכמה דקות ובעלות מינימלית של 79 ש\"ח לחודש ללא התחייבות."],
-    to: "/preview/redesign/nonprofit",
-    img: "/screenshots/hero-donations.png",
-    steps: [
-      { title: "בוחרים סוג עמותה", desc: "חינוך, בריאות, קהילה, דת — בוחרים ואנחנו מתאימים את הכלים" },
-      { title: "מגדירים שם, לוגו ופרטים", desc: "שם העמותה, לוגו, פרטי קשר ומידע על הארגון — הכל בכמה שניות" },
-      { title: "מוסיפים פרויקטים ופעילויות", desc: "תיאור הפעילויות, יעדי גיוס תרומות ועדכונים שוטפים" },
-    ],
-  },
+// Non-translatable config (icons, routes, images) stays outside component
+const ENGINE_CONFIG = [
+  { key: "commerce", icon: ShoppingBag, to: "/preview/redesign/home-multi", img: "/screenshots/hero-commerce.png", stepIcons: [Store, Upload, Package] },
+  { key: "booking",  icon: CalendarClock, to: "/preview/redesign/services", img: "/screenshots/hero-booking.png", stepIcons: [Store, Upload, Package] },
+  { key: "donations", icon: Heart, to: "/preview/redesign/nonprofit", img: "/screenshots/hero-donations.png", stepIcons: [Store, Upload, Package] },
 ];
 
-const EXAMPLES = [
-  { title: "חנות בוטיק", tag: "מסחר", img: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=600&q=80", to: "/preview/redesign/boutique" },
-  { title: "סטודיו יופי", tag: "שירותים", img: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&q=80", to: "/preview/redesign/services" },
-  { title: "סטודיו צילום", tag: "שירותים", img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80", to: "/preview/redesign/photographer" },
-  { title: "צימר בגליל", tag: "אירוח", img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80", to: "/preview/redesign/vacation" },
-  { title: "דירות למכירה", tag: "נדל\"ן", img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80", to: "/preview/redesign/realestate" },
-  { title: "פרויקט מגורים", tag: "נדל\"ן", img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80", to: "/preview/redesign/project" },
-  { title: "סוחר רכב", tag: "רכב", img: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&q=80", to: "/preview/redesign/car-dealer" },
-  { title: "שיפוצים ותיקונים", tag: "בעלי מקצוע", img: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=600&q=80", to: "/preview/redesign/home-pro" },
-  { title: "עמותה", tag: "תרומות", img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&q=80", to: "/preview/redesign/nonprofit" },
+const PROFESSIONS_CONFIG = [
+  { icon: Store, key: "store" },
+  { icon: Scissors, key: "beauty" },
+  { icon: Camera, key: "photography" },
+  { icon: Tent, key: "vacation" },
+  { icon: Building2, key: "realestate" },
+  { icon: Car, key: "car" },
+  { icon: Wrench, key: "trades" },
+  { icon: Compass, key: "developer" },
+  { icon: Heart, key: "nonprofit" },
+  { icon: HandHeart, key: "crowdfunding" },
+  { icon: UtensilsCrossed, key: "restaurant" },
+  { icon: Dumbbell, key: "fitness" },
+  { icon: BookOpen, key: "courses" },
+  { icon: Music2, key: "music" },
+  { icon: Baby, key: "childcare" },
+  { icon: Dog, key: "pets" },
+  { icon: Flower2, key: "flowers" },
+  { icon: Truck, key: "logistics" },
+  { icon: Plus, key: "other", highlight: true },
 ];
 
-const PROFESSIONS = [
-  { icon: Store, label: "חנויות ובוטיקים" },
-  { icon: Scissors, label: "יופי וטיפוח" },
-  { icon: Camera, label: "צלמים" },
-  { icon: Tent, label: "צימרים ונופש" },
-  { icon: Building2, label: "נדל\"ן" },
-  { icon: Car, label: "רכב יד שנייה" },
-  { icon: Wrench, label: "בעלי מקצוע" },
-  { icon: Compass, label: "יזמי נדל\"ן" },
-  { icon: Heart, label: "עמותות" },
-  { icon: HandHeart, label: "גיוס המונים" },
-  { icon: UtensilsCrossed, label: "מסעדות ובתי קפה" },
-  { icon: Dumbbell, label: "כושר ואימונים" },
-  { icon: BookOpen, label: "קורסים והדרכות" },
-  { icon: Music2, label: "מוזיקה ואמנות" },
-  { icon: Baby, label: "טיפול בילדים" },
-  { icon: Dog, label: "חיות מחמד" },
-  { icon: Flower2, label: "פרחים ומתנות" },
-  { icon: Truck, label: "משלוחים ולוגיסטיקה" },
-  { icon: Plus, label: "אחר", highlight: true },
+const CORE_CONFIG = [
+  { icon: BarChart3, key: "stats" },
+  { icon: Package, key: "products" },
+  { icon: Tag, key: "promotions" },
+  { icon: Mail, key: "email" },
+  { icon: ImagePlus, key: "ai" },
+  { icon: Globe, key: "domain" },
 ];
 
-const CORE = [
-  { icon: BarChart3, label: "סטטיסטיקות", desc: "מכירות, הזמנות ולקוחות — הכל בזמן אמת" },
-  { icon: Package, label: "ניהול מוצרים", desc: "הוספה, עריכה וארגון קל של כל הקטלוג" },
-  { icon: Tag, label: "מבצעים וקופונים", desc: "צרו הנחות, מבצעי סוף עונה וקודי קופון" },
-  { icon: Mail, label: "דיוור ללקוחות", desc: "עדכונים אוטומטיים במייל ובוואטסאפ" },
-  { icon: ImagePlus, label: "יצירה ועריכת תמונות", desc: "יצירת תמונות מוצר עם AI בלחיצה אחת" },
-  { icon: Globe, label: "דומיין אישי", desc: "חברו דומיין משלכם או רכשו אחד חדש" },
+const EXAMPLES_CONFIG = [
+  { key: "boutique", img: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=600&q=80", to: "/preview/redesign/boutique" },
+  { key: "beauty", img: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&q=80", to: "/preview/redesign/services" },
+  { key: "photography", img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80", to: "/preview/redesign/photographer" },
+  { key: "vacation", img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80", to: "/preview/redesign/vacation" },
+  { key: "realestate", img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80", to: "/preview/redesign/realestate" },
+  { key: "project", img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80", to: "/preview/redesign/project" },
+  { key: "car", img: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&q=80", to: "/preview/redesign/car-dealer" },
+  { key: "homepro", img: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=600&q=80", to: "/preview/redesign/home-pro" },
+  { key: "nonprofit", img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&q=80", to: "/preview/redesign/nonprofit" },
 ];
 
 const HOW_STEP_META = [
@@ -104,12 +72,11 @@ const HOW_STEP_META = [
   { letter: "C", icon: Package },
 ];
 
-// תמונות שמייצגות את ה-Flow האמיתי
 const PROCESS_IMGS = [
-  { src: "/onboarding/ספרו לנו על העסק.jpeg", caption: "A — בוחרים סוג עסק ומגדירים פרטים", pos: "left top" },
-  { src: "/onboarding/פרטי יצירתקשר.jpeg", caption: "B — מוסיפים פרטי יצירת קשר", pos: "left top" },
-  { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80", caption: "C — מוסיפים מוצרים ושירותים", pos: "center center" },
-  { src: "/screenshots/process-finale.png", caption: "", pos: "center top" },
+  { src: "/onboarding/ספרו לנו על העסק.jpeg", pos: "left top" },
+  { src: "/onboarding/פרטי יצירתקשר.jpeg", pos: "left top" },
+  { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80", pos: "center center" },
+  { src: "/screenshots/process-finale.png", pos: "center top" },
 ];
 
 const HeroBg = () => (
@@ -134,56 +101,64 @@ const hasStoredSession = () => {
   return false;
 };
 
-const HowItWorks = ({ engineSteps }: { engineSteps: typeof ENGINES[0]['steps'] }) => {
+const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }) => {
+  const { t } = useLanguage();
   const [imgIdx, setImgIdx] = useState(0);
-  const HOW_STEPS = HOW_STEP_META.map((m, i) => ({ ...m, ...engineSteps[i] }));
-  const activeStep = Math.min(imgIdx, HOW_STEPS.length - 1); // 0-2 map to steps A-C; 3 = finale
+  const HOW_STEPS = HOW_STEP_META.map((m, i) => ({
+    ...m,
+    title: t(`engine.${engKey}.step${i + 1}.title`),
+    desc: t(`engine.${engKey}.step${i + 1}.desc`),
+  }));
+  const activeStep = Math.min(imgIdx, HOW_STEPS.length - 1);
+
+  const imgCaptions = [
+    t("howItWorks.img.a"),
+    t("howItWorks.img.b"),
+    t("howItWorks.img.c"),
+    "",
+  ];
 
   useEffect(() => {
-    const t = setInterval(() => setImgIdx(i => (i + 1) % PROCESS_IMGS.length), 3400);
-    return () => clearInterval(t);
+    const ti = setInterval(() => setImgIdx(i => (i + 1) % PROCESS_IMGS.length), 3400);
+    return () => clearInterval(ti);
   }, []);
 
   return (
     <section className="relative py-28 px-4 overflow-hidden">
-      {/* subtle bg glow */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
         <div className="w-[60rem] h-[30rem] rounded-full blur-[160px]" style={{ background: "radial-gradient(ellipse, hsl(152 60% 45% / 0.07), transparent 70%)" }} />
       </div>
 
       <div className="max-w-6xl mx-auto relative">
-        {/* Header */}
         <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">איך זה עובד?</h2>
-          <p className="text-lg pv-muted">שלושה צעדים — ואתם באוויר</p>
+          <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">{t("howItWorks.mainTitle")}</h2>
+          <p className="text-lg pv-muted">{t("howItWorks.mainSubtitle")}</p>
         </div>
 
         <div className="grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
 
-          {/* ── LEFT: image carousel ── */}
+          {/* image carousel */}
           <div className="order-1">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{ border: "1px solid var(--pv-border)", background: "var(--pv-surface2)" }}>
               <div className="relative aspect-[16/9] overflow-hidden">
                 <AnimatePresence mode="wait">
                   <motion.img key={imgIdx}
                     src={PROCESS_IMGS[imgIdx].src}
-                    alt={PROCESS_IMGS[imgIdx].caption}
+                    alt={imgCaptions[imgIdx]}
                     initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
                     className="absolute inset-0 w-full h-full object-cover"
                     style={{ objectPosition: PROCESS_IMGS[imgIdx].pos }}
                   />
                 </AnimatePresence>
-                {/* gradient overlay */}
                 <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 50%)" }} />
-                {/* step label + dots */}
                 <div className="absolute bottom-4 right-4 left-4 flex items-end justify-between">
                   <AnimatePresence mode="wait">
                     <motion.span key={imgIdx}
                       initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
                       className="text-white font-semibold text-sm drop-shadow">
-                      {PROCESS_IMGS[imgIdx].caption}
+                      {imgCaptions[imgIdx]}
                     </motion.span>
                   </AnimatePresence>
                   <div className="flex gap-2">
@@ -202,7 +177,7 @@ const HowItWorks = ({ engineSteps }: { engineSteps: typeof ENGINES[0]['steps'] }
             </div>
           </div>
 
-          {/* ── RIGHT: vertical timeline ── */}
+          {/* vertical timeline */}
           <div className="order-2 flex flex-col gap-0">
             {HOW_STEPS.map((s, i) => {
               const isActive = activeStep === i;
@@ -213,20 +188,11 @@ const HowItWorks = ({ engineSteps }: { engineSteps: typeof ENGINES[0]['steps'] }
                   viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                   className="flex gap-5 cursor-pointer group"
                   onClick={() => setImgIdx(i)}>
-
-                  {/* Timeline spine */}
                   <div className="flex flex-col items-center shrink-0" style={{ width: 52 }}>
-                    {/* Letter circle */}
                     <div className="relative flex items-center justify-center w-12 h-12 rounded-2xl font-bold text-base transition-all duration-500 shrink-0"
                       style={{
-                        background: isActive
-                          ? "linear-gradient(135deg, #22c55e, #84cc16)"
-                          : isDone
-                            ? "rgba(34,197,94,0.2)"
-                            : "var(--pv-surface2)",
-                        border: isActive
-                          ? "none"
-                          : "1px solid var(--pv-border)",
+                        background: isActive ? "linear-gradient(135deg, #22c55e, #84cc16)" : isDone ? "rgba(34,197,94,0.2)" : "var(--pv-surface2)",
+                        border: isActive ? "none" : "1px solid var(--pv-border)",
                         color: isActive ? "#fff" : isDone ? "#22c55e" : "var(--pv-faint)",
                         boxShadow: isActive ? "0 0 24px rgba(34,197,94,0.45)" : "none",
                       }}>
@@ -234,24 +200,16 @@ const HowItWorks = ({ engineSteps }: { engineSteps: typeof ENGINES[0]['steps'] }
                         ? <Check className="w-5 h-5" strokeWidth={2.5} style={{ color: "#22c55e" }} />
                         : <span>{s.letter}</span>}
                     </div>
-                    {/* Connecting line */}
                     {i < HOW_STEPS.length - 1 && (
                       <div className="flex-1 w-0.5 my-2 min-h-[2.5rem] rounded-full transition-all duration-700"
                         style={{ background: isDone || isActive ? "linear-gradient(to bottom, #22c55e, rgba(34,197,94,0.2))" : "var(--pv-border)" }} />
                     )}
                   </div>
-
-                  {/* Content */}
                   <div className={`pb-7 flex-1 text-right transition-all duration-500 ${isActive ? "opacity-100" : "opacity-55 group-hover:opacity-80"}`}>
                     <div className="flex items-center justify-end gap-3 mb-1.5">
-                      <h3 className="text-lg font-bold" style={{ color: isActive ? "var(--pv-strong)" : "var(--pv-text)" }}>
-                        {s.title}
-                      </h3>
+                      <h3 className="text-lg font-bold" style={{ color: isActive ? "var(--pv-strong)" : "var(--pv-text)" }}>{s.title}</h3>
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-500"
-                        style={{
-                          background: isActive ? "rgba(34,197,94,0.18)" : "var(--pv-surface2)",
-                          border: `1px solid ${isActive ? "rgba(34,197,94,0.4)" : "var(--pv-border)"}`,
-                        }}>
+                        style={{ background: isActive ? "rgba(34,197,94,0.18)" : "var(--pv-surface2)", border: `1px solid ${isActive ? "rgba(34,197,94,0.4)" : "var(--pv-border)"}` }}>
                         <s.icon className="w-4 h-4" style={{ color: isActive ? "#22c55e" : "var(--pv-faint)" }} strokeWidth={1.8} />
                       </div>
                     </div>
@@ -277,9 +235,9 @@ const HowItWorks = ({ engineSteps }: { engineSteps: typeof ENGINES[0]['steps'] }
               </div>
               <div className={`flex-1 text-right transition-all duration-500 ${imgIdx === 3 ? "opacity-100" : "opacity-55"}`}>
                 <p className="text-lg font-bold" style={{ color: imgIdx === 3 ? "#22c55e" : "var(--pv-strong)" }}>
-                  והופ! האתר עלה לאוויר
+                  {t("howItWorks.finale.title")}
                 </p>
-                <p className="text-sm mt-0.5" style={{ color: "var(--pv-muted)" }}>תוך 5 דקות — ב-79 ש"ח בלבד</p>
+                <p className="text-sm mt-0.5" style={{ color: "var(--pv-muted)" }}>{t("howItWorks.finale.desc")}</p>
               </div>
             </motion.div>
           </div>
@@ -292,10 +250,19 @@ const HowItWorks = ({ engineSteps }: { engineSteps: typeof ENGINES[0]['steps'] }
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const isPreview = new URLSearchParams(window.location.search).has("preview");
   const [resolving, setResolving] = useState(!isPreview && hasStoredSession);
   const [eng, setEng] = useState(0);
+
+  const ENGINES = ENGINE_CONFIG.map(cfg => ({
+    ...cfg,
+    label: t(`engine.${cfg.key}.label`),
+    type: t(`engine.${cfg.key}.type`),
+    subtitle: [t(`engine.${cfg.key}.subtitle1`), t(`engine.${cfg.key}.subtitle2`)],
+  }));
+
   const a = ENGINES[eng];
 
   useEffect(() => {
@@ -303,8 +270,6 @@ const Index = () => {
     if (loading) return;
     if (!user) { setResolving(false); return; }
     let cancelled = false;
-    // Safety net: if the profile lookup hangs (Supabase incident), don't spin
-    // forever - send the logged-in user to their dashboard after 7s.
     const safety = window.setTimeout(() => {
       if (!cancelled) navigate("/dashboard", { replace: true });
     }, 7000);
@@ -316,9 +281,6 @@ const Index = () => {
         .maybeSingle();
       if (cancelled) return;
       window.clearTimeout(safety);
-      // A logged-in user should land in their workspace, never be stranded on the
-      // marketing home (this is exactly where an OAuth Site-URL fallback dumps
-      // them). New / mid-onboarding -> onboarding; finished -> dashboard.
       if (!profile || !profile.onboarding_completed_at) {
         navigate("/onboarding", { replace: true });
       } else {
@@ -367,41 +329,38 @@ const Index = () => {
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35 }}>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
                       <span className="block pv-strong" style={{ whiteSpace: "pre-line" }}>{a.type}</span>
-                      <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">תוך 5 דקות</span>
-                      <span className="block pv-strong">ב-79 ש"ח</span>
+                      <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">{t("hero.fiveMin")}</span>
+                      <span className="block pv-strong">{t("hero.price79")}</span>
                     </h1>
                   </motion.div>
                 </AnimatePresence>
                 <div className="flex items-center justify-center lg:justify-start">
                   <Link to="/register" className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
-                    התחילו עכשיו <ArrowLeft className="w-5 h-5" />
+                    {t("hero.startNow")} <ArrowLeft className="w-5 h-5" />
                   </Link>
                 </div>
-                <p className="text-sm pv-muted mt-4">מחיר חודשי · ללא התחייבות · ללא ידע טכני</p>
+                <p className="text-sm pv-muted mt-4">{t("hero.monthlyNote")}</p>
               </div>
 
               {/* Preview image */}
-                <motion.div key={a.key}
-                  initial={{ opacity: 0, scale: 0.96, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ duration: 0.4 }} className="relative min-w-0 overflow-hidden">
-                  <div className="absolute -inset-6 bg-primary/15 rounded-[2rem] blur-3xl" />
-                  <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                    <div className="relative aspect-[4/3]">
-                      <img src={a.img} alt={a.label} className="w-full h-full object-cover object-center" />
-                    </div>
+              <motion.div key={a.key}
+                initial={{ opacity: 0, scale: 0.96, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.4 }} className="relative min-w-0 overflow-hidden">
+                <div className="absolute -inset-6 bg-primary/15 rounded-[2rem] blur-3xl" />
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                  <div className="relative aspect-[4/3]">
+                    <img src={a.img} alt={a.label} className="w-full h-full object-cover object-center" />
                   </div>
-                </motion.div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </section>
 
         {/* PER-TAB SUBTITLE SECTION */}
         <section className="relative py-28 px-4 overflow-hidden">
-          {/* Rich layered background */}
           <div className="absolute inset-0" style={{ background: "linear-gradient(160deg, #080e08 0%, #0b1a10 45%, #091510 100%)" }} />
-          {/* Green bloom — solution side (left in RTL) */}
           <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 55% 70% at 20% 50%, rgba(34,197,94,0.13) 0%, transparent 70%)" }} />
-          {/* Dim bloom — problem side (right in RTL) */}
           <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 40% 60% at 80% 50%, rgba(255,255,255,0.02) 0%, transparent 70%)" }} />
 
           <div className="relative max-w-6xl mx-auto">
@@ -413,11 +372,10 @@ const Index = () => {
 
                 {/* RIGHT (RTL first) — problem, faded */}
                 <div className="text-right px-6 md:px-14 py-10 relative">
-                  {/* thin glowing separator on left edge */}
                   <div className="hidden md:block absolute left-0 inset-y-8 w-px"
                     style={{ background: "linear-gradient(to bottom, transparent, rgba(34,197,94,0.35) 50%, transparent)" }} />
                   <p className="text-xs tracking-[0.2em] uppercase font-medium mb-5"
-                    style={{ color: "rgba(255,255,255,0.25)" }}>לפני סיאנגו</p>
+                    style={{ color: "rgba(255,255,255,0.25)" }}>{t("subtitle.beforeLabel")}</p>
                   <p className="text-2xl md:text-3xl leading-snug font-light"
                     style={{ color: "rgba(255,255,255,0.32)" }}>{a.subtitle[0]}</p>
                 </div>
@@ -425,7 +383,7 @@ const Index = () => {
                 {/* LEFT (RTL second) — solution, vivid */}
                 <div className="text-right px-6 md:px-14 py-10">
                   <p className="text-xs tracking-[0.2em] uppercase font-bold mb-5"
-                    style={{ color: "#4ade80" }}>עם סיאנגו</p>
+                    style={{ color: "#4ade80" }}>{t("subtitle.afterLabel")}</p>
                   <p className="text-2xl md:text-3xl leading-snug font-bold"
                     style={{ color: "#fff" }}>{a.subtitle[1]}</p>
                 </div>
@@ -435,23 +393,23 @@ const Index = () => {
           </div>
         </section>
 
-        {/* HOW IT WORKS — 3 steps */}
-        <HowItWorks engineSteps={a.steps} />
+        {/* HOW IT WORKS */}
+        <HowItWorks engKey={a.key} stepKeys={[]} />
 
         {/* Professions strip */}
         <section className="relative py-12 px-4 border-y pv-border pv-surface2">
-          <p className="text-center text-xs pv-muted mb-5 tracking-widest uppercase">מתאים לכל תחום</p>
+          <p className="text-center text-xs pv-muted mb-5 tracking-widest uppercase">{t("core.sectionTitle")}</p>
           <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-2">
-            {PROFESSIONS.map((p, i) => (
-              <motion.span key={p.label}
+            {PROFESSIONS_CONFIG.map((p, i) => (
+              <motion.span key={p.key}
                 initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} transition={{ delay: i * 0.03 }}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${ (p as any).highlight
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${p.highlight
                   ? "bg-primary text-white shadow-md shadow-primary/30"
                   : "pv-surface border pv-border pv-text hover:border-primary/40"
                 }`}>
-                <p.icon className={`w-4 h-4 ${ (p as any).highlight ? "text-white" : "text-primary" }`} />
-                {p.label}
+                <p.icon className={`w-4 h-4 ${p.highlight ? "text-white" : "text-primary"}`} />
+                {t(`profession.${p.key}`)}
               </motion.span>
             ))}
           </div>
@@ -461,23 +419,23 @@ const Index = () => {
         <section className="relative py-24 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">אתר מדהים בדקות בודדות</h2>
-              <p className="text-lg pv-muted">לחצו על דוגמה כדי לראות אותה מלאה</p>
+              <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">{t("examples.sectionTitle")}</h2>
+              <p className="text-lg pv-muted">{t("examples.sectionSubtitle")}</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {EXAMPLES.map((e, i) => (
-                <motion.div key={e.title} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
+              {EXAMPLES_CONFIG.map((e, i) => (
+                <motion.div key={e.key} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
                   <Link to={e.to} className="group block">
                     <Card hover className="overflow-hidden">
                       <div className="relative aspect-[16/10] overflow-hidden">
-                        <img src={e.img} alt={e.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                        <img src={e.img} alt={t(`example.${e.key}.title`)} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                         <div className="absolute bottom-3 right-3 left-3 flex items-center justify-between">
-                          <span className="font-display font-bold text-white text-lg">{e.title}</span>
+                          <span className="font-display font-bold text-white text-lg">{t(`example.${e.key}.title`)}</span>
                           <ArrowLeft className="w-5 h-5 text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                         </div>
                       </div>
-                      <div className="px-4 py-2.5 text-xs pv-muted text-right">79 ש"ח לחודש · ללא התחייבות</div>
+                      <div className="px-4 py-2.5 text-xs pv-muted text-right">{t("examples.priceNote")}</div>
                     </Card>
                   </Link>
                 </motion.div>
@@ -489,18 +447,18 @@ const Index = () => {
         {/* Shared tools */}
         <section className="relative py-24 px-4 pv-surface2 border-y pv-border">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-16 text-center">כלים מותאמים לכל תחום</h2>
+            <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-16 text-center">{t("core.sectionTitle")}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {CORE.map((c, i) => (
-                <motion.div key={c.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}>
+              {CORE_CONFIG.map((c, i) => (
+                <motion.div key={c.key} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}>
                   <Card hover className="p-5 flex items-start gap-4 text-right">
                     <div className="shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center"
                       style={{ background: "linear-gradient(135deg, hsl(152 60% 45% / 0.18), hsl(152 60% 45% / 0.06))", border: "1px solid hsl(152 60% 45% / 0.25)" }}>
                       <c.icon className="w-5 h-5 text-primary" strokeWidth={1.7} />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold pv-strong text-sm leading-snug mb-1">{c.label}</p>
-                      <p className="text-xs pv-muted leading-relaxed">{c.desc}</p>
+                      <p className="font-semibold pv-strong text-sm leading-snug mb-1">{t(`core.${c.key}.label`)}</p>
+                      <p className="text-xs pv-muted leading-relaxed">{t(`core.${c.key}.desc`)}</p>
                     </div>
                   </Card>
                 </motion.div>
@@ -516,13 +474,13 @@ const Index = () => {
           </div>
           <div className="relative max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-4">
-              בלי מתכנתים. בלי מעצבים.<br />
-              <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">בלי כאב ראש.</span>
+              {t("finalCta.line1")}<br />
+              <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">{t("finalCta.gradientLine")}</span>
             </h2>
-            <p className="text-lg pv-muted mb-2">כמה דקות ויש לכם אתר מדהים.</p>
-            <p className="text-lg font-semibold pv-strong mb-6">79 ש"ח לחודש, ללא התחייבות.</p>
+            <p className="text-lg pv-muted mb-2">{t("finalCta.desc1")}</p>
+            <p className="text-lg font-semibold pv-strong mb-6">{t("finalCta.price79")}</p>
             <Link to="/register" className="inline-flex items-center gap-2 px-9 py-4 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
-              התחילו עכשיו <ArrowLeft className="w-5 h-5" />
+              {t("finalCta.cta")} <ArrowLeft className="w-5 h-5" />
             </Link>
           </div>
         </section>
