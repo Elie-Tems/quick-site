@@ -9,6 +9,22 @@ import type { Product } from '@/components/storefront/StoreProducts';
 const NOOP = () => {};
 const INNER_W = 1100;
 
+const FALLBACK_IMAGES: Record<string, string[]> = {
+  bakery:     ['https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80','https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&q=80','https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&q=80','https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=600&q=80','https://images.unsplash.com/photo-1464219551459-ac14ae01fbe0?w=600&q=80'],
+  restaurant: ['https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=600&q=80','https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80','https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&q=80','https://images.unsplash.com/photo-1562967914-608f82629710?w=600&q=80','https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600&q=80'],
+  cafe:       ['https://images.unsplash.com/photo-1534040385115-33dcb3acba5b?w=600&q=80','https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=80','https://images.unsplash.com/photo-1541167760496-1628856ab772?w=600&q=80','https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80','https://images.unsplash.com/photo-1497515114629-f71d768fd07c?w=600&q=80'],
+  clothing:   ['https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&q=80','https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&q=80','https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&q=80','https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&q=80','https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?w=600&q=80'],
+  jewelry:    ['https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80','https://images.unsplash.com/photo-1573408301185-9519f94816b5?w=600&q=80','https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&q=80','https://images.unsplash.com/photo-1601121141461-9d6647bef0a1?w=600&q=80','https://images.unsplash.com/photo-1561828995-aa79a2db86dd?w=600&q=80'],
+  home:       ['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80','https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&q=80','https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=600&q=80','https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=600&q=80','https://images.unsplash.com/photo-1540932239986-30128078f3c5?w=600&q=80'],
+  beauty:     ['https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=600&q=80','https://images.unsplash.com/photo-1560066984-138daaa83f0d?w=600&q=80','https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&q=80','https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&q=80','https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=600&q=80'],
+  default:    ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80','https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&q=80','https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&q=80','https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=600&q=80','https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80'],
+};
+
+function getFallbackImage(category: string | undefined, index: number): string {
+  const pool = FALLBACK_IMAGES[category ?? ''] ?? FALLBACK_IMAGES.default;
+  return pool[index % pool.length];
+}
+
 const hexToHsl = (hex: string): string => {
   const clean = hex.replace('#', '');
   if (clean.length !== 6) return '0 0% 0%';
@@ -61,12 +77,13 @@ const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Pr
   // Convert product File images → object URLs
   const products: Product[] = useMemo(() => {
     const blobUrls: string[] = [];
-    const result = data.products.map((p): Product => {
+    const result = data.products.map((p, idx): Product => {
       let imageUrl = p.imageUrl;
       if (!imageUrl && p.image instanceof File) {
         imageUrl = URL.createObjectURL(p.image);
         blobUrls.push(imageUrl);
       }
+      if (!imageUrl) imageUrl = getFallbackImage(data.businessCategory, idx);
       return {
         id: p.id || `prev-${Math.random()}`,
         name: p.name,
