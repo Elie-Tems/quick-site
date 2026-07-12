@@ -11,7 +11,7 @@ const ctx: PlatformCtx = {
   siteUrl: "https://dana.siango.app",
   dashboardUrl: "https://siango.app/dashboard",
   continueUrl: "https://siango.app/onboarding",
-  amountIls: 69,
+  amountIls: 79,
   invoiceUrl: "https://siango.app/invoice/123",
   freezeDate: "01/08/2026",
   deleteDate: "15/08/2026",

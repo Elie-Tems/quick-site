@@ -14,7 +14,7 @@ const SEOHead = ({
   // (בניית אתר לעסק / חנות אונליין / אתר מכירות), covering the verticals - the
   // homepage uses these defaults; other pages pass their own.
   title = "בניית אתר לעסק וחנות אונליין תוך 5 דקות | סיאנגו",
-  description = "בונים אתר מקצועי לעסק תוך 5 דקות - חנות אונליין, אתר מכירות, אתר לנותני שירות וקביעת תורים או אתר לעמותה. בלי מתכנת ובלי עיצוב, החל מ-69 ₪ + מע״מ לחודש. מותאם לעסקים בישראל.",
+  description = "בונים אתר מקצועי לעסק תוך 5 דקות - חנות אונליין, אתר מכירות, אתר לנותני שירות וקביעת תורים או אתר לעמותה. בלי מתכנת ובלי עיצוב, החל מ-79 ₪ לחודש. מותאם לעסקים בישראל.",
   canonical = "https://siango.app/",
   ogImage = "https://siango.app/og-image.png",
   ogType = "website",
@@ -59,18 +59,18 @@ const SEOHead = ({
     "name": siteName,
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
-    // Single real price: 69 ILS/month, VAT NOT included (added on top, per Israeli
-    // Consumer Protection Law disclosure). The previous 99/199/299 tiers were never
-    // real. Extra features (e.g. CRM) are priced separately, not part of this offer.
+    // Single real price: 79 ILS/month, flat and VAT-INCLUSIVE. The previous
+    // 99/199/299 tiers were never real. Extra features (e.g. CRM) are priced
+    // separately, not part of this offer.
     "offers": {
       "@type": "Offer",
       "priceCurrency": "ILS",
-      "price": "69",
+      "price": "79",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
-        "price": "69",
+        "price": "79",
         "priceCurrency": "ILS",
-        "valueAddedTaxIncluded": false
+        "valueAddedTaxIncluded": true
       }
     }
     // aggregateRating removed: it was a fabricated 4.8/150 rating. Google penalizes

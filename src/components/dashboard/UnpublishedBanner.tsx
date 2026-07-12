@@ -33,7 +33,7 @@ const UnpublishedBanner = ({ businessId }: UnpublishedBannerProps) => {
             </Button>
             
             <div className="flex items-center gap-2 text-sm text-orange-900 dark:text-orange-300">
-              <span className="font-medium">₪69/חודש + מע"מ</span>
+              <span className="font-medium">₪79/חודש</span>
               <span className="text-orange-700 dark:text-orange-400">•</span>
               <span>ניתן לבטל בכל עת</span>
             </div>

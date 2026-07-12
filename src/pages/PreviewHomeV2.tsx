@@ -338,7 +338,7 @@ const PreviewHomeV2 = () => {
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.28 }}
                   className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl pv-surface2 border pv-border mb-9"
                 >
-                  <span className="text-2xl md:text-3xl font-bold pv-strong">69 ש"ח<span className="text-base font-normal pv-muted"> לחודש + מע"מ</span></span>
+                  <span className="text-2xl md:text-3xl font-bold pv-strong">79 ש"ח<span className="text-base font-normal pv-muted"> לחודש</span></span>
                   <span className="w-px h-6" style={{ background: "var(--pv-border)" }} />
                   <span className="text-primary font-bold">ללא התחייבות!</span>
                 </motion.div>

@@ -154,7 +154,7 @@ const DashboardHome = ({
         <div className="rounded-2xl bg-gradient-to-l from-orange-600 to-amber-500 text-white p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4 shadow">
           <div className="flex-1">
             <p className="text-base font-semibold">האתר שלך במצב תצוגה מוקדמת</p>
-            <p className="text-sm text-white/80 mt-0.5">שדרגו ל-69 ₪ לחודש + מע"מ, ללא התחייבות — כדי שהחנות תעלה לאוויר.</p>
+            <p className="text-sm text-white/80 mt-0.5">שדרגו ל-79 ₪ לחודש, ללא התחייבות — כדי שהחנות תעלה לאוויר.</p>
           </div>
           <Button onClick={() => onNavigate("subscription")} className="bg-white text-amber-700 hover:bg-white/90 font-semibold gap-2 shrink-0">
             שדרגו עכשיו <ChevronLeft className="h-4 w-4" />

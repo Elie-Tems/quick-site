@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
           status: "paid",
           payment_verified_at: now,
           external_transaction_id: approvalNum,
-          amount_ils: 69,
+          amount_ils: 79,
           provider: "icount",
         })
         .select("id, user_id, business_id, status, payment_verified_at")

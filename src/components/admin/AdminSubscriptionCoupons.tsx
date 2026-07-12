@@ -9,7 +9,7 @@ import { Ticket, Plus, Power, Trash2 } from "lucide-react";
 
 /**
  * Subscription coupons (super-admin): discounts the admin can hand out on the
- * 69₪/month plan. Duration = first month only, or recurring forever.
+ * 79₪/month plan. Duration = first month only, or recurring forever.
  * The merchant enters the code at checkout (application wired in the billing flow).
  */
 // Paid features a coupon can target. 'all' = any revenue feature.

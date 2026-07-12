@@ -282,7 +282,7 @@ const Onboarding = () => {
               <div className="flex flex-col gap-3 mb-10 text-right">
                 {[
                   { icon: Clock, text: "תהליך הקמה של 5 דקות בלבד" },
-                  { icon: CreditCard, text: '69 ₪ לחודש + מע"מ, ללא התחייבות' },
+                  { icon: CreditCard, text: '79 ₪ לחודש, ללא התחייבות' },
                   { icon: Globe, text: "דומיין, סליקה ומייל כלולים" },
                 ].map(({ icon: Icon, text }) => (
                   <div key={text} className="flex items-center gap-3 px-4 py-3 rounded-xl pv-surface2 border pv-border">

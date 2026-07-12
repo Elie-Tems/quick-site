@@ -20,16 +20,17 @@ const gross = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
 
 // Server-authoritative product registry. Prices are PRE-VAT ILS (VAT added
 // below), mirroring src/lib/pricingConfig.ts. `grant` is applied only after a
-// confirmed charge. Add tags/reviews/domains here once their entitlement grant
-// is wired - do NOT charge for something we can't yet deliver.
+// confirmed charge. Add reviews/domains here once their entitlement grant is
+// wired - do NOT charge for something we can't yet deliver.
 const PRODUCTS: Record<string, {
   netIls: number;
   description: string;
-  grant: { kind: "credits"; credits: number };
+  grant: { kind: "credits"; credits: number } | { kind: "flag"; table: string; column: string };
 }> = {
   ai_credits_starter:  { netIls: 80,  description: "קרדיטים ל-AI - Starter (100 קרדיטים)", grant: { kind: "credits", credits: 100 } },
   ai_credits_business: { netIls: 150, description: "קרדיטים ל-AI - Business (200 קרדיטים)", grant: { kind: "credits", credits: 200 } },
   ai_credits_pro:      { netIls: 300, description: "קרדיטים ל-AI - Pro (500 קרדיטים)",     grant: { kind: "credits", credits: 500 } },
+  marketing_tags:      { netIls: 149, description: "תגי שיווק ומעקב (חד-פעמי)",           grant: { kind: "flag", table: "businesses", column: "tracking_paid" } },
 };
 
 const cors = {
@@ -127,6 +128,10 @@ Deno.serve(async (req) => {
   if (product.grant.kind === "credits") {
     const { error: grantErr } = await admin.rpc("add_ai_credits", { p_business_id: businessId, p_amount: product.grant.credits });
     if (grantErr) console.error("charge-addon: add_ai_credits failed (charge succeeded!)", businessId, grantErr);
+  } else if (product.grant.kind === "flag") {
+    const { error: grantErr } = await admin.from(product.grant.table)
+      .update({ [product.grant.column]: true, updated_at: new Date().toISOString() }).eq("id", businessId);
+    if (grantErr) console.error("charge-addon: flag grant failed (charge succeeded!)", businessId, grantErr);
   }
 
   return json({ ok: true, confirmation, invoiceUrl });

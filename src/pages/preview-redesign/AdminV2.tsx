@@ -28,10 +28,10 @@ const CUSTOMERS = [
 ];
 
 const PAYMENTS = [
-  { store: "בוטיק הדוגמה", amount: "₪69", status: "שולם", icon: CheckCircle2, tone: "green" as const },
-  { store: "מאפיית השכונה", amount: "₪69", status: "שולם", icon: CheckCircle2, tone: "green" as const },
-  { store: "סטודיו ליצירה", amount: "₪69", status: "ממתין", icon: Clock, tone: "amber" as const },
-  { store: "חנות התקליטים", amount: "₪69", status: "זיכוי", icon: RotateCcw, tone: "muted" as const },
+  { store: "בוטיק הדוגמה", amount: "₪79", status: "שולם", icon: CheckCircle2, tone: "green" as const },
+  { store: "מאפיית השכונה", amount: "₪79", status: "שולם", icon: CheckCircle2, tone: "green" as const },
+  { store: "סטודיו ליצירה", amount: "₪79", status: "ממתין", icon: Clock, tone: "amber" as const },
+  { store: "חנות התקליטים", amount: "₪79", status: "זיכוי", icon: RotateCcw, tone: "muted" as const },
 ];
 
 const AdminV2 = () => {

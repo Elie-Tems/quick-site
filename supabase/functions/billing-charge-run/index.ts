@@ -12,10 +12,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { chargeToken, toMMYY } from "../_shared/cardcom/api.ts";
 import { chargeAmount, withinChargeCeiling, type CouponInfo } from "../_shared/billing/pricing.ts";
 
-const VAT_RATE = 0.18;
 const RETRY_DAYS = 2;        // reschedule a failed charge this many days out
 const MAX_FAILURES = 3;      // consecutive failures before marking past_due
-const gross = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
 const ADMIN_EMAILS = ["moti4384@gmail.com", "furmand713@gmail.com"];
 
 // All subscriptions bill on the 1st of each month. Given a date, returns the 1st of
@@ -95,12 +93,13 @@ serve(async (req) => {
       ? { discount_type: s.coupon_discount_type, discount_value: Number(s.coupon_discount_value), duration: (s.coupon_duration || "forever") }
       : null;
 
-    const net = chargeAmount(base, coupon, cycle);
-    if (!withinChargeCeiling(net, base)) {  // safety: never exceed base (+tolerance)
-      console.error(`charge-run: amount ${net} over ceiling for sub ${s.id} - skipped`);
+    // base_amount_ils is already the flat, VAT-inclusive total - no VAT added on top.
+    const charge = chargeAmount(base, coupon, cycle);
+    if (!withinChargeCeiling(charge, base)) {  // safety: never exceed base (+tolerance)
+      console.error(`charge-run: amount ${charge} over ceiling for sub ${s.id} - skipped`);
       skipped++; continue;
     }
-    const baseAmount = gross(net);
+    const baseAmount = charge;
     const idem = `${s.id}:cycle${cycle}`;
 
     // Idempotency: if this cycle was already charged, skip (unique key backs this up).

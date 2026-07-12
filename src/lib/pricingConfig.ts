@@ -1,13 +1,15 @@
 // Pricing configuration for the platform.
-// All Siango prices are shown PRE-VAT (VAT is added on top). Consumer Protection
-// Law requires stating clearly when a price excludes VAT - so every price the
-// customer sees must carry VAT_SUFFIX, and pages with prices show VAT_DISCLOSURE.
+// The base publish subscription (PLANS[0] / BASE_PLAN, ₪79/month) is a flat,
+// VAT-INCLUSIVE price - shown and charged as-is, no VAT added on top, no
+// "כולל מע"מ" label needed. VAT_SUFFIX/withVat below are for the OTHER
+// products (add-ons, AI credits) that are still priced pre-VAT with VAT added
+// at checkout - do not apply them to the base publish price.
 
-/** Append next to any displayed Siango price, e.g. `₪69 {VAT_SUFFIX}`. */
+/** Append next to a displayed PRE-VAT price (add-ons, AI credits), e.g. `₪14 {VAT_SUFFIX}`. */
 export const VAT_SUFFIX = '+ מע"מ';
-/** Full disclosure line for pages/sections that list prices. */
+/** Full disclosure line for pages that list pre-VAT prices (add-ons, AI credits). */
 export const VAT_DISCLOSURE = 'המחירים אינם כוללים מע"מ. מע"מ כחוק יתווסף בעת התשלום.';
-/** Build a price label with the VAT suffix, e.g. withVat("₪69") => "₪69 + מע\"מ". */
+/** Build a price label with the VAT suffix, e.g. withVat("₪14") => "₪14 + מע\"מ". */
 export const withVat = (label: string): string => `${label} ${VAT_SUFFIX}`;
 
 /** Current statutory VAT rate in Israel (18% since Jan 2025). */
@@ -30,8 +32,8 @@ export const PLANS: PlanConfig[] = [
   {
     id: "classic",
     name: "חבילה קלאסית",
-    price: 69,
-    label: "₪69",
+    price: 79,
+    label: "₪79",
     productLimit: 50,
     features: [
       "עד 50 מוצרים",

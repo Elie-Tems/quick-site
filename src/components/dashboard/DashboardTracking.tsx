@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { BarChart3, Check, Loader2, Lock, Save, Crown, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
-import { getTagsPaymentUrl, TAGS_ADDON_PRICE_ILS } from "@/lib/publishPaymentConfig";
+import { TAGS_ADDON_PRICE_ILS } from "@/lib/publishPaymentConfig";
 import { toast } from "sonner";
 
 /**
@@ -37,7 +37,9 @@ const FIELDS: { key: keyof TrackingRow; label: string; placeholder: string; hint
 
 const DashboardTracking = ({ businessId }: Props) => {
   const updateBusiness = useUpdateBusiness();
+  const queryClient = useQueryClient();
   const [form, setForm] = useState<Partial<TrackingRow>>({});
+  const [paying, setPaying] = useState(false);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["biz-tracking", businessId],
@@ -79,13 +81,37 @@ const DashboardTracking = ({ businessId }: Props) => {
     }
   };
 
-  const startPayment = () => {
-    const url = getTagsPaymentUrl();
-    if (!url) {
-      toast.info("התשלום ייפתח כאן בקרוב. נציג ייצור איתך קשר להפעלה 🙏");
-      return;
+  const startPayment = async () => {
+    if (!businessId || paying) return;
+    setPaying(true);
+    try {
+      // Charge the merchant's saved Cardcom token via the server-side charge-addon
+      // engine (one-time, idempotent per requestId). tracking_paid flips only
+      // after a confirmed charge - see supabase/functions/charge-addon.
+      const requestId =
+        (typeof crypto !== "undefined" && "randomUUID" in crypto)
+          ? crypto.randomUUID()
+          : `${businessId}-marketing_tags-${Date.now()}`;
+      const { data, error } = await supabase.functions.invoke("charge-addon", {
+        body: { product: "marketing_tags", businessId, requestId },
+      });
+      if (error) throw error;
+      if (data?.ok) {
+        toast.success("התשלום בוצע! חשבונית נשלחה למייל. הזינו את מזהי התגים למטה.");
+        refetch();
+        queryClient.invalidateQueries({ queryKey: ["biz-tracking", businessId] });
+      } else if (data?.needsCard) {
+        toast.error(data.message || "אין כרטיס שמור. יש לפרסם אתר (מנוי) כדי לשמור כרטיס תחילה.");
+      } else if (data?.declined) {
+        toast.error(data.error || "התשלום נדחה. בדקו את הכרטיס ונסו שוב.");
+      } else {
+        toast.error(data?.error || "לא הצלחנו להשלים את הרכישה. נסו שוב.");
+      }
+    } catch {
+      toast.error("אירעה תקלה בתקשורת. נסו שוב.");
+    } finally {
+      setPaying(false);
     }
-    window.location.href = url;
   };
 
   if (isLoading) {
@@ -144,9 +170,11 @@ const DashboardTracking = ({ businessId }: Props) => {
           </ul>
           <button
             onClick={startPayment}
-            className="inline-flex items-center gap-2 rounded-2xl bg-primary text-primary-foreground font-bold px-8 h-12 hover:opacity-90 transition-opacity"
+            disabled={paying}
+            className="inline-flex items-center gap-2 rounded-2xl bg-primary text-primary-foreground font-bold px-8 h-12 hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            <Crown className="w-5 h-5" /> שדרגו עכשיו · ₪{TAGS_ADDON_PRICE_ILS} + מע"מ
+            {paying ? <Loader2 className="w-5 h-5 animate-spin" /> : <Crown className="w-5 h-5" />}
+            {paying ? "מחייב..." : `שדרגו עכשיו · ₪${TAGS_ADDON_PRICE_ILS} + מע"מ`}
           </button>
         </motion.div>
       ) : (
@@ -154,6 +182,15 @@ const DashboardTracking = ({ businessId }: Props) => {
         <div className="space-y-5">
           <div className="inline-flex items-center gap-2 text-sm text-primary bg-primary/10 rounded-full px-3 py-1">
             <Check className="w-4 h-4" /> השדרוג פעיל - הזינו את המזהים והם יוזרקו לחנות
+          </div>
+
+          <div className="rounded-2xl border border-amber-400/40 bg-amber-400/10 p-4 text-sm text-amber-800 dark:text-amber-200">
+            <p className="font-semibold mb-1">איך בודקים שזה עובד?</p>
+            <p className="leading-relaxed">
+              התגים נטענים בחנות רק אחרי שהגולש/ת מאשר/ת עוגיות שיווקיות (חוק המידע - הבחירה נשמרת בדפדפן).
+              כדי לבדוק: פתחו את החנות בגלישה פרטית, אשרו את כל העוגיות בבאנר, ואז בדקו ב-Google Tag Manager
+              (מצב Preview) או ב-Meta Events Manager (Test Events) שהאירועים מגיעים.
+            </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">

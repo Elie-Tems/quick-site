@@ -58,12 +58,7 @@ export function buildIcountDomainCheckoutUrl(
   }
 }
 
-/** One-time ₪149 payment page for the "marketing tags" add-on (iCount). */
-export function getTagsPaymentUrl(): string {
-  return (import.meta.env.VITE_ICOUNT_TAGS_PAYMENT_URL || "").trim();
-}
-
-/** Price of the marketing-tags add-on (one-time, pre-VAT). */
+/** Price of the marketing-tags add-on (one-time, pre-VAT). Charged via charge-addon (Cardcom token), not a hosted page. */
 export const TAGS_ADDON_PRICE_ILS = 149;
 
 /** Monthly Google-reviews add-on payment page (iCount) + price (pre-VAT). */

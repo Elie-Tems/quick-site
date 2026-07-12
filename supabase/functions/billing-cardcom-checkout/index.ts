@@ -18,9 +18,7 @@ const cors = {
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 
-const VAT_RATE = 0.18;
 const APP_URL = Deno.env.get("VITE_APP_URL") || "https://siango.app";
-const gross = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
@@ -50,8 +48,8 @@ Deno.serve(async (req) => {
   const { data: prof } = await admin.from("profiles").select("user_id").eq("id", (biz as { owner_id?: string }).owner_id).maybeSingle();
   if ((prof as { user_id?: string })?.user_id !== user.id) return json({ error: "forbidden" }, 403);
 
-  // Plan base price (net, pre-VAT).
-  const baseNet = Number(Deno.env.get("PUBLISH_FEE_ILS") || "69") || 69;
+  // Plan base price - flat, VAT-INCLUSIVE (₪79/month, nothing added on top).
+  const basePrice = Number(Deno.env.get("PUBLISH_FEE_ILS") || "79") || 79;
 
   // Validate the coupon server-side (never trust the client).
   let coupon: CouponInfo | null = null;
@@ -61,22 +59,22 @@ Deno.serve(async (req) => {
     if (row?.valid) coupon = { discount_type: row.discount_type, discount_value: Number(row.discount_value), duration: row.duration };
   }
 
-  // First charge = cycle 0 (coupon applies here). net -> VAT-inclusive gross.
-  const firstNet = chargeAmount(baseNet, coupon, 0);
-  const firstGross = gross(firstNet);
+  // First charge = cycle 0 (coupon applies here). basePrice is already the full
+  // VAT-inclusive total - no VAT added on top.
+  const firstGross = chargeAmount(basePrice, coupon, 0);
 
   // Track the pending checkout. ReturnValue = session_token lets the webhook match back.
   const sessionToken = crypto.randomUUID();
   const { error: sErr } = await admin.from("publish_checkout_sessions").insert({
     user_id: user.id, business_id: businessId, session_token: sessionToken,
-    status: "pending", amount_ils: firstNet, provider: "cardcom", email: user.email ?? null,
+    status: "pending", amount_ils: firstGross, provider: "cardcom", email: user.email ?? null,
   });
   if (sErr) return json({ error: "could not create session" }, 500);
 
   // Remember the billing intent on the subscription (activated on webhook).
   await admin.from("subscriptions").upsert({
     user_id: user.id, status: "pending", billing_provider: "cardcom_token",
-    base_amount_ils: baseNet,
+    base_amount_ils: basePrice,
     coupon_code: coupon ? body.couponCode!.trim().toUpperCase() : null,
     coupon_duration: coupon?.duration ?? null,
     coupon_discount_type: coupon?.discount_type ?? null,
@@ -125,7 +123,7 @@ Deno.serve(async (req) => {
     lowProfileId: res.data.LowProfileId,
     sessionToken,
     firstChargeIls: firstGross,
-    monthlyIls: gross(baseNet),
+    monthlyIls: basePrice,
     discountApplied: !!coupon,
   });
 });
