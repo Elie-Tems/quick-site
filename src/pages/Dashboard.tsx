@@ -48,6 +48,7 @@ import { getBusinessType, getEnabledModules } from "@/lib/businessModules";
 import { cleanImageUrl, cleanImageList } from "@/lib/imageUrl";
 import VerticalModules from "@/components/dashboard/VerticalModules";
 import LifecycleEmailsManager from "@/components/dashboard/LifecycleEmailsManager";
+import UpgradeCheckoutModal, { type CheckoutItem } from "@/components/dashboard/upgrades/UpgradeCheckoutModal";
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useOrders, useUpdateOrder } from "@/hooks/useOrders";
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner } from "@/hooks/useBanners";
@@ -90,6 +91,10 @@ const Dashboard = () => {
   const { entitled: crmEntitled } = useCrmEntitled();
   const { entitled: analyticsEntitled } = useAnalyticsEntitled();
   const [subscribingAddon, setSubscribingAddon] = useState<string | null>(null);
+  // Opening this modal is the ONLY way an add-on gets charged - a single click on
+  // a paywall "הפעילו עכשיו" opens a confirmation window, never an instant charge.
+  const [checkoutItems, setCheckoutItems] = useState<CheckoutItem[] | null>(null);
+  const CRM_ITEM: CheckoutItem = { addon: "crm", title: "CRM - ניהול לקוחות", netIls: 49, color: "#0b9e77" };
 
   // Charge the merchant's saved token for a recurring add-on (CRM/analytics) and
   // unlock it, mirroring DashboardReviews.tsx's proven addon-subscribe flow. The
@@ -659,8 +664,8 @@ const Dashboard = () => {
             description="כל ניהול המכירות במקום אחד: לקוחות עם היסטוריה וסגמנטים, ניהול ספקים, ודוחות רווחיות אמיתיים."
             bullets={["כרטיס לקוח מלא + סגמנטים + תגיות/הערות", "תזכורת רכישה חוזרת + שליחת הטבה בוואטסאפ", "כרטיסי ספק: פרטי קשר, הערות ומוצרים", "רווח ואחוז רווח לכל מוצר + רווח לפי ספק"]}
             priceLabel="הפעלה ב-₪49 לחודש"
-            onUpgrade={() => subscribeAddon('crm')}
-            busy={subscribingAddon === 'crm'}
+            onUpgrade={() => setCheckoutItems([CRM_ITEM])}
+            busy={false}
           >
             <DashboardCRM orders={orders} businessId={business?.id} demoMode={!crmEntitled} initialTab={currentView === 'profitability' ? 'profitability' : 'customers'} />
           </PremiumOverlay>
@@ -697,9 +702,9 @@ const Dashboard = () => {
             title="אנליטיקה - נתוני החנות שלך"
             description="מי הלקוחות שלך, מאיפה הם מגיעים, ואיפה אפשר להשתפר. הנתונים שמאפשרים לקבל החלטות מבוססות."
             bullets={["כמה מבקרים הגיעו לחנות ומתי", "מקורות הגעה - גוגל, ישיר, רשתות חברתיות", "תובנות לשיפור המכירות", "תקציב פרסום ומעקב קמפיינים"]}
-            priceLabel="הפעלה ב-₪29 לחודש (או כחלק מ-CRM)"
-            onUpgrade={() => subscribeAddon('analytics')}
-            busy={subscribingAddon === 'analytics'}
+            priceLabel="כלול בתוסף CRM - הפעלה ב-₪49 לחודש"
+            onUpgrade={() => setCheckoutItems([CRM_ITEM])}
+            busy={false}
           >
             <div className="space-y-4">
               <div className="flex gap-1 border-b border-border overflow-x-auto">
@@ -874,6 +879,16 @@ const Dashboard = () => {
             {renderContent()}
           </main>
         </div>
+        <UpgradeCheckoutModal
+          open={!!checkoutItems}
+          onClose={() => {
+            setCheckoutItems(null);
+            queryClient.invalidateQueries({ queryKey: ["crm-entitled"] });
+            queryClient.invalidateQueries({ queryKey: ["analytics-entitled"] });
+          }}
+          items={checkoutItems ?? []}
+          businessId={business?.id}
+        />
       </div>
     </ThemeProvider>
   );

@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Star, Check, Loader2, Lock, Search, RefreshCw, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { edgeErrorMessage } from "@/lib/edgeError";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
+import UpgradeCheckoutModal from "./upgrades/UpgradeCheckoutModal";
 import { REVIEWS_ADDON_PRICE_ILS } from "@/lib/publishPaymentConfig";
 import { toast } from "sonner";
 
@@ -41,6 +41,7 @@ const DashboardReviews = ({ businessId }: Props) => {
   const [results, setResults] = useState<Candidate[]>([]);
   const [searching, setSearching] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["biz-reviews", businessId],
@@ -78,32 +79,16 @@ const DashboardReviews = ({ businessId }: Props) => {
 
   // Enable Google Reviews as a recurring subscription add-on: a prorated first
   // charge on the saved Cardcom card now, then ₪14+VAT/mo consolidated into the
-  // subscription invoice. No redirect - charged server-side on the saved token.
-  const startPayment = async () => {
+  // Open the confirmation window instead of charging on click - a merchant must
+  // never be billed by a single accidental tap. The actual charge happens inside
+  // <UpgradeCheckoutModal> after they confirm (with coupon + clear errors).
+  const startPayment = () => {
     if (!businessId) return;
     if (!reviewsConfigured) {
       toast.error("התכונה בהקמה - חיבור הביקורות לגוגל טרם הופעל. אל דאגה, לא חויבתם.");
       return;
     }
-    setBusy(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("addon-subscribe", { body: { addon: "reviews", businessId } });
-      if (error) { toast.error(await edgeErrorMessage(error, "לא הצלחנו להפעיל כרגע. נסו שוב עוד רגע.")); return; }
-      if (data?.needsSubscription) { toast.error(data.message || "צריך מנוי פרסום פעיל כדי להוסיף ביקורות."); return; }
-      if (data?.needsCard) { toast.error(data.message || "אין כרטיס שמור. יש לפרסם אתר תחילה."); return; }
-      if (data?.declined) { toast.error(data.error || "התשלום נדחה. בדקו את הכרטיס ונסו שוב."); return; }
-      if (!data?.ok) throw new Error(data?.error || "failed");
-      toast.success(
-        data.alreadyActive || data.alreadyCharged
-          ? "ביקורות Google פעילות 🎉"
-          : `ביקורות Google הופעלו! חויב חלק יחסי (₪${data.proratedIls ?? ""}) ומהחודש הבא ₪14+מע"מ יצטרף לחשבונית המנוי.`,
-      );
-      refetch();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "לא הצלחנו להפעיל כרגע. נסו שוב.");
-    } finally {
-      setBusy(false);
-    }
+    setShowCheckout(true);
   };
 
   const doSearch = async () => {
@@ -348,6 +333,12 @@ const DashboardReviews = ({ businessId }: Props) => {
           </a>
         </div>
       )}
+      <UpgradeCheckoutModal
+        open={showCheckout}
+        onClose={() => { setShowCheckout(false); refetch(); }}
+        items={[{ addon: "reviews", title: "ביקורות Google", netIls: 14, color: "#e8820e" }]}
+        businessId={businessId}
+      />
     </div>
   );
 };

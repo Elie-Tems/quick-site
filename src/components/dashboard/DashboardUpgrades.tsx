@@ -250,24 +250,28 @@ const DashboardUpgrades = ({ onNavigate, business }: Props) => {
           if (soon.length === 0) return null;
           return (
             <section>
-              <div className="inline-flex items-center gap-2 text-muted-foreground text-sm font-bold px-4 py-1.5 rounded-full mb-3 bg-muted">
+              <div className="inline-flex items-center gap-2 text-white text-sm font-bold px-4 py-1.5 rounded-full mb-3" style={{ background: "linear-gradient(100deg,#64748b,#94a3b8)" }}>
                 <Clock className="w-4 h-4" /> בקרוב
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 {soon.map((p) => {
                   const Icon = p.icon;
+                  const g = GOALS[p.goal];
                   return (
-                    <div key={p.view} className="rounded-2xl border border-border bg-card/60 p-4 flex items-center gap-3 opacity-80">
-                      <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-muted">
-                        <Icon className="w-5 h-5 text-muted-foreground" />
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-foreground">{p.title}</h3>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">בקרוב</span>
+                    <div key={p.view} className="rounded-2xl border border-border bg-card overflow-hidden relative">
+                      <div className="h-1.5 w-full" style={{ background: `linear-gradient(100deg,${g.color},${g.color2})` }} />
+                      <div className="p-4 flex items-center gap-3" style={{ background: `linear-gradient(110deg,${g.color}0d,transparent)` }}>
+                        <span className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${g.color}1a` }}>
+                          <Icon className="w-5 h-5" style={{ color: g.color }} />
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-bold text-foreground">{p.title}</h3>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: `linear-gradient(100deg,${g.color},${g.color2})` }}>בקרוב</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground leading-snug mt-0.5 line-clamp-2">{p.desc}</p>
+                          <div className="text-xs font-bold mt-1" style={{ color: g.color }}>{p.priceLabel}</div>
                         </div>
-                        <p className="text-xs text-muted-foreground leading-snug mt-0.5 line-clamp-2">{p.desc}</p>
-                        <div className="text-xs font-semibold text-muted-foreground mt-1">{p.priceLabel}</div>
                       </div>
                     </div>
                   );

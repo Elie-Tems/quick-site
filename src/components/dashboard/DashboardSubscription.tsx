@@ -178,23 +178,18 @@ const DashboardSubscription = () => {
     if (!subscription) return;
     setIsCancelling(true);
     try {
-      const wasImmediate = subscription.cancel_type === "immediate";
-      const { error } = await supabase
-        .from('subscriptions')
-        .update({ status: 'active', cancel_type: null, cancel_at: null } as any)
-        .eq('id', subscription.id);
-      if (error) throw error;
-
-      // If an immediate cancellation had taken the store offline, bring it back.
-      if (wasImmediate && business?.id) {
-        await supabase.from('businesses').update({ is_published: true } as any).eq('id', business.id);
+      // Must go through the service-role function: the protect_subscription_billing
+      // trigger blocks the client from changing `status` directly (that was the
+      // "שגיאה בחידוש המנוי" bug - the direct UPDATE always threw).
+      const { data, error } = await supabase.functions.invoke("subscription-resume", {});
+      if (error || !(data as { ok?: boolean })?.ok) {
+        throw new Error((data as { error?: string })?.error || error?.message || "resume_failed");
       }
-
       setSubscription({ ...subscription, status: 'active', cancel_type: null, cancel_at: null });
-      toast.success('המנוי חודש בהצלחה 🎉');
+      toast.success('המנוי חודש, טוב שחזרת 🎉');
     } catch (error) {
       console.error('Error resuming subscription:', error);
-      toast.error('שגיאה בחידוש המנוי. נסה שוב מאוחר יותר.');
+      toast.error('לא הצלחנו לחדש כרגע. נסו שוב עוד רגע.');
     } finally {
       setIsCancelling(false);
     }
@@ -714,16 +709,18 @@ const DashboardSubscription = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>ביטול המנוי</AlertDialogTitle>
+                    <AlertDialogTitle>רגע... בטוח? 🙈</AlertDialogTitle>
                     <AlertDialogDescription>
-                      <strong className="text-foreground">החודש הנוכחי כבר חויב ולא יוחזר.</strong> הביטול מפסיק חידוש עתידי.
-                      איך תרצו להמשיך?
+                      האתר שלך עובד בשבילך 24/7 - לא לוקח חופשות, לא מתלונן, ואפילו לא שותה קפה. באמת בא לך להיפרד? 💔
+                      <br /><br />
+                      <strong className="text-foreground">רק שתדעו:</strong> החודש הנוכחי כבר חויב ולא יוחזר, והביטול פשוט עוצר את החידוש הבא. אם כבר החלטתם - איך תעדיפו להמשיך?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
 
-                  {/* Optional reason - retention insight, doesn't block cancellation */}
+                  {/* Optional reason - retention insight, doesn't block cancellation.
+                      Nudge (never force) the merchant to tell us why, in their words. */}
                   <div className="space-y-2 py-1">
-                    <p className="text-sm text-muted-foreground">מה הסיבה לביטול? <span className="text-xs">(לא חובה)</span></p>
+                    <p className="text-sm text-muted-foreground">לפני שאתם בורחים - ספרו לנו מה קרה? זה עוזר לנו להשתפר (ומאוד לא חובה 😇)</p>
                     <div className="flex flex-wrap gap-2">
                       {CANCEL_REASONS.map((reason) => (
                         <button
@@ -740,6 +737,13 @@ const DashboardSubscription = () => {
                         </button>
                       ))}
                     </div>
+                    <textarea
+                      value={cancelReason}
+                      onChange={(e) => setCancelReason(e.target.value)}
+                      placeholder="או במילים שלכם... (מבטיחים לקרוא)"
+                      rows={2}
+                      className="w-full rounded-xl border border-border bg-background text-sm p-2.5 focus:outline-none focus:border-primary resize-none"
+                    />
                   </div>
 
                   <div className="space-y-2 py-1">
@@ -775,12 +779,12 @@ const DashboardSubscription = () => {
             {subscription?.status === 'cancelled' && (
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>המנוי בוטל</AlertTitle>
+                <AlertTitle>ביטלת - וזה בסדר גמור 💛</AlertTitle>
                 <AlertDescription className="space-y-3">
                   <p>
                     {subscription.cancel_type === 'immediate'
-                      ? 'המנוי בוטל והאתר ירד מהאוויר.'
-                      : `המנוי בוטל. האתר יישאר באוויר עד ${subscription.cancel_at || subscription.paid_until ? format(new Date(subscription.cancel_at || subscription.paid_until!), 'dd/MM/yyyy') : 'תום התקופה'}, ואז יורד.`}
+                      ? 'המנוי בוטל והאתר ירד מהאוויר. היה כיף - ואם תתגעגע, כפתור החידוש כאן ומחכה לך. נשאיר את האור דלוק 🕯️'
+                      : `המנוי בוטל, אבל לא נפרדים עדיין - האתר יישאר באוויר עד ${subscription.cancel_at || subscription.paid_until ? format(new Date(subscription.cancel_at || subscription.paid_until!), 'dd/MM/yyyy') : 'תום התקופה'}, ואז יורד. משנים את דעתכם? החידוש במרחק קליק, ותמיד נשמח לראותכם שוב 😊`}
                   </p>
                   <Button size="sm" variant="outline" onClick={handleResumeSubscription} disabled={isCancelling}>
                     חידוש המנוי
