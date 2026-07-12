@@ -30,7 +30,7 @@ const LABELS = {
   default: {
     heading: "ספרו לנו על העסק",
     nameLabel: "שם העסק *",
-    namePlaceholder: "פרחי שושנה, מאפיית אמא, גאדג׳טס",
+    namePlaceholder: "",
     logoLabel: "לוגו",
     reassurance: "אלו רק הפרטים הבסיסיים - תמיד אפשר לערוך ולהרחיב הכל אחר כך מלוח הניהול שלכם.",
   },
