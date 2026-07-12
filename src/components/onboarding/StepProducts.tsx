@@ -245,8 +245,15 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [editPrompt, setEditPrompt] = useState("");
 
+  // Manual photo upload per product
+  const [uploadingForProductId, setUploadingForProductId] = useState<string | null>(null);
+  const productImageUploadRef = useRef<HTMLInputElement>(null);
+
   // Image lightbox
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
+  // Voice - "record more" nudge shown after an import
+  const [voiceJustImported, setVoiceJustImported] = useState(0); // count of last import
 
   // Categories
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -530,7 +537,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
 
   // ── Import parsed (shared for pdf/url/voice) ───────────────────────────────
 
-  const importParsed = (products: ParsedProduct[]) => {
+  const importParsed = (products: ParsedProduct[], fromVoice = false) => {
     const newProducts = products.map((p, i) => ({
       id: `${Date.now()}-${i}`,
       name: p.name,
@@ -542,6 +549,22 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     updateData({ products: [...data.products, ...newProducts] });
     toast.success(`יובאו ${newProducts.length} מוצרים`);
     setVoiceTranscript(""); setVoiceParsed([]);
+    if (fromVoice) setVoiceJustImported(newProducts.length);
+  };
+
+  // Upload a photo file to an existing product
+  const handleProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !uploadingForProductId) return;
+    e.target.value = "";
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      updateData({ products: data.products.map(p => p.id === uploadingForProductId ? { ...p, imageUrl: dataUrl } : p) });
+      toast.success("תמונה הועלתה בהצלחה");
+      setUploadingForProductId(null);
+    };
+    reader.readAsDataURL(file);
   };
 
   // ── AI images ──────────────────────────────────────────────────────────────
@@ -698,24 +721,44 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 className="w-full h-full object-cover cursor-zoom-in"
                 onClick={() => setLightboxUrl(product.imageUrl!)}
               />
-              <button
-                onClick={() => { setEditingProductId(editingProductId === product.id ? null : product.id); setEditPrompt(""); }}
-                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
-                title="ערוך תמונה"
-              >
-                <Pencil className="w-4 h-4 text-white" />
-              </button>
+              {/* Hover overlay: upload or AI-edit */}
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 rounded-lg">
+                <button
+                  onClick={e => { e.stopPropagation(); setUploadingForProductId(product.id); productImageUploadRef.current?.click(); }}
+                  className="p-1.5 bg-white/20 hover:bg-white/40 rounded-md"
+                  title="החלף תמונה"
+                >
+                  <ImagePlus className="w-3.5 h-3.5 text-white" />
+                </button>
+                <button
+                  onClick={e => { e.stopPropagation(); setEditingProductId(editingProductId === product.id ? null : product.id); setEditPrompt(""); }}
+                  className="p-1.5 bg-white/20 hover:bg-white/40 rounded-md"
+                  title="ערוך עם AI"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-white" />
+                </button>
+              </div>
             </>
           ) : (
             <>
               <Package className="w-5 h-5 text-muted-foreground" />
-              <button
-                onClick={() => handleGenerateImageForProduct(product.id)}
-                className="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
-                title="צור תמונה עם AI"
-              >
-                <Wand2 className="w-4 h-4 text-white" />
-              </button>
+              {/* Hover overlay: upload or AI generate */}
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 rounded-lg">
+                <button
+                  onClick={e => { e.stopPropagation(); setUploadingForProductId(product.id); productImageUploadRef.current?.click(); }}
+                  className="p-1.5 bg-white/20 hover:bg-white/40 rounded-md"
+                  title="העלה תמונה"
+                >
+                  <ImagePlus className="w-3.5 h-3.5 text-white" />
+                </button>
+                <button
+                  onClick={e => { e.stopPropagation(); handleGenerateImageForProduct(product.id); }}
+                  className="p-1.5 bg-primary/80 hover:bg-primary rounded-md"
+                  title="צור עם AI"
+                >
+                  <Wand2 className="w-3.5 h-3.5 text-white" />
+                </button>
+              </div>
             </>
           )}
         </div>
@@ -758,6 +801,14 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
 
   return (
     <div className="space-y-6" dir="rtl">
+      {/* Hidden file input for manual product image upload */}
+      <input
+        ref={productImageUploadRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleProductImageUpload}
+      />
       {/* Microphone permission window - opens whenever access is missing/blocked */}
       {micHelp && (
         <div
@@ -1160,7 +1211,24 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             </div>
           )}
 
-          {voiceParsed.length > 0 && <PreviewTable products={voiceParsed} onImport={() => importParsed(voiceParsed)} />}
+          {voiceParsed.length > 0 && <PreviewTable products={voiceParsed} onImport={() => importParsed(voiceParsed, true)} />}
+
+          {/* "Record more products" nudge - shown after a successful import */}
+          {voiceJustImported > 0 && voiceParsed.length === 0 && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/8 border border-primary/20">
+              <span className="text-sm font-medium text-primary flex-1">
+                נוספו {voiceJustImported} מוצרים! יש עוד מוצרים להקליט?
+              </span>
+              <button
+                onClick={() => { setVoiceJustImported(0); startRecording(); }}
+                disabled={isRecording || isTranscribing}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0"
+              >
+                <Mic className="w-3.5 h-3.5" />
+                הקלט עוד
+              </button>
+            </div>
+          )}
         </div>
       )}
 
