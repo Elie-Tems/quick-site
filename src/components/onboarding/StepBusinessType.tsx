@@ -13,7 +13,8 @@ const SUB_TYPE_TO_CATEGORY: Record<string, BusinessCategory> = {
   broker: 'other', health: 'other', consulting: 'other',
   legal: 'other', developer: 'other', 'car-dealer': 'automotive',
   charity: 'other', crowdfunding: 'other', community: 'other',
-  education: 'other', social: 'other', animals: 'pets', 'torah-center': 'other',
+  education: 'other', social: 'other', animals: 'pets',
+  'torah-center': 'other', synagogue: 'other',
 };
 
 export type BusinessType = "products" | "services" | "realestate" | "nonprofit" | "synagogue";
@@ -25,94 +26,143 @@ interface Props {
   onBack?: () => void;
 }
 
-// Local gradient palette - no external image dependency, so the cards always
-// render (offline / blocked CDNs included). Reused for main + sub categories.
-const GRADIENTS = [
-  "linear-gradient(135deg, #10b981 0%, #059669 60%, #065f46 100%)",   // emerald
-  "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 60%, #4c1d95 100%)",   // violet
-  "linear-gradient(135deg, #0ea5e9 0%, #2563eb 60%, #1e3a8a 100%)",   // ocean
-  "linear-gradient(135deg, #f59e0b 0%, #ea580c 60%, #9a3412 100%)",   // amber
-  "linear-gradient(135deg, #ec4899 0%, #be185d 60%, #831843 100%)",   // rose
-  "linear-gradient(135deg, #14b8a6 0%, #0d9488 60%, #115e59 100%)",   // teal
-  "linear-gradient(135deg, #6366f1 0%, #4338ca 60%, #312e81 100%)",   // indigo
-  "linear-gradient(135deg, #84cc16 0%, #4d7c0f 60%, #365314 100%)",   // lime
-];
-const gradientFor = (i: number) => GRADIENTS[i % GRADIENTS.length];
+// Unsplash photo IDs — fixed per category so the same image always loads.
+const U = (id: string) =>
+  `https://images.unsplash.com/photo-${id}?w=400&h=300&fit=crop&auto=format&q=70`;
 
-// Local gradients (no external image dependency) - same approach as the sub-category
-// cards below, so these always render even when Unsplash/CDNs are blocked or slow.
+const FALLBACK_GRADIENTS = [
+  "linear-gradient(135deg,#10b981,#065f46)",
+  "linear-gradient(135deg,#8b5cf6,#4c1d95)",
+  "linear-gradient(135deg,#0ea5e9,#1e3a8a)",
+  "linear-gradient(135deg,#f59e0b,#9a3412)",
+  "linear-gradient(135deg,#ec4899,#831843)",
+  "linear-gradient(135deg,#14b8a6,#115e59)",
+  "linear-gradient(135deg,#6366f1,#312e81)",
+  "linear-gradient(135deg,#84cc16,#365314)",
+];
+const fallback = (i: number) => FALLBACK_GRADIENTS[i % FALLBACK_GRADIENTS.length];
+
 const MAIN_CATEGORIES = [
-  { id: "products" as BusinessType,  title: "מכירת מוצרים", desc: "חנות, בוטיק, מאפייה, מוצרים" },
-  { id: "services" as BusinessType,  title: "נותן/ת שירות",  desc: "קוסמטיקה, כושר, ייעוץ, נדל\"ן, טיפולים" },
-  { id: "nonprofit" as BusinessType, title: "עמותה / ארגון", desc: "תרומות, גיוס המונים, קהילה" },
+  { id: "products" as BusinessType,  title: "מכירת מוצרים", desc: "חנות, בוטיק, מאפייה, מוצרים",                      img: U("1556742049-0cfed4f6a45d") },
+  { id: "services" as BusinessType,  title: "נותן/ת שירות",  desc: 'קוסמטיקה, כושר, ייעוץ, נדל"ן, טיפולים',           img: U("1521737604893-d14cc237f11d") },
+  { id: "nonprofit" as BusinessType, title: "עמותה / ארגון", desc: "תרומות, גיוס המונים, קהילה",                        img: U("1469571486292-0ba58a3f068b") },
 ];
 
-const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string }[]> = {
+const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: string }[]> = {
   products: [
-    { id: "fashion",       title: "אופנה / בוטיק"         },
-    { id: "bakery",        title: "מאפייה / קונדיטוריה"    },
-    { id: "general-store", title: "חנות כללית"              },
-    { id: "food",          title: "מזון ומשקאות"            },
-    { id: "jewelry",       title: "תכשיטים / עבודות יד"    },
-    { id: "home-decor",    title: "מוצרי בית / עיצוב"      },
-    { id: "electronics",   title: "אלקטרוניקה / גאדג'טים"  },
-    { id: "sports",        title: "ספורט וציוד"             },
-    { id: "cosmetics",     title: "קוסמטיקה / טיפוח"        },
-    { id: "pets",          title: "חיות מחמד"               },
-    { id: "books",         title: "ספרים / לוח"             },
-    { id: "flowers",       title: "פרחים ומתנות"            },
+    { id: "fashion",       title: "אופנה / בוטיק",          img: U("1445205170230-053b83016050") },
+    { id: "bakery",        title: "מאפייה / קונדיטוריה",    img: U("1509440159596-0249088772ff") },
+    { id: "general-store", title: "חנות כללית",              img: U("1604719312566-8912e9227c6a") },
+    { id: "food",          title: "מזון ומשקאות",            img: U("1504754524776-8f4f37790ca0") },
+    { id: "jewelry",       title: "תכשיטים / עבודות יד",    img: U("1515562141207-7a88fb7ce338") },
+    { id: "home-decor",    title: "מוצרי בית / עיצוב",      img: U("1555041469-a586c61ea9bc") },
+    { id: "electronics",   title: "אלקטרוניקה / גאדג'טים",  img: U("1518770660439-4636190af475") },
+    { id: "sports",        title: "ספורט וציוד",             img: U("1517649763962-0c623066013b") },
+    { id: "cosmetics",     title: "קוסמטיקה / טיפוח",        img: U("1522335789203-aabd1fc54bc9") },
+    { id: "pets",          title: "חיות מחמד",               img: U("1548199973-03cce0bbc87b") },
+    { id: "books",         title: "ספרים / לוח",             img: U("1524995997946-a1c2e315a42f") },
+    { id: "flowers",       title: "פרחים ומתנות",            img: U("1487530811015-780f3b5b7e7e") },
   ],
   services: [
-    { id: "broker",        title: "מתווך / נדל\"ן"           },
-    { id: "developer",     title: "יזם / פרויקט נדל\"ן"      },
-    { id: "vacation",      title: "צימר / נופש"             },
-    { id: "beauty",        title: "קוסמטיקה / יופי"         },
-    { id: "renovation",    title: "שיפוצים / בנייה"          },
-    { id: "health",        title: "בריאות / קליניקה"         },
-    { id: "consulting",    title: "ייעוץ עסקי / קריירה"      },
-    { id: "photography",   title: "צילום"                    },
-    { id: "legal",         title: "עו\"ד / רו\"ח"             },
-    { id: "car-dealer",    title: "רכב / מכירת רכבים"        },
-    { id: "barber",        title: "מספרה / ספר"              },
-    { id: "fitness",       title: "כושר / פילאטיס"           },
+    { id: "broker",        title: 'מתווך / נדל"ן',           img: U("1582407947304-fd86f028f716") },
+    { id: "developer",     title: 'יזם / פרויקט נדל"ן',      img: U("1486406146926-c627a92ad1ab") },
+    { id: "vacation",      title: "צימר / נופש",             img: U("1499793983690-e29da59ef1c2") },
+    { id: "beauty",        title: "קוסמטיקה / יופי",         img: U("1560066984-138daaa83f0d") },
+    { id: "renovation",    title: "שיפוצים / בנייה",          img: U("1504307651254-35680f356dfd") },
+    { id: "health",        title: "בריאות / קליניקה",         img: U("1559839734-2b71ea197ec2") },
+    { id: "consulting",    title: "ייעוץ עסקי / קריירה",      img: U("1552664730-d307ca884978") },
+    { id: "photography",   title: "צילום",                    img: U("1516035069371-29a1b244cc32") },
+    { id: "legal",         title: 'עו"ד / רו"ח',             img: U("1589829085413-56de8ae18c73") },
+    { id: "car-dealer",    title: "רכב / מכירת רכבים",        img: U("1549317661-bd32c8ce0729") },
+    { id: "barber",        title: "מספרה / ספר",              img: U("1503951914875-452162b0f3f1") },
+    { id: "fitness",       title: "כושר / פילאטיס",           img: U("1534438327276-14e5300c3a48") },
   ],
   realestate: [],
   nonprofit: [
-    { id: "charity",       title: "תרומות כלליות"            },
-    { id: "crowdfunding",  title: "גיוס המונים"              },
-    { id: "synagogue",     title: "בית כנסת"                 },
-    { id: "community",     title: "קהילה"                    },
-    { id: "education",     title: "חינוך / עמותת ילדים"      },
-    { id: "social",        title: "רווחה חברתית"             },
-    { id: "animals",       title: "הגנת בעלי חיים"           },
-    { id: "torah-center",  title: "מרכז תורני / ישיבה"       },
+    { id: "charity",       title: "תרומות כלליות",            img: U("1469571486292-0ba58a3f068b") },
+    { id: "crowdfunding",  title: "גיוס המונים",              img: U("1559526324-593bc073d938") },
+    { id: "synagogue",     title: "בית כנסת",                 img: U("1545164313-4dc36e85e1a2") },
+    { id: "community",     title: "קהילה",                    img: U("1529156069898-49953e39b3ac") },
+    { id: "education",     title: "חינוך / עמותת ילדים",      img: U("1503676260728-1c00da094a0b") },
+    { id: "social",        title: "רווחה חברתית",             img: U("1488521787991-ed7bbaae773c") },
+    { id: "animals",       title: "הגנת בעלי חיים",           img: U("1548767797-d8c844163c4a") },
+    { id: "torah-center",  title: "מרכז תורני / ישיבה",       img: U("1524055988636-436cfa9e0201") },
   ],
   synagogue: [],
 };
 
 const SHOW_INITIAL = 6;
 
-// Sub-types that are really a "listings + leads" business (real estate / vehicles),
-// even though the UI groups them under "נותן שירות". Picking one saves
-// business_type='realestate' so the listings module turns on (see businessModules.ts),
-// while the 3-card UI stays exactly as designed.
 const LISTINGS_SUBTYPES = new Set(["broker", "developer", "vacation", "commercial", "car-dealer"]);
 
-// A synagogue is a nonprofit that also gets the synagogue module (עליות/נדרים,
-// מקומות, זמני תפילה). Picking it saves business_type='synagogue' while it stays a
-// card under "עמותה / ארגון" (same trick as LISTINGS_SUBTYPES -> realestate).
+// A synagogue is a nonprofit that also gets the synagogue module.
 const SYNAGOGUE_SUBTYPES = new Set(["synagogue"]);
 
-// Flat list of all sub-categories with their parent type, for global search
 const ALL_SUBS_FLAT = (Object.entries(SUB_CATEGORIES) as [BusinessType, typeof SUB_CATEGORIES[BusinessType]][])
   .flatMap(([mainType, subs]) => subs.map(s => ({ ...s, mainType })));
+
+// Card with real photo + gradient overlay fallback
+const PhotoCard = ({
+  img,
+  title,
+  desc,
+  fallbackGradient,
+  onClick,
+  height,
+  textSize = "sm",
+}: {
+  img: string;
+  title: string;
+  desc?: string;
+  fallbackGradient: string;
+  onClick: () => void;
+  height?: string;
+  textSize?: "sm" | "xl";
+}) => {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group relative rounded-2xl overflow-hidden focus:outline-none w-full"
+      style={{ height, aspectRatio: height ? undefined : "4/3" }}
+    >
+      {!imgFailed ? (
+        <img
+          src={img}
+          alt={title}
+          loading="lazy"
+          onError={() => setImgFailed(true)}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+      ) : (
+        <div
+          className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
+          style={{ background: fallbackGradient }}
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+      <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
+      <div className="absolute bottom-0 right-0 left-0 p-3 text-right">
+        {textSize === "xl" ? (
+          <>
+            <p className="font-bold text-white text-xl leading-tight mb-1">{title}</p>
+            {desc && <p className="text-xs text-white/65 leading-snug">{desc}</p>}
+          </>
+        ) : (
+          <p className="font-semibold text-white text-sm leading-tight">{title}</p>
+        )}
+      </div>
+    </button>
+  );
+};
 
 const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
   const [activeMain, setActiveMain] = useState<BusinessType | null>(data.businessType ?? null);
   const [search, setSearch] = useState("");
   const [showAll, setShowAll] = useState(false);
 
-  // Global search across all sub-types (used on the main screen before a category is selected)
   const globalSearchResults = search.trim()
     ? ALL_SUBS_FLAT.filter(s => s.title.includes(search.trim()))
     : [];
@@ -134,10 +184,7 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
     updateData({
       businessSubType: effectiveSubType,
       businessCategory: SUB_TYPE_TO_CATEGORY[subId] || 'other',
-      // Real-estate / vehicle sub-types unlock the listings module regardless of
-      // which main card they sit under.
       ...(LISTINGS_SUBTYPES.has(subId) ? { businessType: 'realestate' as BusinessType } : {}),
-      // A synagogue keeps donations + adds the synagogue tools module.
       ...(SYNAGOGUE_SUBTYPES.has(subId) ? { businessType: 'synagogue' as BusinessType } : {}),
     });
     onNext();
@@ -158,7 +205,6 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
 
       {!activeMain ? (
         <div className="space-y-4">
-          {/* Global search */}
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50 pointer-events-none" />
             <input
@@ -173,49 +219,34 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
           </div>
 
           {search.trim() ? (
-            /* Search results across all categories */
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {globalSearchResults.length === 0 ? (
                 <div className="col-span-3 text-center pv-faint text-sm py-8">לא נמצאו תוצאות</div>
               ) : (
                 globalSearchResults.map((sub, i) => (
-                  <button
+                  <PhotoCard
                     key={sub.mainType + sub.id}
-                    onClick={() => {
-                      updateData({ businessType: sub.mainType });
-                      handleSubSelect(sub.id);
-                    }}
-                    className="group relative rounded-2xl overflow-hidden focus:outline-none"
-                    style={{ aspectRatio: "4/3" }}
-                  >
-                    <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" style={{ background: gradientFor(i) }} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                    <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
-                    <div className="absolute bottom-0 right-0 left-0 p-3 text-right">
-                      <p className="font-semibold text-white text-sm leading-tight">{sub.title}</p>
-                    </div>
-                  </button>
+                    img={sub.img}
+                    title={sub.title}
+                    fallbackGradient={fallback(i)}
+                    onClick={() => { updateData({ businessType: sub.mainType }); handleSubSelect(sub.id); }}
+                  />
                 ))
               )}
             </div>
           ) : (
-            /* Main category cards */
             <div className="grid grid-cols-3 gap-3">
               {MAIN_CATEGORIES.map((cat, i) => (
-                <button
+                <PhotoCard
                   key={cat.id}
+                  img={cat.img}
+                  title={cat.title}
+                  desc={cat.desc}
+                  fallbackGradient={fallback(i)}
                   onClick={() => handleMainSelect(cat.id)}
-                  className="group relative rounded-2xl overflow-hidden focus:outline-none"
-                  style={{ height: "300px" }}
-                >
-                  <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105" style={{ background: gradientFor(i) }} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
-                  <div className="absolute bottom-0 right-0 left-0 p-4 text-right">
-                    <p className="font-bold text-white text-xl leading-tight mb-1">{cat.title}</p>
-                    <p className="text-xs text-white/65 leading-snug">{cat.desc}</p>
-                  </div>
-                </button>
+                  height="300px"
+                  textSize="xl"
+                />
               ))}
             </div>
           )}
@@ -246,19 +277,13 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {visibleSubs.map((sub, i) => (
-              <button
+              <PhotoCard
                 key={sub.id}
+                img={sub.img}
+                title={sub.title}
+                fallbackGradient={fallback(i)}
                 onClick={() => handleSubSelect(sub.id)}
-                className="group relative rounded-2xl overflow-hidden focus:outline-none"
-                style={{ aspectRatio: "4/3" }}
-              >
-                <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" style={{ background: gradientFor(i) }} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-2xl transition-colors" />
-                <div className="absolute bottom-0 right-0 left-0 p-3">
-                  <p className="font-semibold text-white text-sm leading-tight">{sub.title}</p>
-                </div>
-              </button>
+              />
             ))}
             {filteredSubs.length === 0 && (
               <div className="col-span-3 text-center pv-faint text-sm py-8">לא נמצאו תוצאות</div>
