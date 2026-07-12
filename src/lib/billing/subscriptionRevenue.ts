@@ -1,14 +1,14 @@
 // Single source of truth for Siango's OWN subscription revenue math.
 //
 // Before this, usePlatformStats and useMRR each duplicated the "how much does this
-// subscription pay us, and does it count" logic with a hardcoded ₪69 fallback - so
+// subscription pay us, and does it count" logic with a hardcoded ₪79 fallback - so
 // the total-revenue KPI and the MRR chart could quietly diverge. Both now import
 // these two functions, so the number is computed in exactly one place.
 //
-// NOTE: 69 is only a FALLBACK for rows missing monthly_total, and matches current
+// NOTE: 79 is only a FALLBACK for rows missing monthly_total, and matches current
 // pricing. When the authoritative price table is finalized, change it here only.
 
-export const DEFAULT_MONTHLY_PRICE = 69;
+export const DEFAULT_MONTHLY_PRICE = 79;
 
 interface SubLike {
   monthly_total?: number | null;
