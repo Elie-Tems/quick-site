@@ -205,3 +205,8 @@ verify_jwt = false
 # Cloudflare custom hostname (SSL + routing). Merchant-authenticated.
 [functions.provision-custom-domain]
 verify_jwt = true
+
+# domain-cf-sync: daily cron - retries/polls Cloudflare custom-hostname
+# connection so domain SSL never needs a manual step. Cron-only.
+[functions.domain-cf-sync]
+verify_jwt = false

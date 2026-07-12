@@ -36,12 +36,24 @@ const DashboardDomains = ({ businessId }: Props) => {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("domains")
-        .select("id, domain, status, expires_at")
+        .select("id, domain, status, expires_at, cf_ssl_status")
         .eq("business_id", businessId)
         .order("created_at", { ascending: false });
-      return (data || []) as Array<{ id: string; domain: string; status: string; expires_at: string | null }>;
+      return (data || []) as Array<{ id: string; domain: string; status: string; expires_at: string | null; cf_ssl_status: string | null }>;
     },
   });
+
+  // Connection status shown to the merchant: the domain itself (status) vs. whether
+  // it's actually serving securely yet (cf_ssl_status, filled in async by
+  // domain-cf-sync). cf_ssl_status is null while Cloudflare isn't configured yet,
+  // or briefly right after purchase before the first sync/register attempt.
+  const connectionLabel = (d: { status: string; cf_ssl_status: string | null }) => {
+    if (d.status !== "active") return d.status;
+    if (d.cf_ssl_status === "active") return "מחובר ומאובטח (SSL פעיל)";
+    if (d.cf_ssl_status === "pending_validation") return "מתחבר... (אימות SSL בתהליך)";
+    if (d.cf_ssl_status === "error" || d.cf_ssl_status === "pending_deployment") return "מתחבר... (ייתכן עיכוב, אנחנו על זה)";
+    return "פעיל";
+  };
 
   const onBuy = (domain: string, priceIls: number | null) => {
     setBuying({ domain, price: priceIls });
@@ -70,7 +82,7 @@ const DashboardDomains = ({ businessId }: Props) => {
               <div key={d.id} className="flex items-center justify-between rounded-lg border border-border p-3 text-sm">
                 <span dir="ltr" className="font-medium text-foreground">{d.domain}</span>
                 <span className="text-muted-foreground">
-                  {d.status === "active" ? "פעיל" : d.status}
+                  {connectionLabel(d)}
                   {d.expires_at ? ` · עד ${new Date(d.expires_at).toLocaleDateString("he-IL")}` : ""}
                 </span>
               </div>

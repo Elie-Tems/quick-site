@@ -10,6 +10,7 @@
 import { PLATFORM_EMAILS } from "../email/platformEmails.ts";
 import { sendViaResend } from "../email/resend.ts";
 import { opCreateCustomer, opRegisterDomain, opSetDnsToHost } from "./openprovider.ts";
+import { cfAddCustomHostname } from "./cloudflare.ts";
 
 const APP_URL = () => Deno.env.get("VITE_APP_URL") || "https://siango.app";
 const ALERT_RECIPIENTS = ["moti4384@gmail.com", "furmand713@gmail.com"];
@@ -95,6 +96,20 @@ export async function registerPaidDomainOrder(
     }
   }
 
+  // Connect the domain to Cloudflare (custom hostname + auto SSL) automatically -
+  // the merchant never touches this. Best-effort: dormant (configured:false) until
+  // CLOUDFLARE_API_TOKEN/ZONE_ID are set, and never blocks a real domain purchase.
+  // SSL finishes async; domain-cf-sync polls cf_ssl_status until it flips to active.
+  let cfHostnameId: string | null = null;
+  let cfSslStatus: string | null = null;
+  try {
+    const cf = await cfAddCustomHostname(order.domain);
+    if (cf.configured && cf.ok && cf.data) {
+      cfHostnameId = cf.data.id;
+      cfSslStatus = cf.data.sslStatus;
+    }
+  } catch (e) { console.error("Cloudflare custom hostname failed (non-fatal):", e); }
+
   const now = new Date().toISOString();
   const expiresAt = reg.data.expiresAt || new Date(Date.now() + 365 * 86400000).toISOString();
 
@@ -110,6 +125,9 @@ export async function registerPaidDomainOrder(
     op_order_id: reg.data.orderId,
     op_owner_handle: cust.data.handle,
     order_id: order.id,
+    cf_hostname_id: cfHostnameId,
+    cf_ssl_status: cfSslStatus,
+    cf_checked_at: cfHostnameId ? now : null,
   });
   await admin.from("domain_orders").update({
     status: "registered", op_order_id: reg.data.orderId, op_owner_handle: cust.data.handle, updated_at: new Date().toISOString(),
