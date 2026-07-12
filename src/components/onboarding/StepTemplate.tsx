@@ -193,11 +193,13 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
   ].filter(Boolean);
 
   const [selectedLayout, setSelectedLayout] = useState<StoreLayoutId>(() => {
+    const validLayouts = ['classic', 'service', 'property', 'market'] as StoreLayoutId[];
     const t = data.storeTemplate || '';
     const maybeLayout = t.split('-')[0] as StoreLayoutId;
-    if (ALL_TEMPLATES.find(tpl => tpl.id === maybeLayout)) return maybeLayout;
-    if (subTypeDefaults) return subTypeDefaults.layout;
-    return orderedTemplates[0]?.id ?? 'classic';
+    if (validLayouts.includes(maybeLayout)) return maybeLayout;
+    if (subTypeDefaults && validLayouts.includes(subTypeDefaults.layout)) return subTypeDefaults.layout;
+    const firstValid = orderedTemplates.find(tpl => validLayouts.includes(tpl.id));
+    return firstValid?.id ?? 'classic';
   });
 
   const [selectedPalette, setSelectedPalette] = useState<ColorPaletteId>(() => {
@@ -453,7 +455,7 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end justify-center"
+            className="fixed inset-0 z-50 flex items-center justify-center"
             style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
             onClick={() => !isPublishing && setShowPublishModal(false)}
           >
