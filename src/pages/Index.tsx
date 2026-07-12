@@ -398,14 +398,18 @@ const Index = () => {
         </section>
 
         {/* PER-TAB SUBTITLE SECTION */}
-        <section className="py-20 px-4 border-y pv-border" style={{ background: "rgba(34,197,94,0.06)" }}>
-          <div className="max-w-xl mx-auto text-center">
+        <section className="py-24 px-4 border-y pv-border pv-surface2">
+          <div className="max-w-2xl mx-auto text-center">
             <AnimatePresence mode="wait">
               <motion.div key={a.key}
                 initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.4 }}>
-                <p className="text-xl md:text-2xl leading-relaxed pv-muted mb-4">{a.subtitle[0]}</p>
-                <p className="text-xl md:text-2xl font-bold leading-snug" style={{ color: "var(--color-primary, #22c55e)" }}>{a.subtitle[1]}</p>
+                transition={{ duration: 0.4 }}
+                className="space-y-8">
+                <p className="text-xl md:text-2xl leading-relaxed pv-muted font-light">{a.subtitle[0]}</p>
+                <div className="flex justify-center">
+                  <div className="w-10 border-t pv-border" style={{ borderColor: "var(--color-primary, #22c55e)", opacity: 0.4 }} />
+                </div>
+                <p className="text-xl md:text-2xl leading-snug pv-strong font-semibold">{a.subtitle[1]}</p>
               </motion.div>
             </AnimatePresence>
           </div>
