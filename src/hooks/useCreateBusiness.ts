@@ -19,6 +19,7 @@ export interface CreateBusinessData {
   // Vertical chosen in StepBusinessType. Drives per-vertical modules
   // (src/lib/businessModules.ts) and the auto-selected storefront layout.
   businessType?: "products" | "services" | "realestate" | "nonprofit" | null;
+  businessSubType?: string | null;
 
   // Branding
   primaryColor?: string;
@@ -235,13 +236,16 @@ export function useCreateBusiness() {
       // applied), this fails silently and the business is still created fine;
       // the moment the migration is applied it starts persisting automatically.
       // Drives per-vertical modules - see src/lib/businessModules.ts.
-      if (data.businessType) {
+      if (data.businessType || data.businessSubType) {
         try {
           await supabase
             .from('businesses')
-            .update({ business_type: data.businessType } as any)
+            .update({
+              ...(data.businessType ? { business_type: data.businessType } : {}),
+              ...(data.businessSubType ? { business_sub_type: data.businessSubType } : {}),
+            } as any)
             .eq('id', businessId);
-        } catch { /* column may not exist until the migration is applied - ignore */ }
+        } catch { /* columns may not exist until migration is applied - ignore */ }
       }
 
       // 3.1 Initialize AI credits for this business (50 free credits on creation)

@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useBusinessById, useUpdateBusiness } from "@/hooks/useBusiness";
-import { ExternalLink, Loader2, Plus, Trash2, Wand2, FileText, LayoutTemplate, Tags } from "lucide-react";
+import { ExternalLink, Loader2, Plus, Trash2, Wand2, FileText, LayoutTemplate, Tags, BookOpen, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import AboutEditor from "./AboutEditor";
@@ -13,6 +13,7 @@ import type { BusinessType } from "@/lib/businessModules";
 interface DashboardContentProps {
   businessId?: string;
   businessType?: BusinessType;
+  businessSubType?: string;
 }
 
 const ABOUT_LABELS: Record<BusinessType, { title: string; desc: string; saveLabel: string }> = {
@@ -22,9 +23,10 @@ const ABOUT_LABELS: Record<BusinessType, { title: string; desc: string; saveLabe
   realestate: { title: "על המשרד",    desc: "ספרו על משרד הנדל\"ן, הניסיון, ואזורי הפעילות שלכם.",             saveLabel: "שמרו על המשרד"     },
 };
 
-type ContentTab = "hero" | "about" | "labels";
+type ContentTab = "hero" | "about" | "labels" | "rabbi";
 
-const DashboardContent = ({ businessId, businessType = "products" }: DashboardContentProps) => {
+const DashboardContent = ({ businessId, businessType = "products", businessSubType }: DashboardContentProps) => {
+  const isTorahCenter = businessSubType === "torah-center";
   const { data: business, isLoading } = useBusinessById(businessId);
   const updateBusiness = useUpdateBusiness();
   const [activeTab, setActiveTab] = useState<ContentTab>("hero");
@@ -52,6 +54,15 @@ const DashboardContent = ({ businessId, businessType = "products" }: DashboardCo
   const [aboutContact, setAboutContact] = useState("");
   const [isSavingAbout, setIsSavingAbout] = useState(false);
 
+  // Rabbi message fields (torah-center only)
+  const [rabbiName, setRabbiName] = useState("");
+  const [rabbiTitle, setRabbiTitle] = useState("");
+  const [rabbiMessage, setRabbiMessage] = useState("");
+  const [rabbiImageUrl, setRabbiImageUrl] = useState("");
+  const [isUploadingRabbi, setIsUploadingRabbi] = useState(false);
+  const [isSavingRabbi, setIsSavingRabbi] = useState(false);
+  const rabbiImageInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (!business) return;
     setHeroTitle((business as any).hero_title || "");
@@ -70,6 +81,10 @@ const DashboardContent = ({ businessId, businessType = "products" }: DashboardCo
     // Prefer about_text (storefront inline) but fall back to about_page_body
     setAboutBody((business as any).about_text || (business as any).about_page_body || "");
     setAboutContact((business as any).about_page_contact || "");
+    setRabbiName((business as any).rabbi_name || "");
+    setRabbiTitle((business as any).rabbi_title || "");
+    setRabbiMessage((business as any).rabbi_message || "");
+    setRabbiImageUrl((business as any).rabbi_image_url || "");
   }, [business]);
 
   const handleSaveHero = async () => {
@@ -163,6 +178,44 @@ const DashboardContent = ({ businessId, businessType = "products" }: DashboardCo
     }
   };
 
+  const handleRabbiImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !businessId) return;
+    setIsUploadingRabbi(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${businessId}/rabbi-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("business-assets").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("business-assets").getPublicUrl(path);
+      setRabbiImageUrl(data.publicUrl);
+      toast.success("התמונה הועלתה");
+    } catch {
+      toast.error("שגיאה בהעלאת תמונה");
+    } finally {
+      setIsUploadingRabbi(false);
+    }
+  };
+
+  const handleSaveRabbi = async () => {
+    if (!businessId) return;
+    setIsSavingRabbi(true);
+    try {
+      await updateBusiness.mutateAsync({
+        id: businessId,
+        rabbi_name: rabbiName || null,
+        rabbi_title: rabbiTitle || null,
+        rabbi_message: rabbiMessage || null,
+        rabbi_image_url: rabbiImageUrl || null,
+      } as any);
+      toast.success("דבר הרב עודכן");
+    } catch {
+      toast.error("שגיאה בשמירה");
+    } finally {
+      setIsSavingRabbi(false);
+    }
+  };
+
   const aboutLabels = ABOUT_LABELS[businessType];
   const storeUrl = business?.slug
     ? `${window.location.origin}/store/${business.slug}`
@@ -197,11 +250,12 @@ const DashboardContent = ({ businessId, businessType = "products" }: DashboardCo
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-border">
+      <div className="flex gap-1 border-b border-border overflow-x-auto">
         {([
           { id: "hero" as ContentTab, label: "כותרת ראשית", icon: LayoutTemplate },
           { id: "about" as ContentTab, label: aboutLabels.title, icon: FileText },
           { id: "labels" as ContentTab, label: "כותרות סקשנים", icon: Tags },
+          ...(isTorahCenter ? [{ id: "rabbi" as ContentTab, label: "דבר הרב", icon: BookOpen }] : []),
         ]).map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -377,6 +431,91 @@ const DashboardContent = ({ businessId, businessType = "products" }: DashboardCo
           <Button onClick={handleSaveAbout} disabled={isSavingAbout} className="w-full">
             {isSavingAbout && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
             {aboutLabels.saveLabel}
+          </Button>
+        </div>
+      )}
+
+      {/* Rabbi message tab (torah-center only) */}
+      {activeTab === "rabbi" && isTorahCenter && (
+        <div className="space-y-4 max-w-2xl">
+          <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
+            <div>
+              <h2 className="text-base font-semibold">דבר הרב / ראש הישיבה</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">תמונה, שם ומלל שיופיעו כסקציה ייחודית באתר</p>
+            </div>
+
+            {/* Rabbi photo */}
+            <div className="space-y-2">
+              <Label>תמונת הרב</Label>
+              <input
+                ref={rabbiImageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleRabbiImageUpload}
+                className="hidden"
+              />
+              {rabbiImageUrl ? (
+                <div className="relative inline-block">
+                  <img
+                    src={rabbiImageUrl}
+                    alt="תמונת הרב"
+                    className="w-32 h-32 object-cover rounded-2xl border border-border"
+                  />
+                  <button
+                    onClick={() => setRabbiImageUrl("")}
+                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => rabbiImageInputRef.current?.click()}
+                  disabled={isUploadingRabbi}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-border text-sm text-muted-foreground hover:border-primary/50 transition-colors"
+                >
+                  {isUploadingRabbi
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <Upload className="h-4 w-4" />}
+                  העלו תמונת הרב
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>שם הרב</Label>
+                <Input
+                  value={rabbiName}
+                  onChange={e => setRabbiName(e.target.value)}
+                  placeholder='למשל: הרב יצחק כהן'
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>תואר</Label>
+                <Input
+                  value={rabbiTitle}
+                  onChange={e => setRabbiTitle(e.target.value)}
+                  placeholder='ראש הישיבה / אב"ד'
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>דבר הרב</Label>
+              <Textarea
+                value={rabbiMessage}
+                onChange={e => setRabbiMessage(e.target.value)}
+                placeholder="כתבו כאן את דברי הרב — ברכה, חזון, מסר לתורמים..."
+                rows={6}
+                dir="rtl"
+              />
+            </div>
+          </div>
+
+          <Button onClick={handleSaveRabbi} disabled={isSavingRabbi} className="w-full">
+            {isSavingRabbi && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+            שמרו דבר הרב
           </Button>
         </div>
       )}

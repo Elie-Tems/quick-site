@@ -693,7 +693,7 @@ const Dashboard = () => {
         );
       case 'about':
       case 'content':
-        return <DashboardContent businessId={business?.id} businessType={getBusinessType(business)} />;
+        return <DashboardContent businessId={business?.id} businessType={getBusinessType(business)} businessSubType={(business as any)?.business_sub_type} />;
       case 'shipping':
         return (
           <DashboardShipping settings={settings} onSettingsChange={setSettings} />

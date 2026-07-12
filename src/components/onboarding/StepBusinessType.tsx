@@ -13,7 +13,7 @@ const SUB_TYPE_TO_CATEGORY: Record<string, BusinessCategory> = {
   broker: 'other', health: 'other', consulting: 'other',
   legal: 'other', developer: 'other', 'car-dealer': 'automotive',
   charity: 'other', crowdfunding: 'other', community: 'other',
-  education: 'other', social: 'other', animals: 'pets',
+  education: 'other', social: 'other', animals: 'pets', 'torah-center': 'other',
 };
 
 export type BusinessType = "products" | "services" | "realestate" | "nonprofit";
@@ -78,12 +78,13 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: str
   ],
   realestate: [],
   nonprofit: [
-    { id: "charity",      title: "תרומות כלליות",           img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=400&q=75" },
-    { id: "crowdfunding", title: "גיוס המונים",             img: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=75" },
-    { id: "community",    title: "קהילה",                   img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=75" },
-    { id: "education",    title: "חינוך / עמותת ילדים",     img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=75" },
-    { id: "social",       title: "רווחה חברתית",            img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=400&q=75" },
-    { id: "animals",      title: "הגנת בעלי חיים",          img: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=75" },
+    { id: "charity",       title: "תרומות כלליות",           img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=400&q=75" },
+    { id: "crowdfunding",  title: "גיוס המונים",             img: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=75" },
+    { id: "community",     title: "קהילה",                   img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=75" },
+    { id: "education",     title: "חינוך / עמותת ילדים",     img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=75" },
+    { id: "social",        title: "רווחה חברתית",            img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=400&q=75" },
+    { id: "animals",       title: "הגנת בעלי חיים",          img: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=75" },
+    { id: "torah-center",  title: "מרכז תורני / ישיבה",      img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=75" },
   ],
 };
 
