@@ -5,8 +5,8 @@ import { BusinessCategory } from "@/lib/categoryConfig";
 import {
   Plus, Trash2, Package, FileSpreadsheet, Upload, X, Download,
   AlertCircle, Loader2, LayoutGrid, List, FolderOpen,
-  Mic, MicOff, Pencil, ImagePlus, Wand2,
-  Images, Video, Tag, Folder, FileText, EyeOff, Sparkles,
+  Mic, MicOff, Pencil, ImagePlus, Wand2, Lightbulb, ChevronDown, ChevronUp,
+  Images, Video, Tag, Folder, FileText, EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -939,44 +939,46 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         );
       })()}
 
-      {/* Dashboard upsell card */}
-      <div className="rounded-2xl overflow-hidden text-right" style={{ background: "var(--pv-surface2, var(--card))", border: "1px solid var(--pv-border, var(--border))" }}>
-        <div className="px-5 py-4" style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)" }}>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-              <Sparkles style={{ width: 18, height: 18, color: "white" }} />
+      {/* Recommendation card */}
+      <div className="rounded-2xl text-right overflow-hidden" style={{ background: "var(--pv-surface2, var(--card))", border: "1px solid var(--pv-border, var(--border))" }}>
+        <div className="px-5 py-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+              <Lightbulb className="w-4 h-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold text-sm leading-snug">הוסיפו כמה מוצרים עכשיו - גם מוצרי דמו</p>
-              <p className="text-white font-medium text-xs mt-0.5">תמונות ותיאורים מלאים — בנחת בדשבורד הניהול</p>
+              <p className="text-sm font-semibold text-foreground leading-snug mb-1">
+                כרגע — העלו רק כמה {data.businessType === 'nonprofit' ? 'פרויקטים' : data.businessType === 'realestate' ? 'נכסים' : 'מוצרים'} בודדים
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                אפשר גם לייצר מוצרי דמו בלחיצה אחת ולהמשיך. את כל הפרטים — תמונות, תיאורים, מחירים — ממשיכים בנחת מהדשבורד אחרי שהאתר עולה.
+              </p>
+              <button
+                onClick={() => setShowDashboardFeatures(v => !v)}
+                className="mt-2 flex items-center gap-1 text-xs text-primary hover:underline transition-colors"
+              >
+                {showDashboardFeatures ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                למה יותר נוח להמשיך בדשבורד?
+              </button>
             </div>
-            <button
-              onClick={() => setShowDashboardFeatures(v => !v)}
-              className="shrink-0 text-xs text-white/80 hover:text-white underline underline-offset-2 transition-colors whitespace-nowrap"
-            >
-              {showDashboardFeatures ? "סגור" : "מה מחכה לכם בדשבורד >"}
-            </button>
           </div>
         </div>
+
         {showDashboardFeatures && (
-          <div className="px-5 py-4">
-            <div className="grid grid-cols-2 gap-3">
+          <div className="px-5 pb-5 border-t" style={{ borderColor: "var(--pv-border, var(--border))" }}>
+            <p className="text-xs font-medium text-muted-foreground pt-3 pb-2.5">כי בדשבורד הניהול אפשר לעשות דברים שלא מתאים לעשות כאן:</p>
+            <div className="space-y-2.5">
               {[
-                { Icon: Images,   title: "גלריית תמונות",      desc: "כמה תמונות לכל מוצר" },
-                { Icon: Video,    title: "וידאו מוצר",         desc: "סרטון בדף המוצר" },
-                { Icon: Tag,      title: "מבצעים ותגיות",      desc: "מחיר מבצע, חם, חדש" },
-                { Icon: Folder,   title: "קטגוריות וגרירה",    desc: "ארגון וסידור ידני" },
-                { Icon: FileText, title: "שדות מותאמים",       desc: "מידות, חומרים, אחריות" },
-                { Icon: EyeOff,   title: "הסתרת מוצרים",       desc: "מלאי ועונתיות בקלות" },
-              ].map(({ Icon, title, desc }) => (
-                <div key={title} className="flex items-start gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--pv-surface, color-mix(in srgb, var(--background) 60%, transparent))" }}>
-                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <Icon className="w-3.5 h-3.5 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-foreground leading-snug">{title}</p>
-                    <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{desc}</p>
-                  </div>
+                { Icon: Images,   text: "להעלות כמה תמונות לכל מוצר — מכל מכשיר, בכל זמן" },
+                { Icon: Video,    text: "לצרף סרטון הדגמה ישירות לדף המוצר" },
+                { Icon: Tag,      text: "להוסיף תגיות כמו 'חם', 'חדש' ומחירי מבצע" },
+                { Icon: Folder,   text: "לסדר לפי קטגוריות ולגרור בסדר ידני" },
+                { Icon: FileText, text: "להוסיף שדות מותאמים: מידות, חומרים, אחריות" },
+                { Icon: EyeOff,   text: "להסתיר מוצרים לפי עונה או מצב מלאי" },
+              ].map(({ Icon, text }) => (
+                <div key={text} className="flex items-center gap-2.5">
+                  <Icon className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span className="text-xs text-muted-foreground">{text}</span>
                 </div>
               ))}
             </div>
