@@ -23,6 +23,11 @@ const ENGINES = [
     subtitle: ["תמיד רציתם אתר מכירות, אבל העלויות, הדומיינים והבלגן עצרו אתכם.", 'עם סיאנגו זה אפשרי במהירות ובקלות: חנות מקצועית תוך כמה דקות ב-69 ₪ + מע"מ לחודש בלבד.'],
     to: "/preview/redesign/home-multi",
     img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80",
+    steps: [
+      { title: "בוחרים סוג חנות", desc: "חנות מוצרים, בוטיק, מאפייה — בוחרים ואנחנו מתאימים את הכלים" },
+      { title: "מגדירים שם, לוגו ופרטים", desc: "שם העסק, לוגו, פרטי קשר ושעות פעילות — הכל בכמה שניות" },
+      { title: "מוסיפים מוצרים", desc: "מוצרים עם תמונה, מחיר ותיאור קצר — אפשר להוסיף CSV גם" },
+    ],
   },
   {
     key: "booking", label: "שירותי מקצוע", icon: CalendarClock,
@@ -30,6 +35,11 @@ const ENGINES = [
     subtitle: ["תמיד קיבלתם הזמנות בוואטסאפ ובמייל ולפעמים הדברים נופלים בין הכיסאות.", "עכשיו לקוחות קובעים תור לבד ואפילו משלמים מראש, ממש מהאתר שלכם."],
     to: "/preview/redesign/services",
     img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80",
+    steps: [
+      { title: "בוחרים סוג שירות", desc: "יופי, בריאות, עיצוב, חינוך — בוחרים ואנחנו מתאימים את הכלים" },
+      { title: "מגדירים שם, לוגו ופרטים", desc: "שם העסק, לוגו, פרטי קשר ושעות פעילות — הכל בכמה שניות" },
+      { title: "מוסיפים שירותים ותורים", desc: "שירותים עם מחיר ומשך זמן — לקוחות קובעים ומשלמים מהאתר" },
+    ],
   },
   {
     key: "donations", label: "עמותות", icon: Heart,
@@ -37,6 +47,11 @@ const ENGINES = [
     subtitle: ["תמיד רציתם אתר שבו תוכלו להראות מה העמותה עושה, להיראות מכובדים, לקבל תרומות ולהתרחב. אבל לא ידעתם מאיפה להתחיל.", "עם סיאנגו זה אפשרי בכמה דקות ובעלות מינימלית של 69 ש\"ח לחודש ללא התחייבות."],
     to: "/preview/redesign/nonprofit",
     img: "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=900&q=80",
+    steps: [
+      { title: "בוחרים סוג עמותה", desc: "חינוך, בריאות, קהילה, דת — בוחרים ואנחנו מתאימים את הכלים" },
+      { title: "מגדירים שם, לוגו ופרטים", desc: "שם העמותה, לוגו, פרטי קשר ומידע על הארגון — הכל בכמה שניות" },
+      { title: "מוסיפים פרויקטים ופעילויות", desc: "תיאור הפעילויות, יעדי גיוס תרומות ועדכונים שוטפים" },
+    ],
   },
 ];
 
@@ -83,25 +98,10 @@ const CORE = [
   { icon: Globe, label: "דומיין אישי", desc: "חברו דומיין משלכם או רכשו אחד חדש" },
 ];
 
-const HOW_STEPS = [
-  {
-    letter: "A",
-    icon: Store,
-    title: "בוחרים סוג עסק",
-    desc: "מכירת מוצרים, שירותי מקצוע, נדל\"ן, עמותה — בוחרים ואנחנו מתאימים את הכלים",
-  },
-  {
-    letter: "B",
-    icon: Upload,
-    title: "מגדירים שם, לוגו ופרטים",
-    desc: "שם העסק, לוגו, פרטי קשר ושעות פעילות — הכל בכמה שניות",
-  },
-  {
-    letter: "C",
-    icon: Package,
-    title: "מוסיפים מוצרים / שירותים",
-    desc: "מוצרים, שירותים, או נכסים — עם תמונה, מחיר ותיאור קצר",
-  },
+const HOW_STEP_META = [
+  { letter: "A", icon: Store },
+  { letter: "B", icon: Upload },
+  { letter: "C", icon: Package },
 ];
 
 // תמונות שמייצגות את ה-Flow האמיתי
@@ -134,8 +134,9 @@ const hasStoredSession = () => {
   return false;
 };
 
-const HowItWorks = () => {
+const HowItWorks = ({ engineSteps }: { engineSteps: typeof ENGINES[0]['steps'] }) => {
   const [imgIdx, setImgIdx] = useState(0);
+  const HOW_STEPS = HOW_STEP_META.map((m, i) => ({ ...m, ...engineSteps[i] }));
   const activeStep = Math.min(imgIdx, HOW_STEPS.length - 1); // 0-2 map to steps A-C; 3 = finale
 
   useEffect(() => {
@@ -416,7 +417,7 @@ const Index = () => {
         </section>
 
         {/* HOW IT WORKS — 3 steps */}
-        <HowItWorks />
+        <HowItWorks engineSteps={a.steps} />
 
         {/* Professions strip */}
         <section className="relative py-12 px-4 border-y pv-border pv-surface2">
