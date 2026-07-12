@@ -208,7 +208,9 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
         body: JSON.stringify({ type, to, ctx }),
-      }).then(() => {}).catch(() => {});
+      })
+        .then(async (r) => { if (!r.ok) console.error(`cardcom webhook: ${type} email HTTP ${r.status}:`, await r.text().catch(() => "")); })
+        .catch((e) => console.error(`cardcom webhook: ${type} email failed:`, String(e)));
     await sendEmail("siteReady", { businessName, siteUrl, recipientEmail: to, lang: "he" });
     if (chargedAmount > 0) await sendEmail("paymentReceipt", { businessName, amountIls: chargedAmount, recipientEmail: to, lang: "he" });
   }

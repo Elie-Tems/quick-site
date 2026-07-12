@@ -72,7 +72,16 @@ serve(async (req) => {
     // confirmation, and it must correspond to a REAL, recent order (so this
     // endpoint can't be used to blast arbitrary inboxes). All other (platform
     // lifecycle) emails require an authenticated / service-role caller.
+    const authToken = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+    // Detect server-to-server (cron/webhook) callers by a DIRECT match against the
+    // service-role secret - NOT by decoding the JWT. Supabase's service key can be a
+    // non-JWT ("sb_secret_...") that jwtRole() can't parse; it then returns "anon"
+    // and every siteReady / paymentReceipt / recovery email (all sent with the
+    // service key) silently 403s on the "recipient must be your own address" check
+    // below. That is exactly why paid merchants got no "your site is live" email.
     const role = jwtRole(req.headers.get("Authorization"));
+    const isServiceRole = role === "service_role" ||
+      (!!authToken && authToken === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
     if (type === "orderConfirmationCustomer") {
       if (!businessId) {
         return new Response(JSON.stringify({ ok: false, error: "businessId required" }), {
@@ -91,16 +100,15 @@ serve(async (req) => {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-    } else if (role !== "service_role") {
+    } else if (!isServiceRole) {
       // Authenticated (non service-role) callers may only send a platform
       // lifecycle email to THEIR OWN address. This stops any signed-up user from
       // using our DKIM-signed domain to send Siango-branded mail (with
       // ctx-supplied button links) to an arbitrary victim - i.e. phishing.
       // Bulk lifecycle sends (onboarding/dunning/recovery) run as the service
       // role via cron and are exempt. anon tokens resolve to no user -> blocked.
-      const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
       const authClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-      const { data: { user } } = await authClient.auth.getUser(token);
+      const { data: { user } } = await authClient.auth.getUser(authToken);
       const callerEmail = user?.email?.toLowerCase();
       const target = String(Array.isArray(to) ? to[0] : to).toLowerCase();
       if (!callerEmail || callerEmail !== target) {
