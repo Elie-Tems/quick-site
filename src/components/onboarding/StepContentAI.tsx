@@ -168,10 +168,6 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
     <div className="space-y-5">
       {/* Header */}
       <div className="text-center space-y-1">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 mb-3">
-          <Sparkles className="w-3.5 h-3.5 text-primary" />
-          <span className="text-xs text-primary font-medium">כתיבה אוטומטית</span>
-        </div>
         <h2 className="text-2xl font-display font-bold pv-strong">ספרו לנו על העסק שלכם</h2>
         <p className="text-sm pv-muted">נכתוב את כל הטקסטים לאתר - כותרות, אודות, תיאורים</p>
       </div>

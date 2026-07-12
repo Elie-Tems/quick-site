@@ -21,6 +21,12 @@ export interface CreateBusinessData {
   businessType?: "products" | "services" | "realestate" | "nonprofit" | null;
   businessSubType?: string | null;
 
+  // AI-generated content from StepContentAI
+  heroTitle?: string;
+  aboutText?: string;
+  heroBenefits?: string;
+  promoText?: string;
+
   // Branding
   primaryColor?: string;
   colorPalette?: string[];
@@ -212,10 +218,14 @@ export function useCreateBusiness() {
             payment_enabled: data.paymentEnabled,
             payment_provider: data.paymentProvider || null,
             is_published: false,
+            // AI-generated content from StepContentAI
+            hero_title: data.heroTitle || null,
+            about_text: data.aboutText || null,
+            hero_benefits: data.heroBenefits || null,
+            promo_text: data.promoText || null,
             // ברירות מחדל מפורשות לחלקים אופציונליים - כולם מכובים
             marquee_bar_enabled: false,
             hero_badge: null,
-            promo_text: null,
           } as any)
           .select('id')
           .single();
