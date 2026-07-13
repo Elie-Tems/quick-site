@@ -115,10 +115,12 @@ export const icount: PaymentProvider = {
       success_url: input.successUrl,
       failure_url: input.failureUrl,
       cancel_url: input.cancelUrl,
+      // Order reference echoed on the IPN + used to look the sale up on verify.
+      // NOTE: do NOT send client fields (custom_client_id / email / client_name) here -
+      // iCount treats custom_client_id as a lookup into EXISTING clients and rejects a
+      // new sale with "לקוח לא נמצא" when it doesn't match. The customer enters their
+      // details on the iCount paypage itself.
       x_order_id: orderRef,
-      custom_client_id: orderRef,
-      email: input.customer.email,
-      client_name: input.customer.name,
     });
     // Log the full response so a failing sale is diagnosable from the function logs
     // (paypage_id we sent + iCount's raw reply). Trim to keep the log readable.
@@ -153,7 +155,11 @@ export const icount: PaymentProvider = {
     const ref = refFromPayload(payload);
     if (!token || !ref) return false;
 
-    const search = await icall(token, "doc/search", { custom_client_id: ref });
+    // The sale is now tagged with x_order_id (not custom_client_id) - search by that
+    // first, fall back to custom_client_id for older sales. Field names vary by account.
+    let search = await icall(token, "doc/search", { x_order_id: ref });
+    let hasDocs = search.ok && (search.data?.docs || search.data?.results || search.data?.data || search.data?.doclist);
+    if (!hasDocs) search = await icall(token, "doc/search", { custom_client_id: ref });
     // Response shape varies by account - probe defensively, and log for the first
     // real test so we can pin the exact fields.
     console.log("icount verify: doc/search ->", JSON.stringify(search.data)?.slice(0, 800));
