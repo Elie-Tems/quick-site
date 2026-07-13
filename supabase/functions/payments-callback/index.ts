@@ -53,6 +53,10 @@ Deno.serve(async (req) => {
       await admin.from("orders").update({ payment_status: "amount_mismatch", updated_at: now }).eq("id", order.id);
       return json({ error: "Amount mismatch" }, 400);
     }
+    // Read the coupon BEFORE we overwrite the payment metadata below.
+    const { data: payRow } = await admin.from("payments").select("metadata").eq("order_id", order.id).maybeSingle();
+    const couponId = (payRow?.metadata as Record<string, unknown> | null)?.coupon_id as string | undefined;
+
     await admin.from("orders").update({
       payment_status: "paid", paid_at: now, payment_transaction_uid: parsed.transactionUid, updated_at: now,
     }).eq("id", order.id);
@@ -60,28 +64,20 @@ Deno.serve(async (req) => {
       status: "success", provider_transaction_id: parsed.transactionUid, metadata: { callback: payload }, updated_at: now,
     }).eq("order_id", order.id);
 
-    // (Old Make.com order webhook removed - order/paid notifications are already
-    // sent directly via Resend; the webhook only duplicated them and shipped
-    // customer + business PII to a third party.)
-  } else {
-    await admin.from("orders").update({ payment_status: "failed", updated_at: now }).eq("id", order.id);
-    // Release the coupon use we optimistically claimed in payments-create, so a
-    // declined payment doesn't permanently burn a max_uses slot. Read coupon_id
-    // from the payment metadata BEFORE we overwrite it below.
-    const { data: pay } = await admin.from("payments")
-      .select("metadata").eq("order_id", order.id).maybeSingle();
-    const couponId = (pay?.metadata as Record<string, unknown> | null)?.coupon_id as string | undefined;
+    // Count the coupon use now that the payment is CONFIRMED (not at checkout start -
+    // that burned max_uses on abandoned checkouts). The alreadyPaid guard above stops a
+    // double callback from double-counting; compare-and-set adds belt-and-suspenders.
     if (couponId) {
-      const { data: c } = await admin.from("coupons")
-        .select("id, current_uses").eq("id", couponId).maybeSingle();
-      if (c && Number(c.current_uses) > 0) {
-        // Compare-and-set so a retry/double callback can't over-release.
+      const { data: cpn } = await admin.from("coupons").select("id, current_uses").eq("id", couponId).maybeSingle();
+      if (cpn) {
         await admin.from("coupons")
-          .update({ current_uses: Number(c.current_uses) - 1 })
-          .eq("id", c.id)
-          .eq("current_uses", Number(c.current_uses));
+          .update({ current_uses: Number(cpn.current_uses) + 1 })
+          .eq("id", cpn.id).eq("current_uses", Number(cpn.current_uses));
       }
     }
+  } else {
+    // Coupon uses are counted only on success, so a failed payment needs no release.
+    await admin.from("orders").update({ payment_status: "failed", updated_at: now }).eq("id", order.id);
     await admin.from("payments").update({ status: "failed", metadata: { callback: payload }, updated_at: now }).eq("order_id", order.id);
   }
   return json({ ok: true });
