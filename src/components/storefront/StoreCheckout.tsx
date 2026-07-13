@@ -65,7 +65,8 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
     if (!formData.fullName.trim()) newErrors.fullName = 'שם מלא ושם עסק חייבים להיות שדות חובה';
     else if (formData.fullName.length < 2) newErrors.fullName = 'שם מלא חייב להכיל לפחות 2 תווים';
     if (!formData.phone.trim()) newErrors.phone = 'מספר טלפון הוא שדה חובה';
-    else if (!/^0\d{8,9}$/.test(formData.phone.replace(/[-\s]/g, ''))) newErrors.phone = 'מספר טלפון לא תקין';
+    // Accept Israeli local (0XXXXXXXX) AND international (+972XXXXXXXX / 972XXXXXXXX).
+    else if (!/^(0\d{8,9}|\+?972\d{8,9})$/.test(formData.phone.replace(/[-\s()]/g, ''))) newErrors.phone = 'מספר טלפון לא תקין';
     if (!formData.email.trim()) newErrors.email = 'כתובת אימייל היא שדה חובה';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'כתובת אימייל לא תקינה';
     if (deliveryMode === 'pickup_and_delivery' && deliveryMethod === 'delivery') {
