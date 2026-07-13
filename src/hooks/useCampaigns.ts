@@ -84,18 +84,22 @@ export const useActiveCampaign = (businessId?: string) => {
     queryFn: async () => {
       if (!businessId) return null;
       
+      // maybeSingle: no active campaign is normal - return null instead of the
+      // 406 "Not Acceptable" that .single() emits (noisy in the browser console).
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
         .eq('business_id', businessId)
         .eq('is_active', true)
-        .single();
-      
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
       if (error) {
-        if (error.code === 'PGRST116') return null; // No active campaign
+        if (error.code === 'PGRST116') return null;
         throw error;
       }
-      return data as Campaign;
+      return (data as Campaign) ?? null;
     },
     enabled: !!businessId,
   });
