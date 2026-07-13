@@ -37,13 +37,21 @@ function refFromPayload(payload: Record<string, unknown> | undefined): string | 
   return r != null ? String(r) : null;
 }
 
-// The merchant may paste either the numeric paypage id ("123456"), the short URL
-// slug ("31ff3"), or the full paypage URL ("app.icount.co.il/m/31ff3/abc...").
-// Extract the raw token (the path after /m/ if a URL).
+// The merchant may paste the paypage id in several shapes:
+//   - numeric id:        "98"
+//   - admin/edit URL:    "app.icount.co.il/m/edit.php?id=98"   (id in the query!)
+//   - short public URL:  "app.icount.co.il/m/31ff3/abc..."     (slug after /m/)
+//   - bare slug:         "31ff3"
+// Extract the best raw token; resolvePaypageId turns a slug into the numeric id.
 function normalizePaypageId(raw: string): string {
   const s = (raw || "").trim();
-  const m = s.match(/\/m\/([^?#]+)/i);
-  return m ? m[1].replace(/\/+$/, "") : s;
+  // The numeric paypage_id is carried in an `id=` query param on the edit URL.
+  const idParam = s.match(/[?&]id=(\d+)/i);
+  if (idParam) return idParam[1];
+  // Public paypage URL: the slug is the segment right after /m/ (but never a PHP file).
+  const m = s.match(/\/m\/([^/?\s#]+)/i);
+  if (m && m[1] && !/\.php$/i.test(m[1])) return m[1].replace(/\/+$/, "");
+  return s;
 }
 
 function isNumericId(s: string): boolean {

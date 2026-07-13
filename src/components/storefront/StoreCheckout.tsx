@@ -246,7 +246,7 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
               <div className="border-t border-border pt-4">
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between py-2 px-3 rounded-xl border border-primary/30 bg-primary/5">
-                    <div className="flex items-center gap-2 text-primary"><Ticket className="h-4 w-4" /><span className="text-sm font-bold">{appliedCoupon.coupon.code}</span><span className="text-xs">(-{formatPrice(appliedCoupon.discount)})</span></div>
+                    <div className="flex items-center gap-2 text-foreground"><Ticket className="h-4 w-4" /><span className="text-sm font-bold">{appliedCoupon.coupon.code}</span><span className="text-xs">(-{formatPrice(appliedCoupon.discount)})</span></div>
                     <button type="button" onClick={handleRemoveCoupon} className="text-muted-foreground hover:text-foreground transition-colors"><X className="h-4 w-4" /></button>
                   </div>
                 ) : (
@@ -264,11 +264,11 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
 
               <div className="space-y-2 border-t border-border pt-4 text-sm">
                 <div className="flex items-center justify-between text-muted-foreground"><span>סכום ביניים</span><span className="tabular-nums">{formatPrice(subtotal)}</span></div>
-                {discount > 0 && <div className="flex items-center justify-between text-primary"><span>הנחה</span><span className="tabular-nums">-{formatPrice(discount)}</span></div>}
+                {discount > 0 && <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400"><span>הנחה</span><span className="tabular-nums">-{formatPrice(discount)}</span></div>}
                 {shippingCost > 0 && <div className="flex items-center justify-between text-muted-foreground"><span>משלוח</span><span className="tabular-nums">{formatPrice(shippingCost)}</span></div>}
                 <div className="flex items-center justify-between pt-2 border-t border-border">
                   <span className="font-bold text-foreground">סה״כ לתשלום</span>
-                  <span className="text-2xl font-extrabold text-primary tabular-nums">{formatPrice(totalPrice)}</span>
+                  <span className="text-2xl font-extrabold text-foreground tabular-nums">{formatPrice(totalPrice)}</span>
                 </div>
               </div>
 

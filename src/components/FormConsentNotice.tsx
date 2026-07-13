@@ -10,7 +10,7 @@ const FormConsentNotice = ({ privacyPolicyPath = '/privacy' }: FormConsentNotice
       שליחת הטופס מהווה הסכמה ל
       <Link
         to={privacyPolicyPath}
-        className="text-primary underline hover:no-underline mx-1 focus:outline-none focus:ring-2 focus:ring-ring rounded"
+        className="text-foreground font-medium underline hover:no-underline mx-1 focus:outline-none focus:ring-2 focus:ring-ring rounded"
       >
         מדיניות הפרטיות
       </Link>

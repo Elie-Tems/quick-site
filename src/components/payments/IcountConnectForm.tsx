@@ -2,13 +2,18 @@ import { useEffect, useState } from "react";
 import { Loader2, Check, X, ShieldCheck, ExternalLink, Eye, EyeOff, HelpCircle, ChevronDown } from "lucide-react";
 import { useIcountCredentials, useSaveIcountCredentials, verifyIcountCredentials } from "@/hooks/useIcount";
 
-// Merchants aren't technical - they paste the WHOLE paypage URL and we extract the
-// id (the segment after "/m/"), e.g. app.icount.co.il/m/31ff3/abc... -> "31ff3".
-// A bare id is returned untouched. Mirrors the server-side normalizePaypageId.
+// Merchants aren't technical - they paste whatever iCount shows them. Handle:
+//   - numeric id:      "98"
+//   - admin/edit URL:  "app.icount.co.il/m/edit.php?id=98"  (id in the query!)
+//   - public URL:      "app.icount.co.il/m/31ff3/abc..."    (slug after /m/)
+// A slug is resolved to its numeric id server-side. Mirrors normalizePaypageId.
 const extractPaypageId = (raw: string): string => {
   const s = (raw || "").trim();
+  const idParam = s.match(/[?&]id=(\d+)/i);
+  if (idParam) return idParam[1];
   const m = s.match(/\/m\/([^/?\s#]+)/i);
-  return m ? m[1] : s;
+  if (m && m[1] && !/\.php$/i.test(m[1])) return m[1];
+  return s;
 };
 
 // Connect the merchant's own iCount account: they paste their API token + paypage
