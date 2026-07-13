@@ -28,8 +28,11 @@ const CalendarConnect = ({ businessId, staff }: { businessId: string; staff?: Bo
 
       {staff && !conn && (
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground mb-3">
+          <p className="text-sm text-muted-foreground mb-2">
             חברו את יומן Google כדי שתורים חדשים ייכנסו ליומן שלכם אוטומטית, ואירועים קיימים ביומן יחסמו זמינות.
+          </p>
+          <p className="text-xs text-muted-foreground mb-3">
+            הסנכרון אינו אוטומטי - הוא מתחבר ל<b>חשבון ה-Google שתבחרו במסך ההרשאה</b> (לא בהכרח המייל שנרשמתם איתו לסיאנגו). אפשר לבחור כל חשבון, ולהחליף בהמשך.
           </p>
           <Button onClick={() => connect.mutate({ staffId: staff.id })} disabled={connect.isPending}>
             {connect.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CalendarClock className="w-4 h-4 ml-1" /> חיבור יומן Google</>}
@@ -51,6 +54,10 @@ const CalendarConnect = ({ businessId, staff }: { businessId: string; staff?: Bo
                conn.status === "error" ? "שגיאת סנכרון - נסו שוב" :
                conn.last_synced_at ? `סונכרן: ${new Date(conn.last_synced_at).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" })}` : "מחובר, ממתין לסנכרון"}
             </div>
+            <button onClick={() => connect.mutate({ staffId: staff.id })} disabled={connect.isPending}
+              className="text-xs text-primary hover:underline mt-0.5 disabled:opacity-50">
+              החלפת חשבון Google
+            </button>
           </div>
           {conn.status === "needs_reauth" ? (
             <Button size="sm" variant="outline" onClick={() => connect.mutate({ staffId: staff.id })} disabled={connect.isPending}>
