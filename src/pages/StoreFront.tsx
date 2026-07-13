@@ -327,13 +327,22 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
 
   const createOrder = useCreateOrder();
 
-  // Handle the redirect back from the PayPlus hosted payment page.
+  // Handle the redirect back from the hosted payment page.
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get("payment");
+    const sp = new URLSearchParams(window.location.search);
+    const p = sp.get("payment");
     if (!p) return;
+    const orderId = sp.get("order");
     if (p === "success") {
       setCartItems([]);
       setViewState("thankyou");
+      // The gateway's IPN can be late or never fire, leaving the order "pending" (no
+      // emails, merchant sees no sale). Confirm server-side on return: payments-confirm
+      // re-queries the gateway and settles + emails if paid. Best-effort; the thank-you
+      // already shows regardless.
+      if (orderId) {
+        supabase.functions.invoke("payments-confirm", { body: { order_id: orderId } }).catch(() => {});
+      }
     } else if (p === "failed" || p === "cancelled") {
       toast.error("התשלום לא הושלם. אפשר לנסות שוב.");
       setViewState("checkout");

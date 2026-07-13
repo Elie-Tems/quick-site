@@ -108,6 +108,11 @@ verify_jwt = false
 [functions.payments-callback]
 verify_jwt = false
 
+# payments-confirm is called by the public storefront when the customer returns from
+# the gateway; it re-queries the gateway server-side before settling (no JWT).
+[functions.payments-confirm]
+verify_jwt = false
+
 # payments-verify is called by the logged-in merchant.
 [functions.payments-verify]
 verify_jwt = true

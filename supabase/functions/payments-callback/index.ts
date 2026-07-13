@@ -4,6 +4,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getProvider } from "../_shared/payments/registry.ts";
+import { settlePaidOrder } from "../_shared/payments/settle.ts";
 
 const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*" };
 const json = (b: unknown, s = 200) =>
@@ -53,28 +54,12 @@ Deno.serve(async (req) => {
       await admin.from("orders").update({ payment_status: "amount_mismatch", updated_at: now }).eq("id", order.id);
       return json({ error: "Amount mismatch" }, 400);
     }
-    // Read the coupon BEFORE we overwrite the payment metadata below.
-    const { data: payRow } = await admin.from("payments").select("metadata").eq("order_id", order.id).maybeSingle();
-    const couponId = (payRow?.metadata as Record<string, unknown> | null)?.coupon_id as string | undefined;
-
-    await admin.from("orders").update({
-      payment_status: "paid", paid_at: now, payment_transaction_uid: parsed.transactionUid, updated_at: now,
-    }).eq("id", order.id);
-    await admin.from("payments").update({
-      status: "success", provider_transaction_id: parsed.transactionUid, metadata: { callback: payload }, updated_at: now,
-    }).eq("order_id", order.id);
-
-    // Count the coupon use now that the payment is CONFIRMED (not at checkout start -
-    // that burned max_uses on abandoned checkouts). The alreadyPaid guard above stops a
-    // double callback from double-counting; compare-and-set adds belt-and-suspenders.
-    if (couponId) {
-      const { data: cpn } = await admin.from("coupons").select("id, current_uses").eq("id", couponId).maybeSingle();
-      if (cpn) {
-        await admin.from("coupons")
-          .update({ current_uses: Number(cpn.current_uses) + 1 })
-          .eq("id", cpn.id).eq("current_uses", Number(cpn.current_uses));
-      }
-    }
+    await admin.from("payments").update({ metadata: { callback: payload }, updated_at: now }).eq("order_id", order.id);
+    // Mark paid + count the coupon use + send merchant/customer emails. Shared with
+    // payments-confirm (the on-return check) so a late or missing IPN never loses the
+    // sale, the paid status, or the emails.
+    const r = await settlePaidOrder(admin, order.id, parsed.transactionUid);
+    console.log("payments-callback settle ->", JSON.stringify(r), "order", order.id);
   } else {
     // Coupon uses are counted only on success, so a failed payment needs no release.
     await admin.from("orders").update({ payment_status: "failed", updated_at: now }).eq("id", order.id);
