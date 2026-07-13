@@ -110,7 +110,7 @@ export function useStorefront(slug: string | undefined) {
     },
     enabled: !!slug,
     retry: 1,
-    staleTime: 30000,
+    staleTime: 0,
   });
 
   // Fetch products for this business with custom fields
