@@ -18,9 +18,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 // Non-translatable config (icons, routes, images) stays outside component
 const ENGINE_CONFIG = [
-  { key: "commerce", icon: ShoppingBag, to: "/preview/redesign/home-multi", img: "/screenshots/hero-commerce.png", stepIcons: [Store, Upload, Package] },
-  { key: "booking",  icon: CalendarClock, to: "/preview/redesign/services", img: "/screenshots/hero-booking.png", stepIcons: [Store, Upload, Package] },
-  { key: "donations", icon: Heart, to: "/preview/redesign/nonprofit", img: "/screenshots/hero-donations.png", stepIcons: [Store, Upload, Package] },
+  { key: "commerce", icon: ShoppingBag, to: "/preview/redesign/home-multi", img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1400&q=80", stepIcons: [Store, Upload, Package] },
+  { key: "booking",  icon: CalendarClock, to: "/preview/redesign/services", img: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1400&q=80", stepIcons: [Store, Upload, Package] },
+  { key: "donations", icon: Heart, to: "/preview/redesign/nonprofit", img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1400&q=80", stepIcons: [Store, Upload, Package] },
 ];
 
 const PROFESSIONS_CONFIG = [
