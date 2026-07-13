@@ -352,36 +352,24 @@ const Index = () => {
               <p className="text-sm pv-muted mt-4">{t("hero.monthlyNote")}</p>
             </div>
 
-            {/* Full-width preview image */}
-            <AnimatePresence mode="wait">
-              <motion.div key={a.key}
-                initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="relative mx-auto max-w-5xl">
-                <div className="absolute -inset-8 bg-primary/10 rounded-[3rem] blur-3xl pointer-events-none" />
-                <div className="relative rounded-t-2xl overflow-hidden shadow-2xl" style={{ border: "1px solid var(--pv-border)", borderBottom: "none" }}>
-                  <div className="relative aspect-[16/9]">
-                    <img src={a.img} alt={a.label} className="w-full h-full object-cover object-top" />
-                    <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.4))" }} />
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
           </div>
         </section>
 
-        {/* PER-TAB SUBTITLE SECTION */}
+        {/* PER-TAB SUBTITLE SECTION — a.img as background */}
         <section className="relative overflow-hidden">
-          {/* Background image — person working on laptop/phone */}
-          <img
-            src="https://images.unsplash.com/photo-1664575602554-2087b04935a5?w=1400&q=80"
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover object-center"
-            style={{ filter: "brightness(0.35) saturate(0.8)" }}
-          />
+          <AnimatePresence mode="wait">
+            <motion.img key={a.key}
+              src={a.img}
+              alt=""
+              aria-hidden="true"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="absolute inset-0 w-full h-full object-cover object-center"
+              style={{ filter: "brightness(0.3) saturate(0.7)" }}
+            />
+          </AnimatePresence>
           {/* Green tint overlay */}
-          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(4,47,46,0.75) 0%, rgba(6,78,59,0.65) 50%, rgba(0,0,0,0.5) 100%)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(4,47,46,0.8) 0%, rgba(6,78,59,0.7) 50%, rgba(0,0,0,0.55) 100%)" }} />
 
           <div className="relative px-4 py-24 max-w-4xl mx-auto">
             <AnimatePresence mode="wait">
