@@ -86,7 +86,7 @@ const StoreCartPage = ({
         <div className="divide-y divide-foreground/8">
           {items.map((item) => (
             <div
-              key={item.id}
+              key={item.cartLineId ?? item.id}
               className="flex items-start gap-4 py-5 group"
             >
               {/* Thumbnail */}
@@ -109,6 +109,9 @@ const StoreCartPage = ({
                 <h3 className="text-sm font-medium text-foreground leading-snug line-clamp-2">
                   {item.name}
                 </h3>
+                {(item.variantColor || item.variantSize) && (
+                  <p className="text-xs text-muted-foreground">{[item.variantColor, item.variantSize].filter(Boolean).join(" · ")}</p>
+                )}
                 <p className="text-sm font-bold text-foreground mt-1">
                   {formatPrice(item.price)}
                 </p>
@@ -116,7 +119,7 @@ const StoreCartPage = ({
                 {/* Quantity controls - editorial minimal */}
                 <div className="flex items-center gap-0 mt-3 border border-foreground/15 w-fit">
                   <button
-                    onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                    onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity - 1)}
                     className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
                     aria-label="הפחת"
                   >
@@ -126,7 +129,7 @@ const StoreCartPage = ({
                     {item.quantity}
                   </span>
                   <button
-                    onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                    onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity + 1)}
                     className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
                     aria-label="הוסף"
                   >
@@ -141,7 +144,7 @@ const StoreCartPage = ({
                   {formatPrice(item.price * item.quantity)}
                 </span>
                 <button
-                  onClick={() => onRemove(item.id)}
+                  onClick={() => onRemove(item.cartLineId ?? item.id)}
                   aria-label="הסר מהסל"
                   className="text-muted-foreground/40 hover:text-foreground transition-colors mt-auto"
                 >

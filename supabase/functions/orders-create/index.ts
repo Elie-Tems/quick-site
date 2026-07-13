@@ -17,7 +17,7 @@ const json = (b: unknown, s = 200) =>
 
 interface ReqBody {
   businessId: string;
-  items: { product_id: string; quantity: number }[];
+  items: { product_id: string; quantity: number; variant_id?: string | null; variant_color?: string | null; variant_size?: string | null }[];
   customer: { fullName: string; phone: string; email: string };
   notes?: string;
   deliveryMethod?: "pickup" | "delivery";
@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
 
   const priceOf = (p: any) => (p.is_on_sale && p.sale_price != null ? Number(p.sale_price) : Number(p.price));
   let subtotal = 0;
-  const orderItems: { product_id: string; product_name: string; price_at_order: number; quantity: number; cost_at_order: number | null }[] = [];
+  const orderItems: { product_id: string; product_name: string; price_at_order: number; quantity: number; cost_at_order: number | null; variant_id: string | null; variant_color: string | null; variant_size: string | null }[] = [];
 
   for (const line of items) {
     const p = products.find((x) => x.id === line.product_id);
@@ -90,7 +90,10 @@ Deno.serve(async (req) => {
     subtotal += unit * qty;
     // Snapshot the cost so historical profit stays accurate if cost changes later.
     const cost = (p as any).cost_price != null ? Number((p as any).cost_price) : null;
-    orderItems.push({ product_id: p.id, product_name: p.name, price_at_order: unit, quantity: qty, cost_at_order: cost });
+    orderItems.push({
+      product_id: p.id, product_name: p.name, price_at_order: unit, quantity: qty, cost_at_order: cost,
+      variant_id: line.variant_id ?? null, variant_color: line.variant_color ?? null, variant_size: line.variant_size ?? null,
+    });
   }
   if (!orderItems.length) return json({ error: "No valid items" }, 400);
 
@@ -159,6 +162,13 @@ Deno.serve(async (req) => {
     orderItems.map((it) => ({ ...it, order_id: order.id }))
   );
   if (itemsErr) return json({ error: "Could not save order items" }, 500);
+
+  // Decrement stock for any purchased variant (atomic, never below 0). Best-effort.
+  for (const it of orderItems) {
+    if (it.variant_id) {
+      await admin.rpc("decrement_variant_stock", { p_variant_id: it.variant_id, p_qty: it.quantity }).catch(() => {});
+    }
+  }
 
   // Notify the merchant by email - money-first subject ("הידד! נכנסה הזמנה על ₪X").
   // Works for every order, including COD / no-payment-configured. Best-effort.

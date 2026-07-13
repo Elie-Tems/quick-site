@@ -415,35 +415,47 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     );
   }
 
-  const handleAddToCart = (product: typeof storeProducts[0]) => {
+  // A cart LINE is a (product, variant) pair - the same product in a different
+  // color/size is a separate line. Products without variants: cartLineId === id.
+  type Variant = { id: string; color: string | null; size: string | null; price_override: number | null };
+  const lineKeyOf = (item: { cartLineId?: string; id: string }) => item.cartLineId ?? item.id;
+
+  const handleAddToCart = (product: typeof storeProducts[0], variant?: Variant) => {
+    const cartLineId = `${product.id}::${variant?.id ?? ""}`;
     setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
+      const existing = prev.find(item => lineKeyOf(item) === cartLineId);
       if (existing) {
         return prev.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+          lineKeyOf(item) === cartLineId ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      return [...prev, {
+        ...product,
+        quantity: 1,
+        cartLineId,
+        price: variant?.price_override ?? product.price,
+        variantId: variant?.id ?? null,
+        variantColor: variant?.color ?? null,
+        variantSize: variant?.size ?? null,
+      }];
     });
-    trackEvent(business.id, "add_to_cart", { productId: product.id, value: product.price });
+    trackEvent(business.id, "add_to_cart", { productId: product.id, value: variant?.price_override ?? product.price });
   };
 
-  const handleUpdateQuantity = (productId: string, quantity: number) => {
+  const handleUpdateQuantity = (cartLineId: string, quantity: number) => {
     if (quantity <= 0) {
-      handleRemoveFromCart(productId);
+      handleRemoveFromCart(cartLineId);
       return;
     }
     setCartItems(prev =>
       prev.map(item =>
-        item.id === productId ? { ...item, quantity } : item
+        lineKeyOf(item) === cartLineId ? { ...item, quantity } : item
       )
     );
   };
 
-  const handleRemoveFromCart = (productId: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== productId));
+  const handleRemoveFromCart = (cartLineId: string) => {
+    setCartItems(prev => prev.filter(item => lineKeyOf(item) !== cartLineId));
   };
 
   const handleCheckout = () => {
@@ -467,7 +479,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         await startPayplusPayment({
           businessId: business.id,
           slug: business.slug ?? undefined,
-          items: cartItems.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+          items: cartItems.map((item) => ({ product_id: item.id, quantity: item.quantity, variant_id: item.variantId ?? undefined, variant_color: item.variantColor ?? undefined, variant_size: item.variantSize ?? undefined })),
           customer: { fullName: data.fullName, phone: data.phone, email: data.email },
           notes: data.notes || undefined,
           deliveryMethod: data.deliveryMethod,
@@ -503,6 +515,9 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
           product_name: item.name,
           price_at_order: item.price,
           quantity: item.quantity,
+          variant_id: item.variantId ?? null,
+          variant_color: item.variantColor ?? null,
+          variant_size: item.variantSize ?? null,
         })),
         businessName: business.name,
         businessEmail: business.email ?? null,

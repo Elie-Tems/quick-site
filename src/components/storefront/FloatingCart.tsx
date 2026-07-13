@@ -5,12 +5,17 @@ import type { Product } from "./StoreProducts";
 
 export interface CartItem extends Product {
   quantity: number;
+  /** Unique per (product, variant). Falls back to id for variant-less products. */
+  cartLineId?: string;
+  variantId?: string | null;
+  variantColor?: string | null;
+  variantSize?: string | null;
 }
 
 interface FloatingCartProps {
   items: CartItem[];
-  onUpdateQuantity: (productId: string, quantity: number) => void;
-  onRemove: (productId: string) => void;
+  onUpdateQuantity: (cartLineId: string, quantity: number) => void;
+  onRemove: (cartLineId: string) => void;
   onCheckout: () => void;
   hasPayment?: boolean;
 }
@@ -60,7 +65,7 @@ const FloatingCart = ({
 
             <div className="overflow-y-auto max-h-[40vh] p-4 space-y-3">
               {items.map((item) => (
-                <div key={item.id} className="flex items-center gap-3 bg-muted/50 rounded-lg p-3">
+                <div key={item.cartLineId ?? item.id} className="flex items-center gap-3 bg-muted/50 rounded-lg p-3">
                   {/* Product Image */}
                   <div className="w-14 h-14 rounded-lg bg-muted flex-shrink-0 overflow-hidden">
                     {item.imageUrl ? (
@@ -75,20 +80,23 @@ const FloatingCart = ({
                   {/* Product Info */}
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-sm line-clamp-1">{item.name}</h4>
+                    {(item.variantColor || item.variantSize) && (
+                      <p className="text-xs text-muted-foreground">{[item.variantColor, item.variantSize].filter(Boolean).join(" · ")}</p>
+                    )}
                     <p className="text-sm text-primary font-semibold">{formatPrice(item.price)}</p>
                   </div>
 
                   {/* Quantity Controls */}
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                      onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity - 1)}
                       className="w-8 h-8 rounded-lg bg-background border border-border flex items-center justify-center hover:bg-muted transition-colors"
                     >
                       <Minus className="h-4 w-4" />
                     </button>
                     <span className="w-6 text-center font-medium">{item.quantity}</span>
                     <button
-                      onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                      onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity + 1)}
                       className="w-8 h-8 rounded-lg bg-background border border-border flex items-center justify-center hover:bg-muted transition-colors"
                     >
                       <Plus className="h-4 w-4" />
@@ -97,7 +105,7 @@ const FloatingCart = ({
 
                   {/* Remove */}
                   <button
-                    onClick={() => onRemove(item.id)}
+                    onClick={() => onRemove(item.cartLineId ?? item.id)}
                     className="p-2 text-muted-foreground hover:text-destructive transition-colors"
                   >
                     <X className="h-4 w-4" />

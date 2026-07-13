@@ -2,12 +2,15 @@ import { useState } from "react";
 import { X, Heart, Package, ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Product } from "./StoreProducts";
+import { useProductVariants } from "@/hooks/useProductVariants";
+
+export type SelectedVariant = { id: string; color: string | null; size: string | null; price_override: number | null };
 
 interface ProductDetailModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart: (product: Product) => void;
+  onAddToCart: (product: Product, variant?: SelectedVariant) => void;
   isFavorite?: boolean;
   onToggleFavorite?: (productId: string) => void;
 }
@@ -21,8 +24,26 @@ const ProductDetailModal = ({
   onToggleFavorite,
 }: ProductDetailModalProps) => {
   const [activeIdx, setActiveIdx] = useState(0);
+  const { data: variants = [] } = useProductVariants(product?.id);
+  const [selColor, setSelColor] = useState<string | null>(null);
+  const [selSize, setSelSize] = useState<string | null>(null);
 
   if (!isOpen || !product) return null;
+
+  // Variant picker: derive the color + size axes from the variant rows.
+  const colors = Array.from(new Map(variants.filter(v => v.color).map(v => [v.color as string, v.color_hex])).entries()).map(([name, hex]) => ({ name, hex }));
+  const sizes = Array.from(new Set(variants.filter(v => v.size).map(v => v.size as string)));
+  const hasVariants = variants.length > 0;
+  const findVariant = (c: string | null, s: string | null) =>
+    variants.find(v => (v.color ?? null) === (c ?? null) && (v.size ?? null) === (s ?? null));
+  // Stock of a given size for the currently selected color (or the color-less row).
+  const sizeStock = (s: string) => findVariant(colors.length ? selColor : null, s)?.stock ?? 0;
+  const colorStock = (c: string) => sizes.length ? variants.filter(v => v.color === c).reduce((a, v) => a + v.stock, 0) : (findVariant(c, null)?.stock ?? 0);
+  const needsColor = colors.length > 0 && !selColor;
+  const needsSize = sizes.length > 0 && !selSize;
+  const selectedVariant = hasVariants ? findVariant(colors.length ? selColor : null, sizes.length ? selSize : null) : null;
+  const selStock = selectedVariant?.stock ?? 0;
+  const canAdd = !hasVariants || (!needsColor && !needsSize && selStock > 0);
 
   const allImages = [
     ...(product.imageUrl?.trim() ? [product.imageUrl] : []),
@@ -213,14 +234,65 @@ const ProductDetailModal = ({
               </div>
             )}
 
+            {/* Variant picker (colors / sizes) */}
+            {colors.length > 0 && (
+              <div className="mb-4">
+                <h3 className="text-sm font-bold text-foreground mb-2">צבע{selColor ? `: ${selColor}` : ""}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {colors.map((c) => {
+                    const out = colorStock(c.name) <= 0;
+                    return (
+                      <button
+                        key={c.name}
+                        type="button"
+                        disabled={out}
+                        onClick={() => { setSelColor(c.name); }}
+                        title={out ? `${c.name} - אזל` : c.name}
+                        className={`w-9 h-9 rounded-full border-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed ${selColor === c.name ? "border-primary scale-110" : "border-border hover:border-primary/50"}`}
+                        style={{ background: c.hex || "#ccc" }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {sizes.length > 0 && (
+              <div className="mb-4">
+                <h3 className="text-sm font-bold text-foreground mb-2">מידה{selSize ? `: ${selSize}` : ""}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {sizes.map((s) => {
+                    const out = sizeStock(s) <= 0;
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        disabled={out}
+                        onClick={() => setSelSize(s)}
+                        className={`min-w-[44px] h-10 px-3 rounded-lg border text-sm font-semibold transition-colors disabled:opacity-40 disabled:line-through disabled:cursor-not-allowed ${selSize === s ? "border-primary bg-primary/10 text-primary" : "border-border text-foreground hover:border-primary/50"}`}
+                      >
+                        {s}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {selectedVariant && selStock > 0 && selStock <= 5 && (
+              <p className="text-xs text-amber-600 mb-2">נותרו {selStock} במלאי</p>
+            )}
+
             <div className="mt-auto pt-6">
               <Button
-                onClick={() => onAddToCart(product)}
+                onClick={() => {
+                  onAddToCart(product, selectedVariant ? { id: selectedVariant.id, color: selectedVariant.color, size: selectedVariant.size, price_override: selectedVariant.price_override } : undefined);
+                  onClose();
+                }}
+                disabled={!canAdd}
                 className="w-full h-14 text-base font-bold tracking-wider uppercase gap-2"
                 size="lg"
               >
                 <ShoppingBag className="h-5 w-5" />
-                הוסף לסל
+                {needsColor || needsSize ? "בחרו צבע ומידה" : (hasVariants && selStock <= 0 ? "אזל מהמלאי" : "הוסף לסל")}
               </Button>
             </div>
           </div>
