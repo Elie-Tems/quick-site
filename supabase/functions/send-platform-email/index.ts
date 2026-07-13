@@ -208,8 +208,21 @@ serve(async (req) => {
           lang = typeof data === "string" && VALID_LANGS.includes(data) ? data : "he";
         } catch { lang = "he"; }
       }
+      // Personalize the greeting: if the caller didn't supply a firstName, look
+      // it up from the recipient's profile by email (best-effort) so platform
+      // emails address the person by name instead of a generic "היי!".
+      let ctxFirstName = (ctx && (ctx as any).firstName) || undefined;
+      if (!ctxFirstName) {
+        try {
+          const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+          const toEmail = Array.isArray(to) ? to[0] : to;
+          const { data: prof } = await admin.from("profiles").select("full_name").eq("email", toEmail).maybeSingle();
+          const fn = ((prof as { full_name?: string } | null)?.full_name || "").trim().split(/\s+/)[0];
+          if (fn) ctxFirstName = fn;
+        } catch { /* best-effort personalization */ }
+      }
       // Embed the recipient address so the email's unsubscribe link is one-click.
-      const b = builder({ ...(ctx || {}), recipientEmail: to, lang });
+      const b = builder({ ...(ctx || {}), firstName: ctxFirstName, recipientEmail: to, lang });
       subject = b.subject;
       html = b.html;
     }
