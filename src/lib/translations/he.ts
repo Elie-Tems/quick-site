@@ -9,8 +9,8 @@ const he: Record<string, string> = {
   'hero.title1': 'אתר מכירות',
   'hero.title2': 'תוך 5 דקות',
   'hero.subtitle': 'Siango יוצרת לך חנות אונליין מעוצבת בכמה דקות',
-  'hero.price': '79 ש"ח לחודש',
-  'hero.vatNote': '',
+  'hero.price': '69 ש"ח לחודש',
+  'hero.vatNote': '+ מע"מ',
   'hero.noCommitment': 'ללא התחייבות!',
   'hero.cta': 'התחילו עכשיו',
   'hero.noTech': 'ללא ידע טכני',
@@ -283,62 +283,57 @@ const he: Record<string, string> = {
   'ageVerification.deny': 'אני מתחת לגיל 18',
   'ageVerification.denied': 'מצטערים, אינך יכול לגשת לחנות זו.',
 
-  // ── Landing page (home) — engines, hero, how-it-works, professions, tools,
-  // examples, final CTA. Added to restore the i18n-wired Index.tsx (the keys
-  // were only committed to fr.ts; he/en/ar/ru were missing → raw keys on home).
-  // Hebrew copy reconstructed from the pre-i18n hardcoded strings (Moti-approved).
-  'hero.fiveMin': 'תוך 5 דקות',
-  'hero.price79': 'ב-79 ש"ח',
-  'hero.startNow': 'התחילו עכשיו',
-  'hero.monthlyNote': 'מחיר חודשי · ללא התחייבות · ללא ידע טכני',
-
-  'subtitle.beforeLabel': 'לפני סיאנגו',
-  'subtitle.afterLabel': 'עם סיאנגו',
-
+  // Landing page — Engine tabs
   'engine.commerce.label': 'חנויות אונליין',
   'engine.commerce.type': 'אתר מכירות',
   'engine.commerce.subtitle1': 'תמיד רציתם אתר מכירות, אבל העלויות, הדומיינים והבלגן עצרו אתכם.',
   'engine.commerce.subtitle2': 'עם סיאנגו זה אפשרי במהירות ובקלות: חנות מקצועית תוך כמה דקות ב-79 ש"ח לחודש בלבד.',
   'engine.commerce.step1.title': 'בוחרים סוג חנות',
-  'engine.commerce.step1.desc': 'חנות מוצרים, בוטיק, מאפייה - בוחרים ואנחנו מתאימים את הכלים',
+  'engine.commerce.step1.desc': 'חנות מוצרים, בוטיק, מאפייה — בוחרים ואנחנו מתאימים את הכלים',
   'engine.commerce.step2.title': 'מגדירים שם, לוגו ופרטים',
-  'engine.commerce.step2.desc': 'שם העסק, לוגו, פרטי קשר ושעות פעילות - הכל בכמה שניות',
+  'engine.commerce.step2.desc': 'שם העסק, לוגו, פרטי קשר ושעות פעילות — הכל בכמה שניות',
   'engine.commerce.step3.title': 'מוסיפים מוצרים',
-  'engine.commerce.step3.desc': 'מוצרים עם תמונה, מחיר ותיאור קצר - אפשר להוסיף CSV גם',
-
+  'engine.commerce.step3.desc': 'מוצרים עם תמונה, מחיר ותיאור קצר — אפשר להוסיף CSV גם',
   'engine.booking.label': 'שירותי מקצוע',
   'engine.booking.type': 'אתר לנותני שירות\nוקביעת תורים',
   'engine.booking.subtitle1': 'תמיד קיבלתם הזמנות בוואטסאפ ובמייל ולפעמים הדברים נופלים בין הכיסאות.',
   'engine.booking.subtitle2': 'עכשיו לקוחות קובעים תור לבד ואפילו משלמים מראש, ממש מהאתר שלכם.',
   'engine.booking.step1.title': 'בוחרים סוג שירות',
-  'engine.booking.step1.desc': 'יופי, בריאות, עיצוב, חינוך - בוחרים ואנחנו מתאימים את הכלים',
+  'engine.booking.step1.desc': 'יופי, בריאות, עיצוב, חינוך — בוחרים ואנחנו מתאימים את הכלים',
   'engine.booking.step2.title': 'מגדירים שם, לוגו ופרטים',
-  'engine.booking.step2.desc': 'שם העסק, לוגו, פרטי קשר ושעות פעילות - הכל בכמה שניות',
+  'engine.booking.step2.desc': 'שם העסק, לוגו, פרטי קשר ושעות פעילות — הכל בכמה שניות',
   'engine.booking.step3.title': 'מוסיפים שירותים ותורים',
-  'engine.booking.step3.desc': 'שירותים עם מחיר ומשך זמן - לקוחות קובעים ומשלמים מהאתר',
-
+  'engine.booking.step3.desc': 'שירותים עם מחיר ומשך זמן — לקוחות קובעים ומשלמים מהאתר',
   'engine.donations.label': 'עמותות',
   'engine.donations.type': 'אתר לעמותה',
   'engine.donations.subtitle1': 'תמיד רציתם אתר שבו תוכלו להראות מה העמותה עושה, להיראות מכובדים, לקבל תרומות ולהתרחב. אבל לא ידעתם מאיפה להתחיל.',
   'engine.donations.subtitle2': 'עם סיאנגו זה אפשרי בכמה דקות ובעלות מינימלית של 79 ש"ח לחודש ללא התחייבות.',
   'engine.donations.step1.title': 'בוחרים סוג עמותה',
-  'engine.donations.step1.desc': 'חינוך, בריאות, קהילה, דת - בוחרים ואנחנו מתאימים את הכלים',
+  'engine.donations.step1.desc': 'חינוך, בריאות, קהילה, דת — בוחרים ואנחנו מתאימים את הכלים',
   'engine.donations.step2.title': 'מגדירים שם, לוגו ופרטים',
-  'engine.donations.step2.desc': 'שם העמותה, לוגו, פרטי קשר ומידע על הארגון - הכל בכמה שניות',
+  'engine.donations.step2.desc': 'שם העמותה, לוגו, פרטי קשר ומידע על הארגון — הכל בכמה שניות',
   'engine.donations.step3.title': 'מוסיפים פרויקטים ופעילויות',
   'engine.donations.step3.desc': 'תיאור הפעילויות, יעדי גיוס תרומות ועדכונים שוטפים',
-
+  // Hero static
+  'hero.startNow': 'התחילו עכשיו',
+  'hero.monthlyNote': 'מחיר חודשי · ללא התחייבות · ללא ידע טכני',
+  'hero.fiveMin': 'תוך 5 דקות',
+  'hero.price79': 'ב-79 ש"ח',
+  // Subtitle section labels
+  'subtitle.beforeLabel': 'לפני סיאנגו',
+  'subtitle.afterLabel': 'עם סיאנגו',
+  // HowItWorks
   'howItWorks.mainTitle': 'איך זה עובד?',
-  'howItWorks.mainSubtitle': 'שלושה צעדים - ואתם באוויר',
+  'howItWorks.mainSubtitle': 'שלושה צעדים — ואתם באוויר',
   'howItWorks.finale.title': 'והופ! האתר עלה לאוויר',
-  'howItWorks.finale.desc': 'תוך 5 דקות - ב-79 ש"ח בלבד',
-  'howItWorks.img.a': 'A - בוחרים סוג עסק ומגדירים פרטים',
-  'howItWorks.img.b': 'B - מוסיפים פרטי יצירת קשר',
-  'howItWorks.img.c': 'C - מוסיפים מוצרים ושירותים',
-
+  'howItWorks.finale.desc': 'תוך 5 דקות — ב-79 ש"ח בלבד',
+  'howItWorks.img.a': 'A — בוחרים סוג עסק ומגדירים פרטים',
+  'howItWorks.img.b': 'B — מוסיפים פרטי יצירת קשר',
+  'howItWorks.img.c': 'C — מוסיפים מוצרים ושירותים',
+  // CORE tools
   'core.sectionTitle': 'כלים מותאמים לכל תחום',
   'core.stats.label': 'סטטיסטיקות',
-  'core.stats.desc': 'מכירות, הזמנות ולקוחות - הכל בזמן אמת',
+  'core.stats.desc': 'מכירות, הזמנות ולקוחות — הכל בזמן אמת',
   'core.products.label': 'ניהול מוצרים',
   'core.products.desc': 'הוספה, עריכה וארגון קל של כל הקטלוג',
   'core.promotions.label': 'מבצעים וקופונים',
@@ -349,7 +344,7 @@ const he: Record<string, string> = {
   'core.ai.desc': 'יצירת תמונות מוצר עם AI בלחיצה אחת',
   'core.domain.label': 'דומיין אישי',
   'core.domain.desc': 'חברו דומיין משלכם או רכשו אחד חדש',
-
+  // Professions strip
   'profession.store': 'חנויות ובוטיקים',
   'profession.beauty': 'יופי וטיפוח',
   'profession.photography': 'צלמים',
@@ -369,7 +364,7 @@ const he: Record<string, string> = {
   'profession.flowers': 'פרחים ומתנות',
   'profession.logistics': 'משלוחים ולוגיסטיקה',
   'profession.other': 'אחר',
-
+  // Examples section
   'examples.sectionTitle': 'אתר מדהים בדקות בודדות',
   'examples.sectionSubtitle': 'לחצו על דוגמה כדי לראות אותה מלאה',
   'examples.priceNote': '79 ש"ח לחודש · ללא התחייבות',
@@ -391,11 +386,12 @@ const he: Record<string, string> = {
   'example.homepro.tag': 'בעלי מקצוע',
   'example.nonprofit.title': 'עמותה',
   'example.nonprofit.tag': 'תרומות',
-
+  // Final CTA
   'finalCta.line1': 'בלי מתכנתים. בלי מעצבים.',
   'finalCta.gradientLine': 'בלי כאב ראש.',
   'finalCta.desc1': 'כמה דקות ויש לכם אתר מדהים.',
   'finalCta.price79': '79 ש"ח לחודש, ללא התחייבות.',
+  'finalCta.cta': 'התחילו עכשיו',
 };
 
 export default he;
