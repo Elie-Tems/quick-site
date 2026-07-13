@@ -95,7 +95,12 @@ Deno.serve(async (req) => {
       // coupon "run out" after a few tries and later customers paid full price). The
       // usage counter is bumped on the confirmed payment (payments-callback).
       couponId = coupon.id;
-      discount = coupon.discount_type === "percent"
+      // Storefront coupons use discount_type "percentage" (the coupon editor + client
+      // both use that). Accept "percent" too so both spellings compute a % - otherwise
+      // a "98% off" coupon was wrongly applied as a flat 98 ILS (client showed 7, iCount
+      // charged full price).
+      const isPercent = coupon.discount_type === "percentage" || coupon.discount_type === "percent";
+      discount = isPercent
         ? Math.round(subtotal * (Number(coupon.discount_value) / 100))
         : Number(coupon.discount_value);
       discount = Math.min(discount, subtotal); // never discount below 0

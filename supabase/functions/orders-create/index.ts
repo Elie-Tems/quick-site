@@ -128,7 +128,9 @@ Deno.serve(async (req) => {
       }
       if (claimed) {
         couponId = coupon.id;
-        discount = coupon.discount_type === "percent"
+        // Storefront coupons use "percentage" - accept "percent" too (see payments-create).
+        const isPercent = coupon.discount_type === "percentage" || coupon.discount_type === "percent";
+        discount = isPercent
           ? Math.round(subtotal * (Number(coupon.discount_value) / 100))
           : Number(coupon.discount_value);
         discount = Math.min(discount, subtotal);
