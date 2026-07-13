@@ -41,6 +41,9 @@ jobs:
           # store publishes via billing-cardcom-webhook after a verified charge.
           VITE_PUBLISH_SKIP_PAYMENT: "false"
           VITE_BILLING_SELF_MANAGED: "true"
+          # WhatsApp business feature (Daniel's build). Flip to enable the module
+          # in the dashboard/storefront (backend + edge fns already live).
+          VITE_WHATSAPP_ENABLED: "true"
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
