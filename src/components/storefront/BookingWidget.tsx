@@ -76,7 +76,7 @@ const BookingWidget = ({ businessId }: { businessId: string }) => {
             className={`w-full text-right flex items-center gap-3 p-3 rounded-xl border transition-colors ${service?.id === s.id ? "border-primary ring-1 ring-primary/30" : "border-border hover:border-primary/40"}`}>
             <div className="flex-1"><div className="font-medium text-foreground">{s.name}</div>
               <div className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" /> {s.duration_minutes} דק'</div></div>
-            <div className="font-bold text-primary">₪{s.price}</div>
+            {s.price > 0 && <div className="font-bold text-foreground whitespace-nowrap">₪{s.price}</div>}
           </button>
         ))}
       </div>
