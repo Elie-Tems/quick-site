@@ -125,7 +125,8 @@ const IcountConnectForm = ({ businessId }: { businessId: string }) => {
               <ol className="list-decimal pr-4 space-y-1">
                 <li>אם עדיין אין לכם "עמוד סליקה" ב-iCount: <b>מערכת</b> ← <b>הגדרות</b> ← <b>מודולים</b>, והפעילו את מודול <b>"עמודי סליקה"</b>.</li>
                 <li>אחרי ההפעלה יופיע פריט תפריט חדש בשם <b>"עמודי סליקה"</b> - היכנסו אליו וצרו עמוד סליקה (או פתחו קיים).</li>
-                <li>העתיקו את <b>כתובת עמוד הסליקה</b> המלאה (למשל <code dir="ltr" className="bg-muted px-1 rounded">app.icount.co.il/m/31ff3/abc...</code> או <code dir="ltr" className="bg-muted px-1 rounded">app.icount.co.il/m/123456</code>) והדביקו כאן - אנחנו נזהה את המזהה אוטומטית.</li>
+                <li><b>הכי אמין:</b> ברשימת "עמודי סליקה" מופיע לכל עמוד <b>מזהה מספרי (ID)</b> בעמודה ייעודית - העתיקו אותו (למשל <code dir="ltr" className="bg-muted px-1 rounded">123456</code>) והדביקו כאן.</li>
+                <li>לחלופין אפשר להדביק את <b>כתובת עמוד הסליקה</b> המלאה (למשל <code dir="ltr" className="bg-muted px-1 rounded">app.icount.co.il/m/31ff3/abc...</code>) - אנחנו נאתר את המזהה המספרי אוטומטית מול iCount.</li>
               </ol>
               <p className="text-destructive/90">
                 שימו לב: לא כל קישור תשלום מ-iCount הוא "עמוד סליקה" - קישורים אחרים (כמו קישור לתשלום חד-פעמי) לא יעבדו כאן.
@@ -143,7 +144,7 @@ const IcountConnectForm = ({ businessId }: { businessId: string }) => {
             value={page}
             onChange={(e) => { setPage(e.target.value); setVerifyState("idle"); }}
             onBlur={() => setPage((p) => extractPaypageId(p))}
-            placeholder="הדביקו את כל הקישור לעמוד הסליקה - אנחנו נחלץ את המזהה"
+            placeholder="מזהה מספרי (למשל 123456) או כל הקישור לעמוד הסליקה"
             className="w-full h-10 mt-1 rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:border-[#639922]"
             dir="ltr"
           />

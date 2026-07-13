@@ -37,12 +37,50 @@ function refFromPayload(payload: Record<string, unknown> | undefined): string | 
   return r != null ? String(r) : null;
 }
 
-// The merchant may paste either a bare paypage id ("123456") or the full paypage
-// URL ("app.icount.co.il/m/31ff3/abc..."). Extract the id (the path after /m/).
+// The merchant may paste either the numeric paypage id ("123456"), the short URL
+// slug ("31ff3"), or the full paypage URL ("app.icount.co.il/m/31ff3/abc...").
+// Extract the raw token (the path after /m/ if a URL).
 function normalizePaypageId(raw: string): string {
   const s = (raw || "").trim();
   const m = s.match(/\/m\/([^?#]+)/i);
   return m ? m[1].replace(/\/+$/, "") : s;
+}
+
+function isNumericId(s: string): boolean {
+  return /^\d+$/.test((s || "").trim());
+}
+
+// generate_sale needs the NUMERIC internal paypage_id (an Integer), NOT the short
+// public URL slug like "31ff3" - iCount rejects the slug with missing_paypage_id.
+// Per iCount support: get the numeric id from paypage/get_list (each entry's `id`).
+// We resolve lazily and backward-compatibly: a pure-integer value is used as-is; a
+// slug/URL is matched against the account's paypage list; a single-page account
+// falls back to its only page.
+async function resolvePaypageId(token: string, rawPageUid: string): Promise<{ id: number | null; error?: string }> {
+  const val = normalizePaypageId(rawPageUid);
+  if (isNumericId(val)) return { id: Number(val) };
+
+  const list = await icall(token, "paypage/get_list", {});
+  if (!list.ok) return { id: null, error: "לא הצלחנו לשלוף את רשימת עמודי הסליקה מ-iCount" };
+  const container = list.data?.paypages ?? list.data?.pages ?? list.data?.list ?? list.data?.data ?? list.data;
+  const items: Record<string, unknown>[] = Array.isArray(container)
+    ? container
+    : (container && typeof container === "object"
+        ? (Object.values(container).filter((v) => v && typeof v === "object") as Record<string, unknown>[])
+        : []);
+  if (!items.length) return { id: null, error: "לא נמצאו עמודי סליקה בחשבון iCount" };
+
+  const slug = val.toLowerCase();
+  const match = items.find((p) =>
+    Object.values(p).some((v) => typeof v === "string" && v.toLowerCase().includes(slug)),
+  );
+  const chosen = match ?? (items.length === 1 ? items[0] : null);
+  if (!chosen) {
+    return { id: null, error: "לא זיהינו את עמוד הסליקה לפי המזהה שהוזן - הזינו את מזהה העמוד המספרי (paypage id) מרשימת עמודי הסליקה ב-iCount" };
+  }
+  const rawId = chosen.id ?? chosen.paypage_id ?? chosen.page_id;
+  if (rawId == null || !isNumericId(String(rawId))) return { id: null, error: "עמוד הסליקה שנמצא חסר מזהה מספרי תקין" };
+  return { id: Number(rawId) };
 }
 
 export const icount: PaymentProvider = {
@@ -50,8 +88,11 @@ export const icount: PaymentProvider = {
 
   async createPaymentPage(c: ProviderCredentials, input: CreatePageInput, _env: PaymentEnv): Promise<CreatePageResult> {
     const token = c.api_key ?? "";
-    const paypageId = normalizePaypageId(c.page_uid ?? "");
-    if (!token || !paypageId) return { ok: false, error: "iCount לא מחובר (חסר API token או מזהה עמוד סליקה)" };
+    if (!token || !(c.page_uid ?? "").trim()) return { ok: false, error: "iCount לא מחובר (חסר API token או מזהה עמוד סליקה)" };
+
+    const resolved = await resolvePaypageId(token, c.page_uid ?? "");
+    if (resolved.id == null) return { ok: false, error: resolved.error || "מזהה עמוד הסליקה של iCount לא תקין" };
+    const paypageId = resolved.id;
 
     // Our unique order ref - echoed on the IPN AND used to look the sale up for the
     // authenticated verification.
@@ -119,10 +160,18 @@ export const icount: PaymentProvider = {
   async verifyCredentials(c: ProviderCredentials, _env: PaymentEnv): Promise<{ ok: boolean; error?: string }> {
     const token = c.api_key ?? "";
     if (!token) return { ok: false, error: "חסר API token של iCount" };
-    if (!c.page_uid) return { ok: false, error: "חסר מזהה עמוד סליקה (paypage id) של iCount" };
-    // Harmless authenticated call to validate the token (a ref that won't exist).
+    if (!(c.page_uid ?? "").trim()) return { ok: false, error: "חסר מזהה עמוד סליקה (paypage id) של iCount" };
+    // 1) Validate the token (a harmless authenticated call, a ref that won't exist).
     const res = await icall(token, "doc/search", { custom_client_id: "siango-connection-test-000" });
     if (res.status === 401 || res.status === 403) return { ok: false, error: "ה-API token של iCount נדחה" };
+    // 2) Validate the ACTUAL paypage exists in the account. Without this we would
+    // report "connected" for a wrong/missing paypage id and every checkout would
+    // fail later with missing_paypage_id. Resolve the numeric id, then confirm it
+    // with paypage/info (per iCount: validates the page without creating a sale).
+    const resolved = await resolvePaypageId(token, c.page_uid ?? "");
+    if (resolved.id == null) return { ok: false, error: resolved.error || "מזהה עמוד הסליקה לא נמצא בחשבון iCount" };
+    const info = await icall(token, "paypage/info", { paypage_id: resolved.id });
+    if (!info.ok) return { ok: false, error: "עמוד הסליקה לא נמצא או לא תקין בחשבון iCount (בדקו את מזהה העמוד)" };
     return { ok: true };
   },
 };
