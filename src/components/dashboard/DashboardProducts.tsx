@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, Fragment } from "react";
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Package, X, Upload, FileSpreadsheet, Download, AlertCircle, Search, Wand2, Loader2, LayoutGrid, List, Video, Play, Images } from "lucide-react";
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Package, X, Upload, FileSpreadsheet, Download, AlertCircle, Search, Wand2, Loader2, LayoutGrid, List, Video, Play, Images, Shirt } from "lucide-react";
+import ProductVariantsEditor from "@/components/dashboard/products/ProductVariantsEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -1088,6 +1089,20 @@ const DashboardProducts = ({
               </div>
             </div>
           </div>
+
+          {/* Variants (colors / sizes / stock) - for clothing etc. Only on a saved
+              product, since variants attach to a product_id. */}
+          {editingProduct?.id && businessId ? (
+            <div className="border-t border-border pt-4 mt-2">
+              <h3 className="font-bold text-foreground mb-3 flex items-center gap-2"><Shirt className="w-4 h-4 text-primary" /> וריאציות: צבעים, מידות ומלאי</h3>
+              <ProductVariantsEditor productId={editingProduct.id} businessId={businessId} />
+            </div>
+          ) : (
+            <div className="border-t border-border pt-4 mt-2 text-sm text-muted-foreground flex items-start gap-2">
+              <Shirt className="w-4 h-4 mt-0.5 shrink-0 text-muted-foreground" />
+              צבעים, מידות ומלאי (לבגדים): שמרו את המוצר קודם, ואז ערכו אותו כדי להוסיף וריאציות.
+            </div>
+          )}
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" className="flex-1">
