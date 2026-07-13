@@ -2,6 +2,15 @@ import { useEffect, useState } from "react";
 import { Loader2, Check, X, ShieldCheck, ExternalLink, Eye, EyeOff, HelpCircle, ChevronDown } from "lucide-react";
 import { useIcountCredentials, useSaveIcountCredentials, verifyIcountCredentials } from "@/hooks/useIcount";
 
+// Merchants aren't technical - they paste the WHOLE paypage URL and we extract the
+// id (the segment after "/m/"), e.g. app.icount.co.il/m/31ff3/abc... -> "31ff3".
+// A bare id is returned untouched. Mirrors the server-side normalizePaypageId.
+const extractPaypageId = (raw: string): string => {
+  const s = (raw || "").trim();
+  const m = s.match(/\/m\/([^/?\s#]+)/i);
+  return m ? m[1] : s;
+};
+
 // Connect the merchant's own iCount account: they paste their API token + paypage
 // id, we validate them against iCount (no charge), then store them so the storefront
 // checkout runs on their account. Payment authenticity is verified server-side.
@@ -28,16 +37,18 @@ const IcountConnectForm = ({ businessId }: { businessId: string }) => {
 
   const handleVerify = async () => {
     if (!filled) return;
+    const pageId = extractPaypageId(page);
+    setPage(pageId);
     setVerifyState("checking");
     setVerifyMsg("");
-    const res = await verifyIcountCredentials({ businessId, api_key: token.trim(), page_uid: page.trim() });
+    const res = await verifyIcountCredentials({ businessId, api_key: token.trim(), page_uid: pageId });
     if (res.ok) { setVerifyState("ok"); setVerifyMsg("החיבור אומת בהצלחה ✓"); }
     else { setVerifyState("fail"); setVerifyMsg(res.error || "האימות נכשל - בדקו את הפרטים"); }
   };
 
   const handleSave = async () => {
     if (!filled) return;
-    await save.mutateAsync({ businessId, api_key: token.trim(), page_uid: page.trim(), verified: verifyState === "ok" });
+    await save.mutateAsync({ businessId, api_key: token.trim(), page_uid: extractPaypageId(page), verified: verifyState === "ok" });
   };
 
   return (
@@ -131,10 +142,14 @@ const IcountConnectForm = ({ businessId }: { businessId: string }) => {
           <input
             value={page}
             onChange={(e) => { setPage(e.target.value); setVerifyState("idle"); }}
-            placeholder="הדביקו את כתובת עמוד הסליקה או המזהה"
+            onBlur={() => setPage((p) => extractPaypageId(p))}
+            placeholder="הדביקו את כל הקישור לעמוד הסליקה - אנחנו נחלץ את המזהה"
             className="w-full h-10 mt-1 rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:border-[#639922]"
             dir="ltr"
           />
+          {page && extractPaypageId(page) !== page.trim() && (
+            <p className="text-[11px] text-[#3b6d11] mt-1">זיהינו את המזהה: <b dir="ltr">{extractPaypageId(page)}</b></p>
+          )}
         </div>
       </div>
 
