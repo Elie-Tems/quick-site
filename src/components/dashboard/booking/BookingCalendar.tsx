@@ -3,7 +3,7 @@ import {
   ChevronRight, ChevronLeft, Calendar as CalendarIcon, Settings2, Check, X,
   Clock, Phone, StickyNote, CalendarCheck,
 } from "lucide-react";
-import { useAppointments, useUpdateAppointmentStatus, type Appointment } from "@/hooks/useBooking";
+import { useAppointments, useUpdateAppointmentStatus, useCalendarConnections, type Appointment } from "@/hooks/useBooking";
 import {
   holidaysForMonth, loadHolidayPrefs, saveHolidayPrefs, FAITH_META,
   type HolidayPrefs, type Faith, type Holiday,
@@ -61,6 +61,8 @@ const BookingCalendar = ({ businessId }: { businessId: string }) => {
   const to = new Date(year, month0 + 1, 0, 23, 59, 59).toISOString();
   const { data: appts = [] } = useAppointments(businessId, { from, to });
   const updateStatus = useUpdateAppointmentStatus();
+  const { data: connections = [] } = useCalendarConnections(businessId);
+  const googleConnected = connections.some((c) => c.provider === "google" && c.status === "active");
 
   const apptsByDay = useMemo(() => {
     const m: Record<string, Appointment[]> = {};
@@ -117,9 +119,15 @@ const BookingCalendar = ({ businessId }: { businessId: string }) => {
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-500/10 px-2.5 py-1.5 rounded-full">
-            <CalendarCheck className="w-3.5 h-3.5" /> מסונכרן עם Google
-          </span>
+          {googleConnected ? (
+            <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-500/10 px-2.5 py-1.5 rounded-full">
+              <CalendarCheck className="w-3.5 h-3.5" /> מסונכרן עם Google
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-2.5 py-1.5 rounded-full" title="חברו יומן Google בהגדרות היומן שלמטה">
+              <CalendarCheck className="w-3.5 h-3.5" /> לא מחובר ל-Google
+            </span>
+          )}
           <div className="relative">
             <button onClick={() => setShowSettings((s) => !s)} className="w-9 h-9 rounded-lg border border-border hover:bg-muted flex items-center justify-center" title="הצגת חגים">
               <Settings2 className="w-4.5 h-4.5" />

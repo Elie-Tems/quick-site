@@ -163,6 +163,19 @@ export const useUpsertService = () => {
   });
 };
 
+export const useDeleteService = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id }: { id: string; business_id: string }) => {
+      // Remove the staff links first, then the service (no FK cascade assumed).
+      await sb.from("booking_service_staff").delete().eq("service_id", id);
+      const { error } = await sb.from("booking_services").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["booking-services", v.business_id] }),
+  });
+};
+
 export const useSetWorkingHours = () => {
   const qc = useQueryClient();
   return useMutation({

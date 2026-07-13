@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import { Plus, Clock, Calendar, Check, X, Loader2, Scissors, CalendarX, Trash2 } from "lucide-react";
+import { Plus, Clock, Calendar, Check, X, Loader2, Scissors, CalendarX, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   useBookingServices, useBookingStaff, useAppointments,
-  useUpsertService, useSetWorkingHours, useWorkingHours, useUpdateAppointmentStatus,
+  useUpsertService, useDeleteService, useSetWorkingHours, useWorkingHours, useUpdateAppointmentStatus,
   useBlackouts, useAddBlackout, useDeleteBlackout,
   type Appointment,
 } from "@/hooks/useBooking";
@@ -36,12 +36,14 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
 
   const { data: blackouts = [] } = useBlackouts(businessId);
   const upsertService = useUpsertService();
+  const deleteService = useDeleteService();
   const setHours = useSetWorkingHours();
   const updateStatus = useUpdateAppointmentStatus();
   const addBlackout = useAddBlackout();
   const deleteBlackout = useDeleteBlackout();
 
   const [newSvc, setNewSvc] = useState({ name: "", duration: "45", price: "" });
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newBlackout, setNewBlackout] = useState({ from: "", to: "", reason: "" });
 
   const saveBlackout = () => {
@@ -79,9 +81,15 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
   const addService = () => {
     if (!newSvc.name.trim()) return;
     upsertService.mutate({
+      ...(editingId ? { id: editingId } : {}),
       business_id: businessId, name: newSvc.name.trim(),
       duration_minutes: Number(newSvc.duration) || 30, price: Number(newSvc.price) || 0,
-    }, { onSuccess: () => setNewSvc({ name: "", duration: "45", price: "" }) });
+    }, { onSuccess: () => { setNewSvc({ name: "", duration: "45", price: "" }); setEditingId(null); } });
+  };
+
+  const editService = (s: { id: string; name: string; duration_minutes: number; price: number }) => {
+    setEditingId(s.id);
+    setNewSvc({ name: s.name, duration: String(s.duration_minutes), price: String(s.price) });
   };
 
   return (
@@ -96,18 +104,25 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
           {sLoading && <Loader2 className="w-5 h-5 animate-spin text-primary" />}
           {services.map((s) => (
             <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
-              <div className="flex-1"><div className="font-medium text-foreground">{s.name}</div>
-                <div className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="w-3 h-3" /> {s.duration_minutes} דק'</div></div>
-              <div className="font-bold text-primary">₪{s.price}</div>
+              <div className="flex-1 min-w-0"><div className="font-medium text-foreground truncate">{s.name}</div>
+                <div className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="w-3 h-3" /> {s.duration_minutes} דקות · ₪{s.price}</div></div>
+              <Button size="icon" variant="ghost" onClick={() => editService(s)} title="עריכה"><Pencil className="w-4 h-4 text-muted-foreground" /></Button>
+              <Button size="icon" variant="ghost" onClick={() => { if (confirm(`למחוק את "${s.name}"?`)) deleteService.mutate({ id: s.id, business_id: businessId }); }} title="מחיקה"><Trash2 className="w-4 h-4 text-rose-500" /></Button>
             </div>
           ))}
           {!sLoading && services.length === 0 && <p className="text-sm text-muted-foreground">עוד אין שירותים - הוסיפו את הראשון.</p>}
         </div>
         <div className="flex flex-wrap gap-2 items-end">
-          <Input placeholder="שם שירות" value={newSvc.name} onChange={(e) => setNewSvc({ ...newSvc, name: e.target.value })} className="max-w-[180px]" />
-          <Input placeholder="דק'" value={newSvc.duration} onChange={(e) => setNewSvc({ ...newSvc, duration: e.target.value })} className="max-w-[80px]" />
-          <Input placeholder="מחיר ₪" value={newSvc.price} onChange={(e) => setNewSvc({ ...newSvc, price: e.target.value })} className="max-w-[100px]" />
-          <Button onClick={addService} disabled={upsertService.isPending}><Plus className="w-4 h-4 ml-1" /> הוסף</Button>
+          <div><label className="block text-xs text-muted-foreground mb-1">שם השירות</label>
+            <Input placeholder="לק ג'ל" value={newSvc.name} onChange={(e) => setNewSvc({ ...newSvc, name: e.target.value })} className="max-w-[180px]" /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">משך (דקות)</label>
+            <Input type="number" placeholder="45" value={newSvc.duration} onChange={(e) => setNewSvc({ ...newSvc, duration: e.target.value })} className="max-w-[110px]" /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">מחיר (₪)</label>
+            <Input type="number" placeholder="120" value={newSvc.price} onChange={(e) => setNewSvc({ ...newSvc, price: e.target.value })} className="max-w-[110px]" /></div>
+          <Button onClick={addService} disabled={upsertService.isPending}>
+            {editingId ? <><Check className="w-4 h-4 ml-1" /> עדכן</> : <><Plus className="w-4 h-4 ml-1" /> הוסף</>}
+          </Button>
+          {editingId && <Button variant="ghost" onClick={() => { setEditingId(null); setNewSvc({ name: "", duration: "45", price: "" }); }}>ביטול</Button>}
         </div>
       </section>
 

@@ -131,6 +131,15 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
   const businessType = data.businessType ?? '';
   const subTypeDefaults = data.businessSubType ? SUB_TYPE_TO_TEMPLATE[data.businessSubType] : undefined;
 
+  // Templates relevant to this business type first (then the rest). Referenced by
+  // the default-layout picker below; was previously undefined -> the step crashed
+  // for any new user without a pre-set storeTemplate.
+  const orderedTemplates = [...ALL_TEMPLATES].sort((a, b) => {
+    const am = a.forTypes.includes(businessType) ? 0 : 1;
+    const bm = b.forTypes.includes(businessType) ? 0 : 1;
+    return am - bm;
+  });
+
   const [selectedLayout, setSelectedLayout] = useState<StoreLayoutId>(() => {
     const t = data.storeTemplate || '';
     const maybeLayout = t.split('-')[0] as StoreLayoutId;
@@ -224,7 +233,6 @@ const StepTemplate = ({ data, updateData, onBack }: Props) => {
     } catch (err: any) {
       toast({ title: 'שגיאה בפרסום', description: err.message || 'משהו השתבש, נסה שוב', variant: 'destructive' });
       setIsPublishing(false);
-      setPublishProgress(0);
     }
   };
 
