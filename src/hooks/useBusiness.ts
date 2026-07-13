@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { useActiveBusinessId } from '@/lib/activeBusiness';
 
 type Business = Tables<'businesses'>;
 type BusinessInsert = TablesInsert<'businesses'>;
@@ -30,29 +31,46 @@ export const useProfile = () => {
   });
 };
 
-// Get current user's business (owner's business)
+// All businesses this account owns (for the site switcher). One account can own
+// several sites; the switcher lists them and flips the active one.
+export const useMyBusinesses = () => {
+  const { data: profile } = useProfile();
+  return useQuery({
+    queryKey: ['my-businesses', profile?.id],
+    queryFn: async () => {
+      if (!profile) return [] as Pick<Business, 'id' | 'name' | 'slug' | 'is_published'>[];
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('id, name, slug, is_published')
+        .eq('owner_id', profile.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as Pick<Business, 'id' | 'name' | 'slug' | 'is_published'>[];
+    },
+    enabled: !!profile,
+    staleTime: 30000,
+  });
+};
+
+// Get the business the merchant is currently managing (owner's business). Honors the
+// active-business selection from the site switcher; falls back to the most recent.
+// Keyed by the active id so a switch refetches and every screen follows at once.
 export const useMyBusiness = () => {
   const { data: profile } = useProfile();
-  
+  const activeId = useActiveBusinessId();
+
   return useQuery({
-    queryKey: ['my-business', profile?.id],
+    queryKey: ['my-business', profile?.id, activeId],
     queryFn: async () => {
       if (!profile) return null;
-      
-      console.log('🔍 Fetching business for profile:', profile.id);
-      
       const { data, error } = await supabase
         .from('businesses')
         .select('*')
         .eq('owner_id', profile.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
+        .order('created_at', { ascending: false });
       if (error) throw error;
-      
-      console.log('📦 Business query result:', data ? 'Found business' : 'No business');
-      return data;
+      const list = (data || []) as Business[];
+      return (activeId && list.find((b) => b.id === activeId)) || list[0] || null;
     },
     enabled: !!profile,
     staleTime: 30000, // Consider data fresh for 30 seconds

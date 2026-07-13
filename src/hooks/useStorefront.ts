@@ -110,7 +110,10 @@ export function useStorefront(slug: string | undefined) {
     },
     enabled: !!slug,
     retry: 1,
-    staleTime: 0,
+    // Cache the store for public shoppers so repeat views / back-navigation are instant.
+    // Owners previewing edits (?preview=true) always get fresh data.
+    staleTime: isPreviewMode ? 0 : 60_000,
+    gcTime: 5 * 60_000,
   });
 
   // Fetch products for this business with custom fields

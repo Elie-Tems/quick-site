@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { ExternalLink, LogOut, Sun, Moon, HelpCircle, Store, ChevronDown, Crown, Settings as SettingsIcon } from "lucide-react";
+import { ExternalLink, LogOut, Sun, Moon, HelpCircle, Store, ChevronDown, Crown, Settings as SettingsIcon, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useMyBusinesses } from "@/hooks/useBusiness";
+import { getActiveBusinessId, setActiveBusinessId } from "@/lib/activeBusiness";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import logoDarkBg from "@/assets/logo-dark-bg.png";
 import logoLightBg from "@/assets/logo-light-bg1.png";
@@ -20,9 +22,20 @@ const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }:
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
+  const { data: myBusinesses = [] } = useMyBusinesses();
+  const activeBusinessId = getActiveBusinessId() || myBusinesses[0]?.id;
+
   const handleLogout = () => {
     signOut();
     navigate("/");
+  };
+
+  // Switch the active site. A full reload guarantees every screen re-reads the new
+  // business cleanly (no leftover data from the previous site).
+  const switchSite = (id: string) => {
+    if (id === activeBusinessId) return;
+    setActiveBusinessId(id);
+    window.location.assign("/dashboard");
   };
 
   // Use the logo that matches the current theme so it's always visible
@@ -48,7 +61,21 @@ const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }:
               <span className="font-semibold text-foreground truncate max-w-[28vw] sm:max-w-[200px]">{businessName}</span>
               <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuContent align="end" className="w-60">
+              {myBusinesses.length > 1 && (
+                <>
+                  <div className="px-2 py-1.5 text-[11px] font-medium text-muted-foreground">האתרים שלי ({myBusinesses.length})</div>
+                  {myBusinesses.map((b) => (
+                    <DropdownMenuItem key={b.id} onClick={() => switchSite(b.id)} className="gap-2">
+                      <Store className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate flex-1">{b.name}</span>
+                      {!b.is_published && <span className="text-[10px] text-muted-foreground">טיוטה</span>}
+                      {b.id === activeBusinessId && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem onClick={() => onNavigate?.("settings")} className="gap-2">
                 <SettingsIcon className="h-4 w-4" /> פרטי העסק
               </DropdownMenuItem>
