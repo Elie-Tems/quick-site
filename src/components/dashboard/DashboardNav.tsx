@@ -1,10 +1,10 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2, FileText, CalendarClock, Layers, Mail } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2, FileText, CalendarClock, Layers, Mail, Blocks } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 import type { BusinessType } from "@/lib/businessModules";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails' | 'modules';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -77,6 +77,7 @@ const navItems: {
 
   // עריכה ועיצוב - כל מה שבונה את תוכן ומראה החנות
   // (קטגוריות + מבצעים הם עכשיו טאבים בתוך "מוצרים")
+  { id: "modules", label: "המודולים שלי", shortLabel: "מודולים", icon: Blocks, group: "עריכה ועיצוב" },
   { id: "products", label: "מוצרים", icon: Package, group: "עריכה ועיצוב" },
   { id: "design", label: "עיצוב", icon: Palette, group: "עריכה ועיצוב" },
   { id: "store-texts", label: "טקסטים", icon: Type, group: "עריכה ועיצוב" },

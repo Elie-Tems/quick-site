@@ -48,6 +48,7 @@ import { getBusinessType, getEnabledModules } from "@/lib/businessModules";
 import { cleanImageUrl, cleanImageList } from "@/lib/imageUrl";
 import VerticalModules from "@/components/dashboard/VerticalModules";
 import LifecycleEmailsManager from "@/components/dashboard/LifecycleEmailsManager";
+import DashboardModules from "@/components/dashboard/DashboardModules";
 import UpgradeCheckoutModal, { type CheckoutItem } from "@/components/dashboard/upgrades/UpgradeCheckoutModal";
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useOrders, useUpdateOrder } from "@/hooks/useOrders";
@@ -582,6 +583,8 @@ const Dashboard = () => {
         return <VerticalModules business={business as any} />;
       case 'lifecycle-emails':
         return <LifecycleEmailsManager business={business as any} />;
+      case 'modules':
+        return <DashboardModules business={business as any} />;
       case 'products':
       case 'categories':
       case 'sales':
