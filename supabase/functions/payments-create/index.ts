@@ -46,6 +46,7 @@ Deno.serve(async (req) => {
     return json({ error: "Online payment is not enabled for this store" }, 400);
   }
 
+  console.log("payments-create: POST reached; business", businessId, "provider", business.payment_provider, "enabled", business.payment_enabled);
   const provider = getProvider(business.payment_provider);
   if (!provider) return json({ error: `Unsupported payment provider: ${business.payment_provider}` }, 400);
 

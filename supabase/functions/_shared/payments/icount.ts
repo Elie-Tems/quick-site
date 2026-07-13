@@ -120,8 +120,19 @@ export const icount: PaymentProvider = {
       email: input.customer.email,
       client_name: input.customer.name,
     });
-    const saleUrl = res.data?.sale_url;
-    if (!res.ok || !saleUrl) return { ok: false, error: res.data?.error || "generate_sale נכשל", raw: res.data };
+    // Log the full response so a failing sale is diagnosable from the function logs
+    // (paypage_id we sent + iCount's raw reply). Trim to keep the log readable.
+    console.log("icount generate_sale: paypage_id=", paypageId, "status", res.status, "ok", res.ok,
+      "body:", JSON.stringify(res.data)?.slice(0, 1500));
+    // iCount may return the redirect URL under different keys across accounts/versions.
+    const d: Record<string, any> = res.data || {};
+    const saleUrl = d.sale_url || d.url || d.redirect_url || d.payment_url || d.paypage_url
+      || d.link || d.sale?.url || d.data?.sale_url || d.data?.url;
+    if (!res.ok || !saleUrl) {
+      const reason = d.error || d.error_description || d.reason || d.message
+        || (d.errors && JSON.stringify(d.errors)) || `generate_sale נכשל (status ${res.status})`;
+      return { ok: false, error: String(reason), raw: res.data };
+    }
     return { ok: true, link: saleUrl, pageRequestUid: orderRef };
   },
 
