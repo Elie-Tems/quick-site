@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { StoreTemplate } from '@/lib/storeTemplates';
 import type { BusinessCategory } from '@/lib/categoryConfig';
 import type { Product } from '@/components/storefront/StoreProducts';
@@ -82,4 +83,9 @@ export interface StorefrontLayoutProps {
   favoriteIds: Set<string>;
   onToggleFavorite: (productId: string) => void;
   hasPayment: boolean;
+
+  /** Per-vertical customer experience (booking / listings / donations), rendered
+   *  by the layout right after the hero so it's prominent - not a header above it
+   *  and not buried at the bottom. */
+  verticalSlot?: ReactNode;
 }

@@ -104,6 +104,9 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
         </div>
       </section>
 
+      {/* Per-vertical experience (booking / listings) - right after the hero. */}
+      {props.verticalSlot && <section className="py-8 px-4"><div className="max-w-5xl mx-auto">{props.verticalSlot}</div></section>}
+
       {/* SERVICES */}
       {services.length > 0 && (
         <section className="py-14 px-4 bg-muted/20">

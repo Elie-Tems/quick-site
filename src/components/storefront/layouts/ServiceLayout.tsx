@@ -25,7 +25,7 @@ const ServiceLayout = ({
   categories, selectedCategoryId, onSelectCategory, banners, campaignPopup, cartItems,
   favoritesCount, onAddToCart, onUpdateQuantity, onRemoveFromCart, onCheckout,
   onNavigateToCart, onNavigateToFavorites, onScrollToProducts, onNavigateHome,
-  favoriteIds, onToggleFavorite, hasPayment, customLabels,
+  favoriteIds, onToggleFavorite, hasPayment, customLabels, verticalSlot,
 }: StorefrontLayoutProps) => {
   const totalCartItems = cartItems.reduce((s, i) => s + i.quantity, 0);
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
@@ -140,6 +140,9 @@ const ServiceLayout = ({
             imageUrl={campaignPopup.imageUrl}
           />
         )}
+
+        {/* Per-vertical experience (booking / listings) - right after the hero. */}
+        {verticalSlot && <section className="py-8 px-4"><div className="max-w-5xl mx-auto">{verticalSlot}</div></section>}
 
         {/* Service cards grid */}
         <section id="products" className="py-16 px-4">

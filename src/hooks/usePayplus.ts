@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { edgeErrorMessage } from "@/lib/edgeError";
 
 // Siango's dedicated PayPlus affiliate registration link for merchants.
 export const PAYPLUS_SIGNUP_URL =
@@ -101,9 +102,9 @@ export async function startPayplusPayment(input: {
   const { data, error } = await supabase.functions.invoke("payments-create", {
     body: input,
   });
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(await edgeErrorMessage(error, "לא ניתן ליצור דף תשלום. ודאו שהסליקה מוגדרת ונסו שוב."));
   const link = (data as any)?.payment_page_link;
-  if (!link) throw new Error((data as any)?.error || "לא ניתן ליצור דף תשלום");
+  if (!link) throw new Error((data as any)?.error || "לא ניתן ליצור דף תשלום. ודאו שחשבון הסליקה מחובר.");
   let parsed: URL;
   try { parsed = new URL(link); } catch { throw new Error("Invalid payment redirect URL"); }
   if (parsed.protocol !== "https:") throw new Error("Invalid payment redirect URL: only https is allowed");
