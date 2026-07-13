@@ -27,6 +27,9 @@ const BookingWidget = ({ businessId }: { businessId: string }) => {
   const [done, setDone] = useState(false);
 
   const date = useMemo(() => addDays(new Date(), day), [day]);
+  // How far ahead customers can book. Respect the service's max_advance_days
+  // (so e.g. a holiday eve two+ weeks out is selectable), defaulting to 14 days.
+  const daysToShow = Math.min(service?.max_advance_days && service.max_advance_days > 0 ? service.max_advance_days : 14, 60);
   const { data: avail, isFetching } = useAvailability(
     service ? { businessId, serviceId: service.id, fromDate: ymd(date), toDate: ymd(date) } : undefined,
   );
@@ -81,14 +84,16 @@ const BookingWidget = ({ businessId }: { businessId: string }) => {
       {service && (
         <>
           <h3 className="font-bold text-foreground mb-2 flex items-center gap-2"><CalendarDays className="w-4 h-4 text-primary" /> בחרו מועד</h3>
-          <div className="flex gap-1.5 mb-3 overflow-x-auto">
-            {Array.from({ length: 7 }, (_, i) => i).map((i) => {
+          <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
+            {Array.from({ length: daysToShow }, (_, i) => i).map((i) => {
               const d = addDays(new Date(), i);
+              const isFirstOfMonth = d.getDate() === 1 || i === 0;
               return (
                 <button key={i} onClick={() => { setDay(i); setSlot(null); }}
-                  className={`px-3 py-2 rounded-xl border text-center shrink-0 ${day === i ? "bg-primary text-white border-primary" : "border-border text-foreground"}`}>
-                  <div className="text-[11px]">{d.toLocaleDateString("he-IL", { weekday: "short" })}</div>
-                  <div className="text-sm font-bold">{d.getDate()}</div>
+                  className={`px-3 py-2 rounded-xl border text-center shrink-0 ${day === i ? "bg-primary text-white border-primary" : "border-border text-foreground hover:border-primary/40"}`}>
+                  <div className="text-[10px] opacity-80">{d.toLocaleDateString("he-IL", { weekday: "short" })}</div>
+                  <div className="text-sm font-bold leading-tight">{d.getDate()}</div>
+                  {isFirstOfMonth && <div className="text-[9px] opacity-70">{d.toLocaleDateString("he-IL", { month: "short" })}</div>}
                 </button>
               );
             })}
@@ -96,7 +101,7 @@ const BookingWidget = ({ businessId }: { businessId: string }) => {
 
           <div className="grid grid-cols-4 gap-2 mb-5 min-h-[44px]">
             {isFetching && <div className="col-span-4 flex justify-center py-2"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>}
-            {!isFetching && (avail?.slots.length ?? 0) === 0 && <div className="col-span-4 text-sm text-muted-foreground text-center py-2">אין משבצות פנויות ביום זה</div>}
+            {!isFetching && (avail?.slots.length ?? 0) === 0 && <div className="col-span-4 text-sm text-muted-foreground text-center py-3">אין תורים פנויים ביום זה - נסו יום אחר.</div>}
             {!isFetching && avail?.slots.map((t) => {
               const label = new Date(t).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
               return (

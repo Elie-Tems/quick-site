@@ -779,12 +779,15 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         storeUrl={storeUrl}
       />
 
-      {/* Per-vertical customer experience (booking / listings / donations),
-          rendered above the catalog for businesses whose module set includes them.
-          A commerce-only store renders nothing extra here. */}
-      <StorefrontVertical business={business as any} />
-
       <LayoutComponent {...layoutProps} />
+
+      {/* Per-vertical customer experience (booking / listings / donations),
+          rendered BELOW the hero/catalog (not as a header above it) for
+          businesses whose module set includes them. A commerce-only store
+          renders nothing extra here. */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <StorefrontVertical business={business as any} />
+      </div>
     </>
   );
 };
