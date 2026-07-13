@@ -23,6 +23,7 @@ const MarketLayout = ({
   onAddToCart, onUpdateQuantity, onRemoveFromCart, onCheckout, onNavigateToCart,
   onNavigateToFavorites, onScrollToProducts, onNavigateHome, favoriteIds, onToggleFavorite,
   hasPayment,
+  verticalSlot,
 }: StorefrontLayoutProps) => {
   const totalCartItems = cartItems.reduce((s, i) => s + i.quantity, 0);
   const pc = primaryColor || '#6b21a8';
@@ -128,6 +129,7 @@ const MarketLayout = ({
         )}
 
         {/* Dense 4-col product grid */}
+        {verticalSlot}
         <section id="products" className="py-6 px-4">
           <div className="max-w-7xl mx-auto">
             <StoreProducts

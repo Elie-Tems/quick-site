@@ -761,11 +761,8 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     onToggleFavorite: toggleFavorite,
     hasPayment: business.payment_enabled ?? false,
     customLabels: (b?.custom_labels as Record<string, string> | null) ?? undefined,
-    // Service layouts render the booking/leads widget right after the hero; other
-    // layouts fall back to the section below the catalog (see the render).
-    verticalSlot: ['service', 'beauty-spa'].includes(template?.layoutId ?? '')
-      ? <StorefrontVertical business={business as any} />
-      : undefined,
+    // Every layout renders this right after its hero (prominent, framed, titled).
+    verticalSlot: <StorefrontVertical business={business as any} />,
   };
 
   // Pick layout component based on template layoutId
@@ -800,15 +797,8 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       />
 
       <LayoutComponent {...layoutProps} />
-
-      {/* Per-vertical experience for layouts that don't render it after the hero
-          (service/beauty-spa render it in-layout via verticalSlot). Commerce-only
-          stores render nothing here. */}
-      {!['service', 'beauty-spa'].includes(template?.layoutId ?? '') && (
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <StorefrontVertical business={business as any} />
-        </div>
-      )}
+      {/* The per-vertical experience (booking / listings / donations) is rendered
+          by each layout right after its hero via the verticalSlot prop. */}
     </>
   );
 };

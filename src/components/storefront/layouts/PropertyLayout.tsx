@@ -24,6 +24,7 @@ const PropertyLayout = ({
   favoritesCount, onAddToCart, onUpdateQuantity, onRemoveFromCart, onCheckout,
   onNavigateToCart, onNavigateToFavorites, onScrollToProducts, onNavigateHome,
   favoriteIds, onToggleFavorite, hasPayment,
+  verticalSlot,
 }: StorefrontLayoutProps) => {
   const totalCartItems = cartItems.reduce((s, i) => s + i.quantity, 0);
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
@@ -87,6 +88,7 @@ const PropertyLayout = ({
         {banners.length > 0 && <StoreBanners banners={banners} />}
 
         {/* Featured + side grid */}
+        {verticalSlot}
         <section id="products" className="py-12 px-4">
           <div className="max-w-6xl mx-auto">
             {products.length === 0 && (

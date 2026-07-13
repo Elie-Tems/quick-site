@@ -101,6 +101,8 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
         </div>
       </section>
 
+      {props.verticalSlot}
+
       {/* SERVICES */}
       {products.length > 0 && (
         <section id="services" className="py-16 px-4">

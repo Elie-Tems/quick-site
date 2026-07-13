@@ -127,6 +127,8 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
         </div>
       </section>
 
+      {props.verticalSlot}
+
       {/* ABOUT STORY */}
       {aboutText && (
         <section className="py-16 px-4">
