@@ -99,6 +99,9 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
           .then(({ error }) => { if (error) console.warn('consent insert failed:', error.message); });
       }
       setIsSuccess(true);
+    } catch {
+      // onSubmit already surfaced the reason (toast). Do NOT show the success
+      // screen when the order/payment failed.
     } finally {
       setIsSubmitting(false);
     }
@@ -167,10 +170,12 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
           <FormErrorSummary errors={errors} />
 
           <form onSubmit={handleSubmit} noValidate className="grid md:grid-cols-[1.45fr_1fr] gap-6 items-start">
-            {/* Honeypot */}
+            {/* Honeypot (anti-bot). MUST NOT be autofillable: a field named
+                "company" + a "Company" label made browsers autofill it (e.g. from
+                a saved org), which silently blocked real users' submit. Use a
+                non-standard name, no label, and autoComplete off. */}
             <div className="absolute -left-[9999px]" aria-hidden="true">
-              <label htmlFor="company">Company</label>
-              <input type="text" id="company" name="company" ref={honeypotRef} tabIndex={-1} autoComplete="off" />
+              <input type="text" id="contact_ref_hp" name="contact_ref_hp" ref={honeypotRef} tabIndex={-1} autoComplete="off" />
             </div>
 
             {/* ── Details card ── */}

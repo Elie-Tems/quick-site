@@ -488,6 +488,9 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         });
       } catch (e: any) {
         toast.error("שגיאה במעבר לתשלום: " + (e?.message || "נסו שוב"));
+        // Re-throw so the checkout does NOT show the "order received" success
+        // screen when the payment never went through.
+        throw e;
       }
       return; // navigation happens inside startPayplusPayment
     }
