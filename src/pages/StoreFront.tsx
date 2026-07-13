@@ -3,7 +3,7 @@ import { gtm } from "@/lib/gtm";
 import { cleanImageUrl, cleanImageList } from "@/lib/imageUrl";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Loader2, Store } from "lucide-react";
+import { Loader2, Store, ShieldCheck, ExternalLink, ArrowRight } from "lucide-react";
 import StoreHeader from "@/components/storefront/StoreHeader";
 import StoreHero from "@/components/storefront/StoreHero";
 import StoreBanners from "@/components/storefront/StoreBanners";
@@ -71,6 +71,8 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [viewState, setViewState] = useState<ViewState>('shopping');
+  // Hosted payment page URL, shown in an on-site iframe so the customer stays on Siango.
+  const [paymentIframeUrl, setPaymentIframeUrl] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [ageVerified, setAgeVerified] = useState(false);
 
@@ -476,7 +478,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     // PayPlus hosted payment page. The customer returns via ?payment=success.
     if (business.payment_enabled) {
       try {
-        await startPayplusPayment({
+        const link = await startPayplusPayment({
           businessId: business.id,
           slug: business.slug ?? undefined,
           items: cartItems.map((item) => ({ product_id: item.id, quantity: item.quantity, variant_id: item.variantId ?? undefined, variant_color: item.variantColor ?? undefined, variant_size: item.variantSize ?? undefined })),
@@ -486,14 +488,16 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
           deliveryAddress: data.deliveryAddress,
           couponId,
         });
+        // Show the hosted payment page in an on-site iframe (customer stays on Siango).
+        // The gateway's success_url (?payment=success) escapes the frame to the top window.
+        setPaymentIframeUrl(link);
       } catch (e: any) {
         toast.error("שגיאה במעבר לתשלום: " + (e?.message || "נסו שוב"));
         // Re-throw so the checkout does NOT show the "order received" success
         // screen when the payment never went through.
         throw e;
       }
-      // Signal the checkout NOT to flash "order received" - we're redirecting to the
-      // payment gateway (navigation happens inside startPayplusPayment).
+      // Signal the checkout NOT to flash "order received" - the iframe now owns the flow.
       return { redirected: true };
     }
 
@@ -574,6 +578,43 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   };
 
   const totalCartItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Hosted payment page in an on-site iframe (the customer never leaves Siango). The
+  // gateway's success_url (?payment=success&order=…) navigates the TOP window out of
+  // the frame, back to the storefront which handles the success param. The fallback
+  // link does a full-page redirect if the gateway refuses to be framed.
+  if (paymentIframeUrl) {
+    return (
+      <div dir="rtl" className="min-h-screen bg-background flex flex-col">
+        <div className="w-full max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <button onClick={() => setPaymentIframeUrl(null)} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowRight className="w-4 h-4" /> חזרה
+          </button>
+          <h1 className="text-lg md:text-xl font-bold text-foreground">תשלום מאובטח</h1>
+          <div className="w-[64px]" />
+        </div>
+        <div className="w-full max-w-4xl mx-auto grow flex px-4 pb-6">
+          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-lg flex flex-col w-full">
+            <div className="px-4 py-3 border-b border-border bg-primary/5 text-sm font-medium text-foreground text-center flex items-center justify-center gap-2">
+              <ShieldCheck className="w-4 h-4" /> תשלום מאובטח - פרטי האשראי נשמרים אצל חברת הסליקה בלבד
+            </div>
+            <iframe
+              title="תשלום מאובטח"
+              src={paymentIframeUrl}
+              className="w-full grow min-h-[min(80vh,820px)] border-0 bg-white"
+              allow="payment *"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-top-navigation-by-user-activation"
+            />
+            <div className="px-4 py-3 border-t border-border bg-muted/20 text-center">
+              <a href={paymentIframeUrl} target="_top" rel="noopener" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
+                <ExternalLink className="w-4 h-4" /> התשלום לא נטען? המשיכו לעמוד הסליקה
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Checkout view
   if (viewState === 'checkout') {

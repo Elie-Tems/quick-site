@@ -88,17 +88,20 @@ export const useSavePayplusCredentials = () => {
   });
 };
 
-// Public storefront: create the order on the server and jump to PayPlus.
+// Public storefront: create the order on the server and return the hosted payment
+// page URL (https, validated). The caller embeds it in an on-site iframe so the
+// customer stays on Siango (the gateway's success_url escapes the frame).
 export async function startPayplusPayment(input: {
   businessId: string;
   slug?: string;
-  items: { product_id: string; quantity: number }[];
+  items: { product_id: string; quantity: number; variant_id?: string; variant_color?: string; variant_size?: string }[];
   customer: { fullName: string; phone: string; email: string };
   notes?: string;
   deliveryMethod?: "pickup" | "delivery";
   deliveryAddress?: string;
+  couponId?: string;
   couponCode?: string;
-}): Promise<void> {
+}): Promise<string> {
   const { data, error } = await supabase.functions.invoke("payments-create", {
     body: input,
   });
@@ -108,5 +111,5 @@ export async function startPayplusPayment(input: {
   let parsed: URL;
   try { parsed = new URL(link); } catch { throw new Error("Invalid payment redirect URL"); }
   if (parsed.protocol !== "https:") throw new Error("Invalid payment redirect URL: only https is allowed");
-  window.location.href = link;
+  return link;
 }
