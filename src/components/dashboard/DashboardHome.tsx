@@ -17,6 +17,8 @@ interface DashboardHomeProps {
   businessId?: string;
   isPublished?: boolean;
   isSubscribed?: boolean;
+  /** Set when the subscription was CANCELLED but the site is still live until this date (grace period). */
+  cancelledUntil?: string | null;
   hasPaymentFailure?: boolean;
   hasAbout?: boolean;
   businessType?: BusinessType;
@@ -90,6 +92,7 @@ const DashboardHome = ({
   stats,
   businessId,
   isSubscribed,
+  cancelledUntil,
   hasPaymentFailure,
   hasAbout,
   businessType = "products",
@@ -149,8 +152,21 @@ const DashboardHome = ({
     <div className="p-4 md:p-6 space-y-5">
       <h1 className="text-xl font-semibold text-foreground">סקירה כללית</h1>
 
-      {/* Subscription banner */}
-      {!isSubscribed && (
+      {/* Subscription banner. A CANCELLED-but-still-live site gets its own message
+          (site stays up until the paid period ends) - not the "preview mode" one. */}
+      {!isSubscribed && cancelledUntil ? (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
+            <p className="text-base font-semibold text-foreground">המנוי בוטל - אבל האתר עדיין באוויר</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              האתר יישאר פעיל עד <b>{new Date(cancelledUntil).toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" })}</b>, ואז יירד. אפשר לחדש בכל רגע ולהמשיך בדיוק מאיפה שהפסקת.
+            </p>
+          </div>
+          <Button onClick={() => onNavigate("subscription")} className="bg-primary text-primary-foreground hover:opacity-90 font-semibold gap-2 shrink-0">
+            חידוש המנוי <ChevronLeft className="h-4 w-4" />
+          </Button>
+        </div>
+      ) : !isSubscribed ? (
         <div className="rounded-2xl bg-gradient-to-l from-orange-600 to-amber-500 text-white p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4 shadow">
           <div className="flex-1">
             <p className="text-base font-semibold">האתר שלך במצב תצוגה מוקדמת</p>
@@ -160,7 +176,7 @@ const DashboardHome = ({
             שדרגו עכשיו <ChevronLeft className="h-4 w-4" />
           </Button>
         </div>
-      )}
+      ) : null}
 
       {/* Failed payment banner */}
       {isSubscribed && hasPaymentFailure && (

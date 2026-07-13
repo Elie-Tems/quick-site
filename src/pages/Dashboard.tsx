@@ -154,6 +154,10 @@ const Dashboard = () => {
     },
   });
   const isSubscribed = !!(subData?.status === "active" && subData?.paid_until && new Date(subData.paid_until) > new Date());
+  // Cancelled but still within the paid period: the site is live until paid_until,
+  // then goes offline. Drives a distinct banner (not the "preview mode" one).
+  const cancelledUntil = (!isSubscribed && subData?.status !== "active" && subData?.paid_until && new Date(subData.paid_until) > new Date())
+    ? (subData.paid_until as string) : null;
   const hasPaymentFailure = !!(subData && subData.last_charge_status === "failed");
 
   // Fetch real data from database
@@ -573,7 +577,7 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (currentView) {
       case 'home':
-        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} businessType={getBusinessType(business)} onNavigate={goToView} />;
+        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} cancelledUntil={cancelledUntil} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} businessType={getBusinessType(business)} onNavigate={goToView} />;
       case 'verticals':
         return <VerticalModules business={business as any} />;
       case 'lifecycle-emails':
