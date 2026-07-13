@@ -20,7 +20,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const ENGINE_CONFIG = [
   { key: "commerce", icon: ShoppingBag, to: "/preview/redesign/home-multi", img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1400&q=80", stepIcons: [Store, Upload, Package] },
   { key: "booking",  icon: CalendarClock, to: "/preview/redesign/services", img: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1400&q=80", stepIcons: [Store, Upload, Package] },
-  { key: "donations", icon: Heart, to: "/preview/redesign/nonprofit", img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1400&q=80", stepIcons: [Store, Upload, Package] },
+  { key: "donations", icon: Heart, to: "/preview/redesign/nonprofit", img: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=1400&q=80", stepIcons: [Store, Upload, Package] },
 ];
 
 const PROFESSIONS_CONFIG = [
@@ -63,7 +63,7 @@ const EXAMPLES_CONFIG = [
   { key: "project", img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80", to: "/preview/redesign/project" },
   { key: "car", img: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&q=80", to: "/preview/redesign/car-dealer" },
   { key: "homepro", img: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=600&q=80", to: "/preview/redesign/home-pro" },
-  { key: "nonprofit", img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&q=80", to: "/preview/redesign/nonprofit" },
+  { key: "nonprofit", img: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=600&q=80", to: "/preview/redesign/nonprofit" },
 ];
 
 const HOW_STEP_META = [
@@ -73,10 +73,10 @@ const HOW_STEP_META = [
 ];
 
 const PROCESS_IMGS = [
-  { src: "/onboarding/ספרו לנו על העסק.jpeg", pos: "left top" },
-  { src: "/onboarding/פרטי יצירתקשר.jpeg", pos: "left top" },
+  { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80", pos: "center center" },
   { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80", pos: "center center" },
-  { src: "/screenshots/process-finale.png", pos: "center top" },
+  { src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80", pos: "center center" },
+  { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80", pos: "center center" },
 ];
 
 const HeroBg = () => (
@@ -138,12 +138,15 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
   }, []);
 
   return (
-    <section className="relative py-28 px-4 overflow-hidden" style={{ background: "#f8faf8" }}>
+    <section className="relative py-28 px-4 overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+        <div className="w-[60rem] h-[30rem] rounded-full blur-[160px]" style={{ background: "radial-gradient(ellipse, hsl(152 60% 45% / 0.07), transparent 70%)" }} />
+      </div>
 
       <div className="max-w-6xl mx-auto relative">
         <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-display font-bold mb-3" style={{ color: "#0f172a" }}>{t("howItWorks.mainTitle")}</h2>
-          <p className="text-lg" style={{ color: "#64748b" }}>{t("howItWorks.mainSubtitle")}</p>
+          <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">{t("howItWorks.mainTitle")}</h2>
+          <p className="text-lg pv-muted">{t("howItWorks.mainSubtitle")}</p>
         </div>
 
         <div className="grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
@@ -202,10 +205,10 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
                   <div className="flex flex-col items-center shrink-0" style={{ width: 52 }}>
                     <div className="relative flex items-center justify-center w-12 h-12 rounded-2xl font-bold text-base transition-all duration-500 shrink-0"
                       style={{
-                        background: isActive ? "linear-gradient(135deg, #22c55e, #84cc16)" : isDone ? "rgba(34,197,94,0.15)" : "#e2e8f0",
-                        border: isActive ? "none" : `1px solid ${isDone ? "rgba(34,197,94,0.3)" : "#cbd5e1"}`,
-                        color: isActive ? "#fff" : isDone ? "#22c55e" : "#94a3b8",
-                        boxShadow: isActive ? "0 0 24px rgba(34,197,94,0.35)" : "none",
+                        background: isActive ? "linear-gradient(135deg, #22c55e, #84cc16)" : isDone ? "rgba(34,197,94,0.2)" : "var(--pv-surface2)",
+                        border: isActive ? "none" : "1px solid var(--pv-border)",
+                        color: isActive ? "#fff" : isDone ? "#22c55e" : "var(--pv-faint)",
+                        boxShadow: isActive ? "0 0 24px rgba(34,197,94,0.45)" : "none",
                       }}>
                       {isDone && !isActive
                         ? <Check className="w-5 h-5" strokeWidth={2.5} style={{ color: "#22c55e" }} />
@@ -213,18 +216,18 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
                     </div>
                     {i < HOW_STEPS.length - 1 && (
                       <div className="flex-1 w-0.5 my-2 min-h-[2.5rem] rounded-full transition-all duration-700"
-                        style={{ background: isDone || isActive ? "linear-gradient(to bottom, #22c55e, rgba(34,197,94,0.2))" : "#e2e8f0" }} />
+                        style={{ background: isDone || isActive ? "linear-gradient(to bottom, #22c55e, rgba(34,197,94,0.2))" : "var(--pv-border)" }} />
                     )}
                   </div>
                   <div className={`pb-7 flex-1 text-right transition-all duration-500 ${isActive ? "opacity-100" : "opacity-50 group-hover:opacity-75"}`}>
                     <div className="flex items-center justify-end gap-3 mb-1.5">
-                      <h3 className="text-lg font-bold" style={{ color: isActive ? "#0f172a" : "#334155" }}>{s.title}</h3>
+                      <h3 className="text-lg font-bold" style={{ color: isActive ? "var(--pv-strong)" : "var(--pv-text)" }}>{s.title}</h3>
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-500"
-                        style={{ background: isActive ? "rgba(34,197,94,0.12)" : "#f1f5f9", border: `1px solid ${isActive ? "rgba(34,197,94,0.35)" : "#e2e8f0"}` }}>
-                        <s.icon className="w-4 h-4" style={{ color: isActive ? "#22c55e" : "#94a3b8" }} strokeWidth={1.8} />
+                        style={{ background: isActive ? "rgba(34,197,94,0.18)" : "var(--pv-surface2)", border: `1px solid ${isActive ? "rgba(34,197,94,0.4)" : "var(--pv-border)"}` }}>
+                        <s.icon className="w-4 h-4" style={{ color: isActive ? "#22c55e" : "var(--pv-faint)" }} strokeWidth={1.8} />
                       </div>
                     </div>
-                    <p className="text-sm leading-relaxed" style={{ color: "#64748b" }}>{s.desc}</p>
+                    <p className="text-sm leading-relaxed" style={{ color: "var(--pv-muted)" }}>{s.desc}</p>
                   </div>
                 </motion.div>
               );

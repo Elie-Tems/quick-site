@@ -68,6 +68,16 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     customHead: b?.tracking_custom_head,
   });
   
+  // If this store is not published, redirect the owner to the payment flow.
+  // Must be in useEffect — never call window.location inside render.
+  const isUnpublishedError = isError && error instanceof Error && error.message === 'SITE_NOT_PUBLISHED';
+  useEffect(() => {
+    if (!isUnpublishedError) return;
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) window.location.replace('/publish-payment');
+    });
+  }, [isUnpublishedError]);
+
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [viewState, setViewState] = useState<ViewState>('shopping');
@@ -366,19 +376,10 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
 
   // Error or not found state
   if (isError || !business) {
-    const isUnpublished = error instanceof Error && error.message === 'SITE_NOT_PUBLISHED';
     const isSuspended = error instanceof Error && error.message === 'SITE_SUSPENDED';
 
-    // Owner arrived at their own unpublished store → send them to the payment/publish flow
-    // instead of showing a dead end. useStorefront already verified ownership before
-    // throwing SITE_NOT_PUBLISHED in preview mode, so we can trust the check here.
-    if (isUnpublished) {
-      supabase.auth.getUser().then(({ data }) => {
-        if (data?.user) {
-          window.location.replace('/publish-payment');
-        }
-      });
-      // Show a brief loading state while the auth check happens
+    // Owner arrived at their own unpublished store → useEffect above redirects them.
+    if (isUnpublishedError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-background">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />

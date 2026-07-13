@@ -6,7 +6,6 @@ import Confetti from "@/components/ui/confetti";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import ReferralBox from "@/components/dashboard/ReferralBox";
 import { gtm } from "@/lib/gtm";
 
 interface OnboardingCompleteProps {
@@ -159,54 +158,30 @@ const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
           </Button>
         </div>
 
-        {/* Quick share - peak excitement moment, one click away */}
-        <div className="mt-6">
-          <p className="text-xs text-muted-foreground mb-2">שתפו את החנות עם הלקוחות הראשונים</p>
+        {/* Share row — right after the CTA buttons, while excitement is peak */}
+        <div className="mt-5 p-4 rounded-2xl border border-border bg-card">
+          <p className="text-sm font-medium text-foreground mb-3">שתפו את החנות עם הלקוחות הראשונים</p>
           <div className="flex items-center gap-2">
             <button
               onClick={handleShareWhatsApp}
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#25d366] text-white font-medium py-2.5 px-3 text-sm hover:opacity-90 transition-opacity"
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#25d366] text-white font-semibold py-3 px-3 text-sm hover:opacity-90 transition-opacity"
             >
               <MessageCircle className="w-4 h-4" /> וואטסאפ
             </button>
             <button
               onClick={handleShareFacebook}
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1877f2] text-white font-medium py-2.5 px-3 text-sm hover:opacity-90 transition-opacity"
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1877f2] text-white font-semibold py-3 px-3 text-sm hover:opacity-90 transition-opacity"
             >
               <Facebook className="w-4 h-4" /> פייסבוק
             </button>
             <button
               onClick={handleCopyLink}
               aria-label="העתקת קישור"
-              className="shrink-0 inline-flex items-center justify-center rounded-xl border border-border py-2.5 px-3 text-sm hover:bg-muted transition-colors"
+              className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-xl border border-border py-3 px-4 text-sm font-medium hover:bg-muted transition-colors"
             >
-              <Link2 className="w-4 h-4" />
+              <Link2 className="w-4 h-4" /> העתק
             </button>
           </div>
-        </div>
-
-        {/* Next steps */}
-        <div className="mt-12 p-6 rounded-xl bg-card border border-border text-right">
-          <h3 className="font-semibold text-foreground mb-4">מה עכשיו?</h3>
-          <ul className="space-y-3 text-sm text-muted-foreground">
-            <li className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
-              <span>שתף את הלינק עם לקוחות ברשתות החברתיות</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
-              <span>הוסף עוד מוצרים דרך לוח הניהול</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
-              <span>חבר דומיין מותאם אישית</span>
-            </li>
-          </ul>
-        </div>
-
-        {/* Referral - peak excitement moment to ask for a share */}
-        <div className="mt-6">
-          <ReferralBox />
         </div>
       </div>
     </div>

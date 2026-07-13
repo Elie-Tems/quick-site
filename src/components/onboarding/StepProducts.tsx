@@ -198,6 +198,24 @@ const DEMO_PRODUCTS_BY_CATEGORY: Partial<Record<BusinessCategory, DemoProduct[]>
   ],
 };
 
+// Business-type specific demo items (for realestate / nonprofit which are not product categories)
+const DEMO_BY_BUSINESS_TYPE: Record<string, DemoProduct[]> = {
+  realestate: [
+    { name: "דירת 3 חדרים - תל אביב", price: 2_850_000, description: "דירה מרווחת בקומה 4, מרפסת שמש, חניה.", imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80" },
+    { name: "פנטהאוז - רמת גן", price: 5_200_000, description: "פנטהאוז יוקרתי עם גג פרטי ונוף עירוני.", imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80" },
+    { name: "דירת גן - הרצליה", price: 3_400_000, description: "דירת גן 4 חדרים עם גינה פרטית 60 מ\"ר.", imageUrl: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80" },
+    { name: "משרד להשכרה - פתח תקווה", price: 8_500, description: "משרד 80 מ\"ר, לובי מפואר, חניון.", imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80" },
+    { name: "קוטג' דו-משפחתי - כפר סבא", price: 4_100_000, description: "קוטג' 5 חדרים עם גינה ובריכה.", imageUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80" },
+  ],
+  nonprofit: [
+    { name: "מיזם קהילה שכונתית", price: 0, description: "פרויקט לחיזוק הקהילה המקומית והפעלת מתנדבים.", imageUrl: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&q=80" },
+    { name: "תרומה חודשית קבועה", price: 50, description: "תרומה חודשית שתאפשר לנו להמשיך את הפעילות.", imageUrl: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=600&q=80" },
+    { name: "מענק ציוד לבתי ספר", price: 500, description: "רכישת ציוד לימוד לתלמידים ממשפחות בצרכים.", imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80" },
+    { name: "קמפיין גיוס קיץ", price: 200, description: "גיוס תרומות לפעילויות הקיץ של ילדים בסיכון.", imageUrl: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&q=80" },
+    { name: "אימוץ משפחה נזקקת", price: 1_000, description: "סיוע חודשי למשפחה בקשיים — מזון, חינוך, ביגוד.", imageUrl: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=600&q=80" },
+  ],
+};
+
 // Fallback demo products for categories without specific data
 const FALLBACK_DEMO_PRODUCTS: DemoProduct[] = [
   { name: "מוצר לדוגמה 1", price: 99, description: "מוצר דמו להתחלה. החליפו בשם, מחיר ותמונה שלכם.", imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80" },
@@ -207,7 +225,8 @@ const FALLBACK_DEMO_PRODUCTS: DemoProduct[] = [
   { name: "מוצר לדוגמה 5", price: 39, description: "מוצר דמו להתחלה. אפשר לערוך או למחוק במוצרים.", imageUrl: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80" },
 ];
 
-function getDemoProducts(category: BusinessCategory): DemoProduct[] {
+function getDemoProducts(category: BusinessCategory, businessType?: string): DemoProduct[] {
+  if (businessType && DEMO_BY_BUSINESS_TYPE[businessType]) return DEMO_BY_BUSINESS_TYPE[businessType];
   return DEMO_PRODUCTS_BY_CATEGORY[category] ?? FALLBACK_DEMO_PRODUCTS;
 }
 
@@ -672,7 +691,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   const handleContinue = () => {
     if (data.products.length === 0) {
       const now = Date.now();
-      const demo = getDemoProducts(data.businessCategory).map((p, i) => ({
+      const demo = getDemoProducts(data.businessCategory, data.businessType).map((p, i) => ({
         id: `demo-${now}-${i}`,
         name: p.name,
         description: p.description,

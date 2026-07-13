@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, Link } from "react-router-dom";
-import { Eye, Store, Building2, Phone, Package, Palette, Rocket, Check, ArrowLeft, Clock, CreditCard, Globe, Image, Wand2 } from "lucide-react";
+import { Eye, Store, Building2, Phone, Package, Rocket, Check, ArrowLeft, Clock, CreditCard, Globe, Image, Wand2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuroraBg, Card, PreviewLogo, PreviewThemeRoot, ThemeToggle } from "@/components/preview-redesign/kit";
 import StepBusinessType from "@/components/onboarding/StepBusinessType";
 import StepIdentity from "@/components/onboarding/StepIdentity";
 import StepContentAI from "@/components/onboarding/StepContentAI";
 import StepContact from "@/components/onboarding/StepContact";
-import StepTemplate from "@/components/onboarding/StepTemplate";
 import StepProducts from "@/components/onboarding/StepProducts";
 import StepBannerUpload from "@/components/onboarding/StepBannerUpload";
 import StepFinish from "@/components/onboarding/StepFinish";
@@ -31,7 +30,6 @@ const ONBOARDING_STEPS = [
   { id: 4, label: "קשר", icon: Phone },
   { id: 5, label: "מוצרים", icon: Package },
   { id: 6, label: "סליידר", icon: Image },
-  { id: 7, label: "תבנית", icon: Palette },
 ];
 
 export type { BusinessCategory };
@@ -323,15 +321,13 @@ const Onboarding = () => {
       case 6:
         return <StepBannerUpload data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 7:
-        return <StepTemplate data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
-      case 8:
         return <StepFinish data={data} updateData={updateData} onBack={prevStep} />;
       default:
         return null;
     }
   };
 
-  const pct = (Math.min(currentStep, 7) / 7) * 100;
+  const pct = (Math.min(currentStep, 6) / 6) * 100;
 
   return (
     <>
@@ -352,8 +348,8 @@ const Onboarding = () => {
             ) : <div className="w-20" />}
           </div>
 
-          {/* Step indicators — only shown for steps 1-5 */}
-          {currentStep <= 7 && (
+          {/* Step indicators — only shown for steps 1-6 */}
+          {currentStep <= 6 && (
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 {ONBOARDING_STEPS.map((s) => {
