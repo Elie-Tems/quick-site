@@ -138,15 +138,12 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
   }, []);
 
   return (
-    <section className="relative py-28 px-4 overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-        <div className="w-[60rem] h-[30rem] rounded-full blur-[160px]" style={{ background: "radial-gradient(ellipse, hsl(152 60% 45% / 0.07), transparent 70%)" }} />
-      </div>
+    <section className="relative py-28 px-4 overflow-hidden" style={{ background: "#f8faf8" }}>
 
       <div className="max-w-6xl mx-auto relative">
         <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">{t("howItWorks.mainTitle")}</h2>
-          <p className="text-lg pv-muted">{t("howItWorks.mainSubtitle")}</p>
+          <h2 className="text-3xl md:text-5xl font-display font-bold mb-3" style={{ color: "#0f172a" }}>{t("howItWorks.mainTitle")}</h2>
+          <p className="text-lg" style={{ color: "#64748b" }}>{t("howItWorks.mainSubtitle")}</p>
         </div>
 
         <div className="grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
@@ -205,10 +202,10 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
                   <div className="flex flex-col items-center shrink-0" style={{ width: 52 }}>
                     <div className="relative flex items-center justify-center w-12 h-12 rounded-2xl font-bold text-base transition-all duration-500 shrink-0"
                       style={{
-                        background: isActive ? "linear-gradient(135deg, #22c55e, #84cc16)" : isDone ? "rgba(34,197,94,0.2)" : "var(--pv-surface2)",
-                        border: isActive ? "none" : "1px solid var(--pv-border)",
-                        color: isActive ? "#fff" : isDone ? "#22c55e" : "var(--pv-faint)",
-                        boxShadow: isActive ? "0 0 24px rgba(34,197,94,0.45)" : "none",
+                        background: isActive ? "linear-gradient(135deg, #22c55e, #84cc16)" : isDone ? "rgba(34,197,94,0.15)" : "#e2e8f0",
+                        border: isActive ? "none" : `1px solid ${isDone ? "rgba(34,197,94,0.3)" : "#cbd5e1"}`,
+                        color: isActive ? "#fff" : isDone ? "#22c55e" : "#94a3b8",
+                        boxShadow: isActive ? "0 0 24px rgba(34,197,94,0.35)" : "none",
                       }}>
                       {isDone && !isActive
                         ? <Check className="w-5 h-5" strokeWidth={2.5} style={{ color: "#22c55e" }} />
@@ -216,18 +213,18 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
                     </div>
                     {i < HOW_STEPS.length - 1 && (
                       <div className="flex-1 w-0.5 my-2 min-h-[2.5rem] rounded-full transition-all duration-700"
-                        style={{ background: isDone || isActive ? "linear-gradient(to bottom, #22c55e, rgba(34,197,94,0.2))" : "var(--pv-border)" }} />
+                        style={{ background: isDone || isActive ? "linear-gradient(to bottom, #22c55e, rgba(34,197,94,0.2))" : "#e2e8f0" }} />
                     )}
                   </div>
-                  <div className={`pb-7 flex-1 text-right transition-all duration-500 ${isActive ? "opacity-100" : "opacity-55 group-hover:opacity-80"}`}>
+                  <div className={`pb-7 flex-1 text-right transition-all duration-500 ${isActive ? "opacity-100" : "opacity-50 group-hover:opacity-75"}`}>
                     <div className="flex items-center justify-end gap-3 mb-1.5">
-                      <h3 className="text-lg font-bold" style={{ color: isActive ? "var(--pv-strong)" : "var(--pv-text)" }}>{s.title}</h3>
+                      <h3 className="text-lg font-bold" style={{ color: isActive ? "#0f172a" : "#334155" }}>{s.title}</h3>
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-500"
-                        style={{ background: isActive ? "rgba(34,197,94,0.18)" : "var(--pv-surface2)", border: `1px solid ${isActive ? "rgba(34,197,94,0.4)" : "var(--pv-border)"}` }}>
-                        <s.icon className="w-4 h-4" style={{ color: isActive ? "#22c55e" : "var(--pv-faint)" }} strokeWidth={1.8} />
+                        style={{ background: isActive ? "rgba(34,197,94,0.12)" : "#f1f5f9", border: `1px solid ${isActive ? "rgba(34,197,94,0.35)" : "#e2e8f0"}` }}>
+                        <s.icon className="w-4 h-4" style={{ color: isActive ? "#22c55e" : "#94a3b8" }} strokeWidth={1.8} />
                       </div>
                     </div>
-                    <p className="text-sm leading-relaxed" style={{ color: "var(--pv-muted)" }}>{s.desc}</p>
+                    <p className="text-sm leading-relaxed" style={{ color: "#64748b" }}>{s.desc}</p>
                   </div>
                 </motion.div>
               );
@@ -241,17 +238,17 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
               onClick={() => setImgIdx(3)}>
               <div className="shrink-0 flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-500"
                 style={{
-                  background: imgIdx === 3 ? "linear-gradient(135deg, #22c55e, #84cc16)" : "var(--pv-surface2)",
-                  border: imgIdx === 3 ? "none" : "1px solid var(--pv-border)",
-                  boxShadow: imgIdx === 3 ? "0 0 24px rgba(34,197,94,0.45)" : "none",
+                  background: imgIdx === 3 ? "linear-gradient(135deg, #22c55e, #84cc16)" : "#e2e8f0",
+                  border: imgIdx === 3 ? "none" : "1px solid #cbd5e1",
+                  boxShadow: imgIdx === 3 ? "0 0 24px rgba(34,197,94,0.35)" : "none",
                 }}>
-                <Rocket className="w-5 h-5" style={{ color: imgIdx === 3 ? "#fff" : "var(--pv-faint)" }} strokeWidth={1.8} />
+                <Rocket className="w-5 h-5" style={{ color: imgIdx === 3 ? "#fff" : "#94a3b8" }} strokeWidth={1.8} />
               </div>
-              <div className={`flex-1 text-right transition-all duration-500 ${imgIdx === 3 ? "opacity-100" : "opacity-55"}`}>
-                <p className="text-lg font-bold" style={{ color: imgIdx === 3 ? "#22c55e" : "var(--pv-strong)" }}>
+              <div className={`flex-1 text-right transition-all duration-500 ${imgIdx === 3 ? "opacity-100" : "opacity-50"}`}>
+                <p className="text-lg font-bold" style={{ color: imgIdx === 3 ? "#22c55e" : "#0f172a" }}>
                   {t("howItWorks.finale.title")}
                 </p>
-                <p className="text-sm mt-0.5" style={{ color: "var(--pv-muted)" }}>{t("howItWorks.finale.desc")}</p>
+                <p className="text-sm mt-0.5" style={{ color: "#64748b" }}>{t("howItWorks.finale.desc")}</p>
               </div>
             </motion.div>
           </div>
@@ -319,11 +316,11 @@ const Index = () => {
         <Header />
 
         {/* HERO */}
-        <section className="relative min-h-screen flex items-center overflow-hidden">
+        <section className="relative overflow-hidden">
           <HeroBg />
-          <div className="container relative z-10 pt-32 pb-16">
+          <div className="container relative z-10 pt-32 pb-0">
             {/* Engine switcher */}
-            <div className="flex justify-center mb-16">
+            <div className="flex justify-center mb-10">
               <div className="inline-flex flex-wrap justify-center gap-1 p-1 rounded-2xl pv-surface2 border pv-border">
                 {ENGINES.map((x, i) => (
                   <button key={x.key} onClick={() => setEng(i)}
@@ -335,72 +332,82 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-10 items-center">
-              {/* Text */}
-              <div className="min-w-0 text-center lg:text-right">
-                <AnimatePresence mode="wait">
-                  <motion.div key={a.key}
-                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35 }}>
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.08] mb-5">
-                      <span className="block pv-strong" style={{ whiteSpace: "pre-line" }}>{a.type}</span>
-                      <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">{t("hero.fiveMin")}</span>
-                      <span className="block pv-strong">{t("hero.price79")}</span>
-                    </h1>
-                  </motion.div>
-                </AnimatePresence>
-                <div className="flex items-center justify-center lg:justify-start">
-                  <Link to="/register" className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
-                    {t("hero.startNow")} <ArrowLeft className="w-5 h-5" />
-                  </Link>
-                </div>
-                <p className="text-sm pv-muted mt-4">{t("hero.monthlyNote")}</p>
+            {/* Centered text block */}
+            <div className="text-center max-w-3xl mx-auto mb-10">
+              <AnimatePresence mode="wait">
+                <motion.div key={a.key}
+                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35 }}>
+                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold leading-[1.05] mb-6">
+                    <span className="block pv-strong" style={{ whiteSpace: "pre-line" }}>{a.type}</span>
+                    <span className="block bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">{t("hero.fiveMin")}</span>
+                    <span className="block pv-strong">{t("hero.price79")}</span>
+                  </h1>
+                </motion.div>
+              </AnimatePresence>
+              <div className="flex items-center justify-center">
+                <Link to="/register" className="inline-flex items-center gap-2 px-9 py-4 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
+                  {t("hero.startNow")} <ArrowLeft className="w-5 h-5" />
+                </Link>
               </div>
+              <p className="text-sm pv-muted mt-4">{t("hero.monthlyNote")}</p>
+            </div>
 
-              {/* Preview image */}
+            {/* Full-width preview image */}
+            <AnimatePresence mode="wait">
               <motion.div key={a.key}
-                initial={{ opacity: 0, scale: 0.96, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.4 }} className="relative min-w-0 overflow-hidden">
-                <div className="absolute -inset-6 bg-primary/15 rounded-[2rem] blur-3xl" />
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                  <div className="relative aspect-[4/3]">
-                    <img src={a.img} alt={a.label} className="w-full h-full object-cover object-center" />
+                initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="relative mx-auto max-w-5xl">
+                <div className="absolute -inset-8 bg-primary/10 rounded-[3rem] blur-3xl pointer-events-none" />
+                <div className="relative rounded-t-2xl overflow-hidden shadow-2xl" style={{ border: "1px solid var(--pv-border)", borderBottom: "none" }}>
+                  <div className="relative aspect-[16/9]">
+                    <img src={a.img} alt={a.label} className="w-full h-full object-cover object-top" />
+                    <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.4))" }} />
                   </div>
                 </div>
               </motion.div>
-            </div>
+            </AnimatePresence>
           </div>
         </section>
 
         {/* PER-TAB SUBTITLE SECTION */}
-        <section className="relative py-28 px-4 overflow-hidden">
-          <div className="absolute inset-0" style={{ background: "linear-gradient(160deg, #080e08 0%, #0b1a10 45%, #091510 100%)" }} />
-          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 55% 70% at 20% 50%, rgba(34,197,94,0.13) 0%, transparent 70%)" }} />
-          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 40% 60% at 80% 50%, rgba(255,255,255,0.02) 0%, transparent 70%)" }} />
+        <section className="relative overflow-hidden">
+          {/* Background image — person working on laptop/phone */}
+          <img
+            src="https://images.unsplash.com/photo-1664575602554-2087b04935a5?w=1400&q=80"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+            style={{ filter: "brightness(0.35) saturate(0.8)" }}
+          />
+          {/* Green tint overlay */}
+          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(4,47,46,0.75) 0%, rgba(6,78,59,0.65) 50%, rgba(0,0,0,0.5) 100%)" }} />
 
-          <div className="relative max-w-6xl mx-auto">
+          <div className="relative px-4 py-24 max-w-4xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div key={a.key}
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.4 }}
-                className="grid md:grid-cols-2 items-center">
+                className="text-center">
 
-                {/* RIGHT (RTL first) — problem, faded */}
-                <div className="text-right px-6 md:px-14 py-10 relative">
-                  <div className="hidden md:block absolute left-0 inset-y-8 w-px"
-                    style={{ background: "linear-gradient(to bottom, transparent, rgba(34,197,94,0.35) 50%, transparent)" }} />
-                  <p className="text-xs tracking-[0.2em] uppercase font-medium mb-5"
-                    style={{ color: "rgba(255,255,255,0.25)" }}>{t("subtitle.beforeLabel")}</p>
-                  <p className="text-2xl md:text-3xl leading-snug font-light"
-                    style={{ color: "rgba(255,255,255,0.32)" }}>{a.subtitle[0]}</p>
+                {/* Before — faded, italic */}
+                <p className="text-xs tracking-[0.2em] uppercase font-medium mb-3"
+                  style={{ color: "rgba(255,255,255,0.35)" }}>{t("subtitle.beforeLabel")}</p>
+                <p className="text-lg md:text-xl leading-relaxed font-light italic mb-8 max-w-2xl mx-auto"
+                  style={{ color: "rgba(255,255,255,0.38)" }}>"{a.subtitle[0]}"</p>
+
+                {/* Divider */}
+                <div className="flex items-center justify-center gap-4 mb-8">
+                  <div className="h-px w-16" style={{ background: "rgba(74,222,128,0.4)" }} />
+                  <div className="w-2 h-2 rounded-full bg-primary" />
+                  <div className="h-px w-16" style={{ background: "rgba(74,222,128,0.4)" }} />
                 </div>
 
-                {/* LEFT (RTL second) — solution, vivid */}
-                <div className="text-right px-6 md:px-14 py-10">
-                  <p className="text-xs tracking-[0.2em] uppercase font-bold mb-5"
-                    style={{ color: "#4ade80" }}>{t("subtitle.afterLabel")}</p>
-                  <p className="text-2xl md:text-3xl leading-snug font-bold"
-                    style={{ color: "#fff" }}>{a.subtitle[1]}</p>
-                </div>
+                {/* After — bold, vivid */}
+                <p className="text-xs tracking-[0.2em] uppercase font-bold mb-4"
+                  style={{ color: "#4ade80" }}>{t("subtitle.afterLabel")}</p>
+                <p className="text-2xl md:text-4xl leading-snug font-bold max-w-2xl mx-auto"
+                  style={{ color: "#fff" }}>{a.subtitle[1]}</p>
 
               </motion.div>
             </AnimatePresence>
