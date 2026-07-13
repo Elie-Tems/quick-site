@@ -97,6 +97,9 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
       {/* Big month calendar - the main surface for running the day. */}
       <BookingCalendar businessId={businessId} />
 
+      {/* Google Calendar two-way sync - prominent, right under the calendar (not buried). */}
+      <CalendarConnect businessId={businessId} staff={primaryStaff} />
+
       {/* Services */}
       <section>
         <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2"><Scissors className="w-5 h-5 text-primary" /> השירותים שלי</h3>
@@ -215,9 +218,6 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
           ))}
         </div>
       </section>
-
-      {/* Google Calendar two-way sync */}
-      <CalendarConnect businessId={businessId} staff={primaryStaff} />
     </div>
   );
 };

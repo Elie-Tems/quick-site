@@ -148,51 +148,55 @@ const BookingCalendar = ({ businessId }: { businessId: string }) => {
         </div>
       </div>
 
-      {/* Weekday header */}
-      <div className="grid grid-cols-7 gap-1.5 mb-1.5">
-        {WEEKDAYS.map((w) => (
-          <div key={w} className="text-center text-xs font-semibold text-muted-foreground py-1">{w}</div>
-        ))}
-      </div>
+      {/* Bounded calendar: header band + 1px grid lines (gap-px over bg-border) */}
+      <div className="rounded-xl border border-border overflow-hidden shadow-sm">
+        {/* Weekday header band */}
+        <div className="grid grid-cols-7 bg-muted border-b border-border">
+          {WEEKDAYS.map((w, i) => (
+            <div key={w} className={`text-center text-xs font-bold py-2.5 ${i >= 5 ? "text-primary/70" : "text-foreground"}`}>{w}</div>
+          ))}
+        </div>
 
-      {/* Month grid */}
-      <div className="grid grid-cols-7 gap-1.5">
-        {cells.map((day, i) => {
-          if (day === null) return <div key={i} className="min-h-[92px] rounded-lg bg-muted/30" />;
-          const key = dateKey(day);
-          const dayAppts = apptsByDay[key] ?? [];
-          const dayHols = holidaysByDay[key] ?? [];
-          const isToday = key === todayKey;
-          const cellDate = new Date(year, month0, day);
-          const isFriSat = cellDate.getDay() === 5 || cellDate.getDay() === 6;
-          return (
-            <button
-              key={i}
-              onClick={() => setSelected(key)}
-              className={`min-h-[92px] rounded-lg border p-1.5 text-right flex flex-col gap-1 transition-colors hover:border-primary/50 ${
-                isToday ? "border-primary bg-primary/5" : isFriSat ? "border-border bg-muted/20" : "border-border bg-card"
-              }`}
-            >
-              <div className="flex items-start justify-between">
-                <span className="text-[10px] text-muted-foreground">{hebrewDay(cellDate)}</span>
-                <span className={`text-sm font-semibold ${isToday ? "text-primary" : "text-foreground"}`}>{day}</span>
-              </div>
-              {dayHols.slice(0, 1).map((h, j) => (
-                <span key={j} className="text-[9px] leading-tight px-1 py-0.5 rounded truncate" style={{ background: `${FAITH_META[h.faith].color}18`, color: FAITH_META[h.faith].color }}>
-                  {h.name}
-                </span>
-              ))}
-              {dayAppts.slice(0, 2).map((a) => (
-                <span key={a.id} className="text-[9px] leading-tight px-1 py-0.5 rounded truncate text-white" style={{ background: statusColor[a.status] }}>
-                  {hhmm(a.starts_at)} {a.customer_name}
-                </span>
-              ))}
-              {dayAppts.length > 2 && (
-                <span className="text-[9px] text-muted-foreground">+{dayAppts.length - 2} נוספים</span>
-              )}
-            </button>
-          );
-        })}
+        {/* Month grid */}
+        <div className="grid grid-cols-7 gap-px bg-border">
+          {cells.map((day, i) => {
+            if (day === null) return <div key={i} className="min-h-[96px] bg-muted/40" />;
+            const key = dateKey(day);
+            const dayAppts = apptsByDay[key] ?? [];
+            const dayHols = holidaysByDay[key] ?? [];
+            const isToday = key === todayKey;
+            const cellDate = new Date(year, month0, day);
+            const isFriSat = cellDate.getDay() === 5 || cellDate.getDay() === 6;
+            return (
+              <button
+                key={i}
+                onClick={() => setSelected(key)}
+                className={`min-h-[96px] p-1.5 text-right flex flex-col gap-1 transition-colors hover:bg-primary/5 relative ${
+                  isToday ? "bg-primary/10" : isFriSat ? "bg-muted/30" : "bg-card"
+                }`}
+              >
+                {isToday && <span className="absolute inset-0 ring-2 ring-inset ring-primary rounded-none pointer-events-none" />}
+                <div className="flex items-start justify-between">
+                  <span className="text-[10px] text-muted-foreground">{hebrewDay(cellDate)}</span>
+                  <span className={`text-sm font-bold ${isToday ? "w-6 h-6 rounded-full bg-primary text-primary-foreground inline-flex items-center justify-center" : "text-foreground"}`}>{day}</span>
+                </div>
+                {dayHols.slice(0, 1).map((h, j) => (
+                  <span key={j} className="text-[9px] leading-tight px-1 py-0.5 rounded truncate font-medium" style={{ background: `${FAITH_META[h.faith].color}20`, color: FAITH_META[h.faith].color }}>
+                    {h.name}
+                  </span>
+                ))}
+                {dayAppts.slice(0, 2).map((a) => (
+                  <span key={a.id} className="text-[9px] leading-tight px-1 py-0.5 rounded truncate text-white font-medium" style={{ background: statusColor[a.status] }}>
+                    {hhmm(a.starts_at)} {a.customer_name}
+                  </span>
+                ))}
+                {dayAppts.length > 2 && (
+                  <span className="text-[9px] text-muted-foreground font-medium">+{dayAppts.length - 2} נוספים</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Selected-day schedule */}
