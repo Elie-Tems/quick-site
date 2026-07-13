@@ -182,7 +182,7 @@ export const icount: PaymentProvider = {
     return paidSum > 0 || !!hasCcPayment;
   },
 
-  async verifyCredentials(c: ProviderCredentials, _env: PaymentEnv): Promise<{ ok: boolean; error?: string }> {
+  async verifyCredentials(c: ProviderCredentials, _env: PaymentEnv): Promise<{ ok: boolean; error?: string; paypageId?: string | number }> {
     const token = c.api_key ?? "";
     if (!token) return { ok: false, error: "חסר API token של iCount" };
     if (!(c.page_uid ?? "").trim()) return { ok: false, error: "חסר מזהה עמוד סליקה (paypage id) של iCount" };
@@ -197,6 +197,8 @@ export const icount: PaymentProvider = {
     if (resolved.id == null) return { ok: false, error: resolved.error || "מזהה עמוד הסליקה לא נמצא בחשבון iCount" };
     const info = await icall(token, "paypage/info", { paypage_id: resolved.id });
     if (!info.ok) return { ok: false, error: "עמוד הסליקה לא נמצא או לא תקין בחשבון iCount (בדקו את מזהה העמוד)" };
-    return { ok: true };
+    // Return the resolved NUMERIC id so the UI shows/stores it (a slug like "31ff3"
+    // resolves to e.g. 98 - the merchant sees the real paypage_id, not the URL slug).
+    return { ok: true, paypageId: resolved.id };
   },
 };

@@ -47,8 +47,17 @@ const IcountConnectForm = ({ businessId }: { businessId: string }) => {
     setVerifyState("checking");
     setVerifyMsg("");
     const res = await verifyIcountCredentials({ businessId, api_key: token.trim(), page_uid: pageId });
-    if (res.ok) { setVerifyState("ok"); setVerifyMsg("החיבור אומת בהצלחה ✓"); }
-    else { setVerifyState("fail"); setVerifyMsg(res.error || "האימות נכשל - בדקו את הפרטים"); }
+    if (res.ok) {
+      setVerifyState("ok");
+      // Show + store the RESOLVED numeric paypage_id (a URL/slug like 31ff3 resolves to
+      // e.g. 98) so the merchant sees the real id, not the public slug.
+      if (res.paypageId != null) {
+        setPage(String(res.paypageId));
+        setVerifyMsg(`החיבור אומת ✓ - עמוד הסליקה שזוהה: מספר ${res.paypageId}`);
+      } else {
+        setVerifyMsg("החיבור אומת בהצלחה ✓");
+      }
+    } else { setVerifyState("fail"); setVerifyMsg(res.error || "האימות נכשל - בדקו את הפרטים"); }
   };
 
   const handleSave = async () => {

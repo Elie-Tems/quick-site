@@ -48,8 +48,9 @@ export interface PaymentProvider {
   parseCallback(payload: any): CallbackParse;
   /** Authenticate the callback came from the gateway (HMAC / signature check). */
   verifyCallbackSignature(creds: ProviderCredentials, rawBody: string, headers: Headers, payload: any): Promise<boolean>;
-  /** Validate merchant credentials without charging anyone. */
-  verifyCredentials(creds: ProviderCredentials, env: PaymentEnv): Promise<{ ok: boolean; error?: string }>;
+  /** Validate merchant credentials without charging anyone. May return the resolved
+   *  numeric page id (e.g. iCount's paypage_id) so the UI can show/store it. */
+  verifyCredentials(creds: ProviderCredentials, env: PaymentEnv): Promise<{ ok: boolean; error?: string; paypageId?: string | number }>;
 }
 
 export interface PaymentEnv {

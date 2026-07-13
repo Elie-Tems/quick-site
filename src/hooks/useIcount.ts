@@ -35,7 +35,7 @@ export async function verifyIcountCredentials(input: {
   businessId: string;
   api_key: string;
   page_uid: string;
-}): Promise<{ ok: boolean; error?: string }> {
+}): Promise<{ ok: boolean; error?: string; paypageId?: string | number }> {
   const { data, error } = await supabase.functions.invoke("payments-verify", {
     body: { ...input, provider: "icount" },
   });
@@ -45,7 +45,7 @@ export async function verifyIcountCredentials(input: {
     const transient = /failed to send|fetch|network|timeout/i.test(error.message || "");
     return { ok: false, error: transient ? "לא הצלחנו לבדוק את החיבור כרגע (עומס זמני). אפשר לשמור ולנסות שוב מאוחר יותר." : error.message };
   }
-  return data as { ok: boolean; error?: string };
+  return data as { ok: boolean; error?: string; paypageId?: string | number };
 }
 
 // Save credentials (owner RLS) and flip the store to iCount checkout.
