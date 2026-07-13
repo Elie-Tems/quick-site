@@ -492,7 +492,9 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         // screen when the payment never went through.
         throw e;
       }
-      return; // navigation happens inside startPayplusPayment
+      // Signal the checkout NOT to flash "order received" - we're redirecting to the
+      // payment gateway (navigation happens inside startPayplusPayment).
+      return { redirected: true };
     }
 
     try {

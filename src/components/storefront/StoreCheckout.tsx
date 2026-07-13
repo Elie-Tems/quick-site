@@ -27,7 +27,7 @@ interface StoreCheckoutProps {
   deliveryMode?: 'pickup_only' | 'pickup_and_delivery';
   deliveryFee?: number | null;
   businessName?: string;
-  onSubmit: (data: CheckoutData, couponId?: string, total?: number) => Promise<void>;
+  onSubmit: (data: CheckoutData, couponId?: string, total?: number) => Promise<void | { redirected?: boolean }>;
   onBack: () => void;
   /** Called when a valid email is entered (for abandoned-cart capture). */
   onIdentify?: (email: string, name: string) => void;
@@ -85,7 +85,7 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      await onSubmit({ ...formData, deliveryMethod: deliveryMode === 'pickup_and_delivery' ? deliveryMethod : 'pickup' }, appliedCoupon?.coupon.id, totalPrice);
+      const res = await onSubmit({ ...formData, deliveryMethod: deliveryMode === 'pickup_and_delivery' ? deliveryMethod : 'pickup' }, appliedCoupon?.coupon.id, totalPrice);
       // Record explicit marketing opt-in (Chok HaSpam evidence). Fire-and-forget.
       if (marketingConsent && formData.email.trim() && businessId) {
         supabase
@@ -98,7 +98,10 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
           } as any)
           .then(({ error }) => { if (error) console.warn('consent insert failed:', error.message); });
       }
-      setIsSuccess(true);
+      // For online-payment orders onSubmit redirects to the gateway - do NOT flash the
+      // "order received" screen; the redirect is the next step. Only a completed local
+      // order (no payment) shows success here.
+      if (!(res as { redirected?: boolean } | void)?.redirected) setIsSuccess(true);
     } catch {
       // onSubmit already surfaced the reason (toast). Do NOT show the success
       // screen when the order/payment failed.

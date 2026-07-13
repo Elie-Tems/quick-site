@@ -90,27 +90,22 @@ Deno.serve(async (req) => {
         (!coupon.end_date || new Date(coupon.end_date) >= now) &&
         (!coupon.min_order_amount || subtotal >= Number(coupon.min_order_amount)) &&
         (coupon.max_uses == null || Number(coupon.current_uses) < Number(coupon.max_uses))) {
-      // Atomically claim one use (compare-and-set on current_uses): if another
-      // request already consumed the last use, this matches 0 rows and we reject
-      // the coupon - prevents infinite reuse of a max_uses coupon.
-      const { data: claimed } = await admin.from("coupons")
-        .update({ current_uses: Number(coupon.current_uses) + 1 })
-        .eq("id", coupon.id)
-        .eq("current_uses", Number(coupon.current_uses))
-        .select("id");
-      if (claimed && claimed.length) {
-        couponId = coupon.id;
-        discount = coupon.discount_type === "percent"
-          ? Math.round(subtotal * (Number(coupon.discount_value) / 100))
-          : Number(coupon.discount_value);
-        discount = Math.min(discount, subtotal); // never discount below 0
-      }
+      // Apply the discount to the amount NOW. Do NOT consume a use here - a checkout
+      // that is abandoned or never paid must not burn the coupon (that bug made the
+      // coupon "run out" after a few tries and later customers paid full price). The
+      // usage counter is bumped on the confirmed payment (payments-callback).
+      couponId = coupon.id;
+      discount = coupon.discount_type === "percent"
+        ? Math.round(subtotal * (Number(coupon.discount_value) / 100))
+        : Number(coupon.discount_value);
+      discount = Math.min(discount, subtotal); // never discount below 0
     }
   }
 
   const isDelivery = body.deliveryMethod === "delivery";
   const shipping = isDelivery ? Number(business.delivery_fee ?? 0) : 0;
   const amount = Math.max(0, subtotal - discount + shipping);
+  console.log("payments-create: subtotal", subtotal, "discount", discount, "shipping", shipping, "-> amount", amount, "couponId", couponId);
   if (amount <= 0) return json({ error: "Order total must be greater than zero" }, 400);
 
   const { data: order, error: orderErr } = await admin.from("orders").insert({
