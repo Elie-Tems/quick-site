@@ -74,6 +74,26 @@ function buildDoc(d?: DocInput): Record<string, unknown> | undefined {
   };
 }
 
+// Refund (full or partial) a completed transaction by its Cardcom TranzactionId.
+// Per Cardcom "Refund By Transaction Id": required = ApiName + ApiPassword +
+// TransactionId; PartialSum (optional) makes it a partial refund (omit = full).
+// ResponseCode === 0 means success; NewTranzactionId is the refund transaction.
+export function refundByTransactionId(o: {
+  transactionId: number | string;
+  partialSum?: number;      // omit / <=0 for a full refund
+}): Promise<CardcomResult<{ ResponseCode: number; Description: string; NewTranzactionId?: number }>> {
+  const c = creds();
+  if (!c) return Promise.resolve({ ok: false, data: {} as never, error: "CARDCOM creds not set" });
+  if (!c.apiPassword) return Promise.resolve({ ok: false, data: {} as never, error: "CARDCOM_API_PASSWORD חסר (נדרש לזיכוי)" });
+  return call("Transactions/RefundByTransactionId", {
+    TerminalNumber: c.terminal,
+    ApiName: c.apiName,
+    ApiPassword: c.apiPassword,
+    TransactionId: Number(o.transactionId),
+    ...(o.partialSum && o.partialSum > 0 ? { PartialSum: o.partialSum } : {}),
+  });
+}
+
 /** Format a stored expiry (month 1-12, year 2027 or 27) as Cardcom's MMYY. */
 export function toMMYY(month: number | string, year: number | string): string {
   const mm = String(Number(month)).padStart(2, "0");

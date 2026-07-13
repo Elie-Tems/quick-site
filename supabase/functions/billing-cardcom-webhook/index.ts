@@ -117,9 +117,13 @@ Deno.serve(async (req) => {
     console.warn("billing-cardcom-webhook: charge OK but no token returned for", userId);
   }
 
+  // provider_transaction_id = the Cardcom TranzactionId - REQUIRED to refund this
+  // charge later via RefundByTransactionId (confirmation_code is only the approval no.).
+  const tranzId = (rd as { TranzactionId?: number }).TranzactionId ?? rd.TranzactionInfo?.["TranzactionId" as keyof typeof rd.TranzactionInfo];
   await admin.from("billing_charges").insert({
     user_id: userId, business_id: businessId, amount_ils: chargedAmount, status: "success",
     is_test: isTest, confirmation_code: approval, idempotency_key: idem,
+    provider_transaction_id: tranzId != null ? String(tranzId) : null,
     payment_description: "פרסום אתר Siango - חיוב ראשון", invoice_url: invoiceUrl,
   }).then(() => {}).catch(() => {});
 

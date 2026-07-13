@@ -160,7 +160,8 @@ serve(async (req) => {
 
     if (res.ok) {
       const invoiceUrl = (res.data as any)?.DocumentUrl ?? (res.data as any)?.DocumentInfo?.DocumentUrl ?? null;
-      await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.ApprovalNumber ?? null, invoice_url: invoiceUrl }).eq("idempotency_key", idem);
+      const tranzId = (res.data as any)?.TranzactionId;   // needed to refund this charge later
+      await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.ApprovalNumber ?? null, provider_transaction_id: tranzId != null ? String(tranzId) : null, invoice_url: invoiceUrl }).eq("idempotency_key", idem);
       // Everyone bills on the 1st -> next charge is the 1st of next month.
       const nextMs = firstOfNextMonthMs(nowMs);
       await admin.from("subscriptions").update({
