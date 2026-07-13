@@ -11,19 +11,11 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { chargeToken, toMMYY } from "../_shared/cardcom/api.ts";
 import { chargeAmount, withinChargeCeiling, type CouponInfo } from "../_shared/billing/pricing.ts";
+import { nextAnniversaryChargeMs } from "../_shared/billing/schedule.ts";
 
 const RETRY_DAYS = 2;        // reschedule a failed charge this many days out
 const MAX_FAILURES = 3;      // consecutive failures before marking past_due
 const ADMIN_EMAILS = ["moti4384@gmail.com", "furmand713@gmail.com"];
-
-// All subscriptions bill on the 1st of each month. Given a date, returns the 1st of
-// the NEXT month at 00:00 UTC - the daily 01:30 cron picks it up on that day.
-function firstOfNextMonthMs(fromMs: number): number {
-  const d = new Date(fromMs);
-  let y = d.getUTCFullYear(), m = d.getUTCMonth() + 1;
-  if (m > 11) { m = 0; y++; }
-  return Date.UTC(y, m, 1, 0, 0, 0);
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204 });
@@ -79,10 +71,11 @@ serve(async (req) => {
         payment_description: "חודש חינם (הפניית חבר)",
       });
       if (fErr) { skipped++; continue; } // cycle already handled
+      const freeNextMs = nextAnniversaryChargeMs(nowMs, Number(s.billing_anchor_day) || new Date(nowMs).getUTCDate());
       await admin.from("subscriptions").update({
         free_months_credit: Number(s.free_months_credit) - 1,
-        paid_until: new Date(nowMs + 31 * 864e5).toISOString(),
-        next_charge_at: new Date(nowMs + 30 * 864e5).toISOString(),
+        paid_until: new Date(freeNextMs + 2 * 864e5).toISOString(),
+        next_charge_at: new Date(freeNextMs).toISOString(),
         billing_cycle_count: cycle + 1,
         last_charge_status: "free_month",
         updated_at: nowIso,
@@ -162,8 +155,10 @@ serve(async (req) => {
       const invoiceUrl = (res.data as any)?.DocumentUrl ?? (res.data as any)?.DocumentInfo?.DocumentUrl ?? null;
       const tranzId = (res.data as any)?.TranzactionId;   // needed to refund this charge later
       await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.ApprovalNumber ?? null, provider_transaction_id: tranzId != null ? String(tranzId) : null, invoice_url: invoiceUrl }).eq("idempotency_key", idem);
-      // Everyone bills on the 1st -> next charge is the 1st of next month.
-      const nextMs = firstOfNextMonthMs(nowMs);
+      // Anniversary billing: next charge is the same day-of-month the merchant joined
+      // (billing_anchor_day). Falls back to today's day for legacy rows without an anchor.
+      const anchorDay = Number(s.billing_anchor_day) || new Date(nowMs).getUTCDate();
+      const nextMs = nextAnniversaryChargeMs(nowMs, anchorDay);
       await admin.from("subscriptions").update({
         paid_until: new Date(nextMs + 2 * 864e5).toISOString(), // small grace past the next charge
         next_charge_at: new Date(nextMs).toISOString(),

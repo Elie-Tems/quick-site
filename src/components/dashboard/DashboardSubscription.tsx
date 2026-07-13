@@ -337,13 +337,12 @@ const DashboardSubscription = () => {
                   </span>
                 </div>
 
-                {/* Billing always aligns to the 1st of the month, and the first paid
-                    period is never cut short (min. 28 days) - so a mid-month signup's
-                    first cycle runs longer than the usual ~30 days. Explain it here so
-                    it doesn't read as a bug. */}
-                {(subscription.billing_cycle_count ?? 0) <= 1 && daysRemaining !== null && daysRemaining > 31 && (
+                {/* Anniversary billing: charged on the same day-of-month the merchant
+                    joined. The first month was paid in full now; the next charge is that
+                    same date next month. Shown to new merchants so the date is clear. */}
+                {(subscription.billing_cycle_count ?? 0) <= 1 && (
                   <p className="text-xs text-muted-foreground -mt-1">
-                    החודש הראשון תמיד מלא ומתואם לחיוב הבא ב-1 לחודש - לכן הוא ארוך מהרגיל.
+                    החיוב החודשי מתבצע בכל חודש בתאריך שבו הצטרפת. החודש הראשון שולם במלואו עכשיו.
                   </p>
                 )}
 

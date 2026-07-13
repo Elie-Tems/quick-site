@@ -10,6 +10,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getLpResult } from "../_shared/cardcom/api.ts";
+import { nextAnniversaryChargeMs } from "../_shared/billing/schedule.ts";
 
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type" };
 const json = (b: unknown, s = 200) =>
@@ -127,16 +128,12 @@ Deno.serve(async (req) => {
     payment_description: "פרסום אתר Siango - חיוב ראשון", invoice_url: invoiceUrl,
   }).then(() => {}).catch(() => {});
 
-  // Billing aligns to the 1st of each month. The first month is paid in full now, so
-  // the next charge is the FIRST 1st-of-month at least 28 days out (the paid first
-  // month is never cut short). Documented in the Terms + the Help Center.
+  // Anniversary billing: the first month is paid in FULL now, and the next charge is the
+  // same day-of-month the merchant joined (joined on the 15th -> charged the 15th every
+  // month). billing_anchor_day stores that join day. Documented in the Terms + Help Center.
   const nowMs2 = Date.now();
-  const firstOfNext = (fromMs: number) => {
-    const d = new Date(fromMs); let y = d.getUTCFullYear(), m = d.getUTCMonth() + 1;
-    if (m > 11) { m = 0; y++; } return Date.UTC(y, m, 1, 0, 0, 0);
-  };
-  let nextChargeMs = firstOfNext(nowMs2);
-  if (nextChargeMs - nowMs2 < 28 * 864e5) nextChargeMs = firstOfNext(nextChargeMs);
+  const anchorDay = new Date(nowMs2).getUTCDate();
+  const nextChargeMs = nextAnniversaryChargeMs(nowMs2, anchorDay);
   const nextCharge = new Date(nextChargeMs).toISOString();
   const paidUntil = new Date(nextChargeMs + 2 * 864e5).toISOString();
   try {
@@ -144,7 +141,7 @@ Deno.serve(async (req) => {
       user_id: userId, status: "active", billing_provider: "cardcom_token",
       cc_token_id: token ?? null,
       paid_until: paidUntil, next_charge_at: token ? nextCharge : null,
-      billing_cycle_count: 1, last_charge_status: "success", billing_anchor_day: 1,
+      billing_cycle_count: 1, last_charge_status: "success", billing_anchor_day: anchorDay,
       cancel_type: null, cancel_at: null, updated_at: now,
     }, { onConflict: "user_id" });
   } catch (e) { console.warn("cardcom webhook: subscription activation failed (non-fatal):", e); }
