@@ -57,10 +57,20 @@ interface DashboardProductsProps {
   businessType?: import("@/lib/businessModules").BusinessType;
 }
 
+const SECTION_CONFIG: Record<string, { emoji: string; title: string; description: string; addLabel: string }> = {
+  products:   { emoji: "🛍️", title: "המוצרים שלך",       description: "כל מה שהחנות שלך מוכרת",          addLabel: "הוסף מוצר" },
+  services:   { emoji: "⚡",  title: "השירותים שלך",       description: "מה אתה מציע ללקוחות",              addLabel: "הוסף שירות" },
+  realestate: { emoji: "🏘️", title: "הנכסים שלך",         description: "נכסים לקנייה, שכירות, ייזום",     addLabel: "הוסף נכס" },
+  vacation:   { emoji: "🛏️", title: "החדרים והיחידות",    description: "מה האורחים יכולים לבחור",          addLabel: "הוסף חדר / יחידה" },
+  nonprofit:  { emoji: "💙",  title: "הפרויקטים שלך",      description: "יעדי גיוס ופרויקטים פעילים",      addLabel: "הוסף פרויקט" },
+  synagogue:  { emoji: "✡️",  title: "הפרויקטים שלך",      description: "פרויקטים ויעדי גיוס",              addLabel: "הוסף פרויקט" },
+};
+
 // Per-type label overrides for DashboardProducts
 const PRODUCT_LABELS: Record<import("@/lib/businessModules").BusinessType, { title: string; addBtn: string; addForm: string; editForm: string; emptyFirst: string }> = {
   products:   { title: 'מוצרים',    addBtn: 'הוסיפו מוצר',    addForm: 'הוספת מוצר',    editForm: 'עריכת מוצר',    emptyFirst: 'הוסיפו מוצר ראשון' },
-  services:   { title: 'מוצרים',    addBtn: 'הוסיפו פריט',    addForm: 'הוספת פריט',    editForm: 'עריכת פריט',    emptyFirst: 'הוסיפו פריט ראשון' },
+  services:   { title: 'שירותים',   addBtn: 'הוסיפו שירות',   addForm: 'הוספת שירות',   editForm: 'עריכת שירות',   emptyFirst: 'הוסיפו שירות ראשון' },
+  vacation:   { title: 'יחידות',    addBtn: 'הוסיפו יחידה',   addForm: 'הוספת יחידה',   editForm: 'עריכת יחידה',   emptyFirst: 'הוסיפו יחידה ראשונה' },
   nonprofit:  { title: 'פרויקטים', addBtn: 'הוסיפו פרויקט', addForm: 'הוספת פרויקט', editForm: 'עריכת פרויקט', emptyFirst: 'הוסיפו פרויקט ראשון' },
   synagogue:  { title: 'פרויקטים', addBtn: 'הוסיפו פרויקט', addForm: 'הוספת פרויקט', editForm: 'עריכת פרויקט', emptyFirst: 'הוסיפו פרויקט ראשון' },
   realestate: { title: 'נכסים',     addBtn: 'הוסיפו נכס',     addForm: 'הוספת נכס',     editForm: 'עריכת נכס',     emptyFirst: 'הוסיפו נכס ראשון' },
@@ -105,6 +115,12 @@ const DashboardProducts = ({
     sortOrder: '',
     categoryId: '',
   });
+  const [vacationForm, setVacationForm] = useState<{
+    price_per_night: string;
+    price_weekend: string;
+    max_guests: string;
+    min_nights: string;
+  }>({ price_per_night: '', price_weekend: '', max_guests: '', min_nights: '1' });
   const [customFields, setCustomFields] = useState<ProductCustomField[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string | 'all' | 'uncategorized'>('all');
@@ -137,6 +153,7 @@ const DashboardProducts = ({
 
   const resetForm = () => {
     setFormData({ name: '', description: '', price: '', sku: '', imageUrl: '', videoUrl: '', sortOrder: '', categoryId: '' });
+    setVacationForm({ price_per_night: '', price_weekend: '', max_guests: '', min_nights: '1' });
     setCustomFields([]);
     setAdditionalImages([]);
     setEditingProduct(null);
@@ -271,6 +288,13 @@ const DashboardProducts = ({
     });
     setCustomFields(product.customFields || []);
     setAdditionalImages(product.additionalImages || []);
+    const p = product as any;
+    setVacationForm({
+      price_per_night: p.price_per_night != null ? String(p.price_per_night) : '',
+      price_weekend: p.price_weekend != null ? String(p.price_weekend) : '',
+      max_guests: p.max_guests != null ? String(p.max_guests) : '',
+      min_nights: p.min_nights != null ? String(p.min_nights) : '1',
+    });
     setEditingProduct(product);
     setIsFormOpen(true);
   };
@@ -278,6 +302,13 @@ const DashboardProducts = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    const vacationExtra = businessType === 'vacation' ? {
+      price_per_night: vacationForm.price_per_night ? Number(vacationForm.price_per_night) : undefined,
+      price_weekend: vacationForm.price_weekend ? Number(vacationForm.price_weekend) : undefined,
+      max_guests: vacationForm.max_guests ? Number(vacationForm.max_guests) : undefined,
+      min_nights: vacationForm.min_nights ? Number(vacationForm.min_nights) : 1,
+    } : {};
+
     if (editingProduct) {
       // Update existing
       onProductsChange(products.map(p =>
@@ -291,7 +322,8 @@ const DashboardProducts = ({
               categoryId: formData.categoryId || undefined,
               customFields,
               additionalImages,
-            }
+              ...vacationExtra,
+            } as any
           : p
       ));
     } else {
@@ -310,7 +342,8 @@ const DashboardProducts = ({
         categoryId: formData.categoryId || undefined,
         customFields,
         additionalImages,
-      };
+        ...vacationExtra,
+      } as any;
       onProductsChange([...products, newProduct]);
     }
     resetForm();
@@ -818,6 +851,47 @@ const DashboardProducts = ({
                 )}
               </div>
 
+              {/* Vacation fields */}
+              {businessType === "vacation" && (
+                <div className="space-y-3 rounded-xl border border-border p-4 bg-muted/30">
+                  <p className="text-sm font-medium">פרטי לינה</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground">מחיר ללילה (₪)</label>
+                      <Input
+                        type="number"
+                        value={vacationForm.price_per_night}
+                        onChange={e => setVacationForm(v => ({ ...v, price_per_night: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground">מחיר ל-weekend (₪)</label>
+                      <Input
+                        type="number"
+                        value={vacationForm.price_weekend}
+                        onChange={e => setVacationForm(v => ({ ...v, price_weekend: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground">תפוסה מקסימלית</label>
+                      <Input
+                        type="number"
+                        value={vacationForm.max_guests}
+                        onChange={e => setVacationForm(v => ({ ...v, max_guests: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground">מינימום לילות</label>
+                      <Input
+                        type="number"
+                        value={vacationForm.min_nights}
+                        onChange={e => setVacationForm(v => ({ ...v, min_nights: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Custom Fields Section */}
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
@@ -1129,8 +1203,22 @@ const DashboardProducts = ({
         className="hidden"
       />
 
+      {/* Colorful section header */}
+      {(() => {
+        const cfg = SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG.products;
+        return (
+          <div className="rounded-2xl bg-gradient-to-l from-violet-500/15 to-violet-500/5 border border-violet-500/20 p-5 flex items-center gap-4">
+            <div className="text-4xl">{cfg.emoji}</div>
+            <div className="flex-1">
+              <h1 className="text-lg font-bold text-foreground">{cfg.title}</h1>
+              <p className="text-sm text-muted-foreground">{cfg.description}</p>
+            </div>
+          </div>
+        );
+      })()}
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-foreground">{pl.title} ({products.length})</h1>
+        <p className="text-sm text-muted-foreground">{products.length} פריטים</p>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Button 
             variant="outline" 
@@ -1288,20 +1376,22 @@ const DashboardProducts = ({
       )}
 
       {products.length === 0 ? (
-        <div className="text-center py-14 bg-muted/30 rounded-xl px-4">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <Package className="h-8 w-8 text-primary" />
-          </div>
-          <p className="text-lg font-semibold text-foreground mb-1">בואו נוסיף את המוצר הראשון</p>
-          <p className="text-sm text-muted-foreground mb-5 max-w-sm mx-auto">המוצרים שתוסיפו יופיעו בחנות שלכם. אפשר להתחיל ממוצר אחד ולהוסיף עוד בהמשך.</p>
+        <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+          <div className="text-6xl mb-4">{(SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG.products).emoji}</div>
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            עדיין לא הוספת {(SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG.products).title.replace(/^ה/, "")}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+            הוסיפו את הפריט הראשון שלכם ותתחילו להופיע ללקוחות.
+          </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button onClick={openAddForm} variant="outline" className="gap-2">
               <Plus className="h-4 w-4" />
               {pl.emptyFirst}
             </Button>
             <span className="text-muted-foreground text-sm">או</span>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => setShowImportInstructions(true)}
               className="gap-2 text-primary"
             >
@@ -1309,7 +1399,7 @@ const DashboardProducts = ({
               ייבוא מאקסל
             </Button>
           </div>
-          <button 
+          <button
             onClick={downloadTemplate}
             className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1.5"
           >
