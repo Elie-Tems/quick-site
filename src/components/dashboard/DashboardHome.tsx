@@ -4,6 +4,9 @@ import type { DashboardView } from "./DashboardNav";
 import type { BusinessType } from "@/lib/businessModules";
 import DashboardAnalytics from "./DashboardAnalytics";
 import ReferralBox from "./ReferralBox";
+import WowStrip from "./WowStrip";
+import TodoCards from "./TodoCards";
+import type { PopupId, PopupState } from "./PostLaunchPopups";
 
 interface DashboardHomeProps {
   stats: {
@@ -23,6 +26,8 @@ interface DashboardHomeProps {
   hasAbout?: boolean;
   businessType?: BusinessType;
   onNavigate: (view: DashboardView) => void;
+  popupState?: PopupState | null;
+  onReopenPopup?: (id: PopupId) => void;
 }
 
 // Per-type label/icon config for the 4 stat cards
@@ -86,6 +91,16 @@ const TYPE_LABELS: Record<BusinessType, {
     todosProductsLabel: "הוסיפו נכסים",
     todosPaymentLabel: "הגדירו קבלת תשלומים / עמלות",
   },
+  vacation: {
+    items: { label: "חדרים", shortLabel: "חדרים", icon: Building2 },
+    transactions: { label: "הזמנות לינה", shortLabel: "הזמנות", icon: ShoppingCart },
+    revenue: { label: "הכנסות לינה" },
+    contacts: { label: "אורחים", icon: Users },
+    productsNav: "products",
+    ordersNav: "orders",
+    todosProductsLabel: "הוסיפו חדרים ויחידות",
+    todosPaymentLabel: "הגדירו קבלת תשלומים מאורחים",
+  },
 };
 
 const DashboardHome = ({
@@ -97,6 +112,8 @@ const DashboardHome = ({
   hasAbout,
   businessType = "products",
   onNavigate,
+  popupState,
+  onReopenPopup,
 }: DashboardHomeProps) => {
   const t = TYPE_LABELS[businessType];
 
@@ -209,6 +226,14 @@ const DashboardHome = ({
           </button>
         ))}
       </div>
+
+      {/* WowStrip */}
+      <WowStrip businessType={businessType} onNavigate={onNavigate} />
+
+      {/* Todo cards */}
+      {popupState != null && onReopenPopup && (
+        <TodoCards popupState={popupState} onReopen={onReopenPopup} />
+      )}
 
       {/* What's left */}
       {todos.length > 0 && (

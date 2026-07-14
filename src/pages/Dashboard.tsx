@@ -42,6 +42,7 @@ import DashboardWhatsApp from "@/components/dashboard/DashboardWhatsApp";
 import DashboardEmail from "@/components/dashboard/DashboardEmail";
 import DashboardUpgrades from "@/components/dashboard/DashboardUpgrades";
 import DashboardLegal from "@/components/dashboard/DashboardLegal";
+import PostLaunchPopups, { type PopupState, type PopupId } from "@/components/dashboard/PostLaunchPopups";
 import DashboardAdBudget from "@/components/dashboard/DashboardAdBudget";
 import { useMyBusiness, useProfile } from "@/hooks/useBusiness";
 import { getBusinessType, getEnabledModules } from "@/lib/businessModules";
@@ -91,6 +92,7 @@ const Dashboard = () => {
   };
   const { entitled: crmEntitled } = useCrmEntitled();
   const { entitled: analyticsEntitled } = useAnalyticsEntitled();
+  const [popupState, setPopupState] = useState<PopupState | null>(null);
   const [subscribingAddon, setSubscribingAddon] = useState<string | null>(null);
   // Opening this modal is the ONLY way an add-on gets charged - a single click on
   // a paywall "הפעילו עכשיו" opens a confirmation window, never an instant charge.
@@ -490,6 +492,16 @@ const Dashboard = () => {
     }
   }, [dbBanners]);
 
+  // Initialize popup state when business loads
+  useEffect(() => {
+    if (!business) return;
+    if ((business as any).popup_state) {
+      setPopupState((business as any).popup_state as PopupState);
+    } else {
+      setPopupState({ shown: [], dismissed: [], completed: [] });
+    }
+  }, [business?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Sync settings from database
   useEffect(() => {
     if (business) {
@@ -589,7 +601,7 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (currentView) {
       case 'home':
-        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} cancelledUntil={cancelledUntil} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} businessType={getBusinessType(business)} onNavigate={goToView} />;
+        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} cancelledUntil={cancelledUntil} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} businessType={getBusinessType(business)} onNavigate={goToView} popupState={popupState} onReopenPopup={(id: PopupId) => { setPopupState(prev => prev ? { ...prev, shown: prev.shown.filter(s => s !== id), dismissed: prev.dismissed.filter(d => d !== id) } : prev); }} />;
       case 'verticals':
         return <VerticalModules business={business as any} />;
       case 'lifecycle-emails':
@@ -852,6 +864,22 @@ const Dashboard = () => {
             storeSlug={business?.slug ?? undefined}
           />
         );
+      case 'availability':
+        return <div className="p-6 text-muted-foreground">יומן זמינות - בקרוב</div>;
+      case 'guests':
+        return (
+          <PremiumOverlay
+            locked={!crmEntitled}
+            title="CRM - לקוחות, ספקים ורווחיות"
+            description="כל ניהול המכירות במקום אחד: לקוחות עם היסטוריה וסגמנטים, ניהול ספקים, ודוחות רווחיות אמיתיים."
+            bullets={["כרטיס לקוח מלא + סגמנטים + תגיות/הערות", "תזכורת רכישה חוזרת + שליחת הטבה בוואטסאפ", "כרטיסי ספק: פרטי קשר, הערות ומוצרים", "רווח ואחוז רווח לכל מוצר + רווח לפי ספק"]}
+            priceLabel="הפעלה ב-₪49 לחודש"
+            onUpgrade={() => setCheckoutItems([CRM_ITEM])}
+            busy={false}
+          >
+            <DashboardCRM orders={orders} businessId={business?.id} demoMode={!crmEntitled} initialTab="customers" />
+          </PremiumOverlay>
+        );
       default:
         return null;
     }
@@ -861,6 +889,12 @@ const Dashboard = () => {
     <ThemeProvider>
       <SEOHead title="לוח ניהול | סיאנגו" noindex={true} />
       {showTour && <DashboardTour onClose={() => setShowTour(false)} />}
+      <PostLaunchPopups
+        businessId={business?.id}
+        onNavigate={goToView}
+        popupState={popupState}
+        onStateChange={setPopupState}
+      />
       <div className="min-h-screen bg-muted/30">
         <DashboardHeader
           businessName={settings.name}

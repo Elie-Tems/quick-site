@@ -1,10 +1,10 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2, FileText, CalendarClock, Layers, Mail, Blocks } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2, FileText, CalendarClock, Layers, Mail, Blocks, CalendarDays, PenLine } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 import type { BusinessType } from "@/lib/businessModules";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails' | 'modules';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails' | 'modules' | 'availability' | 'guests';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -23,14 +23,14 @@ interface DashboardNavProps {
 }
 
 // Sidebar groups (desktop shows these as section headers). Order here = display order.
-// Redesigned IA: 6 focused groups instead of the old sprawling list.
-const NAV_GROUPS = ["בית", "תוספות וכלים", "תוכן", "עריכה ועיצוב", "ניהול מכירות", "שיווק", "הגדרות"] as const;
+const NAV_GROUPS = ["סקירה", "ניהול", "תוכן ועיצוב", "שיווק", "הגדרות"] as const;
 type NavGroup = (typeof NAV_GROUPS)[number];
 
 // Per-business-type overrides: which nav items to hide, and label/icon overrides.
 const TYPE_CONFIG: Record<BusinessType, {
   hiddenItems?: DashboardView[];
   managementGroupLabel?: string;
+  extraNavItems?: typeof navItems;
   itemOverrides?: Partial<Record<DashboardView, { label?: string; shortLabel?: string; icon?: React.ComponentType<{ className?: string }> }>>;
 }> = {
   products:  { hiddenItems: ['visualization-studio'] },
@@ -59,6 +59,19 @@ const TYPE_CONFIG: Record<BusinessType, {
       orders: { label: "לידים", shortLabel: "לידים", icon: Users },
     },
   },
+  vacation: {
+    managementGroupLabel: "ניהול לינה",
+    hiddenItems: ['shipping', 'coupons', 'visualization-studio'] as DashboardView[],
+    itemOverrides: {
+      products: { label: "חדרים ויחידות", shortLabel: "חדרים", icon: Building2 },
+      orders: { label: "הזמנות לינה", shortLabel: "הזמנות", icon: ShoppingCart },
+      customers: { label: "אורחים", shortLabel: "אורחים", icon: Users },
+    },
+    extraNavItems: [
+      { id: "availability" as DashboardView, label: "יומן זמינות", shortLabel: "זמינות", icon: CalendarDays, group: "ניהול" },
+      { id: "guests" as DashboardView, label: "אורחים & CRM", shortLabel: "אורחים", icon: Users, group: "ניהול" },
+    ],
+  },
 };
 
 const navItems: {
@@ -69,44 +82,38 @@ const navItems: {
   premium?: boolean;
   group: NavGroup;
 }[] = [
-  // בית
-  { id: "home", label: "סקירה", icon: LayoutDashboard, group: "בית" },
+  // סקירה
+  { id: "home", label: "סקירה כללית", shortLabel: "סקירה", icon: LayoutDashboard, group: "סקירה" },
 
-  // תוכן - עריכת כותרת ראשית + אודות
-  { id: "content", label: "תוכן", icon: FileText, group: "תוכן" },
+  // ניהול
+  { id: "orders", label: "הזמנות", icon: ShoppingCart, group: "ניהול" },
+  { id: "products", label: "מוצרים", icon: Package, group: "ניהול" },
+  { id: "customers", label: "לקוחות", icon: Users, group: "ניהול" },
+  // Vertical managers (booking calendar / listings / donation campaigns)
+  { id: "verticals", label: "יומן ולידים", icon: CalendarClock, group: "ניהול" },
+  { id: "shipping", label: "משלוחים", icon: Truck, group: "ניהול" },
 
-  // עריכה ועיצוב - כל מה שבונה את תוכן ומראה החנות
-  // (קטגוריות + מבצעים הם עכשיו טאבים בתוך "מוצרים")
-  { id: "modules", label: "המודולים שלי", shortLabel: "מודולים", icon: Blocks, group: "עריכה ועיצוב" },
-  { id: "products", label: "מוצרים", icon: Package, group: "עריכה ועיצוב" },
-  { id: "design", label: "עיצוב", icon: Palette, group: "עריכה ועיצוב" },
-  { id: "store-texts", label: "טקסטים", icon: Type, group: "עריכה ועיצוב" },
-  { id: "ai-generated-images", label: "גלריית תמונות", shortLabel: "גלריה", icon: Image, group: "עריכה ועיצוב" },
-  { id: "visualization-studio", label: "סטודיו הדמיות", shortLabel: "הדמיות", icon: Layers, group: "עריכה ועיצוב" },
-  { id: "preview", label: "תצוגה מקדימה", shortLabel: "תצוגה", icon: Eye, group: "עריכה ועיצוב" },
-
-  // ניהול מכירות
-  // Vertical managers (booking calendar / listings / donation campaigns). Shown
-  // only for non-commerce businesses; label follows the active module.
-  { id: "verticals", label: "יומן ולידים", icon: CalendarClock, group: "ניהול מכירות" },
-  { id: "orders", label: "הזמנות", icon: ShoppingCart, group: "ניהול מכירות" },
-  { id: "coupons", label: "קופונים", icon: Ticket, group: "ניהול מכירות" },
-  { id: "shipping", label: "משלוחים", icon: Truck, group: "ניהול מכירות" },
-  { id: "payments", label: "סליקה", icon: CreditCard, group: "ניהול מכירות" },
-
-  // תוספות וכלים - כניסה לחנות בלבד; הפירוט נמצא בתוך החנות עצמה
-  { id: "upgrades", label: "כל התוספות", shortLabel: "תוספות", icon: Sparkles, group: "תוספות וכלים" },
+  // תוכן ועיצוב
+  { id: "content", label: "תוכן", icon: PenLine, group: "תוכן ועיצוב" },
+  { id: "design", label: "עיצוב", icon: Palette, group: "תוכן ועיצוב" },
+  { id: "ai-images", label: "תמונות AI", shortLabel: "תמונות AI", icon: ImagePlus, group: "תוכן ועיצוב" },
+  { id: "ai-generated-images", label: "גלריית תמונות", shortLabel: "גלריה", icon: Image, group: "תוכן ועיצוב" },
+  { id: "visualization-studio", label: "סטודיו הדמיות", shortLabel: "הדמיות", icon: Layers, group: "תוכן ועיצוב" },
+  { id: "modules", label: "מודולים", icon: Blocks, group: "תוכן ועיצוב" },
 
   // שיווק
+  { id: "coupons", label: "קופונים", icon: Ticket, group: "שיווק" },
   { id: "campaigns", label: "פרסום באתר", icon: Megaphone, group: "שיווק" },
-  { id: "discounts", label: "מבצעים ומובילים", icon: Tag, group: "שיווק" },
+  { id: "discounts", label: "מבצעים ומובילים", shortLabel: "מבצעים", icon: Tag, group: "שיווק" },
   { id: "lifecycle-emails", label: "מיילים ללקוחות", shortLabel: "מיילים", icon: Mail, group: "שיווק" },
   { id: "whatsapp-button", label: "כפתור וואטסאפ", shortLabel: "וואטסאפ", icon: MessageCircle, group: "שיווק" },
 
   // הגדרות
+  { id: "domains", label: "דומיינים", icon: Globe, group: "הגדרות" },
   { id: "settings", label: "פרטי העסק", shortLabel: "הגדרות", icon: Settings, group: "הגדרות" },
-  { id: "subscription", label: "התוכנית שלי", icon: Crown, group: "הגדרות" },
   { id: "legal", label: "מסמכים משפטיים", shortLabel: "משפטי", icon: ScrollText, group: "הגדרות" },
+  { id: "subscription", label: "התוכנית שלי", icon: Crown, group: "הגדרות" },
+  { id: "payments", label: "סליקה", icon: CreditCard, group: "הגדרות" },
 ];
 
 const DashboardNav = ({
@@ -123,10 +130,14 @@ const DashboardNav = ({
   const hiddenItems = new Set(typeConfig.hiddenItems ?? []);
   const itemOverrides = typeConfig.itemOverrides ?? {};
   const managementGroupLabel = typeConfig.managementGroupLabel;
+  const extraNavItems = typeConfig.extraNavItems ?? [];
+
+  // Merge base items with any type-specific extra items (e.g. vacation's availability + guests)
+  const allNavItems = [...navItems, ...extraNavItems];
 
   // WhatsApp + Email are built but not live yet: show them as "בקרוב" (clearly
   // upcoming) instead of hiding them, so they read as a roadmap, not as missing.
-  const itemsToRender = navItems
+  const itemsToRender = allNavItems
     .map((item) => {
       const override = itemOverrides[item.id] ?? {};
       return {
@@ -148,18 +159,16 @@ const DashboardNav = ({
       return true;
     });
 
-  const activeGroup = navItems.find((i) => i.id === currentView)?.group;
-  // Open the active group, and always open "ניהול מכירות" for a vertical business
-  // (services/realestate/nonprofit/synagogue) so its main tool - the calendar /
-  // leads board / donations - is visible right away instead of buried collapsed.
+  const activeGroup = allNavItems.find((i) => i.id === currentView)?.group;
+  // Open the active group, and always open "ניהול" for vertical/management-heavy businesses.
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(NAV_GROUPS.map((g) => [g, g === activeGroup || (g === "ניהול מכירות" && showVerticals)])),
+    Object.fromEntries(NAV_GROUPS.map((g) => [g, g === activeGroup || g === "ניהול"])),
   );
   const toggleGroup = (g: NavGroup) => setOpenGroups((s) => ({ ...s, [g]: !s[g] }));
 
   // Resolve the display label for a group (may be overridden for certain business types)
   const groupLabel = (group: NavGroup) =>
-    group === "ניהול מכירות" && managementGroupLabel ? managementGroupLabel : group;
+    group === "ניהול" && managementGroupLabel ? managementGroupLabel : group;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border md:sticky md:top-14 md:border-t-0 md:border-l md:w-56 md:h-[calc(100vh-3.5rem)] md:overflow-y-auto">
@@ -194,6 +203,24 @@ const DashboardNav = ({
       </div>
 
       <div className="hidden md:flex md:flex-col p-3 gap-1">
+        {/* Quick-action row: preview site + upgrades */}
+        <div className="flex gap-1.5 mb-2">
+          <button
+            type="button"
+            onClick={() => onViewChange("preview")}
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg border border-border text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <Eye className="h-3.5 w-3.5" /> צפה באתר
+          </button>
+          <button
+            type="button"
+            onClick={() => onViewChange("upgrades")}
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/8 text-[11px] font-medium text-violet-600 dark:text-violet-400 hover:bg-violet-500/15 transition-colors"
+          >
+            ✨ תוספות
+          </button>
+        </div>
+
         {NAV_GROUPS.map((group) => {
           const groupItems = itemsToRender.filter((item) => item.group === group);
           if (groupItems.length === 0) return null;
@@ -205,14 +232,9 @@ const DashboardNav = ({
             <div key={group} className="mb-1">
               <button
                 onClick={() => singleItemId ? onViewChange(singleItemId) : toggleGroup(group)}
-                className={cn(
-                  "w-full flex items-center justify-between px-3 pt-3 pb-1.5 text-[11px] font-semibold tracking-wider transition-colors",
-                  group === "תוספות וכלים"
-                    ? "text-primary hover:text-primary/80"
-                    : "text-muted-foreground/70 hover:text-foreground"
-                )}
+                className="w-full flex items-center justify-between px-3 pt-3 pb-1.5 text-[11px] font-semibold tracking-wider transition-colors text-muted-foreground/70 hover:text-foreground"
               >
-                <span className={group === "תוספות וכלים" ? "font-bold text-[12px]" : ""}>{displayGroupLabel}</span>
+                <span>{displayGroupLabel}</span>
                 {!singleItemId && <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open ? "" : "-rotate-90")} />}
               </button>
               {open && groupItems.map((item) => {
@@ -237,18 +259,14 @@ const DashboardNav = ({
                     onClick={() => onViewChange(item.id)}
                     className={cn(
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-right relative",
-                      item.id === "upgrades"
-                        ? isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-primary/10 text-primary hover:bg-primary/20 font-semibold"
-                        : isActive
+                      isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
                     <Icon className="h-5 w-5 flex-shrink-0" />
                     <span>{item.label}</span>
-                    {item.premium && item.id !== "upgrades" && (
+                    {item.premium && (
                       <span className="mr-auto px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded">
                         פרימיום
                       </span>
@@ -259,6 +277,19 @@ const DashboardNav = ({
             </div>
           );
         })}
+
+        {/* Bottom upsell card */}
+        <div className="mt-auto pt-3 px-2">
+          <button
+            type="button"
+            onClick={() => onViewChange("upgrades")}
+            className="w-full rounded-2xl border border-violet-500/25 bg-gradient-to-b from-violet-500/10 to-violet-500/5 p-3 text-right hover:from-violet-500/15 transition-all"
+          >
+            <p className="text-xs font-semibold text-violet-700 dark:text-violet-300 mb-1">✨ תוספות שוות</p>
+            <p className="text-[10px] text-muted-foreground leading-snug">Google Reviews · דומיין · CRM מלא</p>
+            <p className="text-[10px] font-medium text-violet-600 dark:text-violet-400 mt-1">גלה עוד ←</p>
+          </button>
+        </div>
       </div>
     </nav>
   );
