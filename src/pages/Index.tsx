@@ -72,12 +72,27 @@ const HOW_STEP_META = [
   { letter: "C", icon: Package },
 ];
 
-const PROCESS_IMGS = [
-  { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80", pos: "center center" },
-  { src: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=900&q=80", pos: "center top" },
-  { src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80", pos: "center center" },
-  { src: "", pos: "" }, // step 4: rendered as Siango browser mockup
-];
+const PROCESS_IMGS: Record<string, Array<{ src: string; pos: string }>> = {
+  commerce: [
+    { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80", pos: "center center" },
+    { src: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=900&q=80", pos: "center top" },
+    { src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80", pos: "center center" },
+    { src: "", pos: "" },
+  ],
+  donations: [
+    { src: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=900&q=80", pos: "center center" },
+    { src: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=900&q=80", pos: "center center" },
+    { src: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=900&q=80", pos: "center center" },
+    { src: "", pos: "" },
+  ],
+  booking: [
+    { src: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=900&q=80", pos: "center center" },
+    { src: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=900&q=80", pos: "center top" },
+    { src: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&q=80", pos: "center top" },
+    { src: "", pos: "" },
+  ],
+};
+const getProcessImgs = (engKey: string) => PROCESS_IMGS[engKey] ?? PROCESS_IMGS.commerce;
 
 const HeroBg = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -118,6 +133,7 @@ const hasOAuthReturn = () => {
 const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }) => {
   const { t } = useLanguage();
   const [imgIdx, setImgIdx] = useState(0);
+  const processImgs = getProcessImgs(engKey);
   const HOW_STEPS = HOW_STEP_META.map((m, i) => ({
     ...m,
     title: t(`engine.${engKey}.step${i + 1}.title`),
@@ -133,9 +149,9 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
   ];
 
   useEffect(() => {
-    const ti = setInterval(() => setImgIdx(i => (i + 1) % PROCESS_IMGS.length), 3400);
+    const ti = setInterval(() => setImgIdx(i => (i + 1) % processImgs.length), 3400);
     return () => clearInterval(ti);
-  }, []);
+  }, [processImgs.length]);
 
   return (
     <section className="relative py-28 px-4 overflow-hidden">
@@ -235,41 +251,87 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
                           <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
                         </div>
                         <div className="flex-1 mx-3 px-3 py-1 rounded text-xs text-center" style={{ background: "#0f172a", color: "#94a3b8" }}>
-                          siango.app/store/בוטיק-שלי
+                          {engKey === "donations" ? "siango.app/campaign/אוכל-לכל" : engKey === "booking" ? "siango.app/book/סטודיו-יפה" : "siango.app/store/בוטיק-שלי"}
                         </div>
                       </div>
-                      {/* store header */}
-                      <div className="px-4 py-2 shrink-0 flex items-center justify-between" style={{ background: "#22c55e" }}>
-                        <span className="text-xs font-bold text-white">🛍️ בוטיק שלי</span>
-                        <span className="text-xs text-white/80">עגלה (0)</span>
-                      </div>
-                      {/* products grid */}
-                      <div className="flex-1 p-3 overflow-hidden" style={{ background: "#f8fafc" }}>
-                        <div className="grid grid-cols-3 gap-2 h-full">
-                          {[
-                            { name: "שמלת ערב", price: "₪320", bg: "#dbeafe" },
-                            { name: "חולצת לינן", price: "₪185", bg: "#f0fdf4" },
-                            { name: "מכנסי גאוצ'ו", price: "₪240", bg: "#fdf4ff" },
-                          ].map((p) => (
-                            <div key={p.name} className="rounded-lg overflow-hidden flex flex-col" style={{ background: "#fff", border: "1px solid #e2e8f0" }}>
-                              <div className="flex-1 flex items-center justify-center text-2xl" style={{ background: p.bg }}>🧥</div>
-                              <div className="p-1.5">
-                                <div className="text-xs font-semibold text-right" style={{ color: "#0f172a", fontSize: "9px" }}>{p.name}</div>
-                                <div className="text-xs font-bold" style={{ color: "#22c55e", fontSize: "9px" }}>{p.price}</div>
+                      {engKey === "donations" ? (
+                        <>
+                          <div className="px-4 py-2 shrink-0 flex items-center justify-between" style={{ background: "#dc2626" }}>
+                            <span className="text-xs font-bold text-white">❤️ עמותת אוכל לכל</span>
+                            <span className="text-xs text-white/80">מאז 2010</span>
+                          </div>
+                          <div className="flex-1 overflow-hidden" style={{ background: "#fff7f7" }}>
+                            <img src="https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&q=70" alt="food baskets" className="w-full object-cover" style={{ height: "52%", objectPosition: "center" }} />
+                            <div className="px-3 pt-2">
+                              <div className="text-xs font-bold mb-1" style={{ color: "#7f1d1d", fontSize: "9px" }}>קמפיין: חבילות מזון לחגים</div>
+                              <div className="w-full rounded-full mb-1.5" style={{ height: 5, background: "#fee2e2" }}>
+                                <div className="rounded-full h-full" style={{ width: "68%", background: "#dc2626" }} />
                               </div>
+                              <div className="flex justify-between" style={{ fontSize: "8px", color: "#991b1b" }}>
+                                <span>₪6,800 נאסף</span><span>יעד: ₪10,000</span>
+                              </div>
+                              <button className="mt-2 w-full rounded text-white font-bold py-1 text-xs" style={{ background: "#dc2626", fontSize: "9px" }}>תרמו עכשיו ←</button>
                             </div>
-                          ))}
-                        </div>
-                      </div>
+                          </div>
+                        </>
+                      ) : engKey === "booking" ? (
+                        <>
+                          <div className="px-4 py-2 shrink-0 flex items-center justify-between" style={{ background: "#6366f1" }}>
+                            <span className="text-xs font-bold text-white">✂️ סטודיו יפה</span>
+                            <span className="text-xs text-white/80">הזמנת תורים</span>
+                          </div>
+                          <div className="flex-1 p-3 overflow-hidden" style={{ background: "#f8fafc" }}>
+                            {[
+                              { name: "תספורת + פן", price: "₪180", time: "60 דק'" },
+                              { name: "צבע שיער", price: "₪350", time: "120 דק'" },
+                              { name: "טיפול פנים", price: "₪220", time: "75 דק'" },
+                            ].map((s) => (
+                              <div key={s.name} className="flex items-center justify-between mb-1.5 rounded-lg px-2 py-1.5" style={{ background: "#fff", border: "1px solid #e2e8f0" }}>
+                                <button className="rounded text-white px-2 py-0.5" style={{ background: "#6366f1", fontSize: "8px" }}>הזמן</button>
+                                <div className="text-right">
+                                  <div style={{ fontSize: "9px", fontWeight: 600, color: "#0f172a" }}>{s.name}</div>
+                                  <div style={{ fontSize: "8px", color: "#6366f1" }}>{s.price} · {s.time}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="px-4 py-2 shrink-0 flex items-center justify-between" style={{ background: "#22c55e" }}>
+                            <span className="text-xs font-bold text-white">🛍️ בוטיק שלי</span>
+                            <span className="text-xs text-white/80">עגלה (0)</span>
+                          </div>
+                          <div className="flex-1 p-3 overflow-hidden" style={{ background: "#f8fafc" }}>
+                            <div className="grid grid-cols-3 gap-2 h-full">
+                              {[
+                                { name: "שמלת ערב", price: "₪320", img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=120&q=70" },
+                                { name: "חולצת לינן", price: "₪185", img: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=120&q=70" },
+                                { name: "מכנסיים", price: "₪240", img: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=120&q=70" },
+                              ].map((p) => (
+                                <div key={p.name} className="rounded-lg overflow-hidden flex flex-col" style={{ background: "#fff", border: "1px solid #e2e8f0" }}>
+                                  <div className="flex-1 overflow-hidden" style={{ maxHeight: "65%" }}>
+                                    <img src={p.img} alt={p.name} className="w-full h-full object-cover" />
+                                  </div>
+                                  <div className="p-1.5">
+                                    <div className="text-xs font-semibold text-right" style={{ color: "#0f172a", fontSize: "9px" }}>{p.name}</div>
+                                    <div className="text-xs font-bold" style={{ color: "#22c55e", fontSize: "9px" }}>{p.price}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </motion.div>
                   ) : (
                     <motion.img key={imgIdx}
-                      src={PROCESS_IMGS[imgIdx].src}
+                      src={processImgs[imgIdx].src}
                       alt={imgCaptions[imgIdx]}
                       initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
                       className="absolute inset-0 w-full h-full object-cover"
-                      style={{ objectPosition: PROCESS_IMGS[imgIdx].pos }}
+                      style={{ objectPosition: processImgs[imgIdx].pos }}
                     />
                   )}
                 </AnimatePresence>
@@ -288,7 +350,7 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
                     )}
                   </AnimatePresence>
                   <div className="flex gap-2 mr-auto">
-                    {PROCESS_IMGS.map((_, i) => (
+                    {processImgs.map((_, i) => (
                       <button key={i} onClick={() => setImgIdx(i)}
                         className="transition-all duration-300 rounded-full"
                         style={{
