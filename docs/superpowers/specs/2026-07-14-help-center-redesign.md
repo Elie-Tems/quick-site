@@ -1,131 +1,124 @@
-# Help Center Redesign — Spec
+# אפיון: עיצוב מחדש של מרכז הידע
 
-## Goal
-Replace the current cluttered two-panel layout (KB grid + separate chat) with a single, focused page: one big search/chat bar at top, expandable category accordion below.
+## מטרה
+להחליף את הפריסה הצפופה הנוכחית (גריד KB + צ'אט נפרד) בדף אחד ממוקד: שורת חיפוש/צ'אט גדולה בראש, ואקורדיון קטגוריות מתפשטות מתחת.
 
-## Architecture
+## ארכיטקטורה
 
-Single file: `src/pages/HelpCenter.tsx` (full rewrite of the JSX and state; all existing logic for streaming, `HARDCODED_ANSWERS`, conversation memory, and `KNOWLEDGE_BASE` is kept).
+קובץ יחיד: `src/pages/HelpCenter.tsx` (כתיבה מחדש של ה-JSX וה-state; כל הלוגיקה הקיימת לסטרימינג, `HARDCODED_ANSWERS`, זיכרון שיחה ו-`KNOWLEDGE_BASE` נשמרת).
 
-No new files, no new DB tables.
+אין קבצים חדשים, אין טבלות DB חדשות.
 
 ---
 
-## Layout (top to bottom)
+## מבנה הדף (מלמעלה למטה)
 
-### 1. Header — unchanged
-Sticky, with back button and logo. No changes.
+### 1. Header — ללא שינוי
+סטיקי, עם כפתור חזרה ולוגו. ללא שינויים.
 
-### 2. Hero
-- Small centered heading: `איך אפשר לעזור? 🤗`
-- One-line subtitle: `שאל שאלה חופשית או עיין לפי נושא`
-- No badge/pill above the heading (remove existing pill)
+### 2. כותרת
+- כותרת מרכזית קטנה: `איך אפשר לעזור? 🤗`
+- תת-כותרת: `שאל שאלה חופשית או עיין לפי נושא`
+- ללא ה-badge/pill מעל הכותרת (מסירים)
 
-### 3. Search / Chat Bar
-A single prominent input, always visible, that serves both roles:
+### 3. שורת חיפוש / צ'אט
+קלט בולט אחד, תמיד גלוי, שמשרת שני תפקידים:
 
 ```
 [💬 שאל שאלה חופשית...                    ] [שלח]
 ```
 
-- `border: 2px solid primary`, `border-radius: 16px`, padding `14px 16px`
-- Subtle box-shadow on focus
-- Pressing Enter or clicking "שלח" → sends to AI chat (same `handleSend` logic)
-- Typing **filters KB articles in real-time** (same logic as current `kbQuery` + `setKbQuery`)
-- The input is ONE element that sets both `input` (for chat) and `kbQuery` (for search) simultaneously
+- `border: 2px solid primary`, `border-radius: 16px`, `padding: 14px 16px`
+- צל עדין בפוקוס
+- Enter או לחיצה על "שלח" → שולח לצ'אט AI (אותה לוגיקת `handleSend`)
+- הקלדה → **מסנן מאמרי KB בזמן אמת** (אותה לוגיקה של `kbQuery`)
+- הקלט הוא רכיב **אחד** שמעדכן גם את `input` (לצ'אט) וגם את `kbQuery` (לחיפוש) בו-זמנית
 
-### 4. Suggestion Chips
-Row of 4 chips below the bar, using the first 4 `SUGGESTED_QUESTIONS`:
+### 4. Chips של שאלות מוצעות
+שורת 4 chips מתחת לשורה, מתוך `SUGGESTED_QUESTIONS` הראשונים:
 - `background: primary/10`, `color: primary`, `border-radius: 20px`, `font-size: 12px`
-- Clicking a chip → calls `handleSend(q)` directly (same as current behavior)
-- Hidden when `input` is non-empty (chips clutter when user is typing)
+- לחיצה על chip → קורא ל-`handleSend(q)` ישירות
+- מוסתרים כש-`input` אינו ריק (מיותרים כשהמשתמש מקליד)
 
-### 5. Search Results (conditional — shown when input.trim() is non-empty)
-When the user is typing, show filtered KB results **instead of** the category accordion:
+### 5. תוצאות חיפוש (מותנה — מוצג כש-input.trim() אינו ריק)
+כשהמשתמש מקליד, מציגים מאמרים מסוננים **במקום** אקורדיון הקטגוריות:
 
-```
-[matching article row]
-[matching article row]
-...
-[no results state]
-```
+- רשימה שטוחה (לא מקובצת לפי קטגוריה), אותו סגנון שורה מתרחבת
+- אפס תוצאות: מציגים כפתור "לא מצאנו תשובה — שלח את השאלה לבוט ←" שקורא ל-`handleSend(input)`
+- הופעה חלקה דרך `AnimatePresence`
 
-- Flat list (not grouped by category), same expandable row style as current
-- If zero matches: show a "לא מצאנו תשובה — שלח את השאלה לבוט ←" button that calls `handleSend(input)`
-- Smooth appearance via `AnimatePresence`
-
-### 6. Divider (shown when input is empty)
+### 6. מפריד (מוצג כש-input ריק)
 ```
 ──────── או עיין לפי נושא ────────
 ```
-Thin gray line with centered muted text.
+קו אפור דק עם טקסט מעומעם במרכז.
 
-### 7. Category Accordion (shown when input is empty)
-7 categories from `KNOWLEDGE_BASE`, rendered as vertical accordion:
+### 7. אקורדיון קטגוריות (מוצג כש-input ריק)
+7 קטגוריות מ-`KNOWLEDGE_BASE`, מוצגות כאקורדיון אנכי:
 
-**Each category header (closed):**
-- `border: 1px solid border`, `border-radius: 14px`, background `card`
-- Emoji icon + category title + article count on left + chevron
-- On hover: subtle background shift
+**כותרת קטגוריה סגורה:**
+- `border: 1px solid border`, `border-radius: 14px`, רקע `card`
+- אייקון אמוג'י + שם הקטגוריה + ספירת מאמרים + חץ
+- hover: שינוי רקע עדין
 
-**Each category header (open/active):**
-- `border: 1.5px solid primary`, background `primary/5`
-- Icon + title in `primary` color, chevron rotated 180°
+**כותרת קטגוריה פתוחה/פעילה:**
+- `border: 1.5px solid primary`, רקע `primary/5`
+- אייקון ושם בצבע `primary`, חץ מסובב 180°
 
-**Article rows (inside open category):**
-- `border-bottom: 1px solid border/40` between rows
-- Clicking → expands inline answer with `ReactMarkdown` (same as current)
-- Arrow `←` on the right side of each row as a subtle affordance
+**שורות מאמרים (בתוך קטגוריה פתוחה):**
+- `border-bottom: 1px solid border/40` בין שורות
+- לחיצה → מרחיב תשובה inline עם `ReactMarkdown`
+- חץ `←` בצד ימין כ-affordance עדין
 
-**Accordion behavior:**
-- Only one category open at a time (clicking open category closes it)
-- `useState<string | null>(openCategory)` — `null` = all closed
-- `AnimatePresence` + `motion.div` with `height: auto` for the open panel
+**התנהגות האקורדיון:**
+- קטגוריה אחת פתוחה בכל פעם (לחיצה על פתוחה — סוגרת)
+- `useState<string | null>(openCategory)` — `null` = הכל סגור
+- `AnimatePresence` + `motion.div` עם `height: auto` לפאנל הפתוח
 
-### 8. AI Chat Panel (conditional)
-Appears **below** the accordion when `messages.length > 0`, replacing the always-visible chat card from the current design.
+### 8. פאנל צ'אט AI (מותנה)
+מופיע **מתחת** לאקורדיון כש-`messages.length > 0`, במקום ה-Card תמיד-גלוי של העיצוב הנוכחי.
 
-- Same `ScrollArea` + message bubbles + input
-- Reset button at top right of the panel
-- "לא מצאת תשובה? שלח מייל לתמיכה →" link at bottom
+- אותו `ScrollArea` + בועות הודעות + קלט
+- כפתור איפוס בפינה הימנית העליונה
+- קישור "לא מצאת תשובה? שלח מייל לתמיכה →" בתחתית
 
 ---
 
-## State changes
+## שינויי State
 
-| Current | New |
+| נוכחי | חדש |
 |---|---|
-| `kbQuery` — separate search state | Merged into `input` (same setter for both) |
-| `openArticle: string \| null` | Kept as-is for article expand/collapse |
-| New: `openCategory: string \| null` | Category accordion state |
-| `messages`, `isLoading`, etc. | All kept unchanged |
+| `kbQuery` — state חיפוש נפרד | ממוזג לתוך `input` (אותו setter לשניהם) |
+| `openArticle: string \| null` | נשמר כמו שהוא לפתיחת/סגירת מאמר |
+| חדש: `openCategory: string \| null` | state אקורדיון קטגוריה |
+| `messages`, `isLoading` וכו' | כולם נשמרים ללא שינוי |
 
 ---
 
-## What's removed
-- The static KB grid (2-column card layout) — replaced by accordion
-- The "לא מצאתם תשובה? שאלו את העוזר החכם שלנו 👇" separator text
-- The always-visible `Card` chat wrapper — chat panel is now conditional
-- The `addressPreference` dropdown (DropdownMenu) — unnecessary UX friction, removing
-- `ADDRESS_OPTIONS` and `AddressPreference` type (keep sending `addressPreference: "plural"` hardcoded to the edge function to avoid breaking the API)
+## מה מוסר
+- גריד ה-KB הסטטי (פריסת 2 עמודות) — מוחלף באקורדיון
+- הטקסט המפריד "לא מצאתם תשובה? שאלו את העוזר החכם שלנו 👇"
+- ה-`Card` תמיד-גלויה של הצ'אט — פאנל הצ'אט כעת מותנה
+- dropdown בחירת פנייה (`addressPreference`) — חיכוך UX מיותר, מסירים
+- `ADDRESS_OPTIONS` ו-`AddressPreference` type (שולחים `addressPreference: "plural"` hardcoded לפונקציה כדי לא לשבור את ה-API)
 
-## What's kept unchanged
-- All streaming / `streamChat` / `handleSend` logic
-- `HARDCODED_ANSWERS` map
-- Conversation memory (Supabase `help_conversations` upsert/load)
-- `SUGGESTED_QUESTIONS` array
-- Header with back button
-- Bottom "צור קשר עם התמיכה" link
+## מה נשמר ללא שינוי
+- כל לוגיקת הסטרימינג / `streamChat` / `handleSend`
+- מפת `HARDCODED_ANSWERS`
+- זיכרון שיחה (Supabase `help_conversations` upsert/load)
+- מערך `SUGGESTED_QUESTIONS`
+- Header עם כפתור חזרה
+- קישור "צור קשר עם התמיכה" בתחתית
 
 ---
 
-## Visual style
-- White/light background (remove dark background feel from current screenshot)
-- Primary color (violet) used for: active category border, search bar border, chips, article arrows
-- Category icons: emoji (already in `KNOWLEDGE_BASE.icon` field — switch from lucide name to emoji, update `knowledgeBase.ts` icon field for each category)
+## סגנון ויזואלי
+- רקע לבן/בהיר (מסירים את תחושת הרקע הכהה מהצילום הנוכחי)
+- צבע ראשי (סגול) משמש ל: גבול קטגוריה פעילה, גבול שורת חיפוש, chips, חצי מאמרים
+- אייקוני קטגוריות: אמוג'י (מעדכנים שדה `icon` ב-`knowledgeBase.ts`)
 
-### Category emoji mapping
-| id | emoji |
+### מיפוי אמוג'י לקטגוריות
+| id | אמוג'י |
 |---|---|
 | start | 🚀 |
 | products | 🛍️ |
@@ -136,10 +129,10 @@ Appears **below** the accordion when `messages.length > 0`, replacing the always
 | verticals | 📅 |
 | account | ⚙️ |
 
-Update `knowledgeBase.ts`: change `icon` field type from lucide name string to emoji string, update all 7 entries.
+לעדכן `knowledgeBase.ts`: לשנות שדה `icon` מ-string של שם lucide לאמוג'י, לעדכן את כל 7 הקטגוריות.
 
 ---
 
-## Files changed
-- `src/pages/HelpCenter.tsx` — full JSX rewrite (logic preserved)
-- `src/lib/knowledgeBase.ts` — update `icon` field from lucide name to emoji for all categories
+## קבצים שמשתנים
+- `src/pages/HelpCenter.tsx` — כתיבה מחדש של ה-JSX (לוגיקה נשמרת)
+- `src/lib/knowledgeBase.ts` — עדכון שדה `icon` מ-lucide לאמוג'י לכל הקטגוריות
