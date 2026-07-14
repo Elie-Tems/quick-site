@@ -15,9 +15,10 @@ const SUB_TYPE_TO_CATEGORY: Record<string, BusinessCategory> = {
   charity: 'other', crowdfunding: 'other', community: 'other',
   education: 'other', social: 'other', animals: 'pets',
   'torah-center': 'other', synagogue: 'other',
+  // vacation is now a top-level BusinessType — no category mapping needed
 };
 
-export type BusinessType = "products" | "services" | "realestate" | "nonprofit" | "synagogue";
+export type BusinessType = "products" | "services" | "realestate" | "nonprofit" | "synagogue" | "vacation";
 
 interface Props {
   data: OnboardingData;
@@ -45,6 +46,7 @@ const fallback = (i: number) => FALLBACK_GRADIENTS[i % FALLBACK_GRADIENTS.length
 const MAIN_CATEGORIES = [
   { id: "products" as BusinessType,  title: "מכירת מוצרים", desc: "חנות, בוטיק, מאפייה, מוצרים",                      img: U("1556742049-0cfed4f6a45d") },
   { id: "services" as BusinessType,  title: "נותני שירות",   desc: 'קוסמטיקה, כושר, ייעוץ, נדל"ן, טיפולים',           img: U("1521737604893-d14cc237f11d") },
+  { id: "vacation" as BusinessType,  title: "אירוח ונופש",   desc: "צימרים, בתי קיט, וילות, מקומות לינה",              img: U("1499793983690-e29da59ef1c2") },
   { id: "nonprofit" as BusinessType, title: "עמותה / ארגון", desc: "תרומות, גיוס המונים, קהילה",                        img: U("1559027615-cd4628902d4a") },
 ];
 
@@ -66,7 +68,6 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: str
   services: [
     { id: "broker",        title: 'מתווך / נדל"ן',           img: U("1582407947304-fd86f028f716") },
     { id: "developer",     title: 'יזם / פרויקט נדל"ן',      img: U("1486406146926-c627a92ad1ab") },
-    { id: "vacation",      title: "צימר / נופש",             img: U("1499793983690-e29da59ef1c2") },
     { id: "beauty",        title: "קוסמטיקה / יופי",         img: U("1487412947147-5cebf100ffc2") },
     { id: "renovation",    title: "שיפוצים / בנייה",          img: U("1504307651254-35680f356dfd") },
     { id: "health",        title: "בריאות / קליניקה",         img: U("1559839734-2b71ea197ec2") },
@@ -77,6 +78,7 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: str
     { id: "barber",        title: "מספרה / ספר",              img: U("1503951914875-452162b0f3f1") },
     { id: "fitness",       title: "כושר / פילאטיס",           img: U("1534438327276-14e5300c3a48") },
   ],
+  vacation: [],
   realestate: [],
   nonprofit: [
     { id: "charity",       title: "תרומות כלליות",            img: U("1532629345422-7515f3d16bb6") },
@@ -93,7 +95,7 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; title: string; img: str
 
 const SHOW_INITIAL = 6;
 
-const LISTINGS_SUBTYPES = new Set(["broker", "developer", "vacation", "commercial", "car-dealer"]);
+const LISTINGS_SUBTYPES = new Set(["broker", "developer", "commercial", "car-dealer"]);
 
 // A synagogue is a nonprofit that also gets the synagogue module.
 const SYNAGOGUE_SUBTYPES = new Set(["synagogue"]);
@@ -176,10 +178,15 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
   const hasMore = !search && !showAll && filteredSubs.length > SHOW_INITIAL;
 
   const handleMainSelect = (id: BusinessType) => {
+    updateData({ businessType: id, businessSubType: undefined });
+    // If this type has no subcategories, advance immediately without showing sub-grid
+    if (SUB_CATEGORIES[id].length === 0) {
+      onNext();
+      return;
+    }
     setActiveMain(id);
     setSearch("");
     setShowAll(false);
-    updateData({ businessType: id, businessSubType: undefined });
   };
 
   const handleSubSelect = (subId: string) => {
