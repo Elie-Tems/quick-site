@@ -824,6 +824,7 @@ const Dashboard = () => {
               <DashboardDesign
                 businessId={business?.id}
                 currentTemplateId={business?.template_id}
+                businessSlug={business?.slug ?? undefined}
               />
             )}
 

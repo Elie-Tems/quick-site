@@ -215,6 +215,39 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     }
   }, [viewState]);
 
+  // Listen for design preview messages from the dashboard parent (split-panel live editor)
+  useEffect(() => {
+    function handleDesignPreview(event: MessageEvent) {
+      if (!event.data || event.data.type !== "DESIGN_PREVIEW") return;
+      const { primaryColor, headingFont, bodyFont, theme } = event.data as {
+        type: string;
+        primaryColor?: string;
+        headingFont?: string;
+        bodyFont?: string;
+        theme?: "light" | "dark";
+      };
+
+      if (primaryColor) {
+        document.documentElement.style.setProperty("--primary-color", primaryColor);
+        document.documentElement.style.setProperty("--color-primary", primaryColor);
+      }
+      if (headingFont) {
+        document.documentElement.style.setProperty("--font-display", headingFont);
+      }
+      if (bodyFont) {
+        document.documentElement.style.setProperty("--font-body", bodyFont);
+      }
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else if (theme === "light") {
+        document.documentElement.classList.remove("dark");
+      }
+    }
+
+    window.addEventListener("message", handleDesignPreview);
+    return () => window.removeEventListener("message", handleDesignPreview);
+  }, []);
+
   // Transform products based on campaign display mode - must run before any early return (Rules of Hooks)
   const storeProducts = useMemo(() => {
     const baseProducts = products.map(p => ({
