@@ -587,9 +587,6 @@ const DashboardSubscription = () => {
         </Card>
       </div>
 
-      {/* Referral Box */}
-      <ReferralBox />
-
       {/* Approval Number Card - only when publishing requires payment (hidden
           while free-publish is on, where the approval-number flow is irrelevant). */}
       {business && !business.is_published && import.meta.env.VITE_PUBLISH_SKIP_PAYMENT !== "true" && (
@@ -794,6 +791,9 @@ const DashboardSubscription = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Referral Box — always at the bottom */}
+      <ReferralBox />
     </div>
   );
 };
