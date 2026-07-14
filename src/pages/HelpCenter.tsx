@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -211,8 +211,6 @@ const HelpCenter = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [openArticle, setOpenArticle] = useState<string | null>(null);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   const { user } = useAuth();
   const { data: business } = useMyBusiness();
 
@@ -371,14 +369,22 @@ const HelpCenter = () => {
     }
   };
 
+  useEffect(() => {
+    setOpenArticle(null);
+  }, [input]);
+
   // KB search: filter all articles across all categories when input is not empty
-  const kbFiltered = input.trim()
-    ? KNOWLEDGE_BASE.flatMap(cat =>
-        cat.articles
-          .filter(ar => (ar.q + " " + ar.a).toLowerCase().includes(input.trim().toLowerCase()))
-          .map(ar => ({ catId: cat.id, ar }))
-      )
-    : [];
+  const kbFiltered = useMemo(
+    () =>
+      input.trim()
+        ? KNOWLEDGE_BASE.flatMap(cat =>
+            cat.articles
+              .filter(ar => (ar.q + " " + ar.a).toLowerCase().includes(input.trim().toLowerCase()))
+              .map(ar => ({ catId: cat.id, ar }))
+          )
+        : [],
+    [input]
+  );
 
   const renderArticleRow = (
     catId: string,
@@ -499,9 +505,9 @@ const HelpCenter = () => {
               transition={{ duration: 0.15 }}
               className="flex gap-2 flex-wrap justify-center mb-8 overflow-hidden"
             >
-              {SUGGESTED_QUESTIONS.map((q, i) => (
+              {SUGGESTED_QUESTIONS.map((q) => (
                 <button
-                  key={i}
+                  key={q}
                   onClick={() => handleSend(q)}
                   className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs hover:bg-primary/20 transition-colors"
                 >
@@ -656,7 +662,7 @@ const HelpCenter = () => {
               </div>
 
               {/* Messages */}
-              <ScrollArea className="h-[300px] p-4" ref={scrollRef}>
+              <ScrollArea className="h-[300px] p-4">
                 <div className="space-y-4">
                   {messages.map((msg, i) => (
                     <motion.div
