@@ -23,11 +23,40 @@ export const useListings = (businessId?: string, opts?: { category?: string }) =
     queryKey: ["listings", businessId, opts?.category],
     enabled: !!businessId,
     queryFn: async (): Promise<Listing[]> => {
-      let q = sb.from("listings").select("*").eq("business_id", businessId).eq("active", true);
-      if (opts?.category && opts.category !== "all") q = q.eq("category", opts.category);
-      const { data, error } = await q.order("is_hot", { ascending: false }).order("sort_order");
-      if (error) throw error;
-      return data ?? [];
+      // Check if any listings exist for this business
+      const { data: any1 } = await sb.from("listings").select("id").eq("business_id", businessId).eq("active", true).limit(1);
+      const hasListings = Array.isArray(any1) && any1.length > 0;
+
+      if (hasListings) {
+        let q = sb.from("listings").select("*").eq("business_id", businessId).eq("active", true);
+        if (opts?.category && opts.category !== "all") q = q.eq("category", opts.category);
+        const { data, error } = await q.order("is_hot", { ascending: false }).order("sort_order");
+        if (error) throw error;
+        return data ?? [];
+      }
+
+      // No listings yet — fall back to products table (only for "הכל" tab)
+      if (!opts?.category || opts.category === "all") {
+        const { data: prods } = await supabase
+          .from("products")
+          .select("id, business_id, name, description, price, image_url, sort_order, active")
+          .eq("business_id", businessId as string)
+          .eq("active", true)
+          .order("sort_order");
+        if (prods && prods.length > 0) {
+          return prods.map((p: any) => ({
+            id: p.id, business_id: p.business_id, kind: "property" as const,
+            title: p.name, description: p.description ?? null,
+            price: p.price ?? null, currency: "ILS", price_period: null,
+            category: null, status: "available", is_hot: false,
+            city: null, address: null, attrs: {},
+            media: { images: p.image_url ? [p.image_url] : [] },
+            active: true, sort_order: p.sort_order ?? 0,
+          } as Listing));
+        }
+      }
+
+      return [];
     },
   });
 
