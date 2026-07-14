@@ -74,9 +74,9 @@ const HOW_STEP_META = [
 
 const PROCESS_IMGS = [
   { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80", pos: "center center" },
-  { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80", pos: "center center" },
+  { src: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=900&q=80", pos: "center top" },
   { src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80", pos: "center center" },
-  { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80", pos: "center center" },
+  { src: "", pos: "" }, // step 4: rendered as Siango browser mockup
 ];
 
 const HeroBg = () => (
@@ -149,50 +149,10 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
           <p className="text-lg pv-muted">{t("howItWorks.mainSubtitle")}</p>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
+        <div className="grid lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-16 items-center">
 
-          {/* image carousel */}
-          <div className="order-1">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{ border: "1px solid var(--pv-border)", background: "var(--pv-surface2)" }}>
-              <div className="relative aspect-[16/9] overflow-hidden">
-                <AnimatePresence mode="wait">
-                  <motion.img key={imgIdx}
-                    src={PROCESS_IMGS[imgIdx].src}
-                    alt={imgCaptions[imgIdx]}
-                    initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ objectPosition: PROCESS_IMGS[imgIdx].pos }}
-                  />
-                </AnimatePresence>
-                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 50%)" }} />
-                <div className="absolute bottom-4 right-4 left-4 flex items-end justify-between">
-                  <AnimatePresence mode="wait">
-                    <motion.span key={imgIdx}
-                      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="text-white font-semibold text-sm drop-shadow">
-                      {imgCaptions[imgIdx]}
-                    </motion.span>
-                  </AnimatePresence>
-                  <div className="flex gap-2">
-                    {PROCESS_IMGS.map((_, i) => (
-                      <button key={i} onClick={() => setImgIdx(i)}
-                        className="transition-all duration-300 rounded-full"
-                        style={{
-                          width: i === imgIdx ? "20px" : "8px",
-                          height: "8px",
-                          background: i === imgIdx ? "var(--color-primary, #22c55e)" : "rgba(255,255,255,0.45)",
-                        }} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* vertical timeline */}
-          <div className="order-2 flex flex-col gap-0">
+          {/* vertical timeline — right side (primary in RTL) */}
+          <div className="order-1 flex flex-col gap-0">
             {HOW_STEPS.map((s, i) => {
               const isActive = activeStep === i;
               const isDone = imgIdx > i;
@@ -254,6 +214,93 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
                 <p className="text-sm mt-0.5" style={{ color: "#64748b" }}>{t("howItWorks.finale.desc")}</p>
               </div>
             </motion.div>
+          </div>
+
+          {/* image carousel — left side, tilted */}
+          <div className="order-2" style={{ transform: "rotate(-2deg)" }}>
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{ border: "1px solid var(--pv-border)", background: "var(--pv-surface2)" }}>
+              <div className="relative aspect-[16/9] overflow-hidden">
+                <AnimatePresence mode="wait">
+                  {imgIdx === 3 ? (
+                    <motion.div key="siango-mockup"
+                      initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
+                      className="absolute inset-0 flex flex-col" dir="rtl"
+                      style={{ background: "#0f172a" }}>
+                      {/* browser chrome */}
+                      <div className="flex items-center gap-2 px-3 py-2 shrink-0" style={{ background: "#1e293b", borderBottom: "1px solid #334155" }}>
+                        <div className="flex gap-1.5">
+                          <div className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
+                        </div>
+                        <div className="flex-1 mx-3 px-3 py-1 rounded text-xs text-center" style={{ background: "#0f172a", color: "#94a3b8" }}>
+                          siango.app/store/בוטיק-שלי
+                        </div>
+                      </div>
+                      {/* store header */}
+                      <div className="px-4 py-2 shrink-0 flex items-center justify-between" style={{ background: "#22c55e" }}>
+                        <span className="text-xs font-bold text-white">🛍️ בוטיק שלי</span>
+                        <span className="text-xs text-white/80">עגלה (0)</span>
+                      </div>
+                      {/* products grid */}
+                      <div className="flex-1 p-3 overflow-hidden" style={{ background: "#f8fafc" }}>
+                        <div className="grid grid-cols-3 gap-2 h-full">
+                          {[
+                            { name: "שמלת ערב", price: "₪320", bg: "#dbeafe" },
+                            { name: "חולצת לינן", price: "₪185", bg: "#f0fdf4" },
+                            { name: "מכנסי גאוצ'ו", price: "₪240", bg: "#fdf4ff" },
+                          ].map((p) => (
+                            <div key={p.name} className="rounded-lg overflow-hidden flex flex-col" style={{ background: "#fff", border: "1px solid #e2e8f0" }}>
+                              <div className="flex-1 flex items-center justify-center text-2xl" style={{ background: p.bg }}>🧥</div>
+                              <div className="p-1.5">
+                                <div className="text-xs font-semibold text-right" style={{ color: "#0f172a", fontSize: "9px" }}>{p.name}</div>
+                                <div className="text-xs font-bold" style={{ color: "#22c55e", fontSize: "9px" }}>{p.price}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.img key={imgIdx}
+                      src={PROCESS_IMGS[imgIdx].src}
+                      alt={imgCaptions[imgIdx]}
+                      initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ objectPosition: PROCESS_IMGS[imgIdx].pos }}
+                    />
+                  )}
+                </AnimatePresence>
+                {imgIdx !== 3 && (
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 50%)" }} />
+                )}
+                <div className="absolute bottom-4 right-4 left-4 flex items-end justify-between">
+                  <AnimatePresence mode="wait">
+                    {imgIdx !== 3 && (
+                      <motion.span key={imgIdx}
+                        initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-white font-semibold text-sm drop-shadow">
+                        {imgCaptions[imgIdx]}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  <div className="flex gap-2 mr-auto">
+                    {PROCESS_IMGS.map((_, i) => (
+                      <button key={i} onClick={() => setImgIdx(i)}
+                        className="transition-all duration-300 rounded-full"
+                        style={{
+                          width: i === imgIdx ? "20px" : "8px",
+                          height: "8px",
+                          background: i === imgIdx ? "var(--color-primary, #22c55e)" : "rgba(255,255,255,0.45)",
+                        }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
