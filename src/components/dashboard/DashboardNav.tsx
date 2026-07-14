@@ -88,7 +88,7 @@ const navItems: {
   // ניהול
   { id: "orders", label: "הזמנות", icon: ShoppingCart, group: "ניהול" },
   { id: "products", label: "מוצרים", icon: Package, group: "ניהול" },
-  { id: "customers", label: "לקוחות", icon: Users, group: "ניהול" },
+  { id: "customers", label: "לקוחות & CRM", shortLabel: "לקוחות", icon: Users, group: "ניהול" },
   // Vertical managers (booking calendar / listings / donation campaigns)
   { id: "verticals", label: "יומן ולידים", icon: CalendarClock, group: "ניהול" },
   { id: "shipping", label: "משלוחים", icon: Truck, group: "ניהול" },
