@@ -72,12 +72,27 @@ const HOW_STEP_META = [
   { letter: "C", icon: Package },
 ];
 
-const PROCESS_IMGS = [
-  { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80", pos: "center center" },
-  { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80", pos: "center center" },
-  { src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80", pos: "center center" },
-  { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80", pos: "center center" },
-];
+const PROCESS_IMGS: Record<string, Array<{ src: string; pos: string }>> = {
+  commerce: [
+    { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80", pos: "center center" },
+    { src: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=900&q=80", pos: "center top" },
+    { src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80", pos: "center center" },
+    { src: "", pos: "" },
+  ],
+  donations: [
+    { src: "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=900&q=80", pos: "center center" },
+    { src: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=900&q=80", pos: "center top" },
+    { src: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=900&q=80", pos: "center center" },
+    { src: "", pos: "" },
+  ],
+  booking: [
+    { src: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=900&q=80", pos: "center center" },
+    { src: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=900&q=80", pos: "center top" },
+    { src: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&q=80", pos: "center top" },
+    { src: "", pos: "" },
+  ],
+};
+const getProcessImgs = (engKey: string) => PROCESS_IMGS[engKey] ?? PROCESS_IMGS.commerce;
 
 const HeroBg = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -118,6 +133,7 @@ const hasOAuthReturn = () => {
 const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }) => {
   const { t } = useLanguage();
   const [imgIdx, setImgIdx] = useState(0);
+  const processImgs = getProcessImgs(engKey);
   const HOW_STEPS = HOW_STEP_META.map((m, i) => ({
     ...m,
     title: t(`engine.${engKey}.step${i + 1}.title`),
@@ -133,9 +149,9 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
   ];
 
   useEffect(() => {
-    const ti = setInterval(() => setImgIdx(i => (i + 1) % PROCESS_IMGS.length), 3400);
+    const ti = setInterval(() => setImgIdx(i => (i + 1) % processImgs.length), 3400);
     return () => clearInterval(ti);
-  }, []);
+  }, [processImgs.length]);
 
   return (
     <section className="relative py-28 px-4 overflow-hidden">
@@ -149,50 +165,10 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
           <p className="text-lg pv-muted">{t("howItWorks.mainSubtitle")}</p>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
+        <div className="grid lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-16 items-center">
 
-          {/* image carousel */}
-          <div className="order-1">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{ border: "1px solid var(--pv-border)", background: "var(--pv-surface2)" }}>
-              <div className="relative aspect-[16/9] overflow-hidden">
-                <AnimatePresence mode="wait">
-                  <motion.img key={imgIdx}
-                    src={PROCESS_IMGS[imgIdx].src}
-                    alt={imgCaptions[imgIdx]}
-                    initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ objectPosition: PROCESS_IMGS[imgIdx].pos }}
-                  />
-                </AnimatePresence>
-                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 50%)" }} />
-                <div className="absolute bottom-4 right-4 left-4 flex items-end justify-between">
-                  <AnimatePresence mode="wait">
-                    <motion.span key={imgIdx}
-                      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="text-white font-semibold text-sm drop-shadow">
-                      {imgCaptions[imgIdx]}
-                    </motion.span>
-                  </AnimatePresence>
-                  <div className="flex gap-2">
-                    {PROCESS_IMGS.map((_, i) => (
-                      <button key={i} onClick={() => setImgIdx(i)}
-                        className="transition-all duration-300 rounded-full"
-                        style={{
-                          width: i === imgIdx ? "20px" : "8px",
-                          height: "8px",
-                          background: i === imgIdx ? "var(--color-primary, #22c55e)" : "rgba(255,255,255,0.45)",
-                        }} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* vertical timeline */}
-          <div className="order-2 flex flex-col gap-0">
+          {/* vertical timeline — right side (primary in RTL) */}
+          <div className="order-1 flex flex-col gap-0">
             {HOW_STEPS.map((s, i) => {
               const isActive = activeStep === i;
               const isDone = imgIdx > i;
@@ -254,6 +230,139 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
                 <p className="text-sm mt-0.5" style={{ color: "#64748b" }}>{t("howItWorks.finale.desc")}</p>
               </div>
             </motion.div>
+          </div>
+
+          {/* image carousel — left side, tilted */}
+          <div className="order-2" style={{ transform: "rotate(-2deg)" }}>
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{ border: "1px solid var(--pv-border)", background: "var(--pv-surface2)" }}>
+              <div className="relative aspect-[16/9] overflow-hidden">
+                <AnimatePresence mode="wait">
+                  {imgIdx === 3 ? (
+                    <motion.div key="siango-mockup"
+                      initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
+                      className="absolute inset-0 flex flex-col" dir="rtl"
+                      style={{ background: "#0f172a" }}>
+                      {/* browser chrome */}
+                      <div className="flex items-center gap-2 px-3 py-2 shrink-0" style={{ background: "#1e293b", borderBottom: "1px solid #334155" }}>
+                        <div className="flex gap-1.5">
+                          <div className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
+                        </div>
+                        <div className="flex-1 mx-3 px-3 py-1 rounded text-xs text-center" style={{ background: "#0f172a", color: "#94a3b8" }}>
+                          {engKey === "donations" ? "siango.app/campaign/אוכל-לכל" : engKey === "booking" ? "siango.app/book/סטודיו-יפה" : "siango.app/store/בוטיק-שלי"}
+                        </div>
+                      </div>
+                      {engKey === "donations" ? (
+                        <>
+                          <div className="px-4 py-2 shrink-0 flex items-center justify-between" style={{ background: "#dc2626" }}>
+                            <span className="text-xs font-bold text-white">❤️ עמותת אוכל לכל</span>
+                            <span className="text-xs text-white/80">מאז 2010</span>
+                          </div>
+                          <div className="flex-1 overflow-hidden" style={{ background: "#fff7f7" }}>
+                            <img src="https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&q=70" alt="food baskets" className="w-full object-cover" style={{ height: "52%", objectPosition: "center" }} />
+                            <div className="px-3 pt-2">
+                              <div className="text-xs font-bold mb-1" style={{ color: "#7f1d1d", fontSize: "9px" }}>קמפיין: חבילות מזון לחגים</div>
+                              <div className="w-full rounded-full mb-1.5" style={{ height: 5, background: "#fee2e2" }}>
+                                <div className="rounded-full h-full" style={{ width: "68%", background: "#dc2626" }} />
+                              </div>
+                              <div className="flex justify-between" style={{ fontSize: "8px", color: "#991b1b" }}>
+                                <span>₪6,800 נאסף</span><span>יעד: ₪10,000</span>
+                              </div>
+                              <button className="mt-2 w-full rounded text-white font-bold py-1 text-xs" style={{ background: "#dc2626", fontSize: "9px" }}>תרמו עכשיו ←</button>
+                            </div>
+                          </div>
+                        </>
+                      ) : engKey === "booking" ? (
+                        <>
+                          <div className="px-4 py-2 shrink-0 flex items-center justify-between" style={{ background: "#6366f1" }}>
+                            <span className="text-xs font-bold text-white">✂️ סטודיו יפה</span>
+                            <span className="text-xs text-white/80">הזמנת תורים</span>
+                          </div>
+                          <div className="flex-1 p-3 overflow-hidden" style={{ background: "#f8fafc" }}>
+                            {[
+                              { name: "תספורת + פן", price: "₪180", time: "60 דק'" },
+                              { name: "צבע שיער", price: "₪350", time: "120 דק'" },
+                              { name: "טיפול פנים", price: "₪220", time: "75 דק'" },
+                            ].map((s) => (
+                              <div key={s.name} className="flex items-center justify-between mb-1.5 rounded-lg px-2 py-1.5" style={{ background: "#fff", border: "1px solid #e2e8f0" }}>
+                                <button className="rounded text-white px-2 py-0.5" style={{ background: "#6366f1", fontSize: "8px" }}>הזמן</button>
+                                <div className="text-right">
+                                  <div style={{ fontSize: "9px", fontWeight: 600, color: "#0f172a" }}>{s.name}</div>
+                                  <div style={{ fontSize: "8px", color: "#6366f1" }}>{s.price} · {s.time}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="px-4 py-2 shrink-0 flex items-center justify-between" style={{ background: "#22c55e" }}>
+                            <span className="text-xs font-bold text-white">🛍️ בוטיק שלי</span>
+                            <span className="text-xs text-white/80">עגלה (0)</span>
+                          </div>
+                          <div className="flex-1 p-3 overflow-hidden" style={{ background: "#f8fafc" }}>
+                            <div className="grid grid-cols-3 gap-2 h-full">
+                              {[
+                                { name: "שמלת ערב", price: "₪320", img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=120&q=70" },
+                                { name: "חולצת לינן", price: "₪185", img: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=120&q=70" },
+                                { name: "מכנסיים", price: "₪240", img: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=120&q=70" },
+                              ].map((p) => (
+                                <div key={p.name} className="rounded-lg overflow-hidden flex flex-col" style={{ background: "#fff", border: "1px solid #e2e8f0" }}>
+                                  <div className="flex-1 overflow-hidden" style={{ maxHeight: "65%" }}>
+                                    <img src={p.img} alt={p.name} className="w-full h-full object-cover" />
+                                  </div>
+                                  <div className="p-1.5">
+                                    <div className="text-xs font-semibold text-right" style={{ color: "#0f172a", fontSize: "9px" }}>{p.name}</div>
+                                    <div className="text-xs font-bold" style={{ color: "#22c55e", fontSize: "9px" }}>{p.price}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </motion.div>
+                  ) : (
+                    <motion.img key={imgIdx}
+                      src={processImgs[imgIdx].src}
+                      alt={imgCaptions[imgIdx]}
+                      initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.55 }}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ objectPosition: processImgs[imgIdx].pos }}
+                    />
+                  )}
+                </AnimatePresence>
+                {imgIdx !== 3 && (
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 50%)" }} />
+                )}
+                <div className="absolute bottom-4 right-4 left-4 flex items-end justify-between">
+                  <AnimatePresence mode="wait">
+                    {imgIdx !== 3 && (
+                      <motion.span key={imgIdx}
+                        initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-white font-semibold text-sm drop-shadow">
+                        {imgCaptions[imgIdx]}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  <div className="flex gap-2 mr-auto">
+                    {processImgs.map((_, i) => (
+                      <button key={i} onClick={() => setImgIdx(i)}
+                        className="transition-all duration-300 rounded-full"
+                        style={{
+                          width: i === imgIdx ? "20px" : "8px",
+                          height: "8px",
+                          background: i === imgIdx ? "var(--color-primary, #22c55e)" : "rgba(255,255,255,0.45)",
+                        }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -374,29 +483,16 @@ const Index = () => {
           {/* Green tint overlay */}
           <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(4,47,46,0.8) 0%, rgba(6,78,59,0.7) 50%, rgba(0,0,0,0.55) 100%)" }} />
 
-          <div className="relative px-4 py-24 max-w-4xl mx-auto">
+          <div className="relative px-4 py-10 max-w-4xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div key={a.key}
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.4 }}
                 className="text-center">
 
-                {/* Before — faded, italic */}
-                <p className="text-xs tracking-[0.2em] uppercase font-medium mb-3"
-                  style={{ color: "rgba(255,255,255,0.35)" }}>{t("subtitle.beforeLabel")}</p>
-                <p className="text-lg md:text-xl leading-relaxed font-light italic mb-8 max-w-2xl mx-auto"
-                  style={{ color: "rgba(255,255,255,0.38)" }}>"{a.subtitle[0]}"</p>
+                <p className="text-lg md:text-xl leading-relaxed font-light italic mb-6 max-w-2xl mx-auto"
+                  style={{ color: "rgba(255,255,255,0.7)" }}>{a.subtitle[0]}</p>
 
-                {/* Divider */}
-                <div className="flex items-center justify-center gap-4 mb-8">
-                  <div className="h-px w-16" style={{ background: "rgba(74,222,128,0.4)" }} />
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  <div className="h-px w-16" style={{ background: "rgba(74,222,128,0.4)" }} />
-                </div>
-
-                {/* After — bold, vivid */}
-                <p className="text-xs tracking-[0.2em] uppercase font-bold mb-4"
-                  style={{ color: "#4ade80" }}>{t("subtitle.afterLabel")}</p>
                 <p className="text-2xl md:text-4xl leading-snug font-bold max-w-2xl mx-auto"
                   style={{ color: "#fff" }}>{a.subtitle[1]}</p>
 

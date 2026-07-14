@@ -14,7 +14,7 @@ export interface KbArticle {
 export interface KbCategory {
   id: string;
   title: string;
-  icon: string; // lucide name (resolved in the page)
+  icon: string; // emoji shown directly in the accordion header
   articles: KbArticle[];
 }
 
@@ -22,7 +22,7 @@ export const KNOWLEDGE_BASE: KbCategory[] = [
   {
     id: "start",
     title: "התחלה ופרסום",
-    icon: "Rocket",
+    icon: "🚀",
     articles: [
       {
         id: "publish",
@@ -44,7 +44,7 @@ export const KNOWLEDGE_BASE: KbCategory[] = [
   {
     id: "products",
     title: "מוצרים",
-    icon: "Package",
+    icon: "🛍️",
     articles: [
       {
         id: "add",
@@ -81,7 +81,7 @@ export const KNOWLEDGE_BASE: KbCategory[] = [
   {
     id: "orders-customers",
     title: "הזמנות ולקוחות",
-    icon: "ShoppingCart",
+    icon: "📦",
     articles: [
       {
         id: "orders",
@@ -118,7 +118,7 @@ export const KNOWLEDGE_BASE: KbCategory[] = [
   {
     id: "design",
     title: "עיצוב",
-    icon: "Palette",
+    icon: "🎨",
     articles: [
       {
         id: "template",
@@ -135,7 +135,7 @@ export const KNOWLEDGE_BASE: KbCategory[] = [
   {
     id: "marketing",
     title: "שיווק",
-    icon: "Megaphone",
+    icon: "📢",
     articles: [
       {
         id: "tracking",
@@ -164,7 +164,7 @@ export const KNOWLEDGE_BASE: KbCategory[] = [
   {
     id: "payments-shipping",
     title: "תשלומים ומשלוחים",
-    icon: "CreditCard",
+    icon: "💳",
     articles: [
       {
         id: "payments",
@@ -221,7 +221,7 @@ export const KNOWLEDGE_BASE: KbCategory[] = [
   {
     id: "verticals",
     title: "תורים, לידים ותרומות",
-    icon: "CalendarClock",
+    icon: "📅",
     articles: [
       {
         id: "business-type",
@@ -278,7 +278,7 @@ export const KNOWLEDGE_BASE: KbCategory[] = [
   {
     id: "account",
     title: "חשבון, תוכנית והרחבות",
-    icon: "Settings",
+    icon: "⚙️",
     articles: [
       {
         id: "plans",

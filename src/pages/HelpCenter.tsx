@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, HelpCircle, Loader2, Bot, ArrowRight, ArrowLeft, User, RotateCcw, Search, ChevronDown, BookOpen } from "lucide-react";
+import { Send, Loader2, ArrowRight, RotateCcw } from "lucide-react";
 import { KNOWLEDGE_BASE } from "@/lib/knowledgeBase";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -13,30 +12,14 @@ import logoDarkBg from "@/assets/logo-dark-bg.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyBusiness } from "@/hooks/useBusiness";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 type Message = { role: "user" | "assistant"; content: string };
-type AddressPreference = "plural" | "male" | "female";
-
-const ADDRESS_OPTIONS: { value: AddressPreference; label: string }[] = [
-  { value: "plural", label: "רבים (נכנסים, לוחצים)" },
-  { value: "male", label: "זכר (היכנס, לחץ)" },
-  { value: "female", label: "נקבה (היכנסי, לחצי)" },
-];
 
 const SUGGESTED_QUESTIONS = [
   "איך אני מוסיף מוצר חדש?",
   "איך אני יוצר טקסט אודות?",
   "איך אני מגדיר מבצע על מוצר?",
-  "איך אני מעלה באנר?",
   "מה ההבדל בין החבילות?",
-  "איך אני מחבר פיקסל פייסבוק או Google Tag Manager?",
-  "איך אני רואה את ההזמנות שלי?",
 ];
 
 const HARDCODED_ANSWERS: Record<string, string> = {
@@ -226,18 +209,12 @@ const HelpCenter = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [kbQuery, setKbQuery] = useState("");
   const [openArticle, setOpenArticle] = useState<string | null>(null);
-  const [addressPreference, setAddressPreference] = useState<AddressPreference>(() => {
-    return (localStorage.getItem("help_address_preference") as AddressPreference) || "plural";
-  });
-  const scrollRef = useRef<HTMLDivElement>(null);
-  
-  const { user, loading: authLoading } = useAuth();
-  const { data: business, isLoading: businessLoading } = useMyBusiness();
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { data: business } = useMyBusiness();
 
-  // Per-customer memory: load this user's saved conversation once on mount, and
-  // persist it after each completed exchange so the bot "remembers" across visits.
+  // Per-customer memory: load saved conversation once on mount and persist after each exchange
   const conversationLoaded = useRef(false);
   useEffect(() => {
     if (!user?.id || conversationLoaded.current) return;
@@ -253,7 +230,6 @@ const HelpCenter = () => {
   }, [user?.id]);
 
   useEffect(() => {
-    // Only save after the initial load, when an exchange has settled (not mid-stream).
     if (!user?.id || !conversationLoaded.current || isLoading || messages.length === 0) return;
     const t = setTimeout(() => {
       void (supabase as any)
@@ -266,29 +242,22 @@ const HelpCenter = () => {
     return () => clearTimeout(t);
   }, [messages, isLoading, user?.id]);
 
-  // Determine where to redirect: dashboard if has business, landing page otherwise
   const hasActiveBusiness = !!user && !!business;
   const backLink = hasActiveBusiness ? "/dashboard" : "/";
   const backText = hasActiveBusiness ? "חזרה לדשבורד" : "חזרה לדף הבית";
 
-  // Save preference to localStorage
-  const handlePreferenceChange = (pref: AddressPreference) => {
-    setAddressPreference(pref);
-    localStorage.setItem("help_address_preference", pref);
-  };
-
   const streamChat = async (userMessages: Message[]) => {
     const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/help-center`;
-    
+
     const resp = await fetch(CHAT_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         messages: userMessages,
-        addressPreference: addressPreference 
+        addressPreference: "plural",
       }),
     });
 
@@ -307,7 +276,7 @@ const HelpCenter = () => {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      
+
       textBuffer += decoder.decode(value, { stream: true });
 
       let newlineIndex: number;
@@ -330,7 +299,7 @@ const HelpCenter = () => {
             setMessages(prev => {
               const last = prev[prev.length - 1];
               if (last?.role === "assistant") {
-                return prev.map((m, i) => 
+                return prev.map((m, i) =>
                   i === prev.length - 1 ? { ...m, content: assistantContent } : m
                 );
               }
@@ -355,31 +324,21 @@ const HelpCenter = () => {
     setIsLoading(true);
 
     try {
-      // Check if there's a hardcoded answer
       if (HARDCODED_ANSWERS[messageText]) {
-        // Get remaining suggested questions
         const remainingQuestions = SUGGESTED_QUESTIONS.filter(q => q !== messageText);
-        
-        // Wait 1 second before showing the answer
         setTimeout(() => {
-          setMessages(prev => {
-            const newMessages: Message[] = [
-              ...prev,
-              { role: "assistant" as const, content: HARDCODED_ANSWERS[messageText] }
-            ];
-            
-            return newMessages;
-          });
-          
-          // Wait another second before showing suggested questions
+          setMessages(prev => [
+            ...prev,
+            { role: "assistant" as const, content: HARDCODED_ANSWERS[messageText] },
+          ]);
           if (remainingQuestions.length > 0) {
             setTimeout(() => {
               setMessages(prev => [
                 ...prev,
                 {
                   role: "assistant" as const,
-                  content: `__SUGGESTED_QUESTIONS__${JSON.stringify(remainingQuestions)}`
-                }
+                  content: `__SUGGESTED_QUESTIONS__${JSON.stringify(remainingQuestions)}`,
+                },
               ]);
               setIsLoading(false);
             }, 1000);
@@ -389,13 +348,13 @@ const HelpCenter = () => {
         }, 1000);
         return;
       }
-      
+
       await streamChat([...messages, userMsg]);
     } catch (e) {
       console.error(e);
       setMessages(prev => [
         ...prev,
-        { role: "assistant", content: "😅 סליחה, משהו השתבש. נסה שוב בבקשה." }
+        { role: "assistant", content: "😅 סליחה, משהו השתבש. נסה שוב בבקשה." },
       ]);
     } finally {
       setIsLoading(false);
@@ -410,14 +369,75 @@ const HelpCenter = () => {
     }
   };
 
+  useEffect(() => {
+    setOpenArticle(null);
+  }, [input]);
+
+  // KB search: filter all articles across all categories when input is not empty
+  const kbFiltered = useMemo(
+    () =>
+      input.trim()
+        ? KNOWLEDGE_BASE.flatMap(cat =>
+            cat.articles
+              .filter(ar => (ar.q + " " + ar.a).toLowerCase().includes(input.trim().toLowerCase()))
+              .map(ar => ({ catId: cat.id, ar }))
+          )
+        : [],
+    [input]
+  );
+
+  const renderArticleRow = (
+    catId: string,
+    ar: { id: string; q: string; a: string; image?: string }
+  ) => {
+    const key = `${catId}-${ar.id}`;
+    const isOpen = openArticle === key;
+    return (
+      <div key={key} className="border-b border-border/40 last:border-0">
+        <button
+          onClick={() => setOpenArticle(isOpen ? null : key)}
+          className="w-full flex items-center justify-between gap-2 px-4 py-3 text-right hover:bg-muted/30 transition-colors"
+          dir="rtl"
+        >
+          <span className="text-sm text-foreground">{ar.q}</span>
+          <span className="text-primary text-xs shrink-0">←</span>
+        </button>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pb-4 prose prose-sm dark:prose-invert max-w-none text-right" dir="rtl">
+                <ReactMarkdown>{ar.a}</ReactMarkdown>
+                {ar.image && (
+                  <img
+                    src={ar.image}
+                    alt={ar.q}
+                    className="mt-2 rounded-lg border border-border w-full"
+                    loading="lazy"
+                  />
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-background" dir="rtl" style={{ fontFamily: 'Heebo, sans-serif' }}>
+    <div className="min-h-screen bg-background" dir="rtl" style={{ fontFamily: "Heebo, sans-serif" }}>
       <SEOHead
         title="מרכז עזרה | סיאנגו"
         description="מצא תשובות לשאלות נפוצות על בניית אתר מכירות, ניהול מוצרים, הזמנות ותשלומים."
         canonical="https://siango.app/help"
         noindex={false}
       />
+
       {/* Header */}
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container flex items-center justify-between gap-2 h-16">
@@ -427,258 +447,303 @@ const HelpCenter = () => {
               <span className="hidden sm:inline">{backText}</span>
             </Button>
           </Link>
-
-          <img src={logoDarkBg} alt="Siango" className="h-9 sm:h-11 w-auto object-contain shrink-0" />
-
+          <img
+            src={logoDarkBg}
+            alt="Siango"
+            className="h-9 sm:h-11 w-auto object-contain shrink-0"
+          />
           <div className="w-9 sm:w-28 shrink-0" />
         </div>
       </header>
 
-      <div className="container max-w-4xl py-8">
+      <div className="container max-w-3xl py-8 px-4">
         {/* Title */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 mb-4">
-            <HelpCircle className="w-5 h-5 text-primary" />
-            <span className="text-primary font-medium">מרכז ידע</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            איך אפשר לעזור? 🤗
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            שאל אותי כל שאלה על המערכת ואסביר לך צעד אחר צעד
-          </p>
+          <h1 className="text-3xl font-bold mb-2">איך אפשר לעזור? 🤗</h1>
+          <p className="text-muted-foreground">שאל שאלה חופשית או עיין לפי נושא</p>
         </motion.div>
 
-        {/* Knowledge base: searchable, categorized articles */}
-        <div className="mb-10">
-          <div className="relative mb-5 max-w-xl mx-auto">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        {/* Search / Chat bar */}
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            handleSend();
+          }}
+          className="mb-4"
+        >
+          <div className="flex gap-2 items-center border-2 border-primary rounded-2xl px-4 py-2 shadow-sm focus-within:shadow-[0_0_0_3px_rgba(124,58,237,0.15)] transition-shadow bg-background">
+            <span className="text-lg">💬</span>
             <Input
-              value={kbQuery}
-              onChange={(e) => setKbQuery(e.target.value)}
-              placeholder="חיפוש במאגר הידע..."
-              className="pr-9 h-12 bg-white text-zinc-900 border-2 border-primary/30 placeholder:text-zinc-400"
-              dir="rtl"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder="שאל שאלה חופשית..."
+              className="flex-1 border-0 shadow-none focus-visible:ring-0 h-10 bg-transparent text-foreground placeholder:text-muted-foreground"
+              disabled={isLoading}
             />
-          </div>
-
-          {(() => {
-            const q = kbQuery.trim().toLowerCase();
-            const renderArticle = (catId: string, ar: { id: string; q: string; a: string }) => {
-              const key = `${catId}-${ar.id}`;
-              const open = openArticle === key;
-              return (
-                <div key={key} className="border border-border/60 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setOpenArticle(open ? null : key)}
-                    className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-right hover:bg-muted/50 transition-colors"
-                    dir="rtl"
-                  >
-                    <span className="text-sm font-medium">{ar.q}</span>
-                    <ChevronDown className={`w-4 h-4 shrink-0 text-muted-foreground transition-transform ${open ? "" : "-rotate-90"}`} />
-                  </button>
-                  {open && (
-                    <div className="px-3 pb-3 prose prose-sm dark:prose-invert max-w-none text-right" dir="rtl">
-                      <ReactMarkdown>{ar.a}</ReactMarkdown>
-                      {ar.image && (
-                        <img src={ar.image} alt={ar.q} className="mt-2 rounded-lg border border-border w-full" loading="lazy" />
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            };
-
-            if (q) {
-              const matches = KNOWLEDGE_BASE.flatMap((cat) =>
-                cat.articles.filter((ar) => (ar.q + " " + ar.a).toLowerCase().includes(q)).map((ar) => ({ catId: cat.id, ar })),
-              );
-              if (matches.length === 0) {
-                return <p className="text-center text-sm text-muted-foreground py-6">לא נמצאו תוצאות. נסו לשאול את הבוט למטה 👇</p>;
-              }
-              return <div className="space-y-2 max-w-2xl mx-auto">{matches.map((m) => renderArticle(m.catId, m.ar))}</div>;
-            }
-
-            return (
-              <div className="grid md:grid-cols-2 gap-4">
-                {KNOWLEDGE_BASE.map((cat) => (
-                  <Card key={cat.id} className="border-border/50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <BookOpen className="w-4 h-4 text-primary" />
-                        <h3 className="font-semibold text-sm">{cat.title}</h3>
-                      </div>
-                      <div className="space-y-2">{cat.articles.map((ar) => renderArticle(cat.id, ar))}</div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            );
-          })()}
-        </div>
-
-        {/* Still need help? Ask the bot below */}
-        <div className="text-center mb-4">
-          <p className="text-sm text-muted-foreground">לא מצאתם תשובה? שאלו את העוזר החכם שלנו 👇</p>
-        </div>
-
-        {/* Reset Button - Above Chat */}
-        {messages.length > 0 && (
-          <div className="flex justify-center mb-4">
             <Button
-              variant="outline"
+              type="submit"
+              disabled={isLoading || !input.trim()}
               size="sm"
-              onClick={handleReset}
-              className="gap-2"
+              className="shrink-0"
             >
-              <RotateCcw className="w-4 h-4" />
-              איפוס שיחה
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
           </div>
-        )}
+        </form>
 
-        {/* Chat Area */}
-        <Card className="border-border/50 mb-6" dir="rtl">
-          <CardContent className="p-0">
-            <ScrollArea
-              className="h-[300px] md:h-[380px] p-4"
-              ref={scrollRef}
+        {/* Suggestion chips — hidden while typing */}
+        <AnimatePresence>
+          {!input.trim() && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex gap-2 flex-wrap justify-center mb-8 overflow-hidden"
             >
-              <AnimatePresence>
-                {messages.length === 0 ? (
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="h-full flex flex-col items-center justify-center text-center p-8"
+              {SUGGESTED_QUESTIONS.map((q) => (
+                <button
+                  key={q}
+                  onClick={() => handleSend(q)}
+                  className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs hover:bg-primary/20 transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Search results OR category accordion */}
+        <AnimatePresence mode="wait">
+          {input.trim() ? (
+            <motion.div
+              key="results"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              {kbFiltered.length > 0 ? (
+                <div className="border border-border rounded-xl overflow-hidden">
+                  {kbFiltered.map(({ catId, ar }) => renderArticleRow(catId, ar))}
+                </div>
+              ) : (
+                <div className="text-center py-10">
+                  <p className="text-muted-foreground text-sm mb-4">
+                    לא מצאנו תשובה במאמרים.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleSend(input)}
+                    className="gap-1.5"
                   >
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                      <Bot className="w-8 h-8 text-primary" />
-                    </div>
-                    <p className="text-muted-foreground mb-6">
-                      היי! 👋 אני כאן לעזור לך עם כל שאלה על המערכת.
-                      <br />
-                      אפשר לשאול בעברית פשוטה ואני אסביר הכל.
-                    </p>
-                    
-                    {/* Suggested Questions */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full max-w-lg" dir="rtl">
-                      {SUGGESTED_QUESTIONS.map((q, i) => (
-                        <Button
-                          key={i}
-                          variant="outline"
-                          size="sm"
-                          className="h-auto py-2 px-3 w-full text-right"
-                          onClick={() => handleSend(q)}
-                          dir="rtl"
-                        >
-                          {q}
-                        </Button>
-                      ))}
-                    </div>
-                  </motion.div>
-                ) : (
-                  <div className="space-y-6 flex flex-col-reverse">
-                    {messages.slice().reverse().map((msg, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                      >
-                        <div
-                          className={`max-w-[95%] md:max-w-[90%] rounded-2xl px-4 py-3 text-right ${
-                            msg.role === "user"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted"
-                          }`}
-                        >
-                          {msg.role === "assistant" ? (
-                            msg.content.startsWith("__SUGGESTED_QUESTIONS__") ? (
-                              <div className="space-y-2" dir="rtl">
-                                <p className="text-sm font-medium text-foreground mb-3">שאלות נוספות שאפשר לשאול:</p>
-                                <div className="grid grid-cols-1 gap-2">
-                                  {JSON.parse(msg.content.replace("__SUGGESTED_QUESTIONS__", "")).map((q: string, idx: number) => (
-                                    <Button
-                                      key={idx}
-                                      variant="outline"
-                                      size="sm"
-                                      className="h-auto py-2 px-3 w-full text-right justify-start"
-                                      onClick={() => handleSend(q)}
-                                      dir="rtl"
-                                    >
-                                      {q}
-                                    </Button>
-                                  ))}
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="prose prose-sm dark:prose-invert max-w-none text-right" dir="rtl">
-                                <ReactMarkdown>{msg.content}</ReactMarkdown>
-                              </div>
-                            )
-                          ) : (
-                            <p className="text-right" dir="rtl">{msg.content}</p>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
-                    {isLoading && messages[messages.length - 1]?.role === "user" && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex justify-end"
-                      >
-                        <div className="bg-muted rounded-2xl px-4 py-3">
-                          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
-                )}
-              </AnimatePresence>
-            </ScrollArea>
+                    שלח את השאלה לבוט
+                    <span>←</span>
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="accordion"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              {/* Divider */}
+              <div className="flex items-center gap-3 mb-5">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  או עיין לפי נושא
+                </span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
 
-            {/* Input */}
-            <div className="border-t border-border/50 p-4">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSend();
-                }}
-                className="flex gap-2"
-              >
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="שאל שאלה..."
-                  className="flex-1 h-12 bg-white text-zinc-900 border-2 border-primary/40 placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
-                  disabled={isLoading}
-                />
-                <Button type="submit" disabled={isLoading || !input.trim()}>
-                  {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
+              {/* Category accordion */}
+              <div className="space-y-2">
+                {KNOWLEDGE_BASE.map(cat => {
+                  const isOpen = openCategory === cat.id;
+                  return (
+                    <div
+                      key={cat.id}
+                      className={`rounded-[14px] overflow-hidden border transition-colors ${
+                        isOpen
+                          ? "border-primary bg-primary/5"
+                          : "border-border bg-card hover:bg-muted/30"
+                      }`}
+                      style={{ borderWidth: isOpen ? "1.5px" : "1px" }}
+                    >
+                      <button
+                        onClick={() => setOpenCategory(isOpen ? null : cat.id)}
+                        className="w-full flex items-center justify-between gap-3 px-4 py-3.5"
+                        dir="rtl"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-xl leading-none">{cat.icon}</span>
+                          <span
+                            className={`font-semibold text-sm ${
+                              isOpen ? "text-primary" : "text-foreground"
+                            }`}
+                          >
+                            {cat.title}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span
+                            className={`text-xs ${
+                              isOpen ? "text-primary" : "text-muted-foreground"
+                            }`}
+                          >
+                            {cat.articles.length} מאמרים
+                          </span>
+                          <motion.span
+                            animate={{ rotate: isOpen ? 180 : 0 }}
+                            transition={{ duration: 0.2 }}
+                            className={`text-xs inline-block ${
+                              isOpen ? "text-primary" : "text-muted-foreground"
+                            }`}
+                          >
+                            ▼
+                          </motion.span>
+                        </div>
+                      </button>
+
+                      <AnimatePresence>
+                        {isOpen && (
+                          <motion.div
+                            initial={{ height: 0 }}
+                            animate={{ height: "auto" }}
+                            exit={{ height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="border-t border-border/40 bg-background">
+                              {cat.articles.map(ar => renderArticleRow(cat.id, ar))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* AI Chat panel — appears only when there are messages */}
+        <AnimatePresence>
+          {messages.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="mt-8 border border-border rounded-2xl overflow-hidden"
+            >
+              {/* Chat header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-muted/30">
+                <span className="text-sm font-medium">שיחה עם העוזר</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleReset}
+                  className="gap-1.5 text-muted-foreground h-7 px-2"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  איפוס
                 </Button>
-              </form>
-            </div>
-          </CardContent>
-        </Card>
+              </div>
 
-        {/* Quick links */}
-        <div className="text-center text-sm text-muted-foreground">
-          <p>
-            לא מצאת תשובה? {" "}
+              {/* Messages */}
+              <ScrollArea className="h-[300px] p-4">
+                <div className="space-y-4">
+                  {messages.map((msg, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[90%] rounded-2xl px-4 py-3 text-right ${
+                          msg.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted"
+                        }`}
+                      >
+                        {msg.role === "assistant" ? (
+                          msg.content.startsWith("__SUGGESTED_QUESTIONS__") ? (
+                            <div className="space-y-2" dir="rtl">
+                              <p className="text-sm font-medium mb-2">שאלות נוספות:</p>
+                              {JSON.parse(
+                                msg.content.replace("__SUGGESTED_QUESTIONS__", "")
+                              ).map((q: string, idx: number) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => handleSend(q)}
+                                  className="block w-full text-right text-sm border border-border/60 rounded-lg px-3 py-2 hover:bg-background/50 transition-colors"
+                                >
+                                  {q}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div
+                              className="prose prose-sm dark:prose-invert max-w-none text-right"
+                              dir="rtl"
+                            >
+                              <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            </div>
+                          )
+                        ) : (
+                          <p dir="rtl">{msg.content}</p>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                  {isLoading && messages[messages.length - 1]?.role === "user" && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex justify-start"
+                    >
+                      <div className="bg-muted rounded-2xl px-4 py-3">
+                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Chat footer link */}
+              <div className="border-t border-border/50 p-3">
+                <a
+                  href="mailto:office@siango.app"
+                  className="block text-center text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  לא מצאת תשובה? שלח מייל לתמיכה →
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Bottom contact link — shown when no chat panel */}
+        {messages.length === 0 && (
+          <div className="text-center mt-8 text-sm text-muted-foreground">
+            לא מצאת תשובה?{" "}
             <a href="mailto:office@siango.app" className="text-primary hover:underline">
               צור קשר עם התמיכה
             </a>
-          </p>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

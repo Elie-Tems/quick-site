@@ -362,25 +362,44 @@ export function useCreateBusiness() {
         }
       }
       
-      // 7. Create products
+      // 7. Create products (or listings for realestate businesses)
+      const isRealEstate = data.businessType === 'realestate';
       for (let i = 0; i < data.products.length; i++) {
         const product = data.products[i];
         let productImageUrl = product.imageUrl || null;
-        
+
         // Upload product image if file provided
         if (product.image) {
           try {
             productImageUrl = await uploadImage(
-              product.image, 
-              businessId, 
-              'products', 
+              product.image,
+              businessId,
+              'products',
               `product-${i}`
             );
           } catch (error) {
             console.error('Failed to upload product image:', error);
           }
         }
-        
+
+        // Real estate businesses: save to listings table (leads-based, not cart-based)
+        if (isRealEstate) {
+          const { error: listingError } = await (supabase as any)
+            .from('listings')
+            .insert({
+              business_id: businessId,
+              kind: 'property',
+              title: product.name,
+              description: product.description || null,
+              price: product.price,
+              media: productImageUrl ? { images: [productImageUrl] } : {},
+              sort_order: i,
+              active: true,
+            });
+          if (listingError) console.error('Failed to create listing:', listingError);
+          continue;
+        }
+
         const resolvedCategoryId = product.categoryId ? categoryIdMap.get(product.categoryId) ?? null : null;
         const { data: insertedProduct, error: productError } = await supabase
           .from('products')

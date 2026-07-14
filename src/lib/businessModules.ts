@@ -8,7 +8,7 @@
  * Pure logic, no React/UI deps - safe to import anywhere (frontend + edge fns).
  */
 
-export type BusinessType = "products" | "services" | "realestate" | "nonprofit" | "synagogue";
+export type BusinessType = "products" | "services" | "realestate" | "nonprofit" | "synagogue" | "vacation";
 
 export type ModuleKey = "commerce" | "booking" | "listings" | "donations" | "synagogue";
 
@@ -41,6 +41,7 @@ export const DEFAULT_MODULES: Record<BusinessType, ModuleKey[]> = {
   // A synagogue is a nonprofit that also runs synagogue ops (עליות/נדרים, מקומות,
   // זמני תפילה) - so it keeps donations + adds the synagogue module.
   synagogue: ["donations", "synagogue"],
+  vacation: ["commerce"],
 };
 
 /** Capabilities every business has regardless of type. */
@@ -53,6 +54,7 @@ export const DEFAULT_LAYOUT: Record<BusinessType, "classic" | "service" | "prope
   realestate: "property",
   nonprofit: "service",
   synagogue: "service",
+  vacation: "service",
 };
 
 /** Minimal shape read off a `businesses` row. */
@@ -62,7 +64,7 @@ export interface BusinessLike {
   enabled_modules?: string[] | null;
 }
 
-const TYPES: readonly BusinessType[] = ["products", "services", "realestate", "nonprofit", "synagogue"];
+const TYPES: readonly BusinessType[] = ["products", "services", "realestate", "nonprofit", "synagogue", "vacation"];
 
 /** Normalize a raw business_type value to a valid type, defaulting to products (legacy rows). */
 export function getBusinessType(b: BusinessLike | null | undefined): BusinessType {

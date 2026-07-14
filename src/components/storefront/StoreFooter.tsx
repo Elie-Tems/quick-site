@@ -88,7 +88,7 @@ const StoreFooter = ({ businessName, phone, email, storeSlug }: StoreFooterProps
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-foreground/[0.03] px-4 py-2 hover:bg-foreground/[0.06] transition-colors"
           >
-            <span className="text-[11px] font-medium tracking-wide text-muted-foreground">נבנה באהבה ע״י</span>
+            <span className="text-[11px] font-medium tracking-wide text-muted-foreground">נוצר באהבה ע״י</span>
             <span className="text-[13px] font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">siango</span>
           </a>
         </div>

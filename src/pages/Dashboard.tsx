@@ -35,6 +35,7 @@ import DashboardTour, { hasSeenTour } from "@/components/dashboard/DashboardTour
 import DashboardShipping from "@/components/dashboard/DashboardShipping";
 import DashboardPayments from "@/components/dashboard/DashboardPayments";
 import DashboardUsage from "@/components/dashboard/DashboardUsage";
+import DashboardAvailabilityCalendar from "@/components/dashboard/DashboardAvailabilityCalendar";
 import DashboardTrafficSources from "@/components/dashboard/DashboardTrafficSources";
 import DashboardInsights from "@/components/dashboard/DashboardInsights";
 import DashboardDomains from "@/components/dashboard/DashboardDomains";
@@ -42,6 +43,7 @@ import DashboardWhatsApp from "@/components/dashboard/DashboardWhatsApp";
 import DashboardEmail from "@/components/dashboard/DashboardEmail";
 import DashboardUpgrades from "@/components/dashboard/DashboardUpgrades";
 import DashboardLegal from "@/components/dashboard/DashboardLegal";
+import PostLaunchPopups, { type PopupState, type PopupId } from "@/components/dashboard/PostLaunchPopups";
 import DashboardAdBudget from "@/components/dashboard/DashboardAdBudget";
 import { useMyBusiness, useProfile } from "@/hooks/useBusiness";
 import { getBusinessType, getEnabledModules } from "@/lib/businessModules";
@@ -91,6 +93,7 @@ const Dashboard = () => {
   };
   const { entitled: crmEntitled } = useCrmEntitled();
   const { entitled: analyticsEntitled } = useAnalyticsEntitled();
+  const [popupState, setPopupState] = useState<PopupState | null>(null);
   const [subscribingAddon, setSubscribingAddon] = useState<string | null>(null);
   // Opening this modal is the ONLY way an add-on gets charged - a single click on
   // a paywall "הפעילו עכשיו" opens a confirmation window, never an instant charge.
@@ -490,6 +493,16 @@ const Dashboard = () => {
     }
   }, [dbBanners]);
 
+  // Initialize popup state when business loads
+  useEffect(() => {
+    if (!business) return;
+    if ((business as any).popup_state) {
+      setPopupState((business as any).popup_state as PopupState);
+    } else {
+      setPopupState({ shown: [], dismissed: [], completed: [] });
+    }
+  }, [business?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Sync settings from database
   useEffect(() => {
     if (business) {
@@ -589,7 +602,7 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (currentView) {
       case 'home':
-        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} cancelledUntil={cancelledUntil} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} businessType={getBusinessType(business)} onNavigate={goToView} />;
+        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} cancelledUntil={cancelledUntil} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} businessType={getBusinessType(business)} onNavigate={goToView} popupState={popupState} onReopenPopup={(id: PopupId) => { setPopupState(prev => prev ? { ...prev, shown: prev.shown.filter(s => s !== id), dismissed: prev.dismissed.filter(d => d !== id) } : prev); }} />;
       case 'verticals':
         return <VerticalModules business={business as any} />;
       case 'lifecycle-emails':
@@ -685,7 +698,7 @@ const Dashboard = () => {
             onUpgrade={() => setCheckoutItems([CRM_ITEM])}
             busy={false}
           >
-            <DashboardCRM orders={orders} businessId={business?.id} demoMode={!crmEntitled} initialTab={currentView === 'profitability' ? 'profitability' : 'customers'} />
+            <DashboardCRM orders={orders} businessId={business?.id} demoMode={!crmEntitled} hasCrmAddon={crmEntitled} initialTab={currentView === 'profitability' ? 'profitability' : 'customers'} />
           </PremiumOverlay>
         );
       case 'campaigns':
@@ -812,6 +825,7 @@ const Dashboard = () => {
               <DashboardDesign
                 businessId={business?.id}
                 currentTemplateId={business?.template_id}
+                businessSlug={business?.slug ?? undefined}
               />
             )}
 
@@ -829,7 +843,7 @@ const Dashboard = () => {
         return (
           <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,3fr)_minmax(0,4fr)] gap-0">
             <div className="border-l xl:border-l-0 border-border/50 bg-muted/30">
-              <DashboardSettings settings={settings} onSettingsChange={setSettings} />
+              <DashboardSettings settings={settings} onSettingsChange={setSettings} businessType={getBusinessType(business)} />
             </div>
             <div className="hidden xl:block sticky top-20 h-[calc(100vh-80px)] overflow-hidden bg-muted/20">
               <DashboardPreview
@@ -852,6 +866,22 @@ const Dashboard = () => {
             storeSlug={business?.slug ?? undefined}
           />
         );
+      case 'availability':
+        return <DashboardAvailabilityCalendar businessId={business?.id} />;
+      case 'guests':
+        return (
+          <PremiumOverlay
+            locked={!crmEntitled}
+            title="CRM - לקוחות, ספקים ורווחיות"
+            description="כל ניהול המכירות במקום אחד: לקוחות עם היסטוריה וסגמנטים, ניהול ספקים, ודוחות רווחיות אמיתיים."
+            bullets={["כרטיס לקוח מלא + סגמנטים + תגיות/הערות", "תזכורת רכישה חוזרת + שליחת הטבה בוואטסאפ", "כרטיסי ספק: פרטי קשר, הערות ומוצרים", "רווח ואחוז רווח לכל מוצר + רווח לפי ספק"]}
+            priceLabel="הפעלה ב-₪49 לחודש"
+            onUpgrade={() => setCheckoutItems([CRM_ITEM])}
+            busy={false}
+          >
+            <DashboardCRM orders={orders} businessId={business?.id} demoMode={!crmEntitled} hasCrmAddon={crmEntitled} initialTab="customers" />
+          </PremiumOverlay>
+        );
       default:
         return null;
     }
@@ -861,6 +891,12 @@ const Dashboard = () => {
     <ThemeProvider>
       <SEOHead title="לוח ניהול | סיאנגו" noindex={true} />
       {showTour && <DashboardTour onClose={() => setShowTour(false)} />}
+      <PostLaunchPopups
+        businessId={business?.id}
+        onNavigate={goToView}
+        popupState={popupState}
+        onStateChange={setPopupState}
+      />
       <div className="min-h-screen bg-muted/30">
         <DashboardHeader
           businessName={settings.name}

@@ -28,7 +28,7 @@ const Section = ({ title, subtitle, accent, children }: { title: string; subtitl
   </section>
 );
 
-const StorefrontVertical = ({ business }: { business: (BusinessLike & { id: string; primary_color?: string | null }) | null | undefined }) => {
+const StorefrontVertical = ({ business }: { business: (BusinessLike & { id: string; primary_color?: string | null; phone?: string | null }) | null | undefined }) => {
   if (!business?.id) return null;
   const modules = getEnabledModules(business);
   const accent = business.primary_color || "#0b8f6a";
@@ -41,9 +41,8 @@ const StorefrontVertical = ({ business }: { business: (BusinessLike & { id: stri
         </Section>
       )}
       {modules.includes("listings") && (
-        <Section title="הנכסים שלנו" subtitle="עיינו והשאירו פרטים" accent={accent}>
-          <ListingsBoard businessId={business.id} />
-        </Section>
+        // Listings board renders at full width (max-w-6xl internally) — no Section wrapper
+        <ListingsBoard businessId={business.id} businessPhone={business.phone ?? undefined} />
       )}
       {modules.includes("donations") && (
         <Section title="לתרומה" subtitle="כל תרומה עושה הבדל" accent={accent}>

@@ -11,7 +11,19 @@ import { toast } from "sonner";
 interface DashboardDesignProps {
   businessId: string | undefined;
   currentTemplateId?: string | null;
+  businessSlug?: string;
 }
+
+const PALETTE_PRESETS = [
+  { name: "סגול", primary: "#7c3aed" },
+  { name: "כחול", primary: "#2563eb" },
+  { name: "ירוק", primary: "#16a34a" },
+  { name: "כתום", primary: "#ea580c" },
+  { name: "ורוד", primary: "#db2777" },
+  { name: "ציאן", primary: "#0891b2" },
+  { name: "שחור", primary: "#1a1a1a" },
+  { name: "חום", primary: "#92400e" },
+];
 
 // Realistic mini-store thumbnail: looks like an actual storefront so merchants
 // can understand the vibe at a glance without needing to imagine.
@@ -96,7 +108,7 @@ function TemplateThumb({ t }: { t: StoreTemplate }) {
   );
 }
 
-export default function DashboardDesign({ businessId, currentTemplateId }: DashboardDesignProps) {
+export default function DashboardDesign({ businessId, currentTemplateId, businessSlug }: DashboardDesignProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<StoreTemplateId>(
     (currentTemplateId && storeTemplates[currentTemplateId as StoreTemplateId]
       ? (currentTemplateId as StoreTemplateId)
@@ -130,6 +142,7 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
     try {
       await updateBusiness.mutateAsync({ id: businessId, font_heading: fontHeading || null, font_body: fontBody || null } as any);
       toast.success("הפונטים עודכנו! מתעדכן בחנות שלך.");
+      setHasUnsavedChanges(false);
     } catch { toast.error("שגיאה בשמירת הפונטים"); }
   };
 
@@ -137,10 +150,33 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
   const [heroImageUrl, setHeroImageUrl] = useState<string>("");
   const [isUploadingHero, setIsUploadingHero] = useState(false);
   const heroImageInputRef = useRef<HTMLInputElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const [primaryColor, setPrimaryColor] = useState("");
+  const [previewTheme, setPreviewTheme] = useState<"light" | "dark">("light");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
     if ((biz as any)?.hero_image_url) setHeroImageUrl((biz as any).hero_image_url);
   }, [(biz as any)?.hero_image_url]);
+
+  // Send postMessage to iframe preview whenever relevant state changes
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    const headingFont = STORE_FONTS.find(f => f.id === fontHeading)?.family;
+    const bodyFont = STORE_FONTS.find(f => f.id === fontBody)?.family;
+    iframe.contentWindow?.postMessage(
+      {
+        type: "DESIGN_PREVIEW",
+        primaryColor,
+        theme: previewTheme,
+        headingFont: headingFont || undefined,
+        bodyFont: bodyFont || undefined,
+      },
+      "*"
+    );
+  }, [primaryColor, previewTheme, fontHeading, fontBody]);
 
   const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -184,6 +220,7 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
         template_id: selectedTemplate,
       });
       toast.success('התבנית עודכנה בהצלחה!');
+      setHasUnsavedChanges(false);
     } catch (error) {
       console.error('Error updating template:', error);
       toast.error('שגיאה בעדכון התבנית');
@@ -191,247 +228,274 @@ export default function DashboardDesign({ businessId, currentTemplateId }: Dashb
   };
 
   const templateList = Object.values(storeTemplates);
+  const storeUrl = businessSlug ? `${window.location.origin}/store/${businessSlug}` : "about:blank";
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
-            <Palette className="h-6 w-6" />
-            עיצוב החנות
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            בחרו תבנית עיצוב לחנות שלך
-          </p>
-        </div>
-        {selectedTemplate !== currentTemplateId && (
-          <Button onClick={handleSaveTemplate} disabled={updateBusiness.isPending}>
-            {updateBusiness.isPending ? 'שומר...' : 'שמרו שינויים'}
-          </Button>
-        )}
-      </div>
-
-      {/* Current Template Info */}
-      {currentTemplateId && (
-        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-          <div className="flex items-center gap-2">
-            <Check className="h-5 w-5 text-primary" />
-            <div>
-              <p className="font-medium text-foreground">
-                תבנית נוכחית: {getTemplate(currentTemplateId as StoreTemplateId).name}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {getTemplate(currentTemplateId as StoreTemplateId).description}
-              </p>
-            </div>
+    <div className="flex h-full overflow-hidden">
+      {/* ── Left panel: controls ── */}
+      <div className="w-80 shrink-0 border-l border-border overflow-y-auto bg-card">
+        <div className="p-4 space-y-6">
+          {/* Header */}
+          <div>
+            <h1 className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              עיצוב החנות
+            </h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              בחרו תבנית, צבעים ופונטים
+            </p>
           </div>
-        </div>
-      )}
 
-      {/* Templates Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-        {templateList.map((template) => {
-          const isSelected = selectedTemplate === template.id;
-          const isCurrent = currentTemplateId === template.id;
+          {/* Save button */}
+          {(selectedTemplate !== currentTemplateId || hasUnsavedChanges) && (
+            <Button className="w-full" onClick={handleSaveTemplate} disabled={updateBusiness.isPending}>
+              {updateBusiness.isPending ? 'שומר...' : 'שמרו שינויים'}
+            </Button>
+          )}
 
-          return (
-            <button
-              key={template.id}
-              onClick={() => setSelectedTemplate(template.id)}
-              className={`relative group rounded-lg border-2 overflow-hidden transition-all hover:shadow-lg ${
-                isSelected
-                  ? 'border-primary ring-2 ring-primary/20'
-                  : 'border-border hover:border-primary/50'
-              }`}
-            >
-              {/* Preview - real theme-based thumbnail (matches the actual store) */}
-              <div className="aspect-[4/3] overflow-hidden">
-                <TemplateThumb t={template} />
+          {/* Current Template Info */}
+          {currentTemplateId && (
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-primary shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {getTemplate(currentTemplateId as StoreTemplateId).name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {getTemplate(currentTemplateId as StoreTemplateId).description}
+                  </p>
+                </div>
               </div>
+            </div>
+          )}
 
-              {/* Template Info */}
-              <div className="p-2.5 bg-card">
-                <div className="flex items-start justify-between gap-1.5">
-                  <div className="flex-1 text-right">
-                    <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5 justify-end">
-                      {template.name}
-                      {isCurrent && (
-                        <span className="text-[10px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full">
-                          פעיל
-                        </span>
-                      )}
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                      {template.description}
-                    </p>
-                  </div>
-                  {isSelected && (
-                    <div className="flex-shrink-0">
-                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                        <Check className="h-3 w-3 text-primary-foreground" />
+          {/* Templates Grid */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2">תבנית</p>
+            <div className="grid grid-cols-2 gap-2">
+              {templateList.map((template) => {
+                const isSelected = selectedTemplate === template.id;
+                const isCurrent = currentTemplateId === template.id;
+
+                return (
+                  <button
+                    key={template.id}
+                    onClick={() => { setSelectedTemplate(template.id); setHasUnsavedChanges(true); }}
+                    className={`relative group rounded-lg border-2 overflow-hidden transition-all hover:shadow-md ${
+                      isSelected
+                        ? 'border-primary ring-2 ring-primary/20'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    {/* Preview thumbnail */}
+                    <div className="aspect-[4/3] overflow-hidden">
+                      <TemplateThumb t={template} />
+                    </div>
+
+                    {/* Template Info */}
+                    <div className="p-1.5 bg-card">
+                      <div className="flex items-center justify-between gap-1">
+                        <h3 className="text-xs font-semibold text-foreground truncate">
+                          {template.name}
+                          {isCurrent && (
+                            <span className="mr-1 text-[9px] bg-primary text-primary-foreground px-1 py-0.5 rounded-full">
+                              פעיל
+                            </span>
+                          )}
+                        </h3>
+                        {isSelected && (
+                          <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center shrink-0">
+                            <Check className="h-2.5 w-2.5 text-primary-foreground" />
+                          </div>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
 
-                {/* Color Preview */}
-                <div className="flex gap-1.5 mt-2">
-                  <div
-                    className="w-6 h-6 rounded border border-border"
-                    style={{ backgroundColor: template.theme.primaryColor }}
-                    title="צבע ראשי"
-                  />
-                  <div
-                    className="w-6 h-6 rounded border border-border"
-                    style={{ backgroundColor: template.theme.accentColor }}
-                    title="צבע משני"
-                  />
-                  <div
-                    className="w-6 h-6 rounded border border-border"
-                    style={{ backgroundColor: template.theme.backgroundColor }}
-                    title="רקע"
-                  />
-                </div>
-              </div>
+                    {/* Selection Indicator */}
+                    {isSelected && (
+                      <div className="absolute top-1.5 left-1.5 bg-primary text-primary-foreground rounded-full p-1">
+                        <Check className="h-2.5 w-2.5" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-              {/* Selection Indicator */}
-              {isSelected && (
-                <div className="absolute top-2 left-2 bg-primary text-primary-foreground rounded-full p-1.5">
-                  <Check className="h-3 w-3" />
-                </div>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── Fonts ── */}
-      <div className="border-t border-border pt-6">
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><Type className="h-5 w-5" /> פונטים</h3>
-          {fontsChanged && (
-            <Button onClick={saveFonts} disabled={updateBusiness.isPending}>{updateBusiness.isPending ? "שומר..." : "שמרו פונטים"}</Button>
-          )}
-        </div>
-        <p className="text-sm text-muted-foreground mb-4">בחרו פונט נפרד לכותרות ולטקסט - שליטה מדויקת על הסגנון של החנות.</p>
-
-        {/* Live preview */}
-        <div className="rounded-xl border border-border bg-card p-5 mb-5 text-center">
-          <div className="text-2xl font-bold text-foreground mb-1" style={{ fontFamily: STORE_FONTS.find(f => f.id === fontHeading)?.family }}>הכותרת של החנות שלי</div>
-          <div className="text-sm text-muted-foreground" style={{ fontFamily: STORE_FONTS.find(f => f.id === fontBody)?.family }}>וכך ייראה הטקסט הרגיל בחנות - תיאורי מוצרים, מחירים והכל. נקי, ברור ומקצועי.</div>
-        </div>
-
-        {([["כותרות", fontHeading, setFontHeading], ["טקסט (גוף)", fontBody, setFontBody]] as const).map(([label, val, set]) => (
-          <div key={label} className="mb-5">
-            <div className="text-sm font-medium text-foreground mb-2">{label}</div>
+          {/* ── Palette presets ── */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2">צבע ראשי</p>
             <div className="flex flex-wrap gap-2">
-              <button onClick={() => set("")} className={`px-3 py-2 rounded-lg border text-sm transition-colors ${!val ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"}`}>ברירת מחדל</button>
-              {STORE_FONTS.map((f) => (
-                <button key={f.id} onClick={() => set(f.id)} style={{ fontFamily: f.family }}
-                  className={`px-3 py-2 rounded-lg border text-sm transition-colors ${val === f.id ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"}`}>
-                  {f.preview} <span className="text-xs opacity-60">· {f.label.split(" · ")[1] || f.label}</span>
-                </button>
+              {PALETTE_PRESETS.map((p) => (
+                <button
+                  key={p.name}
+                  type="button"
+                  title={p.name}
+                  onClick={() => { setPrimaryColor(p.primary); setHasUnsavedChanges(true); }}
+                  className={`w-7 h-7 rounded-full border-2 transition-all ${primaryColor === p.primary ? "border-foreground scale-110" : "border-transparent"}`}
+                  style={{ backgroundColor: p.primary }}
+                />
               ))}
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* Info */}
-      <div className="bg-muted/30 rounded-xl p-4 text-sm text-muted-foreground">
-        <p className="font-medium text-foreground mb-2">💡 טיפ:</p>
-        <ul className="space-y-1 mr-4">
-          <li>• כל תבנית כוללת ערכת צבעים, פונטים ועיצוב ייחודיים</li>
-          <li>• ניתן להחליף תבנית בכל עת ללא השפעה על המוצרים והתוכן</li>
-          <li>• התבנית תשפיע על מראה החנות הציבורית שלך</li>
-        </ul>
-      </div>
+          {/* ── Fonts ── */}
+          <div className="border-t border-border pt-4">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5"><Type className="h-4 w-4" /> פונטים</h3>
+              {fontsChanged && (
+                <Button size="sm" onClick={saveFonts} disabled={updateBusiness.isPending}>{updateBusiness.isPending ? "שומר..." : "שמור"}</Button>
+              )}
+            </div>
 
-      {/* Hero Image Section */}
-      <div className="border-t border-border pt-6 space-y-4">
-        <div>
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <ImagePlus className="h-5 w-5" />
-            תמונת רקע ראשית
-          </h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            תמונה שתופיע בחלק העליון של החנות - ניתן להעלות מהמחשב או להדביק קישור
-          </p>
+            {/* Live font preview */}
+            <div className="rounded-lg border border-border bg-background p-3 mb-3 text-center">
+              <div className="text-base font-bold text-foreground mb-0.5" style={{ fontFamily: STORE_FONTS.find(f => f.id === fontHeading)?.family }}>כותרת החנות</div>
+              <div className="text-xs text-muted-foreground" style={{ fontFamily: STORE_FONTS.find(f => f.id === fontBody)?.family }}>טקסט רגיל ותיאורי מוצרים</div>
+            </div>
+
+            {([["כותרות", fontHeading, setFontHeading], ["טקסט (גוף)", fontBody, setFontBody]] as const).map(([label, val, set]) => (
+              <div key={label} className="mb-3">
+                <div className="text-xs font-medium text-foreground mb-1.5">{label}</div>
+                <div className="flex flex-wrap gap-1.5">
+                  <button onClick={() => { set(""); setHasUnsavedChanges(true); }} className={`px-2 py-1.5 rounded-md border text-xs transition-colors ${!val ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"}`}>ברירת מחדל</button>
+                  {STORE_FONTS.map((f) => (
+                    <button key={f.id} onClick={() => { set(f.id); setHasUnsavedChanges(true); }} style={{ fontFamily: f.family }}
+                      className={`px-2 py-1.5 rounded-md border text-xs transition-colors ${val === f.id ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"}`}>
+                      {f.preview}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Hero Image ── */}
+          <div className="border-t border-border pt-4 space-y-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                <ImagePlus className="h-4 w-4" />
+                תמונת רקע ראשית
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                תמונה בחלק העליון של החנות
+              </p>
+            </div>
+
+            {heroImageUrl && (
+              <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+                <img src={heroImageUrl} alt="Hero" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setHeroImageUrl("")}
+                  className="absolute top-1.5 left-1.5 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <div>
+                <input
+                  ref={heroImageInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleHeroImageUpload}
+                  className="hidden"
+                  id="hero-upload-design"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => heroImageInputRef.current?.click()}
+                  disabled={isUploadingHero}
+                  className="w-full gap-2"
+                >
+                  {isUploadingHero ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      מעלה...
+                    </>
+                  ) : (
+                    <>
+                      <ImagePlus className="h-3.5 w-3.5" />
+                      העלה מהמחשב
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={heroImageUrl}
+                  onChange={(e) => setHeroImageUrl(e.target.value)}
+                  placeholder="או הדבק URL"
+                  dir="ltr"
+                  className="flex-1 h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-sm"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs px-2.5"
+                  onClick={async () => {
+                    if (!businessId) return;
+                    try {
+                      await updateBusiness.mutateAsync({ id: businessId, hero_image_url: heroImageUrl || null } as any);
+                      toast.success("תמונת הבאנר עודכנה!");
+                    } catch (err: any) {
+                      toast.error(err.message || "שגיאה בשמירה");
+                    }
+                  }}
+                >
+                  שמור
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Info tip */}
+          <div className="bg-muted/30 rounded-lg p-3 text-xs text-muted-foreground">
+            <p className="font-medium text-foreground mb-1">💡 טיפ:</p>
+            <ul className="space-y-0.5 mr-3">
+              <li>• ניתן להחליף תבנית בכל עת</li>
+              <li>• השינויים ישפיעו על החנות הציבורית</li>
+            </ul>
+          </div>
         </div>
+      </div>
 
-        {heroImageUrl && (
-          <div className="relative aspect-video max-w-sm rounded-lg overflow-hidden bg-muted">
-            <img src={heroImageUrl} alt="Hero" className="w-full h-full object-cover" />
+      {/* ── Right panel: live iframe preview ── */}
+      <div className="flex-1 flex flex-col bg-muted/20">
+        {/* Theme toggle bar */}
+        <div className="flex items-center gap-2 border-b border-border px-4 py-2 bg-card shrink-0">
+          <span className="text-xs text-muted-foreground">תצוגה חיה של האתר שלך</span>
+          <div className="flex gap-1 mr-auto">
             <button
-              type="button"
-              onClick={() => setHeroImageUrl("")}
-              className="absolute top-2 left-2 w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+              onClick={() => setPreviewTheme("light")}
+              className={`rounded px-2 py-1 text-xs transition-colors ${previewTheme === "light" ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/50"}`}
             >
-              <X className="h-4 w-4" />
+              ☀️ בהיר
+            </button>
+            <button
+              onClick={() => setPreviewTheme("dark")}
+              className={`rounded px-2 py-1 text-xs transition-colors ${previewTheme === "dark" ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/50"}`}
+            >
+              🌙 כהה
             </button>
           </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1">
-            <input
-              ref={heroImageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleHeroImageUpload}
-              className="hidden"
-              id="hero-upload-design"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => heroImageInputRef.current?.click()}
-              disabled={isUploadingHero}
-              className="w-full gap-2"
-            >
-              {isUploadingHero ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  מעלה תמונה...
-                </>
-              ) : (
-                <>
-                  <ImagePlus className="h-4 w-4" />
-                  העלה מהמחשב
-                </>
-              )}
-            </Button>
-          </div>
-
-          <div className="flex-[2] flex gap-2">
-            <input
-              type="url"
-              value={heroImageUrl}
-              onChange={(e) => setHeroImageUrl(e.target.value)}
-              placeholder="או הדבק URL לתמונה"
-              dir="ltr"
-              className="flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-            />
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={async () => {
-                if (!businessId) return;
-                try {
-                  await updateBusiness.mutateAsync({ id: businessId, hero_image_url: heroImageUrl || null } as any);
-                  toast.success("תמונת הבאנר עודכנה!");
-                } catch (err: any) {
-                  toast.error(err.message || "שגיאה בשמירה");
-                }
-              }}
-            >
-              שמור
-            </Button>
-          </div>
         </div>
+        <iframe
+          ref={iframeRef}
+          src={storeUrl}
+          className="flex-1 w-full border-0"
+          title="תצוגה חיה"
+        />
       </div>
     </div>
   );

@@ -36,9 +36,10 @@ interface DashboardSalesProps {
   onProductUpdate: (productId: string, updates: { sale_price?: number | null; is_on_sale?: boolean; is_hot?: boolean; sale_end_date?: string | null }) => void;
   onBulkUpdate?: (updates: { sale_price?: number | null; is_on_sale?: boolean; sale_end_date?: string | null }, productIds?: string[]) => void;
   isLoading?: boolean;
+  businessType?: string;
 }
 
-const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading }: DashboardSalesProps) => {
+const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, businessType }: DashboardSalesProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [salePrice, setSalePrice] = useState('');
@@ -306,15 +307,17 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading }: 
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Tag className="h-6 w-6 text-primary" />
-          ניהול מבצעים ומוצרים חמים
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          הגדר מחירי מבצע ומוצרים מומלצים שיופיעו בראש החנות
-        </p>
+      {/* Colorful vacation-aware header */}
+      <div className="rounded-2xl bg-gradient-to-l from-orange-500/15 to-amber-500/5 border border-orange-500/20 p-5 flex items-center gap-4">
+        <div className="text-4xl">{businessType === "vacation" ? "🌅" : "🔥"}</div>
+        <div>
+          <h1 className="text-lg font-bold text-foreground">
+            {businessType === "vacation" ? "הנחות עונתיות" : "מבצעים"}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {businessType === "vacation" ? "הנחות לסוף עונה, ימי חול, הזמנות מוקדמות" : "מוצרים במבצע ועסקאות מיוחדות"}
+          </p>
+        </div>
       </div>
 
       {/* Stats */}

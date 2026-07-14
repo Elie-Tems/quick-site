@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { ShoppingCart, ArrowRight, User, Phone, Mail, Package, Heart, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import type { BusinessType } from "@/lib/businessModules";
 
 export interface OrderItem {
@@ -29,6 +28,33 @@ interface DashboardOrdersProps {
   onStatusChange?: (orderId: string, status: Order['status']) => void;
   businessType?: BusinessType;
 }
+
+const ORDER_SECTION_CONFIG: Record<string, { emoji: string; title: string; emptyMsg: string }> = {
+  products:   { emoji: "📦", title: "הזמנות",           emptyMsg: "כשלקוחות יזמינו, ההזמנות יופיעו כאן. שתפו את האתר!" },
+  services:   { emoji: "📋", title: "לידים",             emptyMsg: "כשאנשים יפנו, הלידים יופיעו כאן." },
+  realestate: { emoji: "🤝", title: "לידים",             emptyMsg: "כשמתעניינים יפנו, הלידים יופיעו כאן." },
+  vacation:   { emoji: "🛎️", title: "הזמנות לינה",      emptyMsg: "כשאורחים יזמינו, ההזמנות יופיעו כאן. שתפו את האתר!" },
+  nonprofit:  { emoji: "💰", title: "תרומות",            emptyMsg: "תרומות שיתקבלו יופיעו כאן." },
+  synagogue:  { emoji: "🙏", title: "תרומות ועליות",     emptyMsg: "תרומות ועליות יופיעו כאן." },
+};
+
+const STATUS_CHIP: Record<string, { bg: string; text: string }> = {
+  "חדשה":           { bg: "bg-blue-500/15",    text: "text-blue-700 dark:text-blue-300" },
+  "בטיפול":         { bg: "bg-amber-500/15",   text: "text-amber-700 dark:text-amber-300" },
+  "הושלמה":         { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
+  "בוטלה":          { bg: "bg-red-500/15",     text: "text-red-700 dark:text-red-300" },
+  "ליד חדש":        { bg: "bg-blue-500/15",    text: "text-blue-700 dark:text-blue-300" },
+  "נסגר":           { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
+  "לא רלוונטי":     { bg: "bg-muted",          text: "text-muted-foreground" },
+  "ממתין לאישור":   { bg: "bg-amber-500/15",   text: "text-amber-700 dark:text-amber-300" },
+  "מאושר":          { bg: "bg-blue-500/15",    text: "text-blue-700 dark:text-blue-300" },
+  "הגיע":           { bg: "bg-violet-500/15",  text: "text-violet-700 dark:text-violet-300" },
+  "עזב":            { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
+  "נקלטה":          { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
+  "בבדיקה":         { bg: "bg-amber-500/15",   text: "text-amber-700 dark:text-amber-300" },
+  "התקבלה":         { bg: "bg-blue-500/15",    text: "text-blue-700 dark:text-blue-300" },
+  "ממתין לתשלום":   { bg: "bg-amber-500/15",   text: "text-amber-700 dark:text-amber-300" },
+};
 
 type StatusCfg = Record<Order['status'], { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }>;
 
@@ -62,6 +88,12 @@ const STATUS_BY_TYPE: Record<BusinessType, StatusCfg> = {
     pending_payment: { label: 'בטיפול', variant: 'outline' },
     completed: { label: 'נסגר', variant: 'default' },
     cancelled: { label: 'לא רלוונטי', variant: 'destructive' },
+  },
+  vacation: {
+    received: { label: 'ממתין לאישור', variant: 'secondary' },
+    pending_payment: { label: 'מאושר', variant: 'outline' },
+    completed: { label: 'עזב', variant: 'default' },
+    cancelled: { label: 'בוטלה', variant: 'destructive' },
   },
 };
 
@@ -97,6 +129,12 @@ const LABELS: Record<BusinessType, { title: string; single: string; contact: str
     emptyDesc: 'ברגע שמישהו ישאיר פרטים על נכס, הליד יופיע כאן.',
     listItem: 'נכסים',
   },
+  vacation: {
+    title: 'הזמנות לינה', single: 'הזמנה', contact: 'פרטי אורח', items: 'יחידות',
+    empty: 'עדיין אין הזמנות לינה',
+    emptyDesc: 'ברגע שאורח יזמין, ההזמנה תופיע כאן.',
+    listItem: 'לילות',
+  },
 };
 
 const TYPE_ICON: Record<BusinessType, React.ComponentType<{ className?: string }>> = {
@@ -105,6 +143,7 @@ const TYPE_ICON: Record<BusinessType, React.ComponentType<{ className?: string }
   nonprofit: Heart,
   synagogue: Heart,
   realestate: Users,
+  vacation: ShoppingCart,
 };
 
 const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType = 'products' }: DashboardOrdersProps) => {
@@ -155,7 +194,14 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
             <h1 className="text-xl font-bold text-foreground">{lbl.single} #{selectedOrder.id}</h1>
             <p className="text-sm text-muted-foreground">{formatDate(selectedOrder.date)}</p>
           </div>
-          <Badge variant={status.variant}>{status.label}</Badge>
+          {(() => {
+            const chip = STATUS_CHIP[status.label] ?? { bg: "bg-muted", text: "text-muted-foreground" };
+            return (
+              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${chip.bg} ${chip.text}`}>
+                {status.label}
+              </span>
+            );
+          })()}
         </div>
 
         <div className="space-y-6 max-w-2xl">
@@ -184,6 +230,18 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
               )}
             </div>
           </div>
+
+          {/* Vacation booking details */}
+          {businessType === "vacation" && ((selectedOrder as any).checkin_date || (selectedOrder as any).checkout_date) && (
+            <div className="rounded-xl bg-muted/40 p-3 space-y-1 text-sm">
+              <div className="flex gap-4 flex-wrap">
+                {(selectedOrder as any).checkin_date && <div><span className="text-muted-foreground">כניסה: </span><b>{(selectedOrder as any).checkin_date}</b></div>}
+                {(selectedOrder as any).checkout_date && <div><span className="text-muted-foreground">יציאה: </span><b>{(selectedOrder as any).checkout_date}</b></div>}
+              </div>
+              {(selectedOrder as any).num_guests && <div><span className="text-muted-foreground">אורחים: </span><b>{(selectedOrder as any).num_guests}</b></div>}
+              {(selectedOrder as any).unit_name && <div><span className="text-muted-foreground">יחידה: </span><b>{(selectedOrder as any).unit_name}</b></div>}
+            </div>
+          )}
 
           {/* Order Items */}
           <div className="bg-card rounded-2xl border border-border p-4">
@@ -231,20 +289,32 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
   // List View
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <h1 className="text-xl font-semibold text-foreground">{lbl.title}</h1>
+      {/* Colorful order header */}
+      {(() => {
+        const cfg = ORDER_SECTION_CONFIG[businessType ?? "products"] ?? ORDER_SECTION_CONFIG.products;
+        return (
+          <div className="rounded-2xl bg-gradient-to-l from-blue-500/15 to-blue-500/5 border border-blue-500/20 p-5 flex items-center gap-4">
+            <div className="text-4xl">{cfg.emoji}</div>
+            <div>
+              <h1 className="text-lg font-bold text-foreground">{cfg.title}</h1>
+              <p className="text-sm text-muted-foreground">{(orders ?? []).length} בסה"כ</p>
+            </div>
+          </div>
+        );
+      })()}
 
       {orders.length === 0 ? (
-        <div className="text-center py-14 bg-muted/30 rounded-xl px-4">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <ListIcon className="h-8 w-8 text-primary" />
-          </div>
-          <p className="text-lg font-semibold text-foreground mb-1">{lbl.empty}</p>
-          <p className="text-sm text-muted-foreground max-w-sm mx-auto">{lbl.emptyDesc}</p>
+        <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+          <div className="text-5xl mb-4">{(ORDER_SECTION_CONFIG[businessType ?? "products"] ?? ORDER_SECTION_CONFIG.products).emoji}</div>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            {(ORDER_SECTION_CONFIG[businessType ?? "products"] ?? ORDER_SECTION_CONFIG.products).emptyMsg}
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
           {orders.map((order) => {
             const status = statusConfig[order.status];
+            const chip = STATUS_CHIP[status.label] ?? { bg: "bg-muted", text: "text-muted-foreground" };
             return (
               <button
                 key={order.id}
@@ -254,7 +324,9 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium text-foreground">{order.customerName}</span>
-                    <Badge variant={status.variant} className="text-xs">{status.label}</Badge>
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${chip.bg} ${chip.text}`}>
+                      {status.label}
+                    </span>
                   </div>
                   <p className="text-sm text-muted-foreground">{formatDate(order.date)}</p>
                 </div>

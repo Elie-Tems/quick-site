@@ -5,11 +5,29 @@ interface StoreAboutProps {
   businessName: string;
 }
 
+// When a customer gives only a line or two, pad it into a proper about section
+// so the page looks complete. They can always edit it from the dashboard.
+function enrichAbout(text: string, businessName: string): { headline: string; body: string } {
+  const trimmed = text.trim();
+
+  if (trimmed.length >= 100) {
+    return { headline: `אודות ${businessName}`, body: trimmed };
+  }
+
+  // Short text — treat it as a tagline and add a professional paragraph
+  const body = trimmed
+    + `\n\nאנחנו מאמינים בשירות אישי, מקצועי ואמין. הצוות של ${businessName} כאן בשבילכם בכל שאלה — מהפנייה הראשונה ועד לסיום השירות. נשמח להכיר, ליעץ ולעזור. פנו אלינו בכל עת.`;
+
+  return { headline: `אודות ${businessName}`, body };
+}
+
 const StoreAbout = ({ aboutText, businessName }: StoreAboutProps) => {
   if (!aboutText) return null;
 
+  const { headline, body } = enrichAbout(aboutText, businessName);
+
   return (
-    <section dir="rtl" className="py-16 md:py-24 border-t border-foreground/10">
+    <section dir="rtl" className="py-16 md:py-24 border-t border-border bg-background">
       <div className="container px-4 md:px-6">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -20,17 +38,19 @@ const StoreAbout = ({ aboutText, businessName }: StoreAboutProps) => {
         >
           {/* Label */}
           <div className="flex items-center gap-3 mb-8 justify-center">
-            <div className="h-px flex-1 bg-foreground/10" />
-            <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-muted-foreground">
-              אודות {businessName}
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-semibold tracking-widest text-foreground/60 uppercase whitespace-nowrap">
+              {headline}
             </span>
-            <div className="h-px flex-1 bg-foreground/10" />
+            <div className="h-px flex-1 bg-border" />
           </div>
 
-          {/* Body */}
-          <p className="text-base md:text-lg text-muted-foreground leading-relaxed text-center">
-            {aboutText}
-          </p>
+          {/* Body — must always be dark enough to read */}
+          {body.split("\n\n").map((para, i) => (
+            <p key={i} className={`leading-relaxed text-center mb-4 last:mb-0 ${i === 0 ? "text-base md:text-lg font-medium text-foreground" : "text-base text-foreground/70"}`}>
+              {para}
+            </p>
+          ))}
         </motion.div>
       </div>
     </section>
