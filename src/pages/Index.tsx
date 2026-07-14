@@ -429,7 +429,7 @@ const Index = () => {
                 className="text-center">
 
                 <p className="text-lg md:text-xl leading-relaxed font-light italic mb-6 max-w-2xl mx-auto"
-                  style={{ color: "rgba(255,255,255,0.7)" }}>"{a.subtitle[0]}"</p>
+                  style={{ color: "rgba(255,255,255,0.7)" }}>{a.subtitle[0]}</p>
 
                 <p className="text-2xl md:text-4xl leading-snug font-bold max-w-2xl mx-auto"
                   style={{ color: "#fff" }}>{a.subtitle[1]}</p>
