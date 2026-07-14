@@ -698,7 +698,7 @@ const Dashboard = () => {
             onUpgrade={() => setCheckoutItems([CRM_ITEM])}
             busy={false}
           >
-            <DashboardCRM orders={orders} businessId={business?.id} demoMode={!crmEntitled} initialTab={currentView === 'profitability' ? 'profitability' : 'customers'} />
+            <DashboardCRM orders={orders} businessId={business?.id} demoMode={!crmEntitled} hasCrmAddon={crmEntitled} initialTab={currentView === 'profitability' ? 'profitability' : 'customers'} />
           </PremiumOverlay>
         );
       case 'campaigns':
@@ -879,7 +879,7 @@ const Dashboard = () => {
             onUpgrade={() => setCheckoutItems([CRM_ITEM])}
             busy={false}
           >
-            <DashboardCRM orders={orders} businessId={business?.id} demoMode={!crmEntitled} initialTab="customers" />
+            <DashboardCRM orders={orders} businessId={business?.id} demoMode={!crmEntitled} hasCrmAddon={crmEntitled} initialTab="customers" />
           </PremiumOverlay>
         );
       default:
