@@ -1,5 +1,5 @@
 ﻿import { useState, useRef, useEffect, useCallback } from "react";
-import { Upload, Check, X, CreditCard, Loader2, Palette, Image, Type, Megaphone, RefreshCw, Store, Utensils, Coffee, Shirt, Gem, Smartphone, Dumbbell, Car, PawPrint, Flower2, BookOpen, Home, ShoppingBasket, MoreHorizontal, ImagePlus, MessageCircle, Wine, Gamepad2, Palette as PaletteIcon, Baby, Gift, Pill, Sofa, Refrigerator, Scissors, Truck, ChevronDown, ChevronUp, Tag } from "lucide-react";
+import { Upload, Check, X, CreditCard, Loader2, Palette, Image, Type, Megaphone, RefreshCw, Store, Utensils, Coffee, Shirt, Gem, Smartphone, Dumbbell, Car, PawPrint, Flower2, BookOpen, Home, ShoppingBasket, MoreHorizontal, ImagePlus, MessageCircle, Wine, Gamepad2, Palette as PaletteIcon, Baby, Gift, Pill, Sofa, Refrigerator, Scissors, Truck, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,6 +89,46 @@ export interface BusinessSettings {
 interface DashboardSettingsProps {
   settings: BusinessSettings;
   onSettingsChange: (settings: BusinessSettings) => void;
+  businessType?: string;
+}
+
+function AccordionSection({
+  title,
+  summary,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  summary?: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-2xl border border-border overflow-hidden">
+      <button
+        type="button"
+        className="w-full flex items-center justify-between p-4 bg-card hover:bg-muted/30 transition-colors text-right"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <div>
+          <p className="font-semibold text-foreground text-sm">{title}</p>
+          {!open && summary && (
+            <p className="text-xs text-muted-foreground mt-0.5">{summary}</p>
+          )}
+        </div>
+        <svg
+          className={`h-4 w-4 text-muted-foreground transition-transform shrink-0 mr-2 ${open ? "rotate-180" : ""}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="p-4 border-t border-border bg-card">{children}</div>
+      )}
+    </div>
+  );
 }
 
 const paymentProviders = [
@@ -123,7 +163,7 @@ const categories = businessCategoryList.map(({ id, label }) => ({
   icon: categoryIcons[id],
 }));
 
-const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProps) => {
+const DashboardSettings = ({ settings, onSettingsChange, businessType }: DashboardSettingsProps) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { data: isAdmin } = useIsAdmin();
@@ -151,10 +191,6 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const logoImageInputRef = useRef<HTMLInputElement>(null);
-  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
-  const [showBusinessInfo, setShowBusinessInfo] = useState(false);
-  const [showShipping, setShowShipping] = useState(false);
-  const [showPayments, setShowPayments] = useState(false);
 
   // ברירת מחדל: מכובה (false) - המשתמש צריך להפעיל באופן ידני
   const effectiveUseTagline = formData.useTagline ?? false;
@@ -280,35 +316,20 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6 w-full">
-      <h1 className="text-xl font-semibold text-foreground">הגדרות</h1>
+    <div className="p-4 md:p-6 space-y-4 w-full">
+      {/* Gradient header */}
+      <div className="rounded-2xl bg-gradient-to-l from-gray-500/10 to-gray-500/5 border border-border p-5 mb-1 flex items-center gap-4">
+        <div className="text-4xl">⚙️</div>
+        <div>
+          <h1 className="text-lg font-bold text-foreground">הגדרות</h1>
+          <p className="text-sm text-muted-foreground">פרטי העסק, קטגוריות, משלוחים</p>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* Business Info Section */}
-        <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
-          <button
-            type="button"
-            className="w-full flex items-center justify-between text-right"
-            onClick={() => setShowBusinessInfo(prev => !prev)}
-          >
-            <div className="flex items-center gap-3">
-              <Store className="h-5 w-5 text-muted-foreground" />
-              <div className="flex flex-col items-start">
-                <h2 className="font-semibold text-lg text-foreground">פרטי העסק</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  שם, סלוגן, טלפון, אימייל ולוגו
-                </p>
-              </div>
-            </div>
-            {showBusinessInfo ? (
-              <ChevronUp className="h-5 w-5 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-            )}
-          </button>
-
-          {showBusinessInfo && (
-            <div className="space-y-4 pt-4">
+        <AccordionSection title="פרטי העסק" summary={formData.name || "שם, סלוגן, טלפון, אימייל ולוגו"} defaultOpen>
+          <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">שם העסק</Label>
                 <Input
@@ -460,37 +481,15 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-        
-        {/* Business Category Section */}
-        <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
-          <button
-            type="button"
-            className="w-full flex items-center justify-between text-right"
-            onClick={() => setShowCategoryPicker(prev => !prev)}
-          >
-            <div className="flex items-center gap-3">
-              <Tag className="h-5 w-5 text-muted-foreground" />
-              <div className="flex flex-col items-start">
-                <h2 className="font-semibold text-lg text-foreground">קטגוריית העסק</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {formData.businessCategory
-                    ? categories.find(c => c.id === formData.businessCategory)?.label || "לא נבחרה קטגוריה"
-                    : "לא נבחרה קטגוריה"}
-                </p>
-              </div>
-            </div>
-            {showCategoryPicker ? (
-              <ChevronUp className="h-5 w-5 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-            )}
-          </button>
+          </div>
+        </AccordionSection>
 
-          {showCategoryPicker && (
-            <div className="space-y-3 pt-4">
+        {/* Business Category Section */}
+        <AccordionSection
+          title="קטגוריית העסק"
+          summary={formData.businessCategory ? categories.find(c => c.id === formData.businessCategory)?.label || "לא נבחרה קטגוריה" : "לא נבחרה קטגוריה"}
+        >
+          <div className="space-y-3">
               <p className="text-xs text-muted-foreground">
                 בחר קטגוריה כדי להתאים טקסטים ותמונות לסוג העסק.
               </p>
@@ -537,35 +536,13 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
                   </p>
                 </div>
               )}
-            </div>
-          )}
-        </div>
-        
-        {/* Shipping / Fulfillment Section */}
-        <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
-          <button
-            type="button"
-            className="w-full flex items-center justify-between text-right"
-            onClick={() => setShowShipping(prev => !prev)}
-          >
-            <div className="flex items-center gap-3">
-              <Truck className="h-5 w-5 text-muted-foreground" />
-              <div className="flex flex-col items-start">
-                <h2 className="font-semibold text-lg text-foreground">משלוחים ואיסוף</h2>
-                <p className="text-xs text-muted-foreground">
-                  קבע האם הלקוחות יכולים רק לאסוף מהחנות או גם להזמין משלוח, ומה עלות המשלוח.
-                </p>
-              </div>
-            </div>
-            {showShipping ? (
-              <ChevronUp className="h-5 w-5 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-            )}
-          </button>
+          </div>
+        </AccordionSection>
 
-          {showShipping && (
-            <div className="space-y-4 pt-4">
+        {/* Shipping / Lodging Section - conditional on businessType */}
+        {businessType !== "vacation" ? (
+        <AccordionSection title="משלוחים ואיסוף" summary="הגדרות משלוח">
+          <div className="space-y-4">
               <div className="space-y-3">
                 <Label>אופן אספקה</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="אופן אספקה">
@@ -624,11 +601,43 @@ const DashboardSettings = ({ settings, onSettingsChange }: DashboardSettingsProp
                   </p>
                 </div>
               )}
+          </div>
+        </AccordionSection>
+        ) : (
+        <AccordionSection title="מדיניות לינה" summary="שעות כניסה, ביטולים">
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">שעת כניסה</label>
+                <input type="time" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" defaultValue="15:00" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">שעת יציאה</label>
+                <input type="time" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" defaultValue="11:00" />
+              </div>
             </div>
-          )}
-        </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">מדיניות ביטול</label>
+              <select className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm">
+                <option value="flexible">גמישה - ביטול עד 24 שעות לפני</option>
+                <option value="moderate">מתונה - ביטול עד שבוע לפני</option>
+                <option value="strict">מחמירה - ללא החזר</option>
+              </select>
+            </div>
+          </div>
+        </AccordionSection>
+        )}
 
-        {/* Payments Section */}
+        {/* Legal Section */}
+        <AccordionSection title="תקנון ומדיניות" summary="בדוק לפני שמוכרים">
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              התקנון שלך נוצר אוטומטית ומופיע בחנות. חשוב לבדוק שהוא מתאים לעסק שלך לפני שמתחילים למכור.
+            </p>
+          </div>
+        </AccordionSection>
+
+        {/* Payments Section (commented out) */}
         {/* <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
           <button
             type="button"

@@ -35,6 +35,7 @@ import DashboardTour, { hasSeenTour } from "@/components/dashboard/DashboardTour
 import DashboardShipping from "@/components/dashboard/DashboardShipping";
 import DashboardPayments from "@/components/dashboard/DashboardPayments";
 import DashboardUsage from "@/components/dashboard/DashboardUsage";
+import DashboardAvailabilityCalendar from "@/components/dashboard/DashboardAvailabilityCalendar";
 import DashboardTrafficSources from "@/components/dashboard/DashboardTrafficSources";
 import DashboardInsights from "@/components/dashboard/DashboardInsights";
 import DashboardDomains from "@/components/dashboard/DashboardDomains";
@@ -842,7 +843,7 @@ const Dashboard = () => {
         return (
           <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,3fr)_minmax(0,4fr)] gap-0">
             <div className="border-l xl:border-l-0 border-border/50 bg-muted/30">
-              <DashboardSettings settings={settings} onSettingsChange={setSettings} />
+              <DashboardSettings settings={settings} onSettingsChange={setSettings} businessType={getBusinessType(business)} />
             </div>
             <div className="hidden xl:block sticky top-20 h-[calc(100vh-80px)] overflow-hidden bg-muted/20">
               <DashboardPreview
@@ -866,7 +867,7 @@ const Dashboard = () => {
           />
         );
       case 'availability':
-        return <div className="p-6 text-muted-foreground">יומן זמינות - בקרוב</div>;
+        return <DashboardAvailabilityCalendar businessId={business?.id} />;
       case 'guests':
         return (
           <PremiumOverlay
