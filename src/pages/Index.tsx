@@ -80,9 +80,9 @@ const PROCESS_IMGS: Record<string, Array<{ src: string; pos: string }>> = {
     { src: "", pos: "" },
   ],
   donations: [
-    { src: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=900&q=80", pos: "center center" },
-    { src: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=900&q=80", pos: "center center" },
-    { src: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=900&q=80", pos: "center center" },
+    { src: "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=900&q=80", pos: "center center" },
+    { src: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=900&q=80", pos: "center top" },
+    { src: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=900&q=80", pos: "center center" },
     { src: "", pos: "" },
   ],
   booking: [
