@@ -10,8 +10,8 @@ interface TodoCardsProps {
 export default function TodoCards({ popupState, onReopen }: TodoCardsProps) {
   if (!popupState) return null;
 
-  // Show only non-completed popups
-  const visible = POPUPS.filter((p) => !popupState.completed.includes(p.id));
+  // Show only non-completed setup tasks (CRM and share are discovery items, not setup tasks)
+  const visible = POPUPS.filter((p) => !p.skipTodo && !popupState.completed.includes(p.id));
 
   if (visible.length === 0) return null;
 

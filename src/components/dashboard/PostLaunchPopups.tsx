@@ -16,6 +16,8 @@ interface PopupConfig {
   ctaLabel: string;
   ctaView: DashboardView | null;
   color: string;
+  /** לא מוצג ברצועת "דברים לסדר" — רק כפופאפ גילוי */
+  skipTodo?: boolean;
 }
 
 export const POPUPS: PopupConfig[] = [
@@ -49,6 +51,7 @@ export const POPUPS: PopupConfig[] = [
   {
     id: "crm",
     emoji: "👥",
+    skipTodo: true,
     title: "ה-CRM שלך",
     body: "ברגע שיגיעו הזמנות, הן יצטברו בפרופיל לקוח אוטומטי. תוכל לראות מי הזמין, כמה פעמים, ולנהל את הקשר איתם - הכל במקום אחד.",
     ctaLabel: "גלה את ה-CRM",
@@ -58,6 +61,7 @@ export const POPUPS: PopupConfig[] = [
   {
     id: "share",
     emoji: "🔗",
+    skipTodo: true,
     title: "שתפו את האתר",
     body: "האתר שלך חי וזמין לכולם! שתפו אותו בוואטסאפ, פייסבוק, אינסטגרם - ואצלו את הלינק שלכם לפרופיל. כל לחיצה יכולה להיות לקוח חדש.",
     ctaLabel: "שתף עכשיו",
