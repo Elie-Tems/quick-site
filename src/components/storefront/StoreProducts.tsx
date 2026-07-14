@@ -1,4 +1,5 @@
 import { Plus, Heart, ShoppingBag, Package, Flame, ChevronDown, SlidersHorizontal, Search, X } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -417,16 +418,20 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
 
         {/* Mobile: always 2-col uniform */}
         <div className="grid grid-cols-2 gap-3 md:hidden">
-          {paginatedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} variant="normal" />
+          {paginatedProducts.map((product, i) => (
+            <motion.div key={product.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}>
+              <ProductCard product={product} variant="normal" />
+            </motion.div>
           ))}
         </div>
 
         {/* Desktop: grid varies by template */}
         {(!productGrid || productGrid === 'uniform-3col') && (
           <div className="hidden md:grid md:grid-cols-3 gap-5 auto-rows-auto">
-            {paginatedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} variant="normal" />
+            {paginatedProducts.map((product, i) => (
+              <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
+                <ProductCard product={product} variant="normal" />
+              </motion.div>
             ))}
           </div>
         )}
@@ -434,18 +439,17 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
         {productGrid === 'featured' && (
           <div className="hidden md:grid md:grid-cols-3 gap-5 auto-rows-auto">
             {paginatedProducts.map((product, i) => {
-              // First product spans 2 cols (featured hero)
               if (i === 0) {
                 return (
-                  <div key={product.id} className="md:col-span-2 md:row-span-2">
+                  <motion.div key={product.id} className="md:col-span-2 md:row-span-2" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                     <ProductCard product={product} variant="hero" />
-                  </div>
+                  </motion.div>
                 );
               }
               return (
-                <div key={product.id}>
+                <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
                   <ProductCard product={product} variant="normal" />
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -453,16 +457,20 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
 
         {productGrid === '2col' && (
           <div className="hidden md:grid md:grid-cols-2 gap-6 auto-rows-auto">
-            {paginatedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} variant="wide" />
+            {paginatedProducts.map((product, i) => (
+              <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
+                <ProductCard product={product} variant="wide" />
+              </motion.div>
             ))}
           </div>
         )}
 
         {productGrid === '4col' && (
           <div className="hidden md:grid md:grid-cols-4 gap-4 auto-rows-auto">
-            {paginatedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} variant="normal" />
+            {paginatedProducts.map((product, i) => (
+              <motion.div key={product.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}>
+                <ProductCard product={product} variant="normal" />
+              </motion.div>
             ))}
           </div>
         )}

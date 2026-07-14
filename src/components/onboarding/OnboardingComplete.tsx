@@ -75,7 +75,7 @@ const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
   // Use internal store route instead of external URL
   const storeUrl = `/store/${businessSlug}`;
   const displayUrl = `https://${import.meta.env.VITE_WEBSITE_URL}/store/${businessSlug}`;
-  const shareText = `\u05d4\u05d9\u05d9! \u05d4\u05d7\u05e0\u05d5\u05ea \u05e9\u05dc\u05d9 \u05e2\u05db\u05e9\u05d9\u05d5 \u05d1\u05d0\u05d5\u05d5\u05d9\u05e8 \ud83d\udecd\ufe0f\n\u05d0\u05e4\u05e9\u05e8 \u05dc\u05e8\u05d0\u05d5\u05ea \u05d5\u05dc\u05d4\u05d6\u05de\u05d9\u05df \u05db\u05d0\u05df:\n${displayUrl}`;
+  const shareText = `\u05d4\u05d9\u05d9! \u05d4\u05ea\u05d7\u05d3\u05e9\u05ea\u05d9 \ud83c\udf89 \u05e4\u05ea\u05d7\u05ea\u05d9 \u05d0\u05ea\u05e8 \u05d7\u05d3\u05e9 \u05dc\u05e2\u05e1\u05e7 \u05e9\u05dc\u05d9 \u2014 \u05e2\u05db\u05e9\u05d9\u05d5 \u05d0\u05e4\u05e9\u05e8 \u05dc\u05e8\u05d0\u05d5\u05ea, \u05dc\u05d1\u05d7\u05d5\u05e8 \u05d5\u05dc\u05d4\u05d6\u05de\u05d9\u05df \u05d9\u05e9\u05e8 \u05de\u05d4\u05d0\u05ea\u05e8 \ud83d\uded2\n\u05de\u05d5\u05d6\u05de\u05e0\u05d9\u05dd \u05dc\u05d1\u05e7\u05e8:\n${displayUrl}`;
 
   const handleViewStore = () => {
     window.open(displayUrl, '_blank', 'noopener,noreferrer');

@@ -136,7 +136,7 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div>
                 <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">{customLabels?.aboutTitle || "הסיפור שלנו"}</h2>
-                <p className="text-muted-foreground leading-relaxed text-lg">{aboutText}</p>
+                <p className="text-foreground/80 leading-relaxed text-lg">{aboutText}</p>
               </div>
               {albumImgs.length > 0 && (
                 <div className="grid grid-cols-2 gap-3">
@@ -160,7 +160,7 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
             { icon: Target, label: "פרויקטים הושלמו", value: `${projects.length * 10}+` },
             { icon: Gift, label: "תרומות השנה", value: "₪850K" },
           ].map(({ icon: Icon, label, value }) => (
-            <div key={label}>
+            <div key={label} className="rounded-2xl border border-primary/20 bg-card p-5 text-center">
               <Icon className="w-8 h-8 text-primary mx-auto mb-2" />
               <div className="font-display font-bold text-2xl md:text-3xl">{value}</div>
               <div className="text-muted-foreground text-sm mt-1">{label}</div>
@@ -195,7 +195,7 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
                           <span className="font-semibold text-primary">{progress}%</span>
                         </div>
                         <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                          <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 1, delay: 0.2 + i * 0.1 }}
+                          <motion.div initial={{ width: 0 }} whileInView={{ width: `${progress}%` }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.2 + i * 0.1 }}
                             className="h-full rounded-full bg-primary" />
                         </div>
                         <div className="flex justify-between text-xs mt-1 text-muted-foreground">

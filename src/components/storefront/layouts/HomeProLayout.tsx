@@ -111,7 +111,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
             <p className="text-muted-foreground text-sm mb-8">כל עבודה עם אחריות ושקיפות מלאה</p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
               {products.map((p, i) => (
-                <motion.div key={p.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+                <motion.div key={p.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                   className="p-5 rounded-2xl border border-border bg-card hover:border-primary/40 transition-colors">
                   {p.imageUrl && (
                     <div className="aspect-video rounded-xl overflow-hidden mb-4">
