@@ -151,11 +151,15 @@ const Onboarding = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentStep]);
 
+  // "+ new site" (?new=1): an existing account creating an ADDITIONAL site. Start fresh
+  // (don't resume/edit the current site) so onboarding creates a brand-new business.
+  const isNewSite = new URLSearchParams(window.location.search).get("new") === "1";
+
   // Load existing business data if exists and not published (preview mode)
   useEffect(() => {
     if (businessLoading || dataLoaded) return;
-    
-    if (existingBusiness && !existingBusiness.is_published) {
+
+    if (existingBusiness && !existingBusiness.is_published && !isNewSite) {
       console.log("Loading existing unpublished business data for preview");
       setIsPreviewMode(true);
       
@@ -248,17 +252,6 @@ const Onboarding = () => {
     return <OnboardingComplete data={data} />;
   }
 
-  // Template step gets its own full-screen layout — no card, no progress bar
-  if (currentStep === 7) {
-    return (
-      <>
-        <SEOHead title="בחרו תבנית | סיאנגו" noindex={true} />
-        <PreviewThemeRoot>
-          <StepTemplate data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
-        </PreviewThemeRoot>
-      </>
-    );
-  }
 
   if (currentStep === 0) {
     return (

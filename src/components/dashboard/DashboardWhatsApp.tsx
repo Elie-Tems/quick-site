@@ -7,7 +7,7 @@ import {
   MessageCircle, Check, Users, Megaphone, Settings as SettingsIcon,
   Plus, Upload, Loader2, BadgeCheck, ShieldCheck, Bell,
   Send, Coins, Image as ImageIcon, ChevronDown, ArrowLeft, Eye, CheckCheck,
-  MessagesSquare, FileText, Bot, Smartphone, Facebook, FileSpreadsheet, Wand2, Mic, Paperclip,
+  MessagesSquare, FileText, Bot, Smartphone, Facebook, FileSpreadsheet, Wand2, Mic, Paperclip, X,
 } from "lucide-react";
 
 interface Props { businessId?: string; forceConnected?: boolean; platformBot?: boolean }

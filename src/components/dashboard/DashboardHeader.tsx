@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ExternalLink, LogOut, Sun, Moon, HelpCircle, Store, ChevronDown, Crown, Settings as SettingsIcon, Check } from "lucide-react";
+import { ExternalLink, LogOut, Sun, Moon, HelpCircle, Store, ChevronDown, Crown, Settings as SettingsIcon, Check, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -76,6 +76,10 @@ const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }:
                   <DropdownMenuSeparator />
                 </>
               )}
+              <DropdownMenuItem onClick={() => navigate("/onboarding?new=1")} className="gap-2 text-primary focus:text-primary">
+                <PlusCircle className="h-4 w-4" /> הקמת אתר חדש
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => onNavigate?.("settings")} className="gap-2">
                 <SettingsIcon className="h-4 w-4" /> פרטי העסק
               </DropdownMenuItem>

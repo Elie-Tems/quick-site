@@ -29,6 +29,12 @@ jobs:
 
       - run: npm ci
 
+      # Crash gate: fail the deploy on runtime-crashing bugs (an undefined component/
+      # variable used as a value - the "StepTemplate is not defined" class), before we
+      # ship. `vite build` does NOT type-check, so these used to reach production.
+      - name: Crash-lint gate
+        run: npx eslint --config eslint.ci.config.js "src/**/*.{ts,tsx}"
+
       - name: Build
         env:
           VITE_SUPABASE_PROJECT_ID: ytqgeoviokgxxwalieev
