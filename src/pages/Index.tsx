@@ -374,29 +374,16 @@ const Index = () => {
           {/* Green tint overlay */}
           <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(4,47,46,0.8) 0%, rgba(6,78,59,0.7) 50%, rgba(0,0,0,0.55) 100%)" }} />
 
-          <div className="relative px-4 py-24 max-w-4xl mx-auto">
+          <div className="relative px-4 py-10 max-w-4xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div key={a.key}
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.4 }}
                 className="text-center">
 
-                {/* Before — faded, italic */}
-                <p className="text-xs tracking-[0.2em] uppercase font-medium mb-3"
-                  style={{ color: "rgba(255,255,255,0.35)" }}>{t("subtitle.beforeLabel")}</p>
-                <p className="text-lg md:text-xl leading-relaxed font-light italic mb-8 max-w-2xl mx-auto"
-                  style={{ color: "rgba(255,255,255,0.38)" }}>"{a.subtitle[0]}"</p>
+                <p className="text-lg md:text-xl leading-relaxed font-light italic mb-6 max-w-2xl mx-auto"
+                  style={{ color: "rgba(255,255,255,0.7)" }}>"{a.subtitle[0]}"</p>
 
-                {/* Divider */}
-                <div className="flex items-center justify-center gap-4 mb-8">
-                  <div className="h-px w-16" style={{ background: "rgba(74,222,128,0.4)" }} />
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  <div className="h-px w-16" style={{ background: "rgba(74,222,128,0.4)" }} />
-                </div>
-
-                {/* After — bold, vivid */}
-                <p className="text-xs tracking-[0.2em] uppercase font-bold mb-4"
-                  style={{ color: "#4ade80" }}>{t("subtitle.afterLabel")}</p>
                 <p className="text-2xl md:text-4xl leading-snug font-bold max-w-2xl mx-auto"
                   style={{ color: "#fff" }}>{a.subtitle[1]}</p>
 
