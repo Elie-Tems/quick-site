@@ -67,7 +67,7 @@ const Dashboard = () => {
   const queryClient = useQueryClient();
   const { user, loading: authLoading } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
-  const { data: business, isLoading: businessLoading } = useMyBusiness();
+  const { data: business, isLoading: businessLoading, isSuccess: businessSuccess, isError: businessError } = useMyBusiness();
   
   // Check for new referral rewards and show toast
   useReferralRewardNotification();
@@ -398,21 +398,26 @@ const Dashboard = () => {
       return;
     }
     
-    // CRITICAL: Only redirect if business query has finished AND returned null
-    // Never redirect while businessLoading is true - this causes the redirect loop
-    if (!businessLoading && !business) {
-      console.log("✅ All queries completed. No business found, redirecting to onboarding");
+    // CRITICAL: only send to onboarding when the businesses query has SUCCEEDED and
+    // genuinely returned zero sites. On a transient error / a query that ran before the
+    // auth token attached (returns empty), we must NOT redirect - that threw returning
+    // users who DO have a site into "create a site". Wait / retry instead.
+    if (businessError) {
+      return; // a real error - let react-query retry; never treat as "no site"
+    }
+    if (businessSuccess && !business) {
+      console.log("✅ Business query succeeded with no site - redirecting to onboarding");
       navigate('/onboarding', { replace: true });
       return;
     }
-    
+
     // Unpublished businesses go to the payment page (storefront preview + payment popup).
     // Only redirect once the business query has resolved to avoid a false redirect.
-    if (!businessLoading && business && !(business as any).is_published) {
+    if (businessSuccess && business && !(business as any).is_published) {
       navigate('/publish-payment', { replace: true });
       return;
     }
-  }, [user, profile, business, authLoading, profileLoading, businessLoading, navigate]);
+  }, [user, profile, business, authLoading, profileLoading, businessLoading, businessSuccess, businessError, navigate]);
 
   // Sync products from database (preserve optimistically added products until DB refetch catches up)
   useEffect(() => {
@@ -544,7 +549,11 @@ const Dashboard = () => {
   }, [business?.id]);
 
   // Show loading state
-  const isLoading = authLoading || profileLoading || businessLoading;
+  // Show the loader until we have a DEFINITIVE businesses result. Includes the window
+  // between an error and react-query's retry, so a returning user never sees a blank
+  // screen or gets bounced to onboarding while the query is still settling.
+  const isLoading = authLoading || profileLoading || businessLoading
+    || (!!user && !!profile && !business && !businessSuccess);
   
   if (isLoading) {
     return (
@@ -557,8 +566,10 @@ const Dashboard = () => {
     );
   }
 
-  // Show nothing while redirecting to onboarding (only if profile loaded but no business)
-  if (user && profile && !business && !businessLoading && !profileLoading && !authLoading) {
+  // Show nothing while redirecting to onboarding - ONLY when the businesses query
+  // actually succeeded with no site. On an error we keep showing the loader above
+  // (react-query retries) instead of a blank screen.
+  if (user && profile && businessSuccess && !business) {
     return null;
   }
 

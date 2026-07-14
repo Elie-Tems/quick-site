@@ -1,7 +1,9 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredUtm } from '@/lib/utmCapture';
+import { setActiveBusinessId } from '@/lib/activeBusiness';
 import { gtm } from '@/lib/gtm';
 
 interface AuthContextType {
@@ -33,6 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     // Set up auth state listener BEFORE checking session
@@ -112,6 +115,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    // Clean slate so the NEXT login doesn't inherit stale data: drop every cached query
+    // (profile/business/etc.) and forget the active-site selection. Without this, leftover
+    // state leaked across sessions in the same tab (and could bounce a returning user to
+    // onboarding). Fresh queries run for the newly signed-in user.
+    setActiveBusinessId(null);
+    queryClient.clear();
   };
 
   return (
