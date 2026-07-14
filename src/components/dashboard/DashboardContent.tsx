@@ -24,7 +24,7 @@ const ABOUT_LABELS: Record<BusinessType, { title: string; desc: string; saveLabe
   realestate: { title: "על המשרד",    desc: "ספרו על משרד הנדל\"ן, הניסיון, ואזורי הפעילות שלכם.",             saveLabel: "שמרו על המשרד"     },
 };
 
-type ContentTab = "hero" | "about" | "labels" | "rabbi";
+type ContentTab = "hero" | "about" | "labels" | "rabbi" | "hosting";
 
 const DashboardContent = ({ businessId, businessType = "products", businessSubType }: DashboardContentProps) => {
   const isTorahCenter = businessSubType === "torah-center";
@@ -54,6 +54,24 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
   const [aboutBody, setAboutBody] = useState("");
   const [aboutContact, setAboutContact] = useState("");
   const [isSavingAbout, setIsSavingAbout] = useState(false);
+
+  // Auto-save ref
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function scheduleAutosave(data: Record<string, unknown>) {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      if (!businessId) return;
+      await supabase.from("business_profiles").update(data as any).eq("id", businessId);
+    }, 2000);
+  }
+
+  useEffect(() => {
+    return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
+  }, []);
+
+  // Hosting policy (vacation only)
+  const [hostingPolicy, setHostingPolicy] = useState<Record<string, string>>({});
 
   // Rabbi message fields (torah-center only)
   const [rabbiName, setRabbiName] = useState("");
@@ -86,6 +104,8 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
     setRabbiTitle((business as any).rabbi_title || "");
     setRabbiMessage((business as any).rabbi_message || "");
     setRabbiImageUrl((business as any).rabbi_image_url || "");
+    const hp = (business as any).settings?.hosting_policy || {};
+    setHostingPolicy(hp);
   }, [business]);
 
   const handleSaveHero = async () => {
@@ -257,6 +277,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           { id: "about" as ContentTab, label: aboutLabels.title, icon: FileText },
           { id: "labels" as ContentTab, label: "כותרות סקשנים", icon: Tags },
           ...(isTorahCenter ? [{ id: "rabbi" as ContentTab, label: "דבר הרב", icon: BookOpen }] : []),
+          ...(businessType === "vacation" ? [{ id: "hosting" as ContentTab, label: "מדיניות אירוח", icon: FileText }] : []),
         ]).map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -282,16 +303,14 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
                 <h2 className="text-base font-semibold">כותרת ראשית</h2>
                 <p className="text-sm text-muted-foreground mt-0.5">מה שמבקרים רואים ראשון כשנכנסים לחנות</p>
               </div>
-              <Button
-                variant="outline" size="sm" className="gap-2 shrink-0"
+              <button
+                type="button"
                 onClick={handleGenerateHero}
                 disabled={isGenerating}
+                className="flex items-center gap-2 rounded-xl bg-gradient-to-l from-violet-600 to-indigo-500 text-white px-5 py-3 text-sm font-semibold shadow hover:opacity-90 transition-opacity disabled:opacity-60 shrink-0"
               >
-                {isGenerating
-                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  : <Wand2 className="h-3.5 w-3.5" />}
-                צרו עם AI
-              </Button>
+                ✨ {isGenerating ? "יוצר תוכן..." : "צור עם AI בחינם"}
+              </button>
             </div>
 
             <div className="space-y-3">
@@ -518,6 +537,73 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
             {isSavingRabbi && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
             שמרו דבר הרב
           </Button>
+        </div>
+      )}
+
+      {/* Hosting policy tab (vacation only) */}
+      {activeTab === "hosting" && businessType === "vacation" && (
+        <div className="space-y-4 max-w-2xl">
+          <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
+            <div>
+              <h2 className="text-base font-semibold">מדיניות אירוח</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">הגדירו את כללי הכניסה, היציאה וההתנהגות באירוח</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">שעת כניסה (check-in)</label>
+                <input
+                  type="time"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  value={hostingPolicy?.checkin_time ?? "15:00"}
+                  onChange={e => { setHostingPolicy(p => ({ ...p, checkin_time: e.target.value })); scheduleAutosave({ settings: { ...(business as any)?.settings, hosting_policy: { ...hostingPolicy, checkin_time: e.target.value } } }); }}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">שעת יציאה (check-out)</label>
+                <input
+                  type="time"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  value={hostingPolicy?.checkout_time ?? "11:00"}
+                  onChange={e => { setHostingPolicy(p => ({ ...p, checkout_time: e.target.value })); scheduleAutosave({ settings: { ...(business as any)?.settings, hosting_policy: { ...hostingPolicy, checkout_time: e.target.value } } }); }}
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">מדיניות ביטול</label>
+              <select
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                value={hostingPolicy?.cancellation_policy ?? ""}
+                onChange={e => { setHostingPolicy(p => ({ ...p, cancellation_policy: e.target.value })); scheduleAutosave({ settings: { ...(business as any)?.settings, hosting_policy: { ...hostingPolicy, cancellation_policy: e.target.value } } }); }}
+              >
+                <option value="">בחר מדיניות</option>
+                <option value="flexible">גמישה - ביטול עד 24 שעות לפני</option>
+                <option value="moderate">מתונה - ביטול עד שבוע לפני</option>
+                <option value="strict">מחמירה - ללא החזר</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">חיות מחמד</label>
+                <select className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  value={hostingPolicy?.pets ?? ""} onChange={e => setHostingPolicy(p => ({ ...p, pets: e.target.value }))}>
+                  <option value="">בחר</option>
+                  <option value="no">לא מותר</option>
+                  <option value="yes">מותר</option>
+                  <option value="fee">מותר בתוספת תשלום</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">עישון</label>
+                <select className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  value={hostingPolicy?.smoking ?? ""} onChange={e => setHostingPolicy(p => ({ ...p, smoking: e.target.value }))}>
+                  <option value="">בחר</option>
+                  <option value="no">אסור לחלוטין</option>
+                  <option value="outside">מותר בחוץ בלבד</option>
+                  <option value="yes">מותר</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

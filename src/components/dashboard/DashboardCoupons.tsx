@@ -124,11 +124,17 @@ const DashboardCoupons = ({ businessId }: DashboardCouponsProps) => {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
+      {/* Colorful header */}
+      <div className="rounded-2xl bg-gradient-to-l from-orange-500/15 to-amber-500/5 border border-orange-500/20 p-5 flex items-center gap-4">
+        <div className="text-4xl">🏷️</div>
+        <div>
+          <h1 className="text-lg font-bold text-foreground">מבצעים וקופונים</h1>
+          <p className="text-sm text-muted-foreground">הגדלו מכירות עם הנחות חכמות</p>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
-          <Ticket className="w-6 h-6" />
-          קופונים
-        </h1>
+        <div />
         
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
@@ -257,18 +263,16 @@ const DashboardCoupons = ({ businessId }: DashboardCouponsProps) => {
       {isLoading ? (
         <div className="text-center py-8 text-muted-foreground">טוען...</div>
       ) : !coupons || coupons.length === 0 ? (
-        <Card className="max-w-md mx-auto">
-          <CardContent className="py-12 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <Ticket className="w-8 h-8 text-primary" />
-            </div>
-            <p className="text-lg font-semibold text-foreground mb-1">קופונים מגדילים מכירות</p>
-            <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">צרו קוד הנחה שלקוחות יזינו בקופה - דרך מצוינת לעודד רכישות.</p>
-            <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
-              צרו קופון ראשון
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+          <div className="text-5xl mb-4">🏷️</div>
+          <h3 className="text-lg font-semibold text-foreground mb-2">עדיין אין קופונים</h3>
+          <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+            קופון אחד יכול להביא גל של לקוחות. צרו אחד עכשיו!
+          </p>
+          <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
+            צרו קופון ראשון
+          </Button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {coupons.map((coupon) => {
