@@ -1,16 +1,17 @@
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Loader2, RotateCcw, Coins } from "lucide-react";
+import { Loader2, Coins } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "sonner";
 
 /**
  * GLOBAL Siango revenue - every subscription / add-on / domain charge from
  * billing_charges (NOT the merchants' storefront sales, which live in `payments`
- * and show under "תשלומים"). Admin-only; refund per row. This is where a platform
- * charge like the publish subscription shows up.
+ * and show under "תשלומים"). Admin-only, read-only monitoring view.
+ *
+ * Refunds are intentionally NOT here: they run only from the customer card
+ * (AdminCustomers -> BillingChargesPanel) with the proper two-gate flow
+ * (typed amount + emailed OTP + full/partial). A flat button here would bypass
+ * those gates, so we only link the invoice and point admins to the customer card.
  */
 
 interface Charge {
@@ -34,9 +35,6 @@ const STATUS: Record<string, { label: string; cls: string }> = {
 };
 
 export default function AdminSiangoRevenue() {
-  const qc = useQueryClient();
-  const [refunding, setRefunding] = useState<string | null>(null);
-
   const { data, isLoading } = useQuery({
     queryKey: ["admin-siango-revenue"],
     staleTime: 60000,
@@ -61,25 +59,6 @@ export default function AdminSiangoRevenue() {
   const charges = data?.list || [];
   const bizMap = data?.bizMap || {};
   const totalPaid = charges.filter((c) => c.status === "success" && !c.is_test).reduce((s, c) => s + Number(c.amount_ils || 0), 0);
-
-  const refund = async (id: string) => {
-    if (!confirm("לזכות/להחזיר את החיוב הזה ללקוח?")) return;
-    setRefunding(id);
-    try {
-      const { data, error } = await supabase.functions.invoke("billing-refund", { body: { chargeId: id } });
-      if (error) throw error;
-      if ((data as any)?.ok) {
-        toast.success("הזיכוי בוצע ✓");
-        qc.invalidateQueries({ queryKey: ["admin-siango-revenue"] });
-      } else {
-        toast.error((data as any)?.error || "הזיכוי נכשל");
-      }
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "שגיאה בזיכוי");
-    } finally {
-      setRefunding(null);
-    }
-  };
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 mb-6" dir="rtl">
@@ -114,14 +93,12 @@ export default function AdminSiangoRevenue() {
                     {c.confirmation_code ? ` · אישור ${c.confirmation_code}` : ""}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-3 shrink-0">
                   {c.invoice_url && (
                     <a href={c.invoice_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">חשבונית</a>
                   )}
                   {c.status === "success" && !c.is_test && (
-                    <Button variant="outline" size="sm" className="gap-1.5" disabled={refunding === c.id} onClick={() => refund(c.id)}>
-                      {refunding === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />} זיכוי
-                    </Button>
+                    <span className="text-[11px] text-muted-foreground">לזיכוי - כרטיס הלקוח</span>
                   )}
                 </div>
               </div>
