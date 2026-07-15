@@ -62,6 +62,30 @@ async function placeDetails(placeId: string, key: string) {
   };
 }
 
+// Real validity check: does this key actually WORK for Places? A key that merely
+// exists but is wrong / has "Places API (New)" disabled / is HTTP-referrer
+// restricted will fail here (403/PERMISSION_DENIED or an error body), so the
+// dashboard never sells reviews on a key that can't deliver. Cheap: one minimal
+// searchText with a 1-field mask.
+async function keyWorks(key: string): Promise<boolean> {
+  try {
+    const r = await fetch(`${PLACES}/places:searchText`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": key,
+        "X-Goog-FieldMask": "places.id",
+      },
+      body: JSON.stringify({ textQuery: "קפה", languageCode: "he", regionCode: "IL", pageSize: 1 }),
+    });
+    if (!r.ok) return false;                       // 400/401/403 -> key invalid/misconfigured
+    const data = await r.json().catch(() => ({} as Record<string, unknown>));
+    return !(data as { error?: unknown }).error;   // Google returns { error: {...} } on denial
+  } catch {
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
@@ -69,25 +93,35 @@ Deno.serve(async (req) => {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) return json({ ok: false, error: "Unauthorized" }, 401);
 
-  const key = Deno.env.get("GOOGLE_MAPS_API_KEY");
-  if (!key) return json({ ok: true, configured: false });
-
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-  const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
-  const { data: { user }, error: userErr } = await userClient.auth.getUser();
-  if (userErr || !user) return json({ ok: false, error: "Invalid session" }, 401);
+  const key = Deno.env.get("GOOGLE_MAPS_API_KEY");
 
   let body: { action?: string; query?: string; placeId?: string };
   try { body = await req.json(); } catch { return json({ ok: false, error: "Invalid JSON" }, 400); }
 
-  // Configuration probe (no paid gate): lets the dashboard check whether the
-  // Google key is set BEFORE letting a merchant pay for the reviews add-on, so
-  // nobody is charged for a feature that can't deliver. If the key were missing
-  // we'd already have returned configured:false above.
-  if (body.action === "status") return json({ ok: true, configured: true });
+  // Configuration probe (config-only, no user data): lets the dashboard check
+  // whether reviews can actually deliver BEFORE letting a merchant pay, so nobody
+  // is charged for a feature that can't work. Answered before per-user auth (still
+  // behind verify_jwt via the anon key). "configured" means the key really WORKS,
+  // not just that it's present. Rate-limited (global bucket) so this pre-auth
+  // probe can't burn the Places quota; if over-probed we assume OK rather than
+  // hide a working feature.
+  if (body.action === "status") {
+    if (!key) return json({ ok: true, configured: false });
+    const admin0 = createClient(supabaseUrl, serviceKey);
+    if (!(await consumeRateLimit(admin0, "greviews:status", 200, 3600))) {
+      return json({ ok: true, configured: true });
+    }
+    return json({ ok: true, configured: await keyWorks(key) });
+  }
+
+  if (!key) return json({ ok: true, configured: false });
+
+  const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
+  const { data: { user }, error: userErr } = await userClient.auth.getUser();
+  if (userErr || !user) return json({ ok: false, error: "Invalid session" }, 401);
 
   const admin = createClient(supabaseUrl, serviceKey);
   const { data: biz } = await admin
