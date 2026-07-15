@@ -51,24 +51,29 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
         </div>
         <div className="flex items-center gap-2">
           {whatsappEnabled && phone && (
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500 text-white text-sm font-medium">
-              <MessageCircle className="w-4 h-4" /> קביעת תור
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-700 text-white text-sm font-medium">
+              <MessageCircle className="w-4 h-4" aria-hidden="true" /> קביעת תור
             </a>
           )}
           {!whatsappEnabled && phone && (
             <a href={`tel:${phone}`} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium">
-              <Phone className="w-4 h-4" /> {phone}
+              <Phone className="w-4 h-4" aria-hidden="true" /> {phone}
             </a>
           )}
-          <button onClick={() => setCartOpen(true)} className="relative inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card text-sm">
-            <ShoppingBag className="w-4 h-4" />
+          <button
+            onClick={() => setCartOpen(true)}
+            aria-label={`סל קניות${itemCount > 0 ? `, ${itemCount} פריטים` : ""}`}
+            className="relative inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card text-sm"
+          >
+            <ShoppingBag className="w-4 h-4" aria-hidden="true" />
             {itemCount > 0 && (
-              <span className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-rose-500 text-white text-[11px] font-bold flex items-center justify-center">{itemCount}</span>
+              <span aria-hidden="true" className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-rose-500 text-white text-[11px] font-bold flex items-center justify-center">{itemCount}</span>
             )}
           </button>
         </div>
       </header>
 
+      <main>
       {/* HERO */}
       <section className="relative h-[80vh] min-h-[500px] overflow-hidden">
         <img src={heroImg} alt="" className="w-full h-full object-cover" />
@@ -159,12 +164,14 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
                   {galleryImgs.length > 1 && (
                     <>
                       <button onClick={() => setGalleryIdx(i => (i - 1 + galleryImgs.length) % galleryImgs.length)}
+                        aria-label="תמונה קודמת"
                         className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center">
-                        <ChevronLeft className="w-4 h-4" />
+                        <ChevronLeft className="w-4 h-4" aria-hidden="true" />
                       </button>
                       <button onClick={() => setGalleryIdx(i => (i + 1) % galleryImgs.length)}
+                        aria-label="תמונה הבאה"
                         className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center">
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-4 h-4" aria-hidden="true" />
                       </button>
                     </>
                   )}
@@ -199,11 +206,11 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
             <div className="grid md:grid-cols-3 gap-4">
               {(reviewsCache.reviews || []).slice(0, 3).map((r, i) => (
                 <div key={i} className="p-5 rounded-2xl border border-border bg-card">
-                  <div className="flex gap-0.5 mb-3">
+                  <span aria-label={`דירוג: ${r.rating || 5} מתוך 5 כוכבים`} className="flex gap-0.5 mb-3">
                     {Array.from({ length: r.rating || 5 }).map((_, j) => (
-                      <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                      <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden="true" />
                     ))}
-                  </div>
+                  </span>
                   <p className="text-sm text-muted-foreground leading-relaxed">"{r.text}"</p>
                   <p className="mt-3 text-sm font-semibold">{r.author || "לקוח/ה"}</p>
                 </div>
@@ -251,14 +258,16 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
         </section>
       )}
 
+      </main>
+
       {/* FOOTER */}
       <footer className="py-10 px-4 bg-muted/30 border-t border-border text-center">
         <div className="font-display font-bold text-lg mb-1">{businessName}</div>
         {tagline && <div className="text-muted-foreground text-sm mb-4">{tagline}</div>}
         <div className="flex justify-center gap-3">
           {whatsappEnabled && phone && (
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-medium">
-              <MessageCircle className="w-4 h-4" /> וואטסאפ
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-700 text-white text-sm font-medium">
+              <MessageCircle className="w-4 h-4" aria-hidden="true" /> וואטסאפ
             </a>
           )}
           {phone && (
@@ -274,18 +283,22 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
         {cartOpen && (
           <>
             <motion.div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setCartOpen(false)} />
-            <motion.div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-sm flex flex-col bg-background border-l border-border shadow-2xl"
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="beauty-cart-title"
+              className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-sm flex flex-col bg-background border-l border-border shadow-2xl"
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
               <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                <button onClick={() => setCartOpen(false)} className="w-9 h-9 rounded-xl bg-muted border border-border flex items-center justify-center">
-                  <X className="w-5 h-5" />
+                <button onClick={() => setCartOpen(false)} aria-label="סגור סל קניות" className="w-9 h-9 rounded-xl bg-muted border border-border flex items-center justify-center">
+                  <X className="w-5 h-5" aria-hidden="true" />
                 </button>
-                <span className="font-display font-bold text-lg">סל קניות</span>
+                <span id="beauty-cart-title" className="font-display font-bold text-lg">סל קניות</span>
               </div>
               <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
                 {cartItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
-                    <ShoppingBag className="w-12 h-12 opacity-30" /><p className="text-sm">הסל ריק</p>
+                    <ShoppingBag className="w-12 h-12 opacity-30" aria-hidden="true" /><p className="text-sm">הסל ריק</p>
                   </div>
                 ) : cartItems.map(item => (
                   <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
@@ -294,9 +307,9 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
                       <div className="text-sm font-semibold truncate">{item.name}</div>
                       <div className="text-primary font-bold text-sm">₪{item.price}</div>
                       <div className="flex items-center gap-2 mt-1 justify-end">
-                        <button onClick={() => onUpdateQuantity(item.id, item.quantity + 1)} className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center"><Plus className="w-3.5 h-3.5" /></button>
-                        <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
-                        <button onClick={() => item.quantity > 1 ? onUpdateQuantity(item.id, item.quantity - 1) : onRemoveFromCart(item.id)} className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center"><Minus className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => onUpdateQuantity(item.id, item.quantity + 1)} aria-label={`הוסף יחידה: ${item.name}`} className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center"><Plus className="w-3.5 h-3.5" aria-hidden="true" /></button>
+                        <span className="text-sm font-bold w-4 text-center" aria-label={`כמות: ${item.quantity}`}>{item.quantity}</span>
+                        <button onClick={() => item.quantity > 1 ? onUpdateQuantity(item.id, item.quantity - 1) : onRemoveFromCart(item.id)} aria-label={item.quantity > 1 ? `הפחת יחידה: ${item.name}` : `הסר מהסל: ${item.name}`} className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center"><Minus className="w-3.5 h-3.5" aria-hidden="true" /></button>
                       </div>
                     </div>
                   </div>

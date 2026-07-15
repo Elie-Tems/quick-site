@@ -1,4 +1,4 @@
-import { Phone, Mail, ArrowLeft } from 'lucide-react';
+import { Phone, MessageCircle, ArrowLeft } from 'lucide-react';
 import StoreHeader from '@/components/storefront/StoreHeader';
 import StoreBanners from '@/components/storefront/StoreBanners';
 import StorePromoPopup from '@/components/storefront/StorePromoPopup';
@@ -81,6 +81,7 @@ const ServiceLayout = ({
                     <span
                       className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-bold"
                       style={{ backgroundColor: pc }}
+                      aria-hidden="true"
                     >
                       ✓
                     </span>
@@ -123,7 +124,7 @@ const ServiceLayout = ({
                 className="w-full h-full flex items-center justify-center"
                 style={{ backgroundColor: `${pc}1a` }}
               >
-                <span className="text-8xl opacity-20">🛎</span>
+                <span className="text-8xl opacity-20" aria-hidden="true">🛎</span>
               </div>
             )}
           </div>
@@ -223,7 +224,7 @@ const ServiceLayout = ({
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold border transition-colors hover:bg-muted"
                 style={{ borderColor: pc, color: pc }}
               >
-                <Mail className="w-4 h-4" /> WhatsApp
+                <MessageCircle className="w-4 h-4" aria-hidden="true" /> WhatsApp
               </a>
             </div>
           </section>

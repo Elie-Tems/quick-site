@@ -50,15 +50,17 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
           {whatsappEnabled && phone && (
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-card border border-border text-sm">
-              <MessageCircle className="w-4 h-4" /> צרו קשר
+              <MessageCircle className="w-4 h-4" aria-hidden="true" /> צרו קשר
             </a>
           )}
           <button onClick={() => document.getElementById("donate")?.scrollIntoView({ behavior: "smooth" })}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold">
-            <Heart className="w-4 h-4" /> תרמו עכשיו
+            <Heart className="w-4 h-4" aria-hidden="true" /> תרמו עכשיו
           </button>
         </div>
       </header>
+
+    <main>
 
       {/* HERO */}
       <section className="relative h-[85vh] min-h-[560px] overflow-hidden">
@@ -96,24 +98,28 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
                   <span className="font-display font-bold text-lg">תרמו לנו</span>
                 </div>
                 {/* Monthly / One-time toggle */}
-                <div className="flex rounded-xl border border-border bg-muted/30 p-1 mb-5">
+                <div className="flex rounded-xl border border-border bg-muted/30 p-1 mb-5" role="group" aria-label="סוג תרומה">
                   {["תרומה חד-פעמית", "תרומה חודשית"].map((label, i) => (
                     <button key={i} onClick={() => setIsMonthly(i === 1)}
+                      aria-pressed={isMonthly === (i === 1)}
                       className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${isMonthly === (i === 1) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}>
                       {label}
                     </button>
                   ))}
                 </div>
                 {/* Amount buttons */}
-                <div className="grid grid-cols-4 gap-2 mb-3">
+                <div className="grid grid-cols-4 gap-2 mb-3" role="group" aria-label="סכום תרומה">
                   {DONATION_AMOUNTS.map(amt => (
                     <button key={amt} onClick={() => { setDonationAmt(amt); setCustomAmt(""); }}
+                      aria-pressed={donationAmt === amt && !customAmt}
                       className={`py-2.5 rounded-xl text-sm font-bold border transition-all ${donationAmt === amt && !customAmt ? "bg-primary text-primary-foreground border-primary" : "border-border bg-card hover:border-primary/40"}`}>
                       ₪{amt}
                     </button>
                   ))}
                 </div>
+                <label htmlFor="custom-donation-amount" className="sr-only">סכום תרומה אחר בשקלים</label>
                 <input
+                  id="custom-donation-amount"
                   type="number"
                   value={customAmt}
                   onChange={e => { setCustomAmt(e.target.value); setDonationAmt(null); }}
@@ -228,7 +234,9 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
             <div className="grid md:grid-cols-3 gap-4">
               {(reviewsCache.reviews || []).slice(0, 3).map((r, i) => (
                 <div key={i} className="p-5 rounded-2xl border border-border bg-card">
-                  <div className="flex gap-0.5 mb-3">{Array.from({ length: r.rating || 5 }).map((_, j) => <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />)}</div>
+                  <span aria-label={`דירוג: ${r.rating || 5} מתוך 5 כוכבים`} className="flex gap-0.5 mb-3">
+                    {Array.from({ length: r.rating || 5 }).map((_, j) => <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden="true" />)}
+                  </span>
                   <p className="text-sm text-muted-foreground leading-relaxed">"{r.text}"</p>
                   <p className="mt-3 text-sm font-semibold">{r.author || "תורם/ת"}</p>
                 </div>
@@ -247,6 +255,8 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
           <Heart className="w-6 h-6" /> תרמו עכשיו
         </button>
       </section>
+
+      </main>
 
       {/* FOOTER */}
       <footer className="py-8 px-4 bg-muted/30 border-t border-border text-center">
