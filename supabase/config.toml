@@ -135,10 +135,7 @@ verify_jwt = false
 [functions.domain-balance-check]
 verify_jwt = true
 
-# icount-invoices + google-reviews are called by the logged-in merchant only.
-[functions.icount-invoices]
-verify_jwt = true
-
+# google-reviews is called by the logged-in merchant only.
 [functions.google-reviews]
 verify_jwt = true
 

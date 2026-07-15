@@ -1,11 +1,12 @@
-// Cancels the authenticated merchant's subscription - and, crucially, cancels the
-// iCount recurring-billing profile (הוראת קבע) so future cycles are NOT charged.
+// Cancels the authenticated merchant's subscription.
 //
-// Flow: verify the logged-in merchant -> find their subscription -> if it has an
-// iCount hk_id, call iCount hk/cancel FIRST. Only if iCount confirms (or there is
-// nothing to cancel) do we mark our DB cancelled. If the iCount cancel fails we
-// return an error and leave the subscription active, so we never tell the merchant
-// "cancelled" while iCount keeps charging. A daily reconciliation job double-checks.
+// NOTE ON THE NAME: this endpoint is still called "icount-cancel-subscription" for
+// backwards compatibility (the dashboard invokes it by that name), but billing is
+// now self-managed via Cardcom tokens - there is NO external standing order to
+// cancel. We initiate each monthly charge ourselves from billing-charge-run, so
+// cancelling = marking the subscription cancelled and it simply stops being charged.
+// (Kept the name to avoid a redeploy/rename race on a billing endpoint; safe to
+// rename to `subscription-cancel` in a dedicated step later.)
 //
 // verify_jwt = true (default): only the subscription's own owner can cancel it.
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -16,24 +17,6 @@ const corsHeaders = {
 };
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-
-const ICOUNT_BASE = "https://api.icount.co.il/api/v3.php";
-
-// Call the iCount v3 API (same auth as icount-invoices: Bearer ICOUNT_API_TOKEN).
-async function icount(endpoint: string, payload: Record<string, unknown>) {
-  const token = Deno.env.get("ICOUNT_API_TOKEN");
-  if (!token) return { status: false, reason: "not_configured" } as any;
-  try {
-    const r = await fetch(`${ICOUNT_BASE}/${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(payload),
-    });
-    return await r.json();
-  } catch (e) {
-    return { status: false, reason: "request_failed", error: String(e) } as any;
-  }
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -61,40 +44,27 @@ Deno.serve(async (req) => {
   // Per-site: cancel the subscription for the given business (an account can own several).
   // The caller can only touch their OWN subscription (matched by their verified user id).
   // Falls back to the user's latest subscription for older single-site callers.
-  let subQ = admin.from("subscriptions").select("id, user_id, business_id, status, paid_until, icount_hk_id").eq("user_id", user.id);
+  let subQ = admin.from("subscriptions").select("id, user_id, business_id, status, paid_until").eq("user_id", user.id);
   subQ = businessId ? subQ.eq("business_id", businessId) : subQ.order("created_at", { ascending: false }).limit(1);
   const { data: sub, error: subErr } = await subQ.maybeSingle();
   if (subErr) return json({ ok: false, error: "lookup_failed" }, 500);
   if (!sub) return json({ ok: false, error: "no_subscription" }, 404);
 
-  // 1) Stop the money first. If there's an iCount standing order, cancel it and
-  //    require confirmation before we flag our DB. No hk_id => nothing to stop at
-  //    iCount (e.g. legacy / one-time), so we proceed to the DB cancel.
-  let icountCancelled = false;
-  const hkId = (sub as any).icount_hk_id;
-  if (hkId) {
-    const res = await icount("hk/cancel", { hk_id: hkId });
-    if (!res?.status) {
-      console.error("icount hk/cancel failed:", JSON.stringify(res));
-      return json({ ok: false, error: "icount_cancel_failed", detail: res?.reason || null }, 502);
-    }
-    icountCancelled = true;
-  }
-
-  // 2) Now record the cancellation in our DB.
+  // Record the cancellation. Future Cardcom charges stop because billing-charge-run
+  // only charges subscriptions with status in ('active','past_due').
   const now = new Date().toISOString();
   const cancelAt = cancelType === "immediate" ? now : (sub.paid_until || now);
   const { error: updErr } = await admin
     .from("subscriptions")
     .update({ status: "cancelled", cancel_type: cancelType, cancel_at: cancelAt, cancel_reason: cancelReason, updated_at: now })
     .eq("id", sub.id);
-  if (updErr) return json({ ok: false, error: "db_update_failed", icountCancelled }, 500);
+  if (updErr) return json({ ok: false, error: "db_update_failed" }, 500);
 
-  // 3) Immediate cancellation takes the store offline now. End-of-period leaves it
-  //    live until cancel_at, when expire-subscriptions removes it.
+  // Immediate cancellation takes the store offline now. End-of-period leaves it
+  // live until cancel_at, when expire-subscriptions removes it.
   if (cancelType === "immediate" && (sub as { business_id?: string }).business_id) {
     await admin.from("businesses").update({ is_published: false }).eq("id", (sub as { business_id: string }).business_id);
   }
 
-  return json({ ok: true, icountCancelled, cancelType, cancelAt });
+  return json({ ok: true, cancelType, cancelAt });
 });
