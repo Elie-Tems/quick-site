@@ -144,15 +144,14 @@ const Dashboard = () => {
   // Active, paid Siango subscription? Decides whether the store is live (drives the
   // dashboard banner). "active" + paid_until in the future.
   const { data: subData } = useQuery({
-    queryKey: ["my-subscription", user?.id],
-    enabled: !!user?.id,
+    queryKey: ["my-subscription", business?.id],
+    enabled: !!business?.id,
     queryFn: async () => {
+      // Per-site: the subscription of the ACTIVE business being managed.
       const { data } = await supabase
         .from("subscriptions")
         .select("paid_until, status, last_charge_status")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
+        .eq("business_id", (business as { id: string }).id)
         .maybeSingle();
       return data;
     },

@@ -44,7 +44,7 @@ serve(async (req) => {
   // Due, active, token-billed subscriptions that aren't cancelled.
   const { data: subs, error } = await admin
     .from("subscriptions")
-    .select("id, user_id, status, cc_token_id, base_amount_ils, coupon_duration, coupon_discount_type, coupon_discount_value, billing_cycle_count, next_charge_at, cancel_type, free_months_credit, billing_anchor_day")
+    .select("id, user_id, business_id, status, cc_token_id, base_amount_ils, coupon_duration, coupon_discount_type, coupon_discount_value, billing_cycle_count, next_charge_at, cancel_type, free_months_credit, billing_anchor_day")
     .eq("billing_provider", "cardcom_token")
     .in("status", ["active", "past_due"]) // past_due = suspended; keep retrying so a payment reactivates it
     .not("cc_token_id", "is", null)
@@ -107,7 +107,7 @@ serve(async (req) => {
     let addonsTotal = 0;
     try {
       const { data: addons } = await admin.from("subscription_addons")
-        .select("description, price_ils").eq("user_id", s.user_id).eq("active", true);
+        .select("description, price_ils").eq("business_id", s.business_id).eq("active", true);
       for (const a of (addons ?? [])) {
         const p = Math.round(Number((a as any).price_ils) * 100) / 100;
         if (p > 0) { invLines.push({ description: `${(a as any).description} - חיוב חודשי`, quantity: 1, unitCost: p }); addonsTotal += p; }
@@ -167,10 +167,9 @@ serve(async (req) => {
         status: "active", // reactivate a subscription that had gone past_due
         updated_at: nowIso,
       }).eq("id", s.id);
-      // If the store had been suspended for non-payment, bring it back online now.
-      if ((s as any).status === "past_due") {
-        const { data: prof } = await admin.from("profiles").select("id").eq("user_id", s.user_id).maybeSingle();
-        if (prof) await admin.from("businesses").update({ is_published: true, updated_at: nowIso }).eq("owner_id", (prof as any).id);
+      // If THIS site had been suspended for non-payment, bring it back online now.
+      if ((s as any).status === "past_due" && s.business_id) {
+        await admin.from("businesses").update({ is_published: true, updated_at: nowIso }).eq("id", s.business_id);
       }
       charged++; chargedGross += amount;
     } else {
@@ -197,8 +196,7 @@ serve(async (req) => {
         newStatus = "pending_deletion"; nextRetry = null; // stop; admin reviews before any deletion
       } else if (daysFailing >= 10) {
         newStatus = "past_due"; // suspended (unpublished); keep retrying to allow reactivation
-        const { data: prof } = await admin.from("profiles").select("id").eq("user_id", s.user_id).maybeSingle();
-        if (prof) await admin.from("businesses").update({ is_published: false, updated_at: nowIso }).eq("owner_id", (prof as any).id).eq("is_published", true);
+        if (s.business_id) await admin.from("businesses").update({ is_published: false, updated_at: nowIso }).eq("id", s.business_id).eq("is_published", true);
       }
       await admin.from("subscriptions").update({
         next_charge_at: nextRetry,

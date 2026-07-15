@@ -45,10 +45,11 @@ serve(async (req) => {
 
     const now = new Date().toISOString();
 
-    // Cancellations whose effective date has passed.
+    // Cancellations whose effective date has passed. Per-site: take down ONLY the
+    // specific site whose subscription was cancelled (not every site the owner has).
     const { data: subs, error: subErr } = await admin
       .from("subscriptions")
-      .select("user_id")
+      .select("business_id")
       .eq("status", "cancelled")
       .eq("cancel_type", "end_of_period")
       .lte("cancel_at", now);
@@ -56,17 +57,12 @@ serve(async (req) => {
 
     let processed = 0;
     for (const sub of subs ?? []) {
-      const { data: profile } = await admin
-        .from("profiles")
-        .select("id")
-        .eq("user_id", sub.user_id)
-        .maybeSingle();
-      if (!profile) continue;
-
+      const businessId = (sub as { business_id?: string }).business_id;
+      if (!businessId) continue;
       const { error: bizErr } = await admin
         .from("businesses")
         .update({ is_published: false })
-        .eq("owner_id", profile.id)
+        .eq("id", businessId)
         .eq("is_published", true);
       if (!bizErr) processed++;
     }

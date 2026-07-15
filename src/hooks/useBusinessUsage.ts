@@ -48,38 +48,18 @@ export const useBusinessUsage = (businessId?: string) => {
         .eq("business_id", businessId)
         .maybeSingle();
 
-      // Get subscription limits - need to get owner first
-      const { data: business } = await supabase
-        .from("businesses")
-        .select("owner_id")
-        .eq("id", businessId)
-        .single();
-
+      // Subscription limits for THIS site (per-site subscription).
       let imageLimit = 50;
       let productLimit = 100;
-
-      if (business?.owner_id) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("user_id")
-          .eq("id", business.owner_id)
-          .single();
-
-        if (profile?.user_id) {
-          const { data: subscription } = await supabase
-            .from("subscriptions")
-            .select("image_limit, product_addon_enabled")
-            .eq("user_id", profile.user_id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (subscription) {
-            imageLimit = subscription.image_limit || 50;
-            // If product addon is enabled, no limit
-            productLimit = subscription.product_addon_enabled ? Infinity : 100;
-          }
-        }
+      const { data: subscription } = await supabase
+        .from("subscriptions")
+        .select("image_limit, product_addon_enabled")
+        .eq("business_id", businessId)
+        .maybeSingle();
+      if (subscription) {
+        imageLimit = subscription.image_limit || 50;
+        // If product addon is enabled, no limit
+        productLimit = subscription.product_addon_enabled ? Infinity : 100;
       }
 
       const storedImages = usage?.stored_images_count || 0;

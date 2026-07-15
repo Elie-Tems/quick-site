@@ -137,13 +137,16 @@ Deno.serve(async (req) => {
   const nextCharge = new Date(nextChargeMs).toISOString();
   const paidUntil = new Date(nextChargeMs + 2 * 864e5).toISOString();
   try {
+    // Per-site subscription: one row PER published business, so each site renews on its
+    // own 79 ILS/month. Keyed by business_id (not user_id) - an account with several sites
+    // has several subscription rows sharing the same saved card (billing_tokens by user).
     await admin.from("subscriptions").upsert({
-      user_id: userId, status: "active", billing_provider: "cardcom_token",
+      user_id: userId, business_id: businessId, status: "active", billing_provider: "cardcom_token",
       cc_token_id: token ?? null,
       paid_until: paidUntil, next_charge_at: token ? nextCharge : null,
       billing_cycle_count: 1, last_charge_status: "success", billing_anchor_day: anchorDay,
       cancel_type: null, cancel_at: null, updated_at: now,
-    }, { onConflict: "user_id" });
+    }, { onConflict: "business_id" });
   } catch (e) { console.warn("cardcom webhook: subscription activation failed (non-fatal):", e); }
 
   // Redeem the coupon (best effort - must never block publish/emails).

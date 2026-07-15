@@ -81,17 +81,15 @@ const DashboardSubscription = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) return;
+      if (!user || !business?.id) return;
 
       try {
-        // Fetch subscription
+        // Fetch the ACTIVE site's subscription (per-site billing).
         const { data: subData } = await supabase
           .from('subscriptions')
           .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+          .eq('business_id', business.id)
+          .maybeSingle();
 
         setSubscription(subData as Subscription);
 
@@ -115,7 +113,7 @@ const DashboardSubscription = () => {
     };
 
     fetchData();
-  }, [user]);
+  }, [user, business?.id]);
 
   const getStatusBadge = (status: string, paidUntil: string | null) => {
     if (paidUntil && isPast(new Date(paidUntil))) {
@@ -152,7 +150,7 @@ const DashboardSubscription = () => {
       // cancellation. If iCount can't confirm, it errors and we keep the sub active
       // (never "cancelled" while iCount still charges).
       const { data, error } = await supabase.functions.invoke("icount-cancel-subscription", {
-        body: { cancelType, cancelReason: cancelReason || null },
+        body: { cancelType, cancelReason: cancelReason || null, businessId: business?.id },
       });
       if (error || !data?.ok) {
         throw new Error((data as any)?.error || error?.message || "cancel_failed");
@@ -181,7 +179,7 @@ const DashboardSubscription = () => {
       // Must go through the service-role function: the protect_subscription_billing
       // trigger blocks the client from changing `status` directly (that was the
       // "שגיאה בחידוש המנוי" bug - the direct UPDATE always threw).
-      const { data, error } = await supabase.functions.invoke("subscription-resume", {});
+      const { data, error } = await supabase.functions.invoke("subscription-resume", { body: { businessId: business?.id } });
       if (error || !(data as { ok?: boolean })?.ok) {
         throw new Error((data as { error?: string })?.error || error?.message || "resume_failed");
       }

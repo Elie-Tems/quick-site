@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useMyBusiness } from "@/hooks/useBusiness";
 import { AlertTriangle, CreditCard, Clock } from "lucide-react";
 
 // In-dashboard dunning alert. Complements the email reminders: shows a prominent
@@ -14,18 +14,17 @@ interface Props {
 }
 
 const SubscriptionAlert = ({ onManage }: Props) => {
-  const { user } = useAuth();
+  const { data: business } = useMyBusiness();
 
   const { data: sub } = useQuery({
-    queryKey: ["subscription-alert", user?.id],
-    enabled: !!user?.id,
+    queryKey: ["subscription-alert", business?.id],
+    enabled: !!business?.id,
     queryFn: async () => {
+      // Per-site: the alert reflects the ACTIVE site's subscription.
       const { data } = await supabase
         .from("subscriptions")
         .select("status, paid_until, monthly_total")
-        .eq("user_id", user!.id)
-        .order("updated_at", { ascending: false })
-        .limit(1)
+        .eq("business_id", (business as { id: string }).id)
         .maybeSingle();
       return data;
     },

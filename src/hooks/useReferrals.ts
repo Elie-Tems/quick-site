@@ -43,12 +43,15 @@ export const useReferralStats = () => {
       
       if (logsError) throw logsError;
       
-      // Get subscription
-      const { data: subscription, error: subError } = await supabase
+      // Get subscription (an account can own several sites/subscriptions - take the
+      // most recent; .single() would throw on multiple rows).
+      const { data: subscription } = await supabase
         .from('subscriptions')
         .select('paid_until')
         .eq('user_id', user.id)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
       
       // Don't throw if no subscription - it's optional
       

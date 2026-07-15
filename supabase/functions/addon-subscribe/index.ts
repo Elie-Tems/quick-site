@@ -74,9 +74,10 @@ Deno.serve(async (req) => {
     .select("id, active").eq("user_id", user.id).eq("addon_type", addonType).maybeSingle();
   if (existingAddon && (existingAddon as { active?: boolean }).active) return json({ ok: true, alreadyActive: true });
 
-  // The merchant's active subscription (for the proration window) + saved Cardcom token.
+  // THIS site's active subscription (for the proration window) + saved Cardcom token.
+  // Per-site: the add-on attaches to the specific business's subscription.
   const { data: sub } = await admin.from("subscriptions")
-    .select("next_charge_at, status").eq("user_id", user.id).maybeSingle();
+    .select("next_charge_at, status").eq("business_id", businessId).maybeSingle();
   const nextChargeAt = (sub as { next_charge_at?: string } | null)?.next_charge_at;
   if (!sub || (sub as { status?: string }).status !== "active" || !nextChargeAt) {
     return json({ ok: false, needsSubscription: true, message: "צריך מנוי פרסום פעיל כדי להוסיף תוספת." });
@@ -178,11 +179,11 @@ async function activate(admin: any, o: { user: { id: string }; businessId: strin
     user_id: o.user.id, business_id: o.businessId, addon_type: o.addonType,
     description: o.addon.description, price_ils: o.monthGross, active: true,
     cancelled_at: null, updated_at: now,
-  }, { onConflict: "user_id,addon_type" });
+  }, { onConflict: "business_id,addon_type" });
   if (o.addon.flag) {
     await admin.from("businesses").update({ [o.addon.flag]: true, updated_at: now }).eq("id", o.businessId);
   }
   if (o.addon.subFlag) {
-    await admin.from("subscriptions").update({ [o.addon.subFlag]: true, updated_at: now }).eq("user_id", o.user.id);
+    await admin.from("subscriptions").update({ [o.addon.subFlag]: true, updated_at: now }).eq("business_id", o.businessId);
   }
 }

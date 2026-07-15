@@ -71,16 +71,17 @@ Deno.serve(async (req) => {
   });
   if (sErr) return json({ error: "could not create session" }, 500);
 
-  // Remember the billing intent on the subscription (activated on webhook).
+  // Remember the billing intent on THIS site's subscription (activated on webhook).
+  // Per-site: keyed by business_id so each published site has its own subscription.
   await admin.from("subscriptions").upsert({
-    user_id: user.id, status: "pending", billing_provider: "cardcom_token",
+    user_id: user.id, business_id: businessId, status: "pending", billing_provider: "cardcom_token",
     base_amount_ils: basePrice,
     coupon_code: coupon ? body.couponCode!.trim().toUpperCase() : null,
     coupon_duration: coupon?.duration ?? null,
     coupon_discount_type: coupon?.discount_type ?? null,
     coupon_discount_value: coupon?.discount_value ?? null,
     updated_at: new Date().toISOString(),
-  }, { onConflict: "user_id" });
+  }, { onConflict: "business_id" });
 
   // The webhook gates on the shared secret in the URL (Cardcom can't send headers).
   const webhookSecret = Deno.env.get("CARDCOM_WEBHOOK_SECRET") ?? "";

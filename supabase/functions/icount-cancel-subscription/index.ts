@@ -50,20 +50,20 @@ Deno.serve(async (req) => {
   const { data: { user }, error: userErr } = await userClient.auth.getUser();
   if (userErr || !user) return json({ ok: false, error: "Invalid session" }, 401);
 
-  let body: { cancelType?: "immediate" | "end_of_period"; cancelReason?: string } = {};
+  let body: { cancelType?: "immediate" | "end_of_period"; cancelReason?: string; businessId?: string } = {};
   try { body = await req.json(); } catch { /* defaults */ }
   const cancelType = body.cancelType === "immediate" ? "immediate" : "end_of_period";
   const cancelReason = (body.cancelReason || "").toString().slice(0, 300) || null;
+  const businessId = (body.businessId || "").trim();
 
   const admin = createClient(url, service);
 
-  // The caller can only ever touch their OWN subscription (looked up by their
-  // verified auth user id), so there's no way to cancel someone else's.
-  const { data: sub, error: subErr } = await admin
-    .from("subscriptions")
-    .select("id, user_id, status, paid_until, icount_hk_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // Per-site: cancel the subscription for the given business (an account can own several).
+  // The caller can only touch their OWN subscription (matched by their verified user id).
+  // Falls back to the user's latest subscription for older single-site callers.
+  let subQ = admin.from("subscriptions").select("id, user_id, business_id, status, paid_until, icount_hk_id").eq("user_id", user.id);
+  subQ = businessId ? subQ.eq("business_id", businessId) : subQ.order("created_at", { ascending: false }).limit(1);
+  const { data: sub, error: subErr } = await subQ.maybeSingle();
   if (subErr) return json({ ok: false, error: "lookup_failed" }, 500);
   if (!sub) return json({ ok: false, error: "no_subscription" }, 404);
 
@@ -92,11 +92,8 @@ Deno.serve(async (req) => {
 
   // 3) Immediate cancellation takes the store offline now. End-of-period leaves it
   //    live until cancel_at, when expire-subscriptions removes it.
-  if (cancelType === "immediate") {
-    const { data: profile } = await admin.from("profiles").select("id").eq("user_id", user.id).maybeSingle();
-    if (profile) {
-      await admin.from("businesses").update({ is_published: false }).eq("owner_id", (profile as any).id);
-    }
+  if (cancelType === "immediate" && (sub as { business_id?: string }).business_id) {
+    await admin.from("businesses").update({ is_published: false }).eq("id", (sub as { business_id: string }).business_id);
   }
 
   return json({ ok: true, icountCancelled, cancelType, cancelAt });

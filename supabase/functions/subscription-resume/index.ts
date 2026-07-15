@@ -34,10 +34,17 @@ Deno.serve(async (req) => {
 
   const admin = createClient(url, service);
 
-  // The user's subscription (owned by them via user_id).
-  const { data: sub } = await admin.from("subscriptions")
-    .select("id, user_id, cancel_type, status").eq("user_id", user.id)
-    .order("created_at", { ascending: false }).limit(1).maybeSingle();
+  // Per-site: resume the subscription for the given business. Falls back to the user's
+  // most-recent subscription for older single-site callers that don't pass businessId.
+  let body: { businessId?: string } = {};
+  try { body = await req.json(); } catch { /* no body */ }
+  const businessId = (body.businessId || "").trim();
+
+  let q = admin.from("subscriptions").select("id, user_id, business_id, cancel_type, status");
+  q = businessId
+    ? q.eq("business_id", businessId).eq("user_id", user.id)
+    : q.eq("user_id", user.id).order("created_at", { ascending: false }).limit(1);
+  const { data: sub } = await q.maybeSingle();
   if (!sub) return json({ ok: false, error: "no subscription" }, 404);
   if ((sub as { user_id?: string }).user_id !== user.id) return json({ ok: false, error: "forbidden" }, 403);
 
@@ -48,12 +55,10 @@ Deno.serve(async (req) => {
     .eq("id", (sub as { id: string }).id);
   if (upErr) return json({ ok: false, error: "לא הצלחנו לחדש כרגע. נסו שוב עוד רגע." }, 500);
 
-  // Bring the store back online if an immediate cancel had taken it down.
-  if (wasImmediate) {
-    const { data: prof } = await admin.from("profiles").select("id").eq("user_id", user.id).maybeSingle();
-    if (prof) {
-      await admin.from("businesses").update({ is_published: true }).eq("owner_id", (prof as { id: string }).id);
-    }
+  // Bring THIS store back online if an immediate cancel had taken it down.
+  const subBusinessId = (sub as { business_id?: string }).business_id;
+  if (wasImmediate && subBusinessId) {
+    await admin.from("businesses").update({ is_published: true }).eq("id", subBusinessId);
   }
 
   return json({ ok: true });

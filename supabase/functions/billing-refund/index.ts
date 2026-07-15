@@ -64,8 +64,13 @@ Deno.serve(async (req) => {
   const c = charge as Record<string, any>;
   if (c.status !== "success") return json({ error: "רק חיוב מוצלח ניתן לזיכוי" }, 400);
 
-  // Provider: charges taken via Cardcom refund through Cardcom; else iCount.
-  const { data: subRow } = await admin.from("subscriptions").select("billing_provider").eq("user_id", c.user_id).maybeSingle();
+  // Provider: charges taken via Cardcom refund through Cardcom; else iCount. Per-site:
+  // look up THIS charge's site subscription (an account can own several); fall back to
+  // the user's most recent so a null business_id charge still resolves (no maybeSingle
+  // throw on multiple rows).
+  let subQ = admin.from("subscriptions").select("billing_provider").eq("user_id", c.user_id);
+  subQ = c.business_id ? subQ.eq("business_id", c.business_id) : subQ.order("created_at", { ascending: false });
+  const { data: subRow } = await subQ.limit(1).maybeSingle();
   const provider = String((subRow as { billing_provider?: string } | null)?.billing_provider || "");
   const isCardcom = provider.startsWith("cardcom");
 
