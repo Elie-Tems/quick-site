@@ -387,6 +387,10 @@ const he: Record<string, string> = {
   'example.homepro.tag': 'בעלי מקצוע',
   'example.nonprofit.title': 'עמותה',
   'example.nonprofit.tag': 'תרומות',
+  'example.crowdfunding.title': 'גיוס המונים',
+  'example.crowdfunding.tag': 'תרומות',
+  'example.restaurant.title': 'מסעדה וקפה',
+  'example.restaurant.tag': 'מזון',
   // Final CTA
   'finalCta.line1': 'בלי מתכנתים. בלי מעצבים.',
   'finalCta.gradientLine': 'בלי כאב ראש.',
