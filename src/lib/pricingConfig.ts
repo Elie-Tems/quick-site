@@ -118,11 +118,11 @@ export const ADD_ONS: AddOnConfig[] = [
   {
     id: "custom-domain",
     name: "דומיין אישי",
-    price: 19.9,
-    label: "₪19.9",
+    price: 15,
+    label: "₪15",
     description:
-      "חיבור דומיין אישי משלכם (לדוגמה shop.yourbrand.co.il) במקום כתובת תחת siango.app - תוספת חודשית.",
-    available: false, // pending the custom-domain feature build
+      "חיבור דומיין אישי שכבר יש לכם (לדוגמה shop.yourbrand.co.il) במקום כתובת תחת siango.app - תוספת חודשית.",
+    available: true,
   },
 ];
 

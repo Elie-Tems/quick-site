@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Globe } from "lucide-react";
+import { Globe, Search, Link2 } from "lucide-react";
 import DomainSearch from "@/components/domains/DomainSearch";
 import DomainPurchaseDialog from "@/components/domains/DomainPurchaseDialog";
+import ConnectOwnDomain from "@/components/domains/ConnectOwnDomain";
 
 interface Props {
   businessId?: string;
@@ -15,7 +16,9 @@ interface Props {
  * domains already registered for this store.
  */
 const DashboardDomains = ({ businessId }: Props) => {
+  const queryClient = useQueryClient();
   const [buying, setBuying] = useState<{ domain: string; price: number | null } | null>(null);
+  const [mode, setMode] = useState<"buy" | "own">("buy");
 
   const { data: biz } = useQuery({
     queryKey: ["domain-biz-prefill", businessId],
@@ -36,10 +39,10 @@ const DashboardDomains = ({ businessId }: Props) => {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("domains")
-        .select("id, domain, status, expires_at, cf_ssl_status")
+        .select("id, domain, status, expires_at, cf_ssl_status, source")
         .eq("business_id", businessId)
         .order("created_at", { ascending: false });
-      return (data || []) as Array<{ id: string; domain: string; status: string; expires_at: string | null; cf_ssl_status: string | null }>;
+      return (data || []) as Array<{ id: string; domain: string; status: string; expires_at: string | null; cf_ssl_status: string | null; source: string | null }>;
     },
   });
 
@@ -70,8 +73,33 @@ const DashboardDomains = ({ businessId }: Props) => {
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5">
-        <h3 className="font-semibold text-foreground mb-3">חיפוש דומיין</h3>
-        <DomainSearch onBuy={onBuy} />
+        <div className="flex items-center gap-2 mb-4 rounded-lg bg-muted/50 p-1 w-fit">
+          <button
+            onClick={() => setMode("buy")}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              mode === "buy" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+            }`}
+          >
+            <Search className="w-3.5 h-3.5" /> חיפוש ורכישה
+          </button>
+          <button
+            onClick={() => setMode("own")}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              mode === "own" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+            }`}
+          >
+            <Link2 className="w-3.5 h-3.5" /> יש לי כבר דומיין
+          </button>
+        </div>
+
+        {mode === "buy" ? (
+          <DomainSearch onBuy={onBuy} />
+        ) : (
+          <ConnectOwnDomain
+            businessId={businessId}
+            onConnected={() => queryClient.invalidateQueries({ queryKey: ["my-domains", businessId] })}
+          />
+        )}
       </div>
 
       {owned && owned.length > 0 && (
@@ -80,7 +108,12 @@ const DashboardDomains = ({ businessId }: Props) => {
           <div className="space-y-2">
             {owned.map((d) => (
               <div key={d.id} className="flex items-center justify-between rounded-lg border border-border p-3 text-sm">
-                <span dir="ltr" className="font-medium text-foreground">{d.domain}</span>
+                <div className="flex items-center gap-2">
+                  <span dir="ltr" className="font-medium text-foreground">{d.domain}</span>
+                  {d.source === "byod" && (
+                    <span className="text-[11px] rounded-full bg-muted px-2 py-0.5 text-muted-foreground">דומיין אישי</span>
+                  )}
+                </div>
                 <span className="text-muted-foreground">
                   {connectionLabel(d)}
                   {d.expires_at ? ` · עד ${new Date(d.expires_at).toLocaleDateString("he-IL")}` : ""}

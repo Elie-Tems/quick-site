@@ -11,6 +11,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { chargeToken, toMMYY } from "../_shared/cardcom/api.ts";
 import { chargeAmount, type CouponInfo } from "../_shared/billing/pricing.ts";
+import { cfAddCustomHostname } from "../_shared/domains/cloudflare.ts";
 
 const VAT_RATE = 0.18;
 const gross = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
@@ -22,12 +23,18 @@ const gross = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
 // useCrmEntitled/useAnalyticsEntitled, and the protect_subscription_billing
 // trigger that locks these columns to service-role-only writes).
 const ADDONS: Record<string, { netIls: number; description: string; flag?: string; subFlag?: string }> = {
-  reviews:   { netIls: 14, description: "ביקורות Google", flag: "reviews_paid" },
-  email:     { netIls: 19, description: "מייל עסקי" },
-  whatsapp:  { netIls: 89, description: "וואטסאפ עסקי" },
-  crm:       { netIls: 49, description: "CRM - ניהול לקוחות", subFlag: "crm_addon_enabled" },
-  analytics: { netIls: 29, description: "אנליטיקה", subFlag: "analytics_addon_enabled" },
+  reviews:       { netIls: 14, description: "ביקורות Google", flag: "reviews_paid" },
+  email:         { netIls: 19, description: "מייל עסקי" },
+  whatsapp:      { netIls: 89, description: "וואטסאפ עסקי" },
+  crm:           { netIls: 49, description: "CRM - ניהול לקוחות", subFlag: "crm_addon_enabled" },
+  analytics:     { netIls: 29, description: "אנליטיקה", subFlag: "analytics_addon_enabled" },
+  custom_domain: { netIls: 15, description: "דומיין אישי (חיבור דומיין קיים)" },
 };
+
+// custom_domain is the only addon that needs an extra client-supplied value
+// (the domain to connect) and a side effect beyond flipping a flag - see
+// grantCustomDomain below.
+const domainRegex = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i;
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -51,7 +58,7 @@ Deno.serve(async (req) => {
   const { data: { user }, error: uErr } = await userClient.auth.getUser();
   if (uErr || !user) return json({ ok: false, error: "invalid session" }, 401);
 
-  let body: { addon?: string; businessId?: string; couponCode?: string };
+  let body: { addon?: string; businessId?: string; couponCode?: string; domain?: string };
   try { body = await req.json(); } catch { return json({ ok: false, error: "bad json" }, 400); }
 
   const addon = body.addon ? ADDONS[body.addon] : undefined;
@@ -64,9 +71,22 @@ Deno.serve(async (req) => {
 
   // Ownership.
   const { data: prof } = await admin.from("profiles").select("id").eq("user_id", user.id).maybeSingle();
-  const { data: biz } = await admin.from("businesses").select("id, owner_id").eq("id", businessId).maybeSingle();
+  const { data: biz } = await admin.from("businesses").select("id, owner_id, slug").eq("id", businessId).maybeSingle();
   if (!biz || !prof || (biz as { owner_id?: string }).owner_id !== (prof as { id?: string }).id) {
     return json({ ok: false, error: "forbidden" }, 403);
+  }
+
+  // custom_domain needs a valid, not-already-claimed domain BEFORE we charge -
+  // never take money for something we can't deliver.
+  const domainInput = (body.domain || "").trim().toLowerCase();
+  if (addonType === "custom_domain") {
+    if (!domainInput || !domainRegex.test(domainInput)) {
+      return json({ ok: false, error: "יש להזין דומיין תקין (למשל shop.co.il)" }, 400);
+    }
+    const { data: existingDomain } = await admin.from("domains").select("business_id").ilike("domain", domainInput).maybeSingle();
+    if (existingDomain && (existingDomain as { business_id?: string }).business_id !== businessId) {
+      return json({ ok: false, error: "הדומיין הזה כבר מחובר לחנות אחרת." }, 409);
+    }
   }
 
   // Already active? no-op (idempotent).
@@ -125,10 +145,12 @@ Deno.serve(async (req) => {
   const isTest = Deno.env.get("BILLING_TEST_MODE") === "true";
   const { data: existingCharge } = await admin.from("billing_charges").select("status").eq("idempotency_key", idem).maybeSingle();
   const existingStatus = (existingCharge as { status?: string } | null)?.status;
+  const cnameTarget = addonType === "custom_domain" ? `${(biz as { slug?: string }).slug}.siango.app` : undefined;
+
   if (existingStatus === "success") {
     // Charge already happened; just ensure the add-on + flag are active.
-    await activate(admin, { user, businessId, addonType, addon, monthGross });
-    return json({ ok: true, alreadyCharged: true });
+    await activate(admin, { user, businessId, addonType, addon, monthGross, domain: domainInput });
+    return json({ ok: true, alreadyCharged: true, cnameTarget });
   }
 
   const chargeRow = {
@@ -167,14 +189,32 @@ Deno.serve(async (req) => {
   await admin.from("billing_charges").update({ status: "success", confirmation_code: confirmation, invoice_url: invoiceUrl }).eq("idempotency_key", idem);
 
   // Activate the add-on line + its feature flag ONLY after a confirmed charge.
-  await activate(admin, { user, businessId, addonType, addon, monthGross });
+  await activate(admin, { user, businessId, addonType, addon, monthGross, domain: domainInput });
 
-  return json({ ok: true, proratedIls: chargeGross, monthlyIls: monthGross, invoiceUrl, couponApplied: !!coupon });
+  return json({ ok: true, proratedIls: chargeGross, monthlyIls: monthGross, invoiceUrl, couponApplied: !!coupon, cnameTarget });
 });
 
 // deno-lint-ignore no-explicit-any
-async function activate(admin: any, o: { user: { id: string }; businessId: string; addonType: string; addon: { description: string; flag?: string; subFlag?: string }; monthGross: number }) {
+async function activate(admin: any, o: { user: { id: string }; businessId: string; addonType: string; addon: { description: string; flag?: string; subFlag?: string }; monthGross: number; domain?: string }) {
   const now = new Date().toISOString();
+  if (o.addonType === "custom_domain" && o.domain) {
+    // Connect the merchant's OWN domain (bought elsewhere) to Cloudflare, same
+    // engine as purchased domains - the only difference is WE never touch their
+    // DNS, so the customer still has to add one CNAME record themselves.
+    // Best-effort: dormant until Cloudflare secrets are set, never blocks the
+    // charge that already succeeded.
+    let cfHostnameId: string | null = null;
+    let cfSslStatus: string | null = null;
+    try {
+      const cf = await cfAddCustomHostname(o.domain);
+      if (cf.configured && cf.ok && cf.data) { cfHostnameId = cf.data.id; cfSslStatus = cf.data.sslStatus; }
+    } catch (e) { console.error("custom_domain: cloudflare hostname failed (charge succeeded!)", o.domain, e); }
+    await admin.from("domains").upsert({
+      business_id: o.businessId, domain: o.domain, status: "active", source: "byod",
+      registered_at: now, cf_hostname_id: cfHostnameId, cf_ssl_status: cfSslStatus,
+      cf_checked_at: cfHostnameId ? now : null,
+    }, { onConflict: "domain" });
+  }
   await admin.from("subscription_addons").upsert({
     user_id: o.user.id, business_id: o.businessId, addon_type: o.addonType,
     description: o.addon.description, price_ils: o.monthGross, active: true,
