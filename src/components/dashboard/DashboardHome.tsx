@@ -1,4 +1,4 @@
-import { Eye, ChevronLeft, AlertTriangle, ShoppingCart, TrendingUp, Package, Users, CreditCard, FileText, ArrowLeft } from "lucide-react";
+import { Eye, ChevronLeft, AlertTriangle, ShoppingCart, TrendingUp, Package, Users, CreditCard, FileText, ArrowLeft, Palette, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DashboardView } from "./DashboardNav";
 import type { BusinessType } from "@/lib/businessModules";
@@ -59,6 +59,8 @@ const DashboardHome = ({
     ...(!hasAbout ? [{ key: 'about', icon: FileText, label: 'כתוב "אודות" בחנות', view: 'about' as DashboardView, highlight: false }] : []),
     ...(stats.totalProducts === 0 ? [{ key: 'products', icon: Package, label: lbl.addProducts, view: 'products' as DashboardView, highlight: false }] : []),
     ...(!legalApprovedAt ? [{ key: 'legal', icon: FileText, label: 'עדכן את התקנון שלך', view: 'legal' as DashboardView, highlight: false }] : []),
+    { key: 'design', icon: Palette, label: 'התאם עיצוב וצבעים לאתר שלך', view: 'design' as DashboardView, highlight: false },
+    { key: 'content', icon: PenLine, label: 'ערוך את הטקסטים והתוכן של האתר', view: 'content' as DashboardView, highlight: false },
   ];
 
   const statCards = [
