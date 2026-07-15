@@ -698,7 +698,7 @@ const PublishPayment = () => {
             <div className="space-y-2">
               {[
                 { icon: RefreshCw,   text: `מנוי חודשי מתחדש של ₪${fee} ש"ח - מתחדש אוטומטית כל חודש` },
-                { icon: XCircle,     text: 'ביטול בכל עת דרך "התוכנית שלי" - לא יהיה חיוב נוסף, אין קנס' },
+                { icon: XCircle,     text: 'ביטול בכל עת דרך "התוכנית שלי" - לא יהיה חיוב נוסף' },
                 { icon: ShieldCheck, text: "תשלום מאובטח דרך Cardcom - סיאנגו לא רואה את פרטי הכרטיס" },
               ].map(({ icon: Icon, text }) => (
                 <div key={text} className="flex items-center gap-3 text-sm text-muted-foreground">
