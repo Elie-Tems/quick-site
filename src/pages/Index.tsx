@@ -255,73 +255,100 @@ const HowItWorks = ({ engKey, stepKeys }: { engKey: string; stepKeys: string[] }
                         </div>
                       </div>
                       {engKey === "donations" ? (
-                        <>
-                          <div className="px-4 py-2 shrink-0 flex items-center justify-between" style={{ background: "#dc2626" }}>
-                            <span className="text-xs font-bold text-white">❤️ עמותת אוכל לכל</span>
-                            <span className="text-xs text-white/80">מאז 2010</span>
+                        /* ── Charity / nonprofit mockup — mirrors CharityLayout ── */
+                        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "#0f172a" }}>
+                          {/* nav */}
+                          <div className="flex items-center justify-between px-3 py-2 shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                            <button style={{ background: "#e11d48", color: "#fff", borderRadius: 8, padding: "3px 10px", fontSize: 8, fontWeight: 700 }}>❤️ תרמו עכשיו</button>
+                            <span style={{ color: "#fff", fontSize: 10, fontWeight: 700 }}>אור לעולם</span>
                           </div>
-                          <div className="flex-1 overflow-hidden" style={{ background: "#fff7f7" }}>
-                            <img src="https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&q=70" alt="food baskets" className="w-full object-cover" style={{ height: "52%", objectPosition: "center" }} />
-                            <div className="px-3 pt-2">
-                              <div className="text-xs font-bold mb-1" style={{ color: "#7f1d1d", fontSize: "9px" }}>קמפיין: חבילות מזון לחגים</div>
-                              <div className="w-full rounded-full mb-1.5" style={{ height: 5, background: "#fee2e2" }}>
-                                <div className="rounded-full h-full" style={{ width: "68%", background: "#dc2626" }} />
-                              </div>
-                              <div className="flex justify-between" style={{ fontSize: "8px", color: "#991b1b" }}>
-                                <span>₪6,800 נאסף</span><span>יעד: ₪10,000</span>
-                              </div>
-                              <button className="mt-2 w-full rounded text-white font-bold py-1 text-xs" style={{ background: "#dc2626", fontSize: "9px" }}>תרמו עכשיו ←</button>
+                          {/* hero */}
+                          <div className="relative shrink-0" style={{ height: "38%" }}>
+                            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=500&q=70" alt="" className="w-full h-full object-cover" style={{ objectPosition: "center 30%" }} />
+                            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 100%)" }} />
+                            <div className="absolute bottom-2 right-3" dir="rtl">
+                              <div style={{ color: "#fff", fontWeight: 800, fontSize: 11, lineHeight: 1.2 }}>ביחד נשנה את העולם</div>
+                              <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 8, marginTop: 2 }}>100% מהתרומות לפרויקטים</div>
                             </div>
                           </div>
-                        </>
-                      ) : engKey === "booking" ? (
-                        <>
-                          <div className="px-4 py-2 shrink-0 flex items-center justify-between" style={{ background: "#6366f1" }}>
-                            <span className="text-xs font-bold text-white">✂️ סטודיו יפה</span>
-                            <span className="text-xs text-white/80">הזמנת תורים</span>
+                          {/* donation box */}
+                          <div className="flex-1 p-2.5" dir="rtl" style={{ background: "#f8fafc" }}>
+                            <div style={{ fontSize: 8, fontWeight: 700, color: "#0f172a", marginBottom: 5 }}>בחרו סכום תרומה</div>
+                            <div className="grid grid-cols-4 gap-1 mb-2">
+                              {[50, 100, 200, 500].map((a, i) => (
+                                <div key={a} style={{ background: i === 1 ? "#e11d48" : "#fff", color: i === 1 ? "#fff" : "#0f172a", border: i === 1 ? "none" : "1px solid #e2e8f0", borderRadius: 6, padding: "4px 0", textAlign: "center", fontSize: 8, fontWeight: 700 }}>₪{a}</div>
+                              ))}
+                            </div>
+                            <div style={{ background: "#e11d48", color: "#fff", borderRadius: 8, padding: "5px 0", textAlign: "center", fontSize: 8, fontWeight: 700 }}>תרמו עכשיו ❤️</div>
+                            <div style={{ fontSize: 7, color: "#94a3b8", textAlign: "center", marginTop: 3 }}>תרומה מאובטחת · קבלה מיידית</div>
                           </div>
-                          <div className="flex-1 p-3 overflow-hidden" style={{ background: "#f8fafc" }}>
+                        </div>
+                      ) : engKey === "booking" ? (
+                        /* ── Service / booking mockup — mirrors BeautySpaLayout ── */
+                        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "#faf5ff" }}>
+                          {/* hero strip */}
+                          <div className="relative shrink-0" style={{ height: "38%" }}>
+                            <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&q=70" alt="" className="w-full h-full object-cover" style={{ objectPosition: "center 20%" }} />
+                            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(88,28,135,0.82) 0%, rgba(88,28,135,0.1) 70%)" }} />
+                            <div className="absolute bottom-2 right-3" dir="rtl">
+                              <div style={{ color: "#fff", fontWeight: 800, fontSize: 11, lineHeight: 1.2 }}>סטודיו יפה</div>
+                              <div style={{ color: "rgba(255,255,255,0.75)", fontSize: 8, marginTop: 1 }}>טיפולי פנים ושיער</div>
+                            </div>
+                            <button style={{ position: "absolute", bottom: 8, left: 10, background: "#a855f7", color: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: 8, fontWeight: 700 }}>הזמן תור</button>
+                          </div>
+                          {/* services */}
+                          <div className="flex-1 p-2.5 overflow-hidden" dir="rtl">
+                            <div style={{ fontSize: 8, fontWeight: 700, color: "#581c87", marginBottom: 5 }}>השירותים שלנו</div>
                             {[
                               { name: "תספורת + פן", price: "₪180", time: "60 דק'" },
                               { name: "צבע שיער", price: "₪350", time: "120 דק'" },
                               { name: "טיפול פנים", price: "₪220", time: "75 דק'" },
                             ].map((s) => (
-                              <div key={s.name} className="flex items-center justify-between mb-1.5 rounded-lg px-2 py-1.5" style={{ background: "#fff", border: "1px solid #e2e8f0" }}>
-                                <button className="rounded text-white px-2 py-0.5" style={{ background: "#6366f1", fontSize: "8px" }}>הזמן</button>
+                              <div key={s.name} className="flex items-center justify-between mb-1.5" style={{ background: "#fff", border: "1px solid #ede9fe", borderRadius: 8, padding: "4px 8px" }}>
+                                <button style={{ background: "#a855f7", color: "#fff", borderRadius: 5, padding: "2px 7px", fontSize: 7, fontWeight: 700 }}>הזמן</button>
                                 <div className="text-right">
-                                  <div style={{ fontSize: "9px", fontWeight: 600, color: "#0f172a" }}>{s.name}</div>
-                                  <div style={{ fontSize: "8px", color: "#6366f1" }}>{s.price} · {s.time}</div>
+                                  <div style={{ fontSize: 8, fontWeight: 700, color: "#0f172a" }}>{s.name}</div>
+                                  <div style={{ fontSize: 7, color: "#a855f7" }}>{s.price} · {s.time}</div>
                                 </div>
                               </div>
                             ))}
                           </div>
-                        </>
+                        </div>
                       ) : (
-                        <>
-                          <div className="px-4 py-2 shrink-0 flex items-center justify-between" style={{ background: "#22c55e" }}>
-                            <span className="text-xs font-bold text-white">🛍️ בוטיק שלי</span>
-                            <span className="text-xs text-white/80">עגלה (0)</span>
+                        /* ── Boutique / products mockup — mirrors BoutiqueLayout ── */
+                        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "#0a0a0a" }}>
+                          {/* hero banner */}
+                          <div className="relative shrink-0" style={{ height: "36%" }}>
+                            <img src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=500&q=70" alt="" className="w-full h-full object-cover" style={{ objectPosition: "center 30%" }} />
+                            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.15) 65%)" }} />
+                            <div className="absolute bottom-2 right-3" dir="rtl">
+                              <div style={{ color: "#fff", fontWeight: 800, fontSize: 11, letterSpacing: "0.02em", lineHeight: 1.2 }}>בוטיק מאיה</div>
+                              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 8, marginTop: 1 }}>אופנה ייחודית · קולקציה חדשה</div>
+                            </div>
+                            <button style={{ position: "absolute", bottom: 8, left: 10, background: "#fff", color: "#0a0a0a", borderRadius: 8, padding: "4px 10px", fontSize: 8, fontWeight: 800 }}>לקולקציה →</button>
                           </div>
-                          <div className="flex-1 p-3 overflow-hidden" style={{ background: "#f8fafc" }}>
-                            <div className="grid grid-cols-3 gap-2 h-full">
+                          {/* product grid */}
+                          <div className="flex-1 p-2.5 overflow-hidden" dir="rtl">
+                            <div style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 6, letterSpacing: "0.08em" }}>הקולקציה שלנו</div>
+                            <div className="grid grid-cols-3 gap-1.5">
                               {[
-                                { name: "שמלת ערב", price: "₪320", img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=120&q=70" },
-                                { name: "חולצת לינן", price: "₪185", img: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=120&q=70" },
-                                { name: "מכנסיים", price: "₪240", img: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=120&q=70" },
+                                { name: "שמלת ערב", price: "₪320", img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=150&q=70" },
+                                { name: "חולצת לינן", price: "₪185", img: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=150&q=70" },
+                                { name: "מכנסיים", price: "₪240", img: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=150&q=70" },
                               ].map((p) => (
-                                <div key={p.name} className="rounded-lg overflow-hidden flex flex-col" style={{ background: "#fff", border: "1px solid #e2e8f0" }}>
-                                  <div className="flex-1 overflow-hidden" style={{ maxHeight: "65%" }}>
+                                <div key={p.name} style={{ background: "#1a1a1a", borderRadius: 8, overflow: "hidden" }}>
+                                  <div style={{ height: 52, overflow: "hidden" }}>
                                     <img src={p.img} alt={p.name} className="w-full h-full object-cover" />
                                   </div>
-                                  <div className="p-1.5">
-                                    <div className="text-xs font-semibold text-right" style={{ color: "#0f172a", fontSize: "9px" }}>{p.name}</div>
-                                    <div className="text-xs font-bold" style={{ color: "#22c55e", fontSize: "9px" }}>{p.price}</div>
+                                  <div style={{ padding: "4px 5px" }}>
+                                    <div style={{ fontSize: 7.5, fontWeight: 600, color: "#fff" }}>{p.name}</div>
+                                    <div style={{ fontSize: 7.5, fontWeight: 700, color: "#a3e635" }}>{p.price}</div>
                                   </div>
                                 </div>
                               ))}
                             </div>
                           </div>
-                        </>
+                        </div>
                       )}
                     </motion.div>
                   ) : (
