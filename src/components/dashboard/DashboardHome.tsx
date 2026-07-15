@@ -5,7 +5,6 @@ import type { BusinessType } from "@/lib/businessModules";
 import DashboardAnalytics from "./DashboardAnalytics";
 import ReferralBox from "./ReferralBox";
 import WowStrip from "./WowStrip";
-import TodoCards from "./TodoCards";
 import type { PopupId, PopupState } from "./PostLaunchPopups";
 
 interface DashboardHomeProps {
@@ -180,11 +179,6 @@ const DashboardHome = ({
 
       {/* 4. WowStrip */}
       <WowStrip businessType={businessType} onNavigate={onNavigate} />
-
-      {/* Todo cards (post-launch popups) */}
-      {popupState != null && onReopenPopup && (
-        <TodoCards popupState={popupState} onReopen={onReopenPopup} />
-      )}
 
       {/* 5. Store link */}
       <button
