@@ -258,11 +258,11 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
           { emoji: "🎨", label: "תבנית", value: getTemplate(data.storeTemplate).name },
           { emoji: "📩", label: "הזמנות", value: "ישירות למייל" },
         ].map(item => (
-          <div key={item.label} className="rounded-xl border border-border bg-card p-4 flex items-start gap-3">
+          <div key={item.label} className="rounded-xl border pv-border pv-surface2 p-4 flex items-start gap-3">
             <span className="text-xl leading-none mt-0.5">{item.emoji}</span>
             <div className="min-w-0 flex-1">
               <p className="text-xs pv-muted">{item.label}</p>
-              <p className="text-sm font-medium truncate mt-0.5">{item.value}</p>
+              <p className="text-sm font-medium truncate mt-0.5 pv-strong">{item.value}</p>
             </div>
           </div>
         ))}
