@@ -53,7 +53,7 @@ const TYPE_CONFIG: Record<BusinessType, {
   },
   realestate: {
     managementGroupLabel: "ניהול לידים",
-    hiddenItems: ['shipping', 'coupons'] as DashboardView[],
+    hiddenItems: ['shipping', 'coupons', 'verticals'] as DashboardView[],
     itemOverrides: {
       products: { label: "נכסים", shortLabel: "נכסים", icon: Building2 },
       orders: { label: "לידים", shortLabel: "לידים", icon: Users },
