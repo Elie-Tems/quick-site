@@ -612,7 +612,7 @@ const PublishPayment = () => {
               <p>החיוב מתבצע מדי חודש באמצעות כרטיס האשראי שתזינו. המנוי מתחדש אוטומטית כל עוד לא בוטל. סיאנגו תשלח הודעת מייל לפני כל חיוב.</p>
 
               <h3 className="font-bold text-base">3. ביטול</h3>
-              <p>ניתן לבטל את המנוי בכל עת דרך "התוכנית שלי" בדשבורד. הביטול נכנס לתוקף מיידית - לא תחויבו בחודש הבא. לא מוחזר תשלום על חודש שכבר נגבה.</p>
+              <p>ניתן לבטל את המנוי בכל עת דרך "התוכנית שלי" בדשבורד. הביטול נכנס לתוקף בסוף תקופת החיוב הנוכחית - לא יהיה חיוב נוסף. לא מוחזר תשלום על חודש שכבר נגבה.</p>
 
               <h3 className="font-bold text-base">4. מחיקת חנות</h3>
               <p>מחיקת החנות מבטלת את המנוי אוטומטית. החנות ותכניה ייסגרו ולא יהיו נגישים ללקוחות.</p>
@@ -677,7 +677,7 @@ const PublishPayment = () => {
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 {hasDiscount
-                  ? `${couponInfo!.discount_type === "percent" ? `${couponInfo!.discount_value}% הנחה` : `₪${couponInfo!.discount_value} הנחה`}${couponInfo!.duration === "first_month" ? " לחודש הראשון" : ""} · אחר כך ₪${fee} ש"ח לחודש`
+                  ? `${couponInfo!.discount_type === "percent" ? `${couponInfo!.discount_value}% הנחה` : `₪${couponInfo!.discount_value} הנחה`}${couponInfo!.duration === "first_month" ? ` לחודש הראשון · אחר כך ₪${fee} ש"ח לחודש` : " · תמידית"}`
                   : "ביטול בכל עת · ללא התחייבות"}
               </p>
             </div>
@@ -698,7 +698,7 @@ const PublishPayment = () => {
             <div className="space-y-2">
               {[
                 { icon: RefreshCw,   text: `מנוי חודשי מתחדש של ₪${fee} ש"ח - מתחדש אוטומטית כל חודש` },
-                { icon: XCircle,     text: 'ביטול בכל עת דרך "התוכנית שלי" - החיוב נעצר מיד, אין קנס' },
+                { icon: XCircle,     text: 'ביטול בכל עת דרך "התוכנית שלי" - לא יהיה חיוב נוסף, אין קנס' },
                 { icon: ShieldCheck, text: "תשלום מאובטח דרך Cardcom - סיאנגו לא רואה את פרטי הכרטיס" },
               ].map(({ icon: Icon, text }) => (
                 <div key={text} className="flex items-center gap-3 text-sm text-muted-foreground">
