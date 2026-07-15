@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { ExternalLink, LogOut, Sun, Moon, HelpCircle, Store, ChevronDown, Crown, Settings as SettingsIcon, Check, PlusCircle } from "lucide-react";
+import { ExternalLink, LogOut, Sun, Moon, HelpCircle, Store, ChevronDown, Crown, Settings as SettingsIcon, Check, PlusCircle, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLanguage, LANGUAGES, type Language } from "@/contexts/LanguageContext";
 import { useMyBusinesses } from "@/hooks/useBusiness";
 import { getActiveBusinessId, setActiveBusinessId } from "@/lib/activeBusiness";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -20,6 +21,7 @@ interface DashboardHeaderProps {
 const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }: DashboardHeaderProps) => {
   const { signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { language, setLanguage, currentLanguage } = useLanguage();
   const navigate = useNavigate();
 
   const { data: myBusinesses = [] } = useMyBusinesses();
@@ -95,6 +97,28 @@ const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }:
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Language switcher - lets a merchant run the whole app in their own
+              language (he/en/ar/ru/fr). Selecting a language flips document dir
+              (rtl/ltr) app-wide via LanguageContext. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="inline-flex items-center gap-1.5 h-9 px-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors focus:outline-none" aria-label="Language / שפה">
+              <Globe className="h-4 w-4" />
+              <span className="hidden sm:inline font-medium">{currentLanguage.flag} {currentLanguage.nativeName}</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[150px]">
+              {LANGUAGES.map((lang) => (
+                <DropdownMenuItem
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code as Language)}
+                  className={`gap-2 cursor-pointer ${language === lang.code ? "text-primary font-medium" : ""}`}
+                >
+                  <span>{lang.flag}</span>
+                  <span className="flex-1">{lang.nativeName}</span>
+                  {language === lang.code && <Check className="h-4 w-4 text-primary" />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           {/* Knowledge center - opens the external help page (like iCount) */}
           <Button
             variant="ghost"
