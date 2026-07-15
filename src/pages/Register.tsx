@@ -41,7 +41,6 @@ const Register = () => {
   const [submitError, setSubmitError] = useState("");
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Honeypot field for anti-spam
   const honeypotRef = useRef<HTMLInputElement>(null);
@@ -166,11 +165,6 @@ const Register = () => {
   };
 
   const handleGoogleSignUp = async () => {
-    // Terms acceptance is required for every signup path, including OAuth.
-    if (!acceptedTerms) {
-      setSubmitError(t('register.acceptRequired'));
-      return;
-    }
     // Google provides the user's name; business details are collected later in
     // onboarding - so don't block the OAuth CTA on the manual fields.
     // Store whatever was already filled for onboarding prefill (optional).
@@ -223,7 +217,7 @@ const Register = () => {
     }
   };
 
-  const isValid = formData.fullName && formData.email && formData.password && acceptedTerms;
+  const isValid = formData.fullName && formData.email && formData.password;
 
   const benefits = [
     { icon: Zap, text: t('register.setupIn5') },
@@ -577,31 +571,18 @@ const Register = () => {
                   </AnimatePresence>
                 </div>
 
-                {/* Consent notice */}
-                <FormConsentNotice />
-
-                {/* Terms & Privacy acceptance - required for all signup paths */}
-                <div className="register-field-wrapper">
-                  <label className="flex items-start gap-2 cursor-pointer text-sm text-muted-foreground leading-relaxed">
-                    <input
-                      type="checkbox"
-                      checked={acceptedTerms}
-                      onChange={(e) => setAcceptedTerms(e.target.checked)}
-                      className="mt-1 h-4 w-4 shrink-0 accent-primary"
-                      aria-describedby="terms-acceptance-text"
-                    />
-                    <span id="terms-acceptance-text">
-                      {t('register.acceptPrefix')}{' '}
-                      <Link to="/terms" target="_blank" rel="noopener noreferrer" className="register-footer-link">
-                        {t('footer.terms')}
-                      </Link>{' '}
-                      {t('register.acceptAnd')}
-                      <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="register-footer-link">
-                        {t('footer.privacy')}
-                      </Link>
-                    </span>
-                  </label>
-                </div>
+                {/* Implicit consent notice */}
+                <p className="text-xs text-muted-foreground leading-relaxed text-center px-2">
+                  על ידי יצירת חשבון, אתם מסכימים ל
+                  <Link to="/terms" target="_blank" rel="noopener noreferrer" className="register-footer-link mx-1">
+                    תנאי השימוש
+                  </Link>
+                  ול
+                  <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="register-footer-link mx-1">
+                    מדיניות הפרטיות
+                  </Link>
+                  של סיאנגו.
+                </p>
 
                 {/* Submit Button */}
                 <motion.div
