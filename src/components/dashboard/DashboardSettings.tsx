@@ -84,6 +84,8 @@ export interface BusinessSettings {
   whatsappMessage?: string;
   // Close the store automatically on Shabbat/Yom Tov
   shabbatMode?: boolean;
+  // Store URL slug (ASCII only)
+  slug?: string;
 }
 
 interface DashboardSettingsProps {
@@ -229,6 +231,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
         business_category: formData.businessCategory || 'other',
         custom_category_name: formData.customCategoryName || null,
         shabbat_mode: formData.shabbatMode ?? false,
+        ...(formData.slug ? { slug: formData.slug } : {}),
           delivery_mode: formData.deliveryMode || 'pickup_only',
           delivery_fee: formData.deliveryMode === 'pickup_and_delivery'
             ? (typeof formData.deliveryFee === 'number' ? formData.deliveryFee : 0)
@@ -338,6 +341,30 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="שם העסק"
                 />
+              </div>
+
+              {/* Store URL slug */}
+              <div className="space-y-2">
+                <Label htmlFor="slug">כתובת האתר שלך</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">siango.app/store/</span>
+                  <Input
+                    id="slug"
+                    dir="ltr"
+                    value={formData.slug || ""}
+                    onChange={(e) => {
+                      const cleaned = e.target.value
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")
+                        .replace(/[^a-z0-9-]/g, "")
+                        .replace(/-{2,}/g, "-");
+                      setFormData({ ...formData, slug: cleaned });
+                    }}
+                    placeholder="my-store"
+                    className="font-mono text-sm"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">רק אותיות לועזיות, מספרים ומקף. שינוי הכתובת ישבור קישורים ישנים.</p>
               </div>
 
               {/* Shabbat mode - auto-close the store on Shabbat/Yom Tov */}

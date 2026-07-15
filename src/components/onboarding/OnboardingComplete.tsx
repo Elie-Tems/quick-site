@@ -67,10 +67,11 @@ const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
   }, [user]);
 
   const businessName = data?.businessName || actualName || "\u05d4\u05e2\u05e1\u05e7 \u05e9\u05dc\u05da";
-  const businessSlug = actualSlug || (data?.businessName
+  const rawSlug = actualSlug || (data?.businessName
     ?.toLowerCase()
     .replace(/\s+/g, "-")
-    .replace(/[^\u0590-\u05ffa-z0-9-]/g, "") ?? "");
+    .replace(/[^a-z0-9-]/g, "") ?? "");
+  const businessSlug = rawSlug || (data?.businessName ? data.businessName.slice(0, 8).replace(/\s+/g, "-") : "");
 
   // Use internal store route instead of external URL
   const storeUrl = `/store/${businessSlug}`;

@@ -537,6 +537,7 @@ const Dashboard = () => {
         whatsappEnabled: business.whatsapp_enabled ?? true,
         whatsappMessage: (business as any).whatsapp_message || undefined,
         shabbatMode: (business as any).shabbat_mode ?? false,
+        slug: business.slug || undefined,
       });
     }
   }, [business]);
