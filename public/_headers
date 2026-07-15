@@ -10,6 +10,19 @@
 # To roll back fast if something legit is blocked: rename the header below to
 # `Content-Security-Policy-Report-Only` (logs, blocks nothing) and add the missing
 # domain, then re-enforce.
+# index.html must never be cached — it references hashed JS/CSS chunks.
+# If the browser serves a stale index.html after a new deploy it will try
+# to load chunk filenames that no longer exist → "משהו השתבש" crash.
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Hashed JS/CSS assets can be cached forever (their names change on every build).
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Content-Type-Options: nosniff
