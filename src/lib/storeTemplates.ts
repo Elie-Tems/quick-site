@@ -1,6 +1,6 @@
 import { ColorPaletteId, colorPalettes } from './colorPalettes';
 
-export type StoreLayoutId = 'classic' | 'service' | 'property' | 'market' | 'boutique' | 'beauty-spa' | 'home-pro' | 'charity';
+export type StoreLayoutId = 'classic' | 'service' | 'property' | 'market' | 'boutique' | 'beauty-spa' | 'home-pro' | 'charity' | 'restaurant';
 
 /**
  * Backward-compat alias so existing code referencing StoreTemplateId still compiles.
@@ -124,6 +124,14 @@ export const storeLayouts: Record<StoreLayoutId, StoreLayout> = {
     suitedFor: ['nonprofit'],
     defaultPalette: 'sage-green',
   },
+  restaurant: {
+    id: 'restaurant',
+    name: 'Restaurant',
+    description: 'תפריט מסעדה מחולק לקטגוריות. מתאים למסעדות, בתי קפה ומאפיות.',
+    previewImage: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0',
+    suitedFor: ['products', 'services'],
+    defaultPalette: 'warm-earth',
+  },
 };
 
 export const layoutList = Object.values(storeLayouts);
@@ -146,24 +154,39 @@ export function buildTemplate(layoutId: StoreLayoutId, paletteId: ColorPaletteId
   const palette = colorPalettes[paletteId] ?? colorPalettes['bw-classic'];
 
   const heroLayouts: Record<StoreLayoutId, StoreTemplate['heroStyle']> = {
-    classic: { layout: 'full-image', overlayOpacity: 0.45, textAlignment: 'center', ctaStyle: 'outline' },
-    service: { layout: 'split', overlayOpacity: 0, textAlignment: 'right', ctaStyle: 'solid' },
-    property: { layout: 'centered', overlayOpacity: 0.3, textAlignment: 'center', ctaStyle: 'solid' },
-    market: { layout: 'split', overlayOpacity: 0, textAlignment: 'right', ctaStyle: 'solid' },
+    classic:     { layout: 'full-image', overlayOpacity: 0.45, textAlignment: 'center', ctaStyle: 'outline' },
+    service:     { layout: 'split',      overlayOpacity: 0,    textAlignment: 'right',  ctaStyle: 'solid' },
+    property:    { layout: 'centered',   overlayOpacity: 0.3,  textAlignment: 'center', ctaStyle: 'solid' },
+    market:      { layout: 'split',      overlayOpacity: 0,    textAlignment: 'right',  ctaStyle: 'solid' },
+    boutique:    { layout: 'full-image', overlayOpacity: 0.5,  textAlignment: 'center', ctaStyle: 'outline' },
+    'beauty-spa':{ layout: 'centered',   overlayOpacity: 0.3,  textAlignment: 'center', ctaStyle: 'solid' },
+    'home-pro':  { layout: 'split',      overlayOpacity: 0,    textAlignment: 'right',  ctaStyle: 'solid' },
+    charity:     { layout: 'full-image', overlayOpacity: 0.5,  textAlignment: 'center', ctaStyle: 'solid' },
+    restaurant:  { layout: 'full-image', overlayOpacity: 0.5,  textAlignment: 'right',  ctaStyle: 'solid' },
   };
 
   const cardStyles: Record<StoreLayoutId, StoreTemplate['productCardStyle']> = {
-    classic: { aspectRatio: '3/4', showBadges: false, hoverEffect: 'lift', borderStyle: 'none' },
-    service: { aspectRatio: '1/1', showBadges: true, hoverEffect: 'lift', borderStyle: 'subtle' },
-    property: { aspectRatio: '4/3', showBadges: true, hoverEffect: 'zoom', borderStyle: 'subtle' },
-    market: { aspectRatio: '1/1', showBadges: true, hoverEffect: 'zoom', borderStyle: 'none' },
+    classic:     { aspectRatio: '3/4', showBadges: false, hoverEffect: 'lift', borderStyle: 'none' },
+    service:     { aspectRatio: '1/1', showBadges: true,  hoverEffect: 'lift', borderStyle: 'subtle' },
+    property:    { aspectRatio: '4/3', showBadges: true,  hoverEffect: 'zoom', borderStyle: 'subtle' },
+    market:      { aspectRatio: '1/1', showBadges: true,  hoverEffect: 'zoom', borderStyle: 'none' },
+    boutique:    { aspectRatio: '3/4', showBadges: false, hoverEffect: 'lift', borderStyle: 'none' },
+    'beauty-spa':{ aspectRatio: '3/4', showBadges: false, hoverEffect: 'lift', borderStyle: 'subtle' },
+    'home-pro':  { aspectRatio: '4/3', showBadges: true,  hoverEffect: 'lift', borderStyle: 'subtle' },
+    charity:     { aspectRatio: '4/3', showBadges: false, hoverEffect: 'none', borderStyle: 'subtle' },
+    restaurant:  { aspectRatio: '1/1', showBadges: false, hoverEffect: 'lift', borderStyle: 'none' },
   };
 
   const grids: Record<StoreLayoutId, StoreTemplate['productGrid']> = {
-    classic: 'uniform-3col',
-    service: '2col',
-    property: 'featured',
-    market: '4col',
+    classic:     'uniform-3col',
+    service:     '2col',
+    property:    'featured',
+    market:      '4col',
+    boutique:    'uniform-3col',
+    'beauty-spa':'2col',
+    'home-pro':  '2col',
+    charity:     '2col',
+    restaurant:  '2col',
   };
 
   return {

@@ -6,4 +6,5 @@ export { default as BoutiqueLayout } from './BoutiqueLayout';
 export { default as BeautySpaLayout } from './BeautySpaLayout';
 export { default as HomeProLayout } from './HomeProLayout';
 export { default as CharityLayout } from './CharityLayout';
+export { default as RestaurantLayout } from './RestaurantLayout';
 export type { StorefrontLayoutProps, StorefrontBanner } from './StorefrontLayout.types';

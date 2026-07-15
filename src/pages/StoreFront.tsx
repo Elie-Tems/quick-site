@@ -37,7 +37,7 @@ import { getTemplate, type StoreTemplateId } from "@/lib/storeTemplates";
 import { getStoreFont, loadStoreFonts } from "@/lib/storeFonts";
 import {
   ClassicLayout, ServiceLayout, PropertyLayout, MarketLayout,
-  BoutiqueLayout, BeautySpaLayout, HomeProLayout, CharityLayout,
+  BoutiqueLayout, BeautySpaLayout, HomeProLayout, CharityLayout, RestaurantLayout,
   type StorefrontLayoutProps,
 } from "@/components/storefront/layouts";
 
@@ -868,17 +868,22 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     verticalSlot: <StorefrontVertical business={business as any} />,
   };
 
-  // Pick layout component based on template layoutId
+  const FOOD_CATEGORIES: string[] = ['restaurant', 'cafe', 'bakery', 'bar', 'fast_food', 'food'];
+
+  // Pick layout component based on template layoutId, with auto-detection for food businesses
   const LayoutComponent = (() => {
-    switch (template?.layoutId) {
-      case 'service':    return ServiceLayout;
-      case 'property':   return PropertyLayout;
-      case 'market':     return MarketLayout;
-      case 'boutique':   return BoutiqueLayout;
-      case 'beauty-spa': return BeautySpaLayout;
-      case 'home-pro':   return HomeProLayout;
-      case 'charity':    return CharityLayout;
-      default:           return ClassicLayout;
+    const layoutId = template?.layoutId
+      ?? (businessCategory && FOOD_CATEGORIES.includes(businessCategory) ? 'restaurant' : undefined);
+    switch (layoutId) {
+      case 'service':     return ServiceLayout;
+      case 'property':    return PropertyLayout;
+      case 'market':      return MarketLayout;
+      case 'boutique':    return BoutiqueLayout;
+      case 'beauty-spa':  return BeautySpaLayout;
+      case 'home-pro':    return HomeProLayout;
+      case 'charity':     return CharityLayout;
+      case 'restaurant':  return RestaurantLayout;
+      default:            return ClassicLayout;
     }
   })();
 
