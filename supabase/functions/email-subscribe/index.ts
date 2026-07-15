@@ -25,11 +25,14 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "method" }, 405);
 
-  let body: { businessId?: string; email?: string; name?: string };
+  let body: { businessId?: string; email?: string; name?: string; source?: string };
   try { body = await req.json(); } catch { return json({ error: "bad json" }, 400); }
 
   const email = (body.email || "").trim().toLowerCase();
   if (!body.businessId || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: "invalid" }, 400);
+  // Where the opt-in came from. 'checkout' opt-ins skip the newsletter welcome
+  // (the buyer already gets order emails); newsletter-form opt-ins keep it.
+  const source = body.source === "checkout" ? "checkout" : "form";
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
@@ -50,12 +53,13 @@ Deno.serve(async (req) => {
   const now = new Date().toISOString();
   await admin.from("mkt_contacts").upsert({
     owner_id: biz.user_id, business_id: biz.id, email, name: (body.name || "").trim() || null,
-    status: "active", source: "form", consent_at: now,
+    status: "active", source, consent_at: now,
   }, { onConflict: "owner_id,email", ignoreDuplicates: false });
 
-  // Welcome automation (opt-in by the merchant).
-  const { data: welcome } = await admin.from("mkt_automations")
-    .select("enabled").eq("owner_id", biz.user_id).eq("type", "welcome").maybeSingle();
+  // Welcome automation (opt-in by the merchant) - newsletter-form signups only.
+  const { data: welcome } = source === "form"
+    ? await admin.from("mkt_automations").select("enabled").eq("owner_id", biz.user_id).eq("type", "welcome").maybeSingle()
+    : { data: null };
 
   if (welcome?.enabled) {
     const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");

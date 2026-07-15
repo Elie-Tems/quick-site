@@ -86,17 +86,26 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
     setIsSubmitting(true);
     try {
       const res = await onSubmit({ ...formData, deliveryMethod: deliveryMode === 'pickup_and_delivery' ? deliveryMethod : 'pickup' }, appliedCoupon?.coupon.id, totalPrice);
-      // Record explicit marketing opt-in (Chok HaSpam evidence). Fire-and-forget.
+      // Record explicit marketing opt-in. Two writes, both fire-and-forget:
+      //  1) email_consents  - the Chok HaSpam legal-evidence row (disclosure + IP).
+      //  2) email-subscribe - adds the customer to mkt_contacts, the list campaigns
+      //     actually send from. Without this the opt-in is recorded but never
+      //     reachable (the merchant could not email a customer who consented at
+      //     checkout). source:'checkout' so the fn skips the newsletter welcome.
       if (marketingConsent && formData.email.trim() && businessId) {
+        const email = formData.email.trim();
         supabase
           .from('email_consents')
           .insert({
             business_id: businessId,
-            email: formData.email.trim(),
+            email,
             source: 'checkout',
             disclosure_text: databaseDisclosure(businessName || 'העסק'),
           } as any)
           .then(({ error }) => { if (error) console.warn('consent insert failed:', error.message); });
+        supabase.functions
+          .invoke('email-subscribe', { body: { businessId, email, name: formData.fullName?.trim() || undefined, source: 'checkout' } })
+          .then(({ error }) => { if (error) console.warn('mkt_contacts add failed:', error.message); });
       }
       // For online-payment orders onSubmit redirects to the gateway - do NOT flash the
       // "order received" screen; the redirect is the next step. Only a completed local
