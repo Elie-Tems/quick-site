@@ -125,7 +125,7 @@ const DashboardCRM = ({ orders, businessId, demoMode, initialTab = "customers", 
 
   return (
     <div className="space-y-4" dir="rtl">
-      <h1 className="text-xl font-bold text-foreground">{customerLabel}</h1>
+      <h1 className="text-xl font-bold text-foreground">ניהול לקוחות & CRM</h1>
 
       {hasCrmAddon ? (
         <>

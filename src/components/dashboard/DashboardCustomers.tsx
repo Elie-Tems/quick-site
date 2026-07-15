@@ -364,11 +364,10 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
 
   return (
     <div className="space-y-4" dir="rtl">
-      {/* Top bar: count + export */}
+      {/* Top bar: demo badge + export */}
       <div className="flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">
-          {customers.length} לקוחות
-          {isDemo && <span className="mr-2 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">תצוגת דמו</span>}
+        <span>
+          {isDemo && <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">תצוגת דמו</span>}
         </span>
         <button onClick={() => exportCsv(filtered)} className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-1.5 hover:bg-muted transition-colors">
           <Download className="w-4 h-4" /> ייצוא לאקסל
