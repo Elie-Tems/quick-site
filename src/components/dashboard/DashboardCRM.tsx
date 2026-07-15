@@ -21,64 +21,89 @@ interface DashboardCRMProps {
 const fmtPrice = (n: number) =>
   new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", minimumFractionDigits: 0 }).format(n);
 
-// Free tier: just customer names — a teaser. All analytics/segments are CRM+.
+// Free tier: customer name + total spent. All segments/analytics are CRM+.
 function FreeCustomerView({ orders }: { orders: Order[] }) {
-  const names = useMemo(() => {
-    const seen = new Set<string>();
-    const result: string[] = [];
+  const customers = useMemo(() => {
+    const map = new Map<string, { name: string; total: number }>();
     for (const o of orders) {
       const key = (o.customerEmail || o.customerPhone || o.customerName || "").trim().toLowerCase();
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      result.push(o.customerName || "לקוח");
+      if (!key) continue;
+      const ex = map.get(key);
+      if (ex) {
+        ex.total += o.total || 0;
+      } else {
+        map.set(key, { name: o.customerName || "לקוח", total: o.total || 0 });
+      }
     }
-    return result;
+    return Array.from(map.values()).sort((a, b) => b.total - a.total);
   }, [orders]);
 
   return (
-    <div className="space-y-4">
-      {names.length === 0 ? (
-        <div className="text-center py-14 text-muted-foreground">
-          <Users className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">עדיין אין לקוחות - יופיעו כאן עם ההזמנה הראשונה</p>
+    <div className="space-y-5">
+      {customers.length === 0 ? (
+        <div className="text-center py-14 rounded-2xl border border-dashed border-border">
+          <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p className="text-sm text-muted-foreground">עדיין אין לקוחות - יופיעו כאן עם ההזמנה הראשונה</p>
         </div>
       ) : (
         <div className="rounded-2xl border border-border overflow-hidden divide-y divide-border">
-          {names.map((name, i) => (
-            <div key={i} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-primary font-semibold text-xs shrink-0">
-                {name.charAt(0)}
+          {customers.map((c, i) => (
+            <div key={i} className="flex items-center gap-3 px-4 py-3.5 bg-card hover:bg-muted/20 transition-colors">
+              <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                {c.name.charAt(0)}
               </div>
-              <span className="text-sm font-medium text-foreground">{name}</span>
+              <span className="flex-1 text-sm font-medium">{c.name}</span>
+              {c.total > 0 && (
+                <span className="text-sm font-semibold tabular-nums text-foreground">
+                  {fmtPrice(c.total)}
+                </span>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      {/* CRM+ upsell */}
-      <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 p-5">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0">
+      {/* Blurred CRM+ preview with lock overlay */}
+      <div className="relative rounded-2xl border border-border overflow-hidden">
+        <div className="blur-sm pointer-events-none select-none p-4 space-y-3" aria-hidden="true">
+          <div className="grid grid-cols-2 gap-2">
+            {[["67%", "לקוחות חוזרים"], ["₪1,245", "LTV ממוצע"]].map(([v, l]) => (
+              <div key={l} className="rounded-xl bg-muted/50 p-3">
+                <div className="text-2xl font-bold">{v}</div>
+                <div className="text-xs text-muted-foreground">{l}</div>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-1.5 flex-wrap">
+            {["VIP (1)", "בסיכון (2)", "רדומים (3)"].map((s) => (
+              <span key={s} className="text-xs px-3 py-1 rounded-full bg-primary/10 border border-primary/20">{s}</span>
+            ))}
+          </div>
+          <div className="space-y-2 pt-1">
+            {["ישראל ישראלי", "דנה כהן"].map((n) => (
+              <div key={n} className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-muted shrink-0" />
+                <div className="flex-1 h-2.5 rounded-full bg-muted/60" />
+                <div className="w-14 h-2.5 rounded-full bg-muted/40" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-[2px]">
+          <div className="w-10 h-10 rounded-2xl bg-violet-500/15 flex items-center justify-center mb-3">
             <Lock className="w-5 h-5 text-violet-600" />
           </div>
-          <div className="flex-1">
-            <p className="font-semibold text-foreground mb-1">CRM+ - ניהול לקוחות מתקדם</p>
-            <p className="text-sm text-muted-foreground mb-3">
-              LTV, % חוזרים, פילוחים (VIP / בסיכון / רדום), התראות חוזרים, וואטסאפ בלחיצה, הערות, ספקים ורווחיות.
-            </p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {["📊 LTV ופילוחים", "👑 VIP / בסיכון", "🔔 התראות חוזרים", "💬 וואטסאפ/מייל", "📦 ספקים", "📈 רווחיות"].map((f) => (
-                <span key={f} className="text-xs px-2.5 py-1 rounded-full bg-violet-500/10 text-violet-700 dark:text-violet-300 border border-violet-500/20">{f}</span>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="rounded-xl bg-violet-600 text-white px-5 py-2 text-sm font-medium hover:bg-violet-700 transition-colors"
-              onClick={() => window.dispatchEvent(new CustomEvent("open-upgrades"))}
-            >
-              שדרג ל-CRM+ - 49 ₪/חודש ←
-            </button>
-          </div>
+          <p className="text-sm font-semibold text-foreground mb-1">CRM+ - ניהול מתקדם</p>
+          <p className="text-xs text-muted-foreground text-center mb-4 max-w-[220px] leading-relaxed">
+            פילוחים, LTV, התראות, וואטסאפ, ספקים ורווחיות
+          </p>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("open-upgrades"))}
+            className="rounded-xl bg-violet-600 text-white px-5 py-2 text-sm font-semibold hover:bg-violet-700 transition-colors"
+          >
+            שדרג ל-CRM+ - 49 ₪/חודש ←
+          </button>
         </div>
       </div>
     </div>

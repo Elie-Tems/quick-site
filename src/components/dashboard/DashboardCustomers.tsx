@@ -376,21 +376,37 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="rounded-xl bg-card border border-border p-3">
-          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Repeat className="w-3.5 h-3.5" /> לקוחות חוזרים</div>
-          <div className="text-2xl font-semibold">{repeatPct}%</div>
+        <div className="rounded-xl bg-card border border-border p-4 relative overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-0.5 bg-emerald-500" />
+          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+            <Repeat className="w-3.5 h-3.5 text-emerald-500" /> חוזרים
+          </div>
+          <div className="text-3xl font-bold tabular-nums">{repeatPct}%</div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">לקוחות חוזרים</div>
         </div>
-        <div className="rounded-xl bg-card border border-border p-3">
-          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Crown className="w-3.5 h-3.5" /> ערך ממוצע (LTV)</div>
-          <div className="text-2xl font-semibold">{fmtPrice(avgLtv)}</div>
+        <div className="rounded-xl bg-card border border-border p-4 relative overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-0.5 bg-primary" />
+          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+            <Crown className="w-3.5 h-3.5 text-primary" /> LTV
+          </div>
+          <div className="text-3xl font-bold tabular-nums">{fmtPrice(avgLtv)}</div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">ערך ממוצע ללקוח</div>
         </div>
-        <div className="rounded-xl bg-card border border-border p-3">
-          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-amber-500" /> בסיכון / רדומים</div>
-          <div className="text-2xl font-semibold">{counts.at_risk + counts.dormant}</div>
+        <div className="rounded-xl bg-card border border-border p-4 relative overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-0.5 bg-amber-500" />
+          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+            <span className="inline-block w-2 h-2 rounded-full bg-amber-500 shrink-0" /> סיכון
+          </div>
+          <div className="text-3xl font-bold tabular-nums">{counts.at_risk + counts.dormant}</div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">בסיכון / רדומים</div>
         </div>
-        <div className="rounded-xl bg-card border border-border p-3">
-          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Repeat className="w-3.5 h-3.5" /> מוכנים לקנייה חוזרת</div>
-          <div className="text-2xl font-semibold">{counts.reorder}</div>
+        <div className="rounded-xl bg-card border border-border p-4 relative overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-0.5 bg-sky-500" />
+          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+            <Repeat className="w-3.5 h-3.5 text-sky-500" /> קנייה חוזרת
+          </div>
+          <div className="text-3xl font-bold tabular-nums">{counts.reorder}</div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">מוכנים להזמין שוב</div>
         </div>
       </div>
 
@@ -439,24 +455,24 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
           <p className="text-sm">{customers.length === 0 ? "עדיין אין לקוחות - הם יופיעו כאן עם ההזמנה הראשונה" : "לא נמצאו לקוחות תואמים"}</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="rounded-2xl border border-border overflow-hidden divide-y divide-border">
           {filtered.map((c) => (
-            <button key={c.key} onClick={() => setSelectedKey(c.key)} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-right hover:border-primary/40 transition-colors">
-              <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-primary font-semibold shrink-0">{c.name.charAt(0)}</div>
+            <button key={c.key} onClick={() => setSelectedKey(c.key)} className="w-full flex items-center gap-3 px-4 py-3.5 bg-card text-right hover:bg-muted/20 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">{c.name.charAt(0)}</div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium truncate flex items-center gap-1.5">
                   {c.name}
-                  {c.isVip && <Crown className="w-3 h-3 text-primary shrink-0" />}
+                  {c.isVip && <Crown className="w-3 h-3 text-amber-500 shrink-0" />}
                 </div>
-                <div className="text-xs text-muted-foreground truncate flex items-center gap-1.5">
+                <div className="text-xs text-muted-foreground truncate flex items-center gap-1.5 mt-0.5">
                   <span className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_META[c.status].dot}`} />
                   <span className={STATUS_META[c.status].text}>{STATUS_META[c.status].label}</span>
-                  <span className="truncate">· {c.phone || c.email}</span>
+                  {(c.phone || c.email) && <span className="truncate opacity-60">· {c.phone || c.email}</span>}
                 </div>
               </div>
               <div className="text-left shrink-0">
-                <div className="text-sm font-semibold">{fmtPrice(c.totalSpent)}</div>
-                <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end"><ShoppingBag className="w-3 h-3" />{c.orderCount}</div>
+                <div className="text-sm font-bold tabular-nums">{fmtPrice(c.totalSpent)}</div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end mt-0.5"><ShoppingBag className="w-3 h-3" />{c.orderCount}</div>
               </div>
             </button>
           ))}
