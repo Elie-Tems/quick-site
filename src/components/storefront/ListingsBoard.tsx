@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Flame, X, ArrowLeft, Loader2, BedDouble, Maximize, Building2, Phone } from "lucide-react";
+import { MapPin, Flame, X, ArrowLeft, Loader2, BedDouble, Maximize, Building2, Phone, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useListings, useSubmitLead, type Listing } from "@/hooks/useListings";
+import { useListings, type Listing } from "@/hooks/useListings";
+import type { Product } from "@/components/storefront/StoreProducts";
 
 const CATS = [
   { key: "all", label: "הכל" },
@@ -28,26 +28,29 @@ function Pill({ children }: { children: React.ReactNode }) {
   );
 }
 
-const ListingsBoard = ({ businessId, businessPhone }: { businessId: string; businessPhone?: string }) => {
+const listingToProduct = (l: Listing): Product => ({
+  id: l.id,
+  name: l.title,
+  price: l.price ?? 0,
+  imageUrl: l.media?.images?.[0],
+  description: l.description ?? undefined,
+  isHot: l.is_hot ?? false,
+});
+
+const ListingsBoard = ({ businessId, businessPhone, onAddToCart }: {
+  businessId: string;
+  businessPhone?: string;
+  onAddToCart?: (product: Product) => void;
+}) => {
   const [cat, setCat] = useState("all");
   const { data: listings = [], isLoading } = useListings(businessId, { category: cat });
   const [open, setOpen] = useState<Listing | null>(null);
-  const submit = useSubmitLead();
-  const [lead, setLead] = useState({ name: "", phone: "" });
 
-  const sendLead = () => {
-    if (!open || !lead.name || !lead.phone) return;
-    submit.mutate(
-      { businessId, name: lead.name, phone: lead.phone, title: open.title, value: open.price ?? undefined,
-        details: { listing_id: open.id, category: open.category } },
-      {
-        onSuccess: () => { toast.success("פנייתך נשלחה! נחזור אליך בהקדם"); setOpen(null); setLead({ name: "", phone: "" }); },
-        onError: (err) => {
-          console.error("Lead submit failed:", err);
-          toast.error(`שליחה נכשלה: ${(err as Error).message || "שגיאה לא ידועה"}`);
-        },
-      },
-    );
+  const handleAddToCart = (l: Listing) => {
+    if (!onAddToCart) return;
+    onAddToCart(listingToProduct(l));
+    toast.success("הנכס נוסף לסל");
+    setOpen(null);
   };
 
   return (
@@ -198,19 +201,16 @@ const ListingsBoard = ({ businessId, businessPhone }: { businessId: string; busi
                   <p className="text-sm text-foreground/80 leading-relaxed mb-5">{open.description}</p>
                 )}
 
-                {/* Lead form */}
-                <div className="rounded-2xl border border-border bg-muted/30 p-4">
-                  <div className="font-bold text-foreground mb-3">מעוניינים? השאירו פרטים</div>
-                  <div className="grid sm:grid-cols-2 gap-2 mb-3">
-                    <Input placeholder="שם מלא" value={lead.name} onChange={(e) => setLead({ ...lead, name: e.target.value })} />
-                    <Input placeholder="טלפון" value={lead.phone} onChange={(e) => setLead({ ...lead, phone: e.target.value })} type="tel" />
-                  </div>
-                  <Button className="w-full" onClick={sendLead} disabled={submit.isPending || !lead.name || !lead.phone}>
-                    {submit.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>תיאום ביקור <ArrowLeft className="w-4 h-4 mr-1" /></>}
-                  </Button>
+                {/* CTA */}
+                <div className="flex flex-col gap-2">
+                  {onAddToCart && (
+                    <Button className="w-full" onClick={() => handleAddToCart(open)}>
+                      <ShoppingCart className="w-4 h-4 ml-2" /> הוסף לסל
+                    </Button>
+                  )}
                   {businessPhone && (
                     <a href={`tel:${businessPhone}`}
-                      className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-sm text-foreground hover:bg-muted transition-colors">
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-sm text-foreground hover:bg-muted transition-colors">
                       <Phone className="w-4 h-4" /> התקשר עכשיו
                     </a>
                   )}
