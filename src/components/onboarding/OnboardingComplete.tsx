@@ -16,6 +16,25 @@ interface OnboardingCompleteProps {
   data?: OnboardingData;
 }
 
+const HE_TO_LATIN: Record<string, string> = {
+  'א':'a','ב':'b','ג':'g','ד':'d','ה':'h','ו':'v','ז':'z','ח':'h','ט':'t',
+  'י':'y','כ':'k','ך':'k','ל':'l','מ':'m','ם':'m','נ':'n','ן':'n','ס':'s',
+  'ע':'a','פ':'p','ף':'p','צ':'tz','ץ':'tz','ק':'k','ר':'r','ש':'sh','ת':'t',
+};
+
+function hebrewToSlug(name: string): string {
+  return name
+    .split('')
+    .map(c => HE_TO_LATIN[c] ?? c)
+    .join('')
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 28);
+}
+
 const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -67,11 +86,8 @@ const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
   }, [user]);
 
   const businessName = data?.businessName || actualName || "\u05d4\u05e2\u05e1\u05e7 \u05e9\u05dc\u05da";
-  const rawSlug = actualSlug || (data?.businessName
-    ?.toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "") ?? "");
-  const businessSlug = rawSlug || (data?.businessName ? data.businessName.slice(0, 8).replace(/\s+/g, "-") : "");
+  const rawSlug = actualSlug || (data?.businessName ? hebrewToSlug(data.businessName) : "");
+  const businessSlug = rawSlug || "my-store";
 
   // Use internal store route instead of external URL
   const storeUrl = `/store/${businessSlug}`;
