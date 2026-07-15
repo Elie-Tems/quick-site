@@ -93,6 +93,10 @@ async function resolvePaypageId(token: string, rawPageUid: string): Promise<{ id
 
 export const icount: PaymentProvider = {
   id: "icount",
+  // verifyCallbackSignature re-queries iCount (doc/search + doc/info) and returns true
+  // only when the sale is genuinely paid, so verification is the authoritative paid
+  // signal - parseCallback deliberately leaves approved=false.
+  verificationImpliesPaid: true,
 
   async createPaymentPage(c: ProviderCredentials, input: CreatePageInput, _env: PaymentEnv): Promise<CreatePageResult> {
     const token = c.api_key ?? "";

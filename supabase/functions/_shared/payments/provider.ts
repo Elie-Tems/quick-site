@@ -42,6 +42,13 @@ export interface CallbackParse {
 
 export interface PaymentProvider {
   id: string;
+  /** When true, verifyCallbackSignature RE-QUERIES the gateway and returns true only
+   *  if the sale is genuinely paid (spoof-proof, e.g. iCount doc lookup). For such
+   *  providers the callback/confirm paid-decision comes from verification, NOT from
+   *  parseCallback().approved (which they leave false because the IPN body alone is
+   *  not authoritative). PayPlus leaves this false: its verify is a pure HMAC/header
+   *  authenticity check and the paid signal comes from parseCallback().approved. */
+  verificationImpliesPaid?: boolean;
   /** Ask the gateway for a hosted payment page; return its link + a tracking id. */
   createPaymentPage(creds: ProviderCredentials, input: CreatePageInput, env: PaymentEnv): Promise<CreatePageResult>;
   /** Pull the tracking id + result out of a callback payload (no secrets needed). */

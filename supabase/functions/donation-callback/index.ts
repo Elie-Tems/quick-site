@@ -52,7 +52,11 @@ Deno.serve(async (req) => {
   if (txn.status === "paid") return json({ ok: true, alreadyPaid: true });
 
   const now = new Date().toISOString();
-  if (parsed.approved) {
+  // For re-query providers (iCount), verification IS the authoritative paid-check
+  // (parseCallback leaves approved=false). We only reach here when valid===true, so a
+  // verified-paid donation would otherwise be wrongly recorded as failed.
+  const approved = provider.verificationImpliesPaid ? valid : parsed.approved;
+  if (approved) {
     const tolerance = 0.01;
     if (parsed.amount > 0 && Math.abs(parsed.amount - Number(txn.amount)) > tolerance) {
       console.error(`Donation amount mismatch: callback=${parsed.amount} txn=${txn.amount} id=${txn.id}`);

@@ -37,6 +37,29 @@ export async function settlePaidOrder(admin: any, orderId: string, transactionUi
     }
   }
 
+  // If this order is a booking DEPOSIT, confirm the linked appointment now that the
+  // deposit is paid. Without this the appointment stays status='pending'/deposit
+  // 'pending' and booking-holds-sweep cancels it minutes later - the customer would
+  // be charged the deposit and lose the slot silently.
+  try {
+    const { data: appt } = await admin.from("booking_appointments")
+      .select("id, status, business_id, customer_email, customer_name")
+      .eq("order_id", order.id).maybeSingle();
+    if (appt && appt.status !== "confirmed" && appt.status !== "cancelled") {
+      await admin.from("booking_appointments")
+        .update({ status: "confirmed", deposit_status: "paid", hold_expires_at: null, updated_at: nowIso })
+        .eq("id", appt.id).eq("status", "pending");
+      if (appt.customer_email) {
+        await sendLifecycleEmail(admin, {
+          businessId: appt.business_id || order.business_id, key: "booking_confirm",
+          to: appt.customer_email, name: appt.customer_name || undefined,
+        }).catch((e: unknown) => console.warn("settle: booking confirm email failed:", e));
+      }
+    }
+  } catch (e) {
+    console.warn("settle: booking confirm failed:", e);
+  }
+
   // Order emails (best-effort - never fail the settlement over an email).
   try {
     const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");

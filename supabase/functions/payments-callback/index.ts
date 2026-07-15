@@ -47,7 +47,11 @@ Deno.serve(async (req) => {
   if (order.payment_status === "paid") return json({ ok: true, alreadyPaid: true });
 
   const now = new Date().toISOString();
-  if (parsed.approved) {
+  // For re-query providers (iCount), verification IS the authoritative paid-check -
+  // their parseCallback leaves approved=false, so branching on parsed.approved would
+  // wrongly mark a verified-paid sale as failed. We only reach here when valid===true.
+  const approved = provider.verificationImpliesPaid ? valid : parsed.approved;
+  if (approved) {
     const tolerance = 0.01;
     if (parsed.amount > 0 && Math.abs(parsed.amount - order.total_price) > tolerance) {
       console.error(`Amount mismatch: callback=${parsed.amount} order=${order.total_price} id=${order.id}`);
