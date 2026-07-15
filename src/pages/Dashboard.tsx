@@ -383,11 +383,11 @@ const Dashboard = () => {
   }, [business?.id, products, createProduct, deleteProduct, updateProduct]);
 
   // Redirect if not authenticated
-  // useEffect(() => {
-  //   if (!authLoading && !user) {
-  //     navigate('/login');
-  //   }
-  // }, [user, authLoading, navigate]);
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login');
+    }
+  }, [user, authLoading, navigate]);
   
   useEffect(() => {
     // Wait for authentication to complete first
@@ -465,7 +465,12 @@ const Dashboard = () => {
         customerPhone: o.customer_phone,
         customerEmail: o.customer_email,
         notes: o.notes || undefined,
-        items: [], // Will be populated from order_items if needed
+        items: ((o as any).order_items ?? []).map((it: any) => ({
+          productId: it.product_id ?? '',
+          productName: it.product_name,
+          quantity: it.quantity,
+          price: it.price_at_order,
+        })),
         total: o.total_price,
         status: o.status === 'pending' ? 'received' : 
                 o.status === 'confirmed' ? 'pending_payment' :
@@ -703,7 +708,7 @@ const Dashboard = () => {
             onUpgrade={() => setCheckoutItems([CRM_ITEM])}
             busy={false}
           >
-            <DashboardCRM orders={orders} businessId={business?.id} demoMode={!crmEntitled} hasCrmAddon={crmEntitled} initialTab={currentView === 'profitability' ? 'profitability' : 'customers'} />
+            <DashboardCRM orders={orders} businessId={business?.id} businessType={getBusinessType(business)} demoMode={!crmEntitled} hasCrmAddon={crmEntitled} initialTab={currentView === 'profitability' ? 'profitability' : 'customers'} />
           </PremiumOverlay>
         );
       case 'campaigns':
@@ -873,20 +878,6 @@ const Dashboard = () => {
         );
       case 'availability':
         return <DashboardAvailabilityCalendar businessId={business?.id} />;
-      case 'guests':
-        return (
-          <PremiumOverlay
-            locked={!crmEntitled}
-            title="CRM - לקוחות, ספקים ורווחיות"
-            description="כל ניהול המכירות במקום אחד: לקוחות עם היסטוריה וסגמנטים, ניהול ספקים, ודוחות רווחיות אמיתיים."
-            bullets={["כרטיס לקוח מלא + סגמנטים + תגיות/הערות", "תזכורת רכישה חוזרת + שליחת הטבה בוואטסאפ", "כרטיסי ספק: פרטי קשר, הערות ומוצרים", "רווח ואחוז רווח לכל מוצר + רווח לפי ספק"]}
-            priceLabel="הפעלה ב-₪49 לחודש"
-            onUpgrade={() => setCheckoutItems([CRM_ITEM])}
-            busy={false}
-          >
-            <DashboardCRM orders={orders} businessId={business?.id} demoMode={!crmEntitled} hasCrmAddon={crmEntitled} initialTab="customers" />
-          </PremiumOverlay>
-        );
       default:
         return null;
     }

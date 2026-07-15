@@ -47,7 +47,21 @@ const StorefrontVertical = ({ business }: {
       )}
       {modules.includes("donations") && (
         <Section title="לתרומה" subtitle="כל תרומה עושה הבדל" accent={accent}>
-          <DonationWidget businessId={business.id} />
+          <DonationWidget businessId={business.id} donationAmounts={(business as any)?.settings?.donation_amounts} />
+        </Section>
+      )}
+      {modules.includes("synagogue") && (
+        <Section title="אזור המתפללים" subtitle="עליות, נדרים וזמני תפילה" accent={accent}>
+          <div className="text-center">
+            <p className="text-muted-foreground mb-5">
+              עליות, נדרים, זמני תפילה ואזור אישי - הכל מחכה לכם באזור המתפללים של בית הכנסת.
+            </p>
+            <a href={`/shul/${(business as any).slug}`}
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: accent }}>
+              כניסה לאזור המתפללים
+            </a>
+          </div>
         </Section>
       )}
     </>

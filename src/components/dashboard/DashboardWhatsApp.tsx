@@ -13,9 +13,9 @@ import {
 interface Props { businessId?: string; forceConnected?: boolean; platformBot?: boolean }
 type Tab = "chat" | "contacts" | "campaigns" | "templates" | "bot" | "settings";
 
-interface Account { id: string; status: string; phone_number: string | null; display_name: string | null; messaging_limit: number | null; bot_enabled?: boolean; bot_prompt?: string | null; }
+interface Account { id: string; status: string; phone_number: string | null; display_name: string | null; messaging_limit: number | null; bot_enabled?: boolean; bot_prompt?: string | null; notify_new_order?: boolean; notify_shipping?: boolean; notify_reminders?: boolean; }
 interface Contact { id: string; phone: string; name: string | null; opted_in: boolean; tags: string[] | null; source: string | null; }
-interface Campaign { id: string; name: string; status: string; audience_tag: string | null; total_count: number; sent_count: number; delivered_count: number; read_count: number; }
+interface Campaign { id: string; name: string; status: string; audience_tag: string | null; template_id: string | null; total_count: number; sent_count: number; delivered_count: number; read_count: number; }
 
 const WA = "#25D366";        // bright accent (used sparingly)
 const DEEP = "#075E54";      // classic WhatsApp deep green - the primary, designerly tone
@@ -34,7 +34,7 @@ const DashboardWhatsApp = ({ businessId, forceConnected, platformBot }: Props) =
     queryKey: ["wa-account", businessId],
     enabled: !!businessId && !forced,
     queryFn: async () => {
-      const { data } = await (supabase as any).from("whatsapp_accounts").select("id, status, phone_number, display_name, messaging_limit, bot_enabled, bot_prompt").eq("business_id", businessId).maybeSingle();
+      const { data } = await (supabase as any).from("whatsapp_accounts").select("id, status, phone_number, display_name, messaging_limit, bot_enabled, bot_prompt, notify_new_order, notify_shipping, notify_reminders").eq("business_id", businessId).maybeSingle();
       return data as Account | null;
     },
   });
@@ -87,7 +87,7 @@ const DashboardWhatsApp = ({ businessId, forceConnected, platformBot }: Props) =
               {tab === "campaigns" && <CampaignsTab businessId={businessId} preview={forced} />}
               {tab === "templates" && <TemplatesTab businessId={businessId} preview={forced} />}
               {tab === "bot" && <BotTab account={shownAccount} preview={forced} />}
-              {tab === "settings" && <SettingsTab account={shownAccount} />}
+              {tab === "settings" && <SettingsTab account={shownAccount} businessId={businessId} preview={forced} />}
             </motion.div>
           </>
         )}
@@ -442,24 +442,32 @@ const ContactsTab = ({ businessId, preview }: { businessId?: string; preview?: b
 /* ---------- Campaigns + analytics ---------- */
 const CampaignsTab = ({ businessId, preview }: { businessId?: string; preview?: boolean }) => {
   const qc = useQueryClient();
-  const [name, setName] = useState(""); const [tag, setTag] = useState(""); const [sending, setSending] = useState<string | null>(null);
+  const [name, setName] = useState(""); const [tag, setTag] = useState(""); const [templateId, setTemplateId] = useState(""); const [sending, setSending] = useState<string | null>(null);
 
   const { data: campaignsData } = useQuery({
     queryKey: ["wa-campaigns", businessId], enabled: !!businessId && !preview,
-    queryFn: async () => { const { data } = await (supabase as any).from("whatsapp_campaigns").select("id, name, status, audience_tag, total_count, sent_count, delivered_count, read_count").eq("business_id", businessId).order("created_at", { ascending: false }).limit(200); return (data || []) as Campaign[]; },
+    queryFn: async () => { const { data } = await (supabase as any).from("whatsapp_campaigns").select("id, name, status, audience_tag, template_id, total_count, sent_count, delivered_count, read_count").eq("business_id", businessId).order("created_at", { ascending: false }).limit(200); return (data || []) as Campaign[]; },
   });
+  // Broadcasts can only be sent with an APPROVED template (whatsapp-broadcast
+  // refuses otherwise). Offer only approved templates as the campaign's message.
+  const { data: approvedTplData } = useQuery({
+    queryKey: ["wa-approved-templates", businessId], enabled: !!businessId && !preview,
+    queryFn: async () => { const { data } = await (supabase as any).from("whatsapp_templates").select("id, name").eq("business_id", businessId).eq("status", "approved").order("created_at", { ascending: false }).limit(100); return (data || []) as { id: string; name: string }[]; },
+  });
+  const approvedTemplates = preview ? [{ id: "t1", name: "עדכון הזמנה" }] : (approvedTplData || []);
   const sampleCampaigns: Campaign[] = [
-    { id: "c1", name: "מבצע סוף עונה 🔥", status: "sent", audience_tag: "לקוחות", total_count: 120, sent_count: 120, delivered_count: 118, read_count: 94 },
-    { id: "c2", name: "השקת מוצר חדש", status: "draft", audience_tag: null, total_count: 0, sent_count: 0, delivered_count: 0, read_count: 0 },
+    { id: "c1", name: "מבצע סוף עונה 🔥", status: "sent", audience_tag: "לקוחות", template_id: "t1", total_count: 120, sent_count: 120, delivered_count: 118, read_count: 94 },
+    { id: "c2", name: "השקת מוצר חדש", status: "draft", audience_tag: null, template_id: "t1", total_count: 0, sent_count: 0, delivered_count: 0, read_count: 0 },
   ];
   const campaigns = preview ? sampleCampaigns : campaignsData;
   const refresh = () => qc.invalidateQueries({ queryKey: ["wa-campaigns", businessId] });
 
   const create = async () => {
     if (!name.trim() || !businessId) return;
-    const { error } = await (supabase as any).from("whatsapp_campaigns").insert({ business_id: businessId, name: name.trim(), audience_tag: tag.trim() || null, status: "draft" });
+    if (!templateId) return toast.error("בחרו תבנית מאושרת לקמפיין");
+    const { error } = await (supabase as any).from("whatsapp_campaigns").insert({ business_id: businessId, name: name.trim(), audience_tag: tag.trim() || null, template_id: templateId, status: "draft" });
     if (error) return toast.error(error.message);
-    setName(""); setTag(""); refresh(); toast.success("קמפיין נוצר (טיוטה) ✓");
+    setName(""); setTag(""); setTemplateId(""); refresh(); toast.success("קמפיין נוצר (טיוטה) ✓");
   };
   const send = async (id: string) => {
     if (preview) { toast.info("בתצוגה מקדימה לא נשלח בפועל 🙂"); return; }
@@ -472,8 +480,13 @@ const CampaignsTab = ({ businessId, preview }: { businessId?: string; preview?: 
       <div className="rounded-3xl border border-border bg-card p-5 flex flex-wrap gap-2">
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="שם הקמפיין" className="flex-1 min-w-[170px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
         <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="קהל לפי תגית (ריק = כל המאושרים)" className="flex-1 min-w-[170px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
-        <button onClick={create} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform" style={{ background: WA }}><Plus className="w-4 h-4" /> צור קמפיין</button>
+        <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} disabled={approvedTemplates.length === 0} className="flex-1 min-w-[170px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none disabled:opacity-50">
+          <option value="">{approvedTemplates.length === 0 ? "אין תבנית מאושרת - צרו תבנית קודם" : "בחרו תבנית מאושרת"}</option>
+          {approvedTemplates.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
+        </select>
+        <button onClick={create} disabled={!name.trim() || !templateId} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:hover:scale-100" style={{ background: WA }}><Plus className="w-4 h-4" /> צור קמפיין</button>
       </div>
+      {approvedTemplates.length === 0 && <p className="text-xs text-amber-600 -mt-3">כדי לשלוח דיוור צריך קודם תבנית מאושרת ע"י Meta. עברו ללשונית "תבניות", צרו תבנית ושלחו לאישור.</p>}
 
       <div className="space-y-3">
         {(campaigns || []).length === 0 ? (<p className="text-sm text-muted-foreground p-8 text-center rounded-3xl border border-border bg-card">אין עדיין קמפיינים.</p>) : (campaigns || []).map((c) => {
@@ -484,7 +497,7 @@ const CampaignsTab = ({ businessId, preview }: { businessId?: string; preview?: 
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0"><div className="font-semibold text-foreground">{c.name}</div><div className="text-xs text-muted-foreground mt-0.5">{c.audience_tag ? `קהל: ${c.audience_tag}` : "כל המאושרים"} · <span className={c.status === "sent" ? "" : "text-amber-600"}>{c.status === "sent" ? "נשלח" : c.status === "draft" ? "טיוטה" : c.status}</span></div></div>
                 {(c.status === "draft" || c.status === "scheduled") ? (
-                  <button onClick={() => send(c.id)} disabled={sending === c.id} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 disabled:opacity-50 shadow-sm hover:scale-[1.02] transition-transform" style={{ background: WA }}>{sending === c.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} שלח</button>
+                  <button onClick={() => send(c.id)} disabled={sending === c.id || !c.template_id} title={!c.template_id ? "צריך תבנית מאושרת כדי לשלוח" : undefined} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 disabled:opacity-50 shadow-sm hover:scale-[1.02] transition-transform disabled:hover:scale-100" style={{ background: WA }}>{sending === c.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} שלח</button>
                 ) : (<span className="text-xs font-medium px-3 py-1.5 rounded-full" style={{ background: `${WA}1f`, color: "#0f8c6e" }}>הסתיים</span>)}
               </div>
               {c.status === "sent" && (
@@ -749,13 +762,28 @@ const BotTab = ({ account, preview }: { account: Account | null; preview?: boole
 };
 
 /* ---------- Settings ---------- */
-const SettingsTab = ({ account }: { account: Account | null }) => {
-  const [notif, setNotif] = useState({ order: true, shipping: true, reminders: true });
+const SettingsTab = ({ account, businessId, preview }: { account: Account | null; businessId?: string; preview?: boolean }) => {
+  // Initialize from the account row - these map to whatsapp_accounts columns that
+  // the DB order trigger reads. Default ON when the column hasn't been set yet.
+  const [notif, setNotif] = useState({
+    order: account?.notify_new_order ?? true,
+    shipping: account?.notify_shipping ?? true,
+    reminders: account?.notify_reminders ?? true,
+  });
+  const [saving, setSaving] = useState(false);
   const Toggle = ({ on, onClick }: { on: boolean; onClick: () => void }) => (
     <button onClick={onClick} className={`relative w-12 h-7 rounded-full transition-colors ${on ? "" : "bg-muted"}`} style={on ? { background: WA } : undefined}>
       <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${on ? "right-1" : "right-6"}`} />
     </button>
   );
+  const save = async () => {
+    if (preview || !businessId || account?.id === "preview") { toast.success("נשמר ✓ (בתצוגה מקדימה)"); return; }
+    setSaving(true);
+    try {
+      await (supabase as any).from("whatsapp_accounts").update({ notify_new_order: notif.order, notify_shipping: notif.shipping, notify_reminders: notif.reminders, updated_at: new Date().toISOString() }).eq("business_id", businessId);
+      toast.success("ההגדרות נשמרו ✓");
+    } catch { toast.error("שגיאה"); } finally { setSaving(false); }
+  };
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border border-border bg-card p-6 space-y-4 text-sm">
@@ -773,6 +801,9 @@ const SettingsTab = ({ account }: { account: Account | null }) => {
             <Toggle on={(notif as any)[key]} onClick={() => setNotif((n) => ({ ...n, [key as string]: !(n as any)[key as string] }))} />
           </div>
         ))}
+        <button onClick={save} disabled={saving} className="w-full rounded-xl py-3 text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ background: WA }}>
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} שמירת ההגדרות
+        </button>
       </div>
     </div>
   );

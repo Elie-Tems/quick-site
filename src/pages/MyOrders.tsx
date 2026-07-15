@@ -14,7 +14,7 @@ interface OrderRow { id: string; date: string; total: number; status: string; it
 const fmt = (n: number) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(n || 0);
 const fmtDate = (d: string) => new Date(d).toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" });
 const STATUS: Record<string, string> = {
-  pending: "התקבלה", processing: "בטיפול", shipped: "נשלחה", completed: "הושלמה", cancelled: "בוטלה",
+  pending: "התקבלה", confirmed: "ממתין לתשלום", paid: "שולם", completed: "הושלמה", cancelled: "בוטלה",
 };
 
 const MyOrders = ({ slugOverride }: MyOrdersProps) => {

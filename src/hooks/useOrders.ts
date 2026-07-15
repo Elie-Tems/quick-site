@@ -18,7 +18,7 @@ export const useOrders = (businessId: string | undefined) => {
       
       const { data, error } = await supabase
         .from('orders')
-        .select('*')
+        .select('*, order_items(*)')
         .eq('business_id', businessId)
         .order('created_at', { ascending: false });
       
@@ -95,14 +95,58 @@ export const useUpdateOrder = () => {
   
   return useMutation({
     mutationFn: async ({ id, ...updates }: OrderUpdate & { id: string }) => {
+      // Capture the prior status so we only notify on a genuine transition
+      // (avoids re-sending when the merchant re-clicks the current status).
+      let prevStatus: string | null = null;
+      if (updates.status === 'completed' || updates.status === 'cancelled') {
+        const { data: prev } = await supabase
+          .from('orders')
+          .select('status')
+          .eq('id', id)
+          .single();
+        prevStatus = prev?.status ?? null;
+      }
+
       const { data, error } = await supabase
         .from('orders')
         .update(updates)
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
+
+      // Best-effort: notify the customer when their order moves to a terminal
+      // state (completed / cancelled). Never let a notification failure fail the
+      // status update itself.
+      // NOTE (flagged): this reuses send-platform-email, but that function has no
+      // "order status" customer template yet, and its anti-phishing gate only lets
+      // an authenticated merchant email their OWN address (or an orderConfirmation
+      // for a <30-min-old order). Until a dedicated backend send-path + template is
+      // added, this call will no-op/403 harmlessly. The client trigger is wired so
+      // that adding the backend piece is all that's left.
+      const newStatus = data?.status;
+      if (
+        (newStatus === 'completed' || newStatus === 'cancelled') &&
+        newStatus !== prevStatus &&
+        data?.customer_email
+      ) {
+        supabase.functions
+          .invoke('send-platform-email', {
+            body: {
+              type: 'orderStatusCustomer',
+              to: data.customer_email,
+              businessId: data.business_id,
+              ctx: {
+                firstName: (data.customer_name || '').trim().split(/\s+/)[0] || undefined,
+                status: newStatus,
+                orderNumber: data.id,
+              },
+            },
+          })
+          .catch(() => { /* best-effort: notification must never block the update */ });
+      }
+
       return data;
     },
     onSuccess: (data) => {

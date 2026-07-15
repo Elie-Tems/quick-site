@@ -125,11 +125,6 @@ verify_jwt = true
 [functions.domain-purchase]
 verify_jwt = true
 
-# domain-purchase-webhook is the iCount IPN (no Supabase JWT); it authenticates
-# via ICOUNT_WEBHOOK_SECRET (header or ?secret=), like icount-webhook.
-[functions.domain-purchase-webhook]
-verify_jwt = false
-
 # domain-balance-check is invoked by a daily cron (anon bearer) and by the admin
 # refresh button (user JWT); both send a valid JWT.
 [functions.domain-balance-check]

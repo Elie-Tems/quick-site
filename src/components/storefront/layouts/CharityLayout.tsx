@@ -1,26 +1,15 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Phone, MessageCircle, ArrowLeft, Users, Target, Gift, ChevronDown, Check, Star } from "lucide-react";
+import { Heart, MessageCircle, ArrowLeft, Check, Star } from "lucide-react";
 import type { StorefrontLayoutProps } from "./StorefrontLayout.types";
 
 const FALLBACK_HERO = "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1600&q=80";
-const DEFAULT_DONATION_AMOUNTS = [50, 100, 200, 500];
 
 export default function CharityLayout(props: StorefrontLayoutProps) {
   const {
     businessName, tagline, heroTitle, aboutText, heroImageUrl,
     logoUrl, phone, products, banners, heroBenefits,
-    whatsappEnabled, reviewsCache, customLabels, donationAmounts,
+    whatsappEnabled, reviewsCache, customLabels,
   } = props;
-
-  const DONATION_AMOUNTS = (donationAmounts && donationAmounts.length > 0)
-    ? donationAmounts
-    : DEFAULT_DONATION_AMOUNTS;
-
-  const [donationAmt, setDonationAmt] = useState<number | null>(100);
-  const [customAmt, setCustomAmt] = useState("");
-  const [isMonthly, setIsMonthly] = useState(false);
-  const [expanded, setExpanded] = useState<string | null>(null);
 
   const heroImg = heroImageUrl || banners?.[0]?.imageUrl || FALLBACK_HERO;
   const albumImgs = banners.slice(1).map(b => b.imageUrl!).filter(Boolean);
@@ -68,76 +57,31 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/20" />
         <div className="absolute inset-0 flex items-center">
           <div className="max-w-6xl mx-auto px-4 md:px-6 w-full">
-            <div className="grid md:grid-cols-2 gap-10 items-center">
-              {/* LEFT: text */}
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65 }}>
-                <h1 className="text-4xl md:text-6xl font-display font-bold text-white mb-4 leading-tight">
-                  {heroTitle || businessName}
-                </h1>
-                {tagline && <p className="text-xl text-white/80 mb-6">{tagline}</p>}
-                {highlights.length > 0 && (
-                  <div className="space-y-2 mb-7">
-                    {highlights.map((h, i) => (
-                      <div key={i} className="flex items-center gap-2 text-white/90 text-sm">
-                        <Check className="w-4 h-4 text-primary shrink-0" /> {h}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <button onClick={() => document.getElementById("donate")?.scrollIntoView({ behavior: "smooth" })}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/30">
-                  <Heart className="w-5 h-5" /> תרמו עכשיו <ArrowLeft className="w-4 h-4" />
-                </button>
-              </motion.div>
-
-              {/* RIGHT: mini donation box */}
-              <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.65, delay: 0.15 }}
-                id="donate" className="bg-background/95 backdrop-blur-md rounded-3xl p-6 shadow-2xl border border-border">
-                <div className="flex items-center gap-2 mb-4">
-                  <Heart className="w-5 h-5 text-primary" />
-                  <span className="font-display font-bold text-lg">תרמו לנו</span>
-                </div>
-                {/* Monthly / One-time toggle */}
-                <div className="flex rounded-xl border border-border bg-muted/30 p-1 mb-5" role="group" aria-label="סוג תרומה">
-                  {["תרומה חד-פעמית", "תרומה חודשית"].map((label, i) => (
-                    <button key={i} onClick={() => setIsMonthly(i === 1)}
-                      aria-pressed={isMonthly === (i === 1)}
-                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${isMonthly === (i === 1) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}>
-                      {label}
-                    </button>
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65 }} className="max-w-2xl">
+              <h1 className="text-4xl md:text-6xl font-display font-bold text-white mb-4 leading-tight">
+                {heroTitle || businessName}
+              </h1>
+              {tagline && <p className="text-xl text-white/80 mb-6">{tagline}</p>}
+              {highlights.length > 0 && (
+                <div className="space-y-2 mb-7">
+                  {highlights.map((h, i) => (
+                    <div key={i} className="flex items-center gap-2 text-white/90 text-sm">
+                      <Check className="w-4 h-4 text-primary shrink-0" /> {h}
+                    </div>
                   ))}
                 </div>
-                {/* Amount buttons */}
-                <div className="grid grid-cols-4 gap-2 mb-3" role="group" aria-label="סכום תרומה">
-                  {DONATION_AMOUNTS.map(amt => (
-                    <button key={amt} onClick={() => { setDonationAmt(amt); setCustomAmt(""); }}
-                      aria-pressed={donationAmt === amt && !customAmt}
-                      className={`py-2.5 rounded-xl text-sm font-bold border transition-all ${donationAmt === amt && !customAmt ? "bg-primary text-primary-foreground border-primary" : "border-border bg-card hover:border-primary/40"}`}>
-                      ₪{amt}
-                    </button>
-                  ))}
-                </div>
-                <label htmlFor="custom-donation-amount" className="sr-only">סכום תרומה אחר בשקלים</label>
-                <input
-                  id="custom-donation-amount"
-                  type="number"
-                  value={customAmt}
-                  onChange={e => { setCustomAmt(e.target.value); setDonationAmt(null); }}
-                  placeholder="סכום אחר (₪)"
-                  className="w-full h-11 rounded-xl border border-border bg-muted/30 text-sm px-4 mb-4 text-right focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
-                />
-                <button className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-lg shadow-lg shadow-primary/30 inline-flex items-center justify-center gap-2">
-                  <Heart className="w-5 h-5" />
-                  {isMonthly ? "תרמו חודשית" : "תרמו"} ₪{customAmt || donationAmt || ""}
-                </button>
-                <p className="text-center text-xs text-muted-foreground mt-3">תרומה מאובטחת · קבלה מיידית</p>
-              </motion.div>
-            </div>
+              )}
+              <button onClick={() => document.getElementById("donate")?.scrollIntoView({ behavior: "smooth" })}
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/30">
+                <Heart className="w-5 h-5" /> תרמו עכשיו <ArrowLeft className="w-4 h-4" />
+              </button>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {props.verticalSlot}
+      {/* The one real donation form (DonationWidget) - every "תרמו עכשיו" CTA scrolls here */}
+      <div id="donate">{props.verticalSlot}</div>
 
       {/* ABOUT STORY */}
       {aboutText && (
@@ -162,23 +106,6 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
         </section>
       )}
 
-      {/* STATS */}
-      <section className="py-10 px-4 bg-primary/5 border-y border-primary/10">
-        <div className="max-w-6xl mx-auto grid grid-cols-3 gap-4 text-center">
-          {[
-            { icon: Users, label: "תורמים פעילים", value: "2,400+" },
-            { icon: Target, label: "פרויקטים הושלמו", value: `${projects.length * 10}+` },
-            { icon: Gift, label: "תרומות השנה", value: "₪850K" },
-          ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="rounded-2xl border border-primary/20 bg-card p-5 text-center">
-              <Icon className="w-8 h-8 text-primary mx-auto mb-2" />
-              <div className="font-display font-bold text-2xl md:text-3xl">{value}</div>
-              <div className="text-muted-foreground text-sm mt-1">{label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* PROJECTS */}
       {projects.length > 0 && (
         <section className="py-16 px-4">
@@ -186,41 +113,23 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
             <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">{customLabels?.productsTitle || "הפרויקטים שלנו"}</h2>
             <p className="text-muted-foreground text-sm mb-8">כל פרויקט מוצג עם שקיפות מלאה על ההתקדמות</p>
             <div className="grid md:grid-cols-2 gap-5">
-              {projects.map((p, i) => {
-                const progress = Math.min(100, 40 + i * 20);
-                return (
-                  <div key={p.id} className="rounded-2xl border border-border bg-card overflow-hidden">
-                    {p.imageUrl && (
-                      <div className="aspect-video overflow-hidden">
-                        <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                    <div className="p-5">
-                      <h3 className="font-display font-bold text-lg mb-2">{p.name}</h3>
-                      {p.description && <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{p.description}</p>}
-                      {/* Progress bar */}
-                      <div className="mb-3">
-                        <div className="flex justify-between text-xs mb-1.5">
-                          <span className="text-muted-foreground">גויס: ₪{(p.price * 120).toLocaleString()}</span>
-                          <span className="font-semibold text-primary">{progress}%</span>
-                        </div>
-                        <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                          <motion.div initial={{ width: 0 }} whileInView={{ width: `${progress}%` }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.2 + i * 0.1 }}
-                            className="h-full rounded-full bg-primary" />
-                        </div>
-                        <div className="flex justify-between text-xs mt-1 text-muted-foreground">
-                          <span>יעד: ₪{(p.price * 200).toLocaleString()}</span>
-                          <span>{Math.floor(30 - i * 7)} ימים נותרו</span>
-                        </div>
-                      </div>
-                      <button onClick={() => document.getElementById("donate")?.scrollIntoView({ behavior: "smooth" })}
-                        className="w-full py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors">
-                        תרמו לפרויקט זה
-                      </button>
+              {projects.map((p) => (
+                <div key={p.id} className="rounded-2xl border border-border bg-card overflow-hidden">
+                  {p.imageUrl && (
+                    <div className="aspect-video overflow-hidden">
+                      <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
                     </div>
+                  )}
+                  <div className="p-5">
+                    <h3 className="font-display font-bold text-lg mb-2">{p.name}</h3>
+                    {p.description && <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{p.description}</p>}
+                    <button onClick={() => document.getElementById("donate")?.scrollIntoView({ behavior: "smooth" })}
+                      className="w-full py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors">
+                      תרמו לפרויקט זה
+                    </button>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
         </section>

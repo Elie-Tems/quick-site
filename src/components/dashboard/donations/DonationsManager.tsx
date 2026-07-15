@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Heart, Loader2, FileText, Target } from "lucide-react";
+import { Plus, Heart, Loader2, FileText, Target, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,6 +52,40 @@ const DonationsManager = ({ businessId }: { businessId: string }) => {
         onError: () => toast.error("שמירה נכשלה"),
       },
     );
+  };
+
+  // Export all paid donations (with donor ID / allocation number) as CSV, so a
+  // record-mode org can actually issue the allocation-numbered receipts it was
+  // promised it could - and so any org can reconcile. Real data only.
+  const [exporting, setExporting] = useState(false);
+  const exportDonations = async () => {
+    setExporting(true);
+    try {
+      const { data, error } = await sb.from("transactions")
+        .select("amount, created_at, details")
+        .eq("business_id", businessId).eq("kind", "donation").eq("status", "paid")
+        .order("created_at", { ascending: false }).limit(5000);
+      if (error) throw error;
+      const rows = (data || []) as { amount: number; created_at: string; details: Record<string, unknown> | null }[];
+      if (!rows.length) { toast.info("אין עדיין תרומות לייצוא"); return; }
+      const header = ["תאריך", "סכום", "שם התורם", "תעודת זהות", "אימייל", "טלפון", "מספר הקצאה"];
+      const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+      const body = rows.map((r) => {
+        const d = r.details || {};
+        return [
+          new Date(r.created_at).toLocaleDateString("he-IL"),
+          Number(r.amount) || 0,
+          d.donor_name, d.donor_id_number, d.donor_email, d.donor_phone, d.receipt_allocation_number,
+        ].map(esc).join(",");
+      });
+      const csv = "﻿" + [header.map(esc).join(","), ...body].join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `donations-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click(); URL.revokeObjectURL(url);
+    } catch { toast.error("ייצוא התרומות נכשל"); }
+    finally { setExporting(false); }
   };
 
   const add = () => {
@@ -125,7 +159,12 @@ const DonationsManager = ({ businessId }: { businessId: string }) => {
           {isAuto ? (
             <p className="text-[11px] text-muted-foreground">הטוקן מ-iCount (הגדרות ← API). iCount מפיק את קבלת התרומה, מדווח לרשות המסים ומחזיר מספר הקצאה - הכל אוטומטית. מומלץ לבצע תרומת בדיקה קטנה לפני הפעלה מלאה.</p>
           ) : (
-            <p className="text-[11px] text-muted-foreground">אוטומציה מלאה לספק הזה בקרוב. בינתיים: המערכת שומרת את פרטי התורם (כולל ת״ז), <b>ואתם מפיקים את הקבלה עם מספר ההקצאה דרך {PROVIDERS.find((p) => p.id === provider)?.label} שכבר מחובר לרשות המסים.</b> ייצוא התרומות לטובת ההפקה זמין בכל עת.</p>
+            <div className="space-y-2">
+              <p className="text-[11px] text-muted-foreground">אוטומציה מלאה לספק הזה בקרוב. בינתיים: המערכת שומרת את פרטי התורם (כולל ת״ז), <b>ואתם מפיקים את הקבלה עם מספר ההקצאה דרך {PROVIDERS.find((p) => p.id === provider)?.label} שכבר מחובר לרשות המסים.</b> ייצאו את רשימת התרומות והפיקו את הקבלות אצל הספק.</p>
+              <Button size="sm" variant="outline" onClick={exportDonations} disabled={exporting}>
+                {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Download className="w-4 h-4 ml-1.5" /> ייצוא תרומות (CSV)</>}
+              </Button>
+            </div>
           )}
         </div>
       )}

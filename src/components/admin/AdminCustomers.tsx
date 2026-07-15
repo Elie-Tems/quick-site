@@ -100,9 +100,13 @@ function CustomerCard({ c, onResetOnboarding }: { c: CustomerRow; onResetOnboard
   }, [expanded, note, c.id]);
   const saveNote = async () => {
     setSavingNote(true);
-    const { error } = await (supabase as any).from("profiles").update({ admin_notes: note ?? "" }).eq("id", c.id);
+    // .select() so a 0-row write (blocked by RLS / no admin permission) is
+    // detectable - without it Supabase reports success even when nothing was
+    // written, silently losing the note.
+    const { data, error } = await (supabase as any).from("profiles").update({ admin_notes: note ?? "" }).eq("id", c.id).select();
     setSavingNote(false);
     if (error) toast.error("להפעלת ההערות יש להריץ את מיגרציית admin_notes");
+    else if (!data || data.length === 0) toast.error("ההערה לא נשמרה - אין הרשאה לעדכן סוחר זה");
     else toast.success("ההערה נשמרה");
   };
 
@@ -284,14 +288,20 @@ const AdminCustomers = () => {
 
   const handleResetOnboarding = async (profileId: string) => {
     if (!window.confirm("לאפס את ה-onboarding למשתמש זה? הוא יועבר לאשף בכניסה הבאה.")) return;
-    const { error } = await supabase
+    // .select() so a 0-row update (blocked by RLS / no admin permission) surfaces
+    // as an error instead of a false success - Supabase returns no error when an
+    // UPDATE matches no writable rows.
+    const { data, error } = await supabase
       .from("profiles")
       .update({ onboarding_completed_at: null, status: "registered" } as any)
-      .eq("id", profileId);
+      .eq("id", profileId)
+      .select();
     if (error) {
       toast.error("שגיאה באיפוס: " + error.message);
+    } else if (!data || data.length === 0) {
+      toast.error("האיפוס נכשל - אין הרשאה לעדכן משתמש זה");
     } else {
-      toast.success("ה-onboarding אופס — המשתמש יועבר לאשף בכניסה הבאה");
+      toast.success("ה-onboarding אופס - המשתמש יועבר לאשף בכניסה הבאה");
       queryClient.invalidateQueries({ queryKey: ["admin-customers"] });
     }
   };

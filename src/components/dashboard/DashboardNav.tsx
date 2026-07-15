@@ -1,10 +1,9 @@
 import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2, FileText, CalendarClock, Layers, Mail, Blocks, CalendarDays, PenLine } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 import type { BusinessType } from "@/lib/businessModules";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails' | 'modules' | 'availability' | 'guests';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails' | 'modules' | 'availability';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -37,7 +36,10 @@ const TYPE_CONFIG: Record<BusinessType, {
   services:  { hiddenItems: ['visualization-studio'] },
   nonprofit: {
     managementGroupLabel: "ניהול תרומות",
-    hiddenItems: ['shipping', 'coupons', 'visualization-studio'],
+    // 'orders' (relabeled "תרומות") points at the commerce orders table, which
+    // donation businesses never write to → permanently empty. Their real donations
+    // live in the "verticals" tab, so hide the dead orders tab.
+    hiddenItems: ['orders', 'shipping', 'coupons', 'visualization-studio'],
     itemOverrides: {
       products: { label: "פרויקטים / מיזמים", shortLabel: "פרויקטים", icon: Heart },
       orders: { label: "תרומות", shortLabel: "תרומות", icon: Heart },
@@ -45,7 +47,10 @@ const TYPE_CONFIG: Record<BusinessType, {
   },
   synagogue: {
     managementGroupLabel: "ניהול בית הכנסת",
-    hiddenItems: ['shipping', 'coupons', 'visualization-studio'],
+    // 'orders' (relabeled "תרומות ועליות") points at the commerce orders table, which
+    // synagogues never write to → permanently empty. Their real donations/aliyot live
+    // in the "verticals" tab, so hide the dead orders tab.
+    hiddenItems: ['orders', 'shipping', 'coupons', 'visualization-studio'],
     itemOverrides: {
       products: { label: "פרויקטים / מיזמים", shortLabel: "פרויקטים", icon: Heart },
       orders: { label: "תרומות ועליות", shortLabel: "תרומות", icon: Heart },
@@ -69,7 +74,6 @@ const TYPE_CONFIG: Record<BusinessType, {
     },
     extraNavItems: [
       { id: "availability" as DashboardView, label: "יומן זמינות", shortLabel: "זמינות", icon: CalendarDays, group: "ניהול" },
-      { id: "guests" as DashboardView, label: "אורחים & CRM", shortLabel: "אורחים", icon: Users, group: "ניהול" },
     ],
   },
 };
@@ -132,11 +136,9 @@ const DashboardNav = ({
   const managementGroupLabel = typeConfig.managementGroupLabel;
   const extraNavItems = typeConfig.extraNavItems ?? [];
 
-  // Merge base items with any type-specific extra items (e.g. vacation's availability + guests)
+  // Merge base items with any type-specific extra items (e.g. vacation's availability)
   const allNavItems = [...navItems, ...extraNavItems];
 
-  // WhatsApp + Email are built but not live yet: show them as "בקרוב" (clearly
-  // upcoming) instead of hiding them, so they read as a roadmap, not as missing.
   const itemsToRender = allNavItems
     .map((item) => {
       const override = itemOverrides[item.id] ?? {};
@@ -145,9 +147,6 @@ const DashboardNav = ({
         label: item.id === "verticals" && verticalsLabel ? verticalsLabel : (override.label ?? item.label),
         shortLabel: override.shortLabel ?? item.shortLabel,
         icon: override.icon ?? item.icon,
-        comingSoon:
-          (item.id === "whatsapp" && !whatsappEnabled()) ||
-          (item.id === "email" && !emailEnabled()),
       };
     })
     .filter((item) => {
@@ -180,21 +179,15 @@ const DashboardNav = ({
           return (
             <button
               key={item.id}
-              onClick={() => !item.comingSoon && onViewChange(item.id)}
-              disabled={item.comingSoon}
+              onClick={() => onViewChange(item.id)}
               className={cn(
                 "flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors relative shrink-0",
-                item.comingSoon
-                  ? "text-muted-foreground/50"
-                  : isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
               <Icon className="h-5 w-5" />
               <span className="text-xs whitespace-nowrap">{item.shortLabel || item.label}</span>
-              {item.comingSoon && (
-                <span className="absolute -top-1 -right-1 px-1 py-px text-[8px] font-bold bg-muted text-muted-foreground rounded">בקרוב</span>
-              )}
-              {item.premium && !item.comingSoon && (
+              {item.premium && (
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
               )}
             </button>
@@ -240,21 +233,6 @@ const DashboardNav = ({
               {open && groupItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentView === item.id;
-                if (item.comingSoon) {
-                  return (
-                    <div
-                      key={item.id}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground/50 cursor-default select-none"
-                      title="המודול הזה יהיה זמין בקרוב"
-                    >
-                      <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
-                        <Icon className="h-3.5 w-3.5" />
-                      </div>
-                      <span>{item.label}</span>
-                      <span className="mr-auto px-1.5 py-0.5 text-[10px] font-bold bg-muted text-muted-foreground rounded">בקרוב</span>
-                    </div>
-                  );
-                }
                 return (
                   <button
                     key={item.id}

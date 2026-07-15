@@ -10,6 +10,7 @@ import {
 } from "@/hooks/useBooking";
 import CalendarConnect from "./CalendarConnect";
 import BookingCalendar from "./BookingCalendar";
+import { localMinutesToUtc } from "@/lib/booking/availability";
 
 /**
  * Merchant-side booking management (services / weekly hours / appointments).
@@ -19,6 +20,9 @@ import BookingCalendar from "./BookingCalendar";
  */
 
 const WEEKDAYS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+// Availability runs in the business timezone; blackout day boundaries must match it
+// (a literal UTC 'Z' midnight is offset 2-3h off the local day - the bug this fixes).
+const BUSINESS_TZ = "Asia/Jerusalem";
 const toHM = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
 const toMin = (hm: string) => { const [h, m] = hm.split(":").map(Number); return h * 60 + (m || 0); };
 
@@ -52,8 +56,10 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
     addBlackout.mutate(
       {
         business_id: businessId,
-        starts_at: `${newBlackout.from}T00:00:00Z`,
-        ends_at: `${to}T23:59:59Z`,
+        // Local (business-tz) midnight of the from-date .. local midnight of the day
+        // AFTER the to-date (exclusive end). 24*60 min = next-day 00:00 in that tz.
+        starts_at: new Date(localMinutesToUtc(newBlackout.from, 0, BUSINESS_TZ)).toISOString(),
+        ends_at: new Date(localMinutesToUtc(to, 24 * 60, BUSINESS_TZ)).toISOString(),
         reason: newBlackout.reason.trim() || null,
       },
       { onSuccess: () => setNewBlackout({ from: "", to: "", reason: "" }) },

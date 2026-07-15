@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCategoryConfig, type BusinessCategory } from "@/lib/categoryConfig";
-import { DEFAULT_LAYOUT } from "@/lib/businessModules";
+import { DEFAULT_LAYOUT, hasModule } from "@/lib/businessModules";
 import { getTemplate } from "@/lib/storeTemplates";
 
 export interface CreateBusinessData {
@@ -362,8 +362,15 @@ export function useCreateBusiness() {
         }
       }
       
-      // 7. Create products (or listings for realestate businesses)
+      // 7. Create products (or listings for realestate businesses, or donation
+      // campaigns for nonprofit/synagogue businesses).
       const isRealEstate = data.businessType === 'realestate';
+      // Nonprofit/synagogue verticals route the seeded demo items to
+      // donation_campaigns (read by DonationWidget), not the products table.
+      const isDonations = hasModule({ business_type: data.businessType }, 'donations');
+      // Listing kind is driven by the business category: a car dealer routed to
+      // the realestate vertical sells vehicles, everyone else lists property.
+      const listingKind = data.businessCategory === 'automotive' ? 'vehicle' : 'property';
       for (let i = 0; i < data.products.length; i++) {
         const product = data.products[i];
         let productImageUrl = product.imageUrl || null;
@@ -382,13 +389,14 @@ export function useCreateBusiness() {
           }
         }
 
-        // Real estate businesses: save to listings table (leads-based, not cart-based)
+        // Real estate businesses: save to listings table (leads-based, not cart-based).
+        // kind is derived from the category (vehicle for car dealers, else property).
         if (isRealEstate) {
           const { error: listingError } = await (supabase as any)
             .from('listings')
             .insert({
               business_id: businessId,
-              kind: 'property',
+              kind: listingKind,
               title: product.name,
               description: product.description || null,
               price: product.price,
@@ -397,6 +405,25 @@ export function useCreateBusiness() {
               active: true,
             });
           if (listingError) console.error('Failed to create listing:', listingError);
+          continue;
+        }
+
+        // Nonprofit/synagogue businesses: save seeded demo items as donation
+        // campaigns (read by DonationWidget) instead of add-to-cart products.
+        // Mirrors the realestate -> listings branch above.
+        if (isDonations) {
+          const { error: campaignError } = await (supabase as any)
+            .from('donation_campaigns')
+            .insert({
+              business_id: businessId,
+              title: product.name,
+              description: product.description || null,
+              goal_amount: product.price || null,
+              cover_url: productImageUrl,
+              sort_order: i,
+              active: true,
+            });
+          if (campaignError) console.error('Failed to create donation campaign:', campaignError);
           continue;
         }
 

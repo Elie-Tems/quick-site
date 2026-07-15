@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, Repeat, ShieldCheck, Loader2, Target } from "lucide-react";
+import { Heart, ShieldCheck, Loader2, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -7,21 +7,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { useDonationCampaigns, useSection46Enabled } from "@/hooks/useDonations";
 
 /**
- * Storefront donation widget. Amount presets + one-time/recurring toggle;
- * the Section 46 receipt line shows ONLY if the org enabled it. Submits to the
- * donation-create edge function (reuses the store's payment engine; recurring
- * saves a card token for monthly cc/bill). Rendered by StorefrontVertical when
- * the business has the "donations" module.
+ * Storefront donation widget. One-time gift with amount presets (the merchant's
+ * configured amounts, or a sensible default); the Section 46 receipt line shows
+ * ONLY if the org enabled it. Submits to the donation-create edge function
+ * (reuses the store's payment engine). Rendered by StorefrontVertical when the
+ * business has the "donations" module.
  */
 
-const AMOUNTS = [50, 100, 250, 500];
+const DEFAULT_AMOUNTS = [50, 100, 250, 500];
 
-const DonationWidget = ({ businessId }: { businessId: string }) => {
+const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; donationAmounts?: number[] }) => {
   const { data: campaigns = [] } = useDonationCampaigns(businessId);
   const { data: s46 } = useSection46Enabled(businessId);
-  const [amount, setAmount] = useState(100);
+  const AMOUNTS = (donationAmounts && donationAmounts.length > 0) ? donationAmounts : DEFAULT_AMOUNTS;
+  const [amount, setAmount] = useState(AMOUNTS[1] ?? AMOUNTS[0] ?? 100);
   const [custom, setCustom] = useState("");
-  const [monthly, setMonthly] = useState(false);
   const [donor, setDonor] = useState({ name: "", email: "", phone: "", idNumber: "" });
   const [anonymous, setAnonymous] = useState(false);
   const [campaignId, setCampaignId] = useState<string | undefined>(undefined);
@@ -42,7 +42,7 @@ const DonationWidget = ({ businessId }: { businessId: string }) => {
     }
     setLoading(true);
     const { data, error } = await supabase.functions.invoke("donation-create", {
-      body: { businessId, amount: finalAmount, recurring: monthly, campaignId, donor: { ...donor, anonymous } },
+      body: { businessId, amount: finalAmount, campaignId, donor: { ...donor, anonymous } },
     });
     setLoading(false);
     if (error || (data as { error?: string })?.error) { toast.error("שגיאה בתרומה, נסו שוב"); return; }
@@ -57,15 +57,6 @@ const DonationWidget = ({ businessId }: { businessId: string }) => {
         <div className="rounded-2xl border border-border bg-card p-6 lg:sticky lg:top-24">
           <h2 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2"><Heart className="w-6 h-6 text-primary" /> תרומה</h2>
           {s46 && <p className="text-xs text-muted-foreground mb-4">כולל קבלה מוכרת לצורכי מס (סעיף 46)</p>}
-
-          <div className="flex p-1 rounded-xl bg-muted mb-4">
-            {[["month", "הוראת קבע"], ["once", "חד-פעמי"]].map(([k, label]) => (
-              <button key={k} onClick={() => setMonthly(k === "month")}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 ${(monthly ? "month" : "once") === k ? "bg-primary text-white" : "text-muted-foreground"}`}>
-                {k === "month" && <Repeat className="w-3.5 h-3.5" />} {label}
-              </button>
-            ))}
-          </div>
 
           <div className="grid grid-cols-4 gap-2 mb-2">
             {AMOUNTS.map((a) => (
@@ -101,7 +92,7 @@ const DonationWidget = ({ businessId }: { businessId: string }) => {
           </div>
 
           <Button className="w-full" onClick={donate} disabled={loading}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Heart className="w-4 h-4 ml-1" /> תרמו ₪{finalAmount || 0}{monthly ? " לחודש" : ""}</>}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Heart className="w-4 h-4 ml-1" /> תרמו ₪{finalAmount || 0}</>}
           </Button>
           <div className="flex items-center gap-2 justify-center mt-3 text-xs text-muted-foreground">
             <ShieldCheck className="w-3.5 h-3.5 text-primary" /> תשלום מאובטח{s46 ? " · קבלה לסעיף 46" : ""}

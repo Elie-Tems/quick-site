@@ -156,6 +156,23 @@ Deno.serve(async (req) => {
       await admin.from("whatsapp_messages")
         .update({ status: form.MessageStatus, updated_at: new Date().toISOString() })
         .eq("provider_sid", form.MessageSid);
+      // Roll the delivered/read counts up to the campaign so its analytics
+      // (whatsapp_campaigns.delivered_count/read_count) actually populate.
+      // A message only carries a campaign_id when it was part of a broadcast;
+      // read implies delivered, so delivered_count counts delivered + read.
+      const { data: msg } = await admin.from("whatsapp_messages")
+        .select("campaign_id").eq("provider_sid", form.MessageSid).maybeSingle();
+      if (msg?.campaign_id) {
+        const { count: deliveredCount } = await admin.from("whatsapp_messages")
+          .select("id", { count: "exact", head: true })
+          .eq("campaign_id", msg.campaign_id).in("status", ["delivered", "read"]);
+        const { count: readCount } = await admin.from("whatsapp_messages")
+          .select("id", { count: "exact", head: true })
+          .eq("campaign_id", msg.campaign_id).eq("status", "read");
+        await admin.from("whatsapp_campaigns")
+          .update({ delivered_count: deliveredCount ?? 0, read_count: readCount ?? 0, updated_at: new Date().toISOString() })
+          .eq("id", msg.campaign_id);
+      }
       return ack();
     }
 

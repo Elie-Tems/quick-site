@@ -226,8 +226,15 @@ const FALLBACK_DEMO_PRODUCTS: DemoProduct[] = [
 ];
 
 function getDemoProducts(category: BusinessCategory, businessType?: string): DemoProduct[] {
+  // Prefer a category-specific demo set when one exists. A car dealer (category
+  // "automotive") routed to the realestate vertical must still get vehicle demos,
+  // not Tel Aviv apartments - so the category wins over the business type here.
+  if (DEMO_PRODUCTS_BY_CATEGORY[category]) return DEMO_PRODUCTS_BY_CATEGORY[category]!;
+  // Only categories that have no product demos of their own fall back to the
+  // business-type demo set (e.g. realestate/nonprofit, which are verticals, not
+  // product categories).
   if (businessType && DEMO_BY_BUSINESS_TYPE[businessType]) return DEMO_BY_BUSINESS_TYPE[businessType];
-  return DEMO_PRODUCTS_BY_CATEGORY[category] ?? FALLBACK_DEMO_PRODUCTS;
+  return FALLBACK_DEMO_PRODUCTS;
 }
 
 const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) => {

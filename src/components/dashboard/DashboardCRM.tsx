@@ -6,6 +6,7 @@ import DashboardProfitability from "./DashboardProfitability";
 import DashboardAnalytics from "./DashboardAnalytics";
 import type { Order } from "./DashboardOrders";
 import type { BusinessType } from "@/lib/businessModules";
+import { useContacts } from "@/hooks/useCrm";
 
 type CrmTab = "customers" | "suppliers" | "profitability";
 
@@ -20,6 +21,13 @@ interface DashboardCRMProps {
 
 const fmtPrice = (n: number) =>
   new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", minimumFractionDigits: 0 }).format(n);
+
+// Verticals whose "customers" are leads/donors living in the `contacts` table
+// rather than in `orders`. For these, the CRM customer list must be sourced from
+// contacts - otherwise it always reads empty ("עדיין אין לקוחות") even with
+// captured leads/donations.
+const CONTACTS_VERTICALS: BusinessType[] = ["realestate", "nonprofit", "synagogue"];
+const isContactsVertical = (t?: BusinessType): boolean => !!t && CONTACTS_VERTICALS.includes(t);
 
 // Free tier: customer name + total spent. All segments/analytics are CRM+.
 function FreeCustomerView({ orders }: { orders: Order[] }) {
@@ -110,6 +118,59 @@ function FreeCustomerView({ orders }: { orders: Order[] }) {
   );
 }
 
+// Customer list for lead/donation verticals - sourced from the `contacts` table
+// (via useContacts) instead of orders. ltv_cached / txn_count come from the CRM
+// aggregation so donors/leads show their total given and count.
+function ContactsCustomerView({ businessId, kind }: { businessId?: string; kind: "lead" | "donation" }) {
+  const { data: contacts = [], isLoading } = useContacts(businessId);
+  const sorted = useMemo(
+    () => [...contacts].sort((a, b) => (b.ltv_cached ?? 0) - (a.ltv_cached ?? 0)),
+    [contacts],
+  );
+  const emptyLabel = kind === "donation"
+    ? "עדיין אין תורמים - יופיעו כאן עם התרומה הראשונה"
+    : "עדיין אין לידים - יופיעו כאן עם הפנייה הראשונה";
+  const txnLabel = kind === "donation" ? "תרומות" : "פניות";
+
+  if (isLoading) {
+    return <div className="text-center py-14 text-sm text-muted-foreground">טוען...</div>;
+  }
+  return (
+    <div className="space-y-5">
+      {sorted.length === 0 ? (
+        <div className="text-center py-14 rounded-2xl border border-dashed border-border">
+          <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p className="text-sm text-muted-foreground">{emptyLabel}</p>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-border overflow-hidden divide-y divide-border">
+          {sorted.map((c) => (
+            <div key={c.id} className="flex items-center gap-3 px-4 py-3.5 bg-card hover:bg-muted/20 transition-colors">
+              <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                {(c.name || "?").charAt(0)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{c.name || "ללא שם"}</p>
+                {(c.phone || c.email) && (
+                  <p className="text-xs text-muted-foreground truncate" dir="ltr">{c.phone || c.email}</p>
+                )}
+              </div>
+              <div className="text-left shrink-0">
+                {(c.ltv_cached ?? 0) > 0 && (
+                  <div className="text-sm font-semibold tabular-nums text-foreground">{fmtPrice(c.ltv_cached ?? 0)}</div>
+                )}
+                {c.txn_count > 0 && (
+                  <div className="text-xs text-muted-foreground mt-0.5">{c.txn_count} {txnLabel}</div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LockedTabView({ tab }: { tab: "suppliers" | "profitability" }) {
   const meta = tab === "suppliers"
     ? { title: "ניהול ספקים", desc: "עקוב אחרי עלויות, ספקים, ורווח נקי לכל מוצר", features: ["📦 ספקים ועלות רכישה", "📊 גיליון עלויות", "📈 מרג'ין לפי מוצר"] }
@@ -144,8 +205,21 @@ const TABS: { id: CrmTab; label: string; icon: typeof Users }[] = [
   { id: "profitability", label: "רווחיות", icon: TrendingUp },
 ];
 
-const DashboardCRM = ({ orders, businessId, demoMode, initialTab = "customers", hasCrmAddon = false }: DashboardCRMProps) => {
+const DashboardCRM = ({ orders, businessId, demoMode, initialTab = "customers", hasCrmAddon = false, businessType }: DashboardCRMProps) => {
   const [tab, setTab] = useState<CrmTab>(initialTab);
+
+  // Lead/donation verticals keep their people in `contacts`, not `orders`, so the
+  // customers tab must read from there. Commerce (products/services/vacation) stays
+  // orders-based as before.
+  const contactsVertical = isContactsVertical(businessType);
+  const contactKind: "lead" | "donation" = businessType === "realestate" ? "lead" : "donation";
+
+  // The customer list component for the current vertical + tier.
+  const customersView = contactsVertical
+    ? <ContactsCustomerView businessId={businessId} kind={contactKind} />
+    : hasCrmAddon
+      ? <DashboardCustomers orders={orders} businessId={businessId} demoMode={demoMode} />
+      : <FreeCustomerView orders={orders} />;
 
   return (
     <div className="space-y-4" dir="rtl">
@@ -174,13 +248,13 @@ const DashboardCRM = ({ orders, businessId, demoMode, initialTab = "customers", 
       {/* Tab content */}
       {hasCrmAddon ? (
         <>
-          {tab === "customers"     && <><DashboardCustomers orders={orders} businessId={businessId} demoMode={demoMode} /><DashboardAnalytics businessId={businessId} /></>}
+          {tab === "customers"     && <>{customersView}<DashboardAnalytics businessId={businessId} /></>}
           {tab === "suppliers"     && <DashboardSuppliers businessId={businessId} demoMode={demoMode} />}
           {tab === "profitability" && <DashboardProfitability businessId={businessId} demoMode={demoMode} />}
         </>
       ) : (
         <>
-          {tab === "customers"                                && <><FreeCustomerView orders={orders} /><DashboardAnalytics businessId={businessId} /></>}
+          {tab === "customers"                                && <>{customersView}<DashboardAnalytics businessId={businessId} /></>}
           {(tab === "suppliers" || tab === "profitability")  && <LockedTabView tab={tab} />}
         </>
       )}

@@ -12,6 +12,9 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getProvider } from "../_shared/payments/registry.ts";
 import { sendLifecycleEmail } from "../_shared/email/lifecycle.ts";
+import { sendViaResend } from "../_shared/email/resend.ts";
+import { renderEmail, h1, p, emailButton, ltr } from "../_shared/email/rtlEmail.ts";
+import { siangoSender } from "../_shared/email/platformEmails.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -131,6 +134,36 @@ Deno.serve(async (req) => {
     } catch (e) { console.warn("booking confirm email failed:", appointmentId, String(e)); }
   };
 
+  // Notify the MERCHANT of a newly-CONFIRMED appointment (best-effort, never blocks).
+  // Fires on every confirm-at-booking-time path; NOT on the deposit-PENDING path -
+  // that appointment is confirmed later by payments-callback when the deposit is paid.
+  const emailMerchantNewBooking = async () => {
+    try {
+      const { data: biz } = await admin.from("businesses")
+        .select("name, email").eq("id", businessId).maybeSingle();
+      if (!biz?.email) return;
+      const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
+      const when = new Date(startMs).toLocaleString("he-IL", {
+        dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jerusalem",
+      });
+      const html = renderEmail({
+        sender: siangoSender({ siteUrl, recipientEmail: biz.email }),
+        previewText: `תור חדש: ${service.name}`,
+        bodyHtml:
+          h1("נקבע תור חדש 📅") +
+          p(`שירות: <strong>${service.name}</strong>`) +
+          p(`לקוח: ${customer.fullName} · ${ltr(customer.phone)}`) +
+          p(`מועד: ${when}`) +
+          emailButton("צפייה ביומן", `${siteUrl}/dashboard`),
+      });
+      await sendViaResend({
+        to: biz.email,
+        subject: `תור חדש: ${service.name} - ${customer.fullName}`,
+        html, fromName: "Siango",
+      });
+    } catch (e) { console.warn("merchant booking notify failed:", appointmentId, String(e)); }
+  };
+
   // Deposit payment: reuse the store's existing order/payment machinery. We create
   // a pending deposit ORDER, link it to the appointment (order_id), and return a
   // hosted payment link from the merchant's own gateway. payments-callback marks
@@ -155,6 +188,7 @@ Deno.serve(async (req) => {
         .eq("id", appointmentId);
       console.warn(`Deposit configured but payment not set up for business ${businessId}; booking confirmed without deposit`);
       await emailBookingConfirm();
+      await emailMerchantNewBooking();
       return json({ ok: true, appointmentId, status: "confirmed", needsDeposit: false, depositAmount: 0, cancelToken });
     }
 
@@ -196,10 +230,12 @@ Deno.serve(async (req) => {
       .update({ status: "confirmed", deposit_status: "none", hold_expires_at: null })
       .eq("id", appointmentId);
     await emailBookingConfirm();
+    await emailMerchantNewBooking();
     return json({ ok: true, appointmentId, status: "confirmed", needsDeposit: false, depositAmount: 0, cancelToken });
   }
 
   await emailBookingConfirm();
+  await emailMerchantNewBooking();
   return json({
     ok: true,
     appointmentId,
