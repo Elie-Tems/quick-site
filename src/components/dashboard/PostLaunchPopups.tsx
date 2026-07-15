@@ -1,5 +1,5 @@
 // src/components/dashboard/PostLaunchPopups.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -85,9 +85,14 @@ interface PostLaunchPopupsProps {
 
 export default function PostLaunchPopups({ businessId, onNavigate, popupState, onStateChange }: PostLaunchPopupsProps) {
   const [activePopup, setActivePopup] = useState<PopupConfig | null>(null);
+  const suppressNextRef = useRef(false);
 
   useEffect(() => {
     if (!popupState) return;
+    if (suppressNextRef.current) {
+      suppressNextRef.current = false;
+      return;
+    }
     const next = POPUPS.find(
       (p) =>
         !popupState.completed.includes(p.id) &&
@@ -124,10 +129,12 @@ export default function PostLaunchPopups({ businessId, onNavigate, popupState, o
       shown: [...new Set([...popupState.shown, activePopup.id])],
       completed: [...new Set([...popupState.completed, activePopup.id])],
     };
+    const targetView = activePopup.ctaView;
+    suppressNextRef.current = true;
     setActivePopup(null);
     await updateState(next);
-    if (activePopup.ctaView) {
-      onNavigate(activePopup.ctaView);
+    if (targetView) {
+      onNavigate(targetView);
     }
   }
 
