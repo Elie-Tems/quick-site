@@ -172,7 +172,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
               <div className="text-sm text-muted-foreground">
                 <p className="text-foreground font-medium mb-1">חיבור ישיר ל-{providerName(provider)} - בקרוב</p>
                 <p>
-                  בינתיים אפשר לקבל הזמנות באתר ולגבות דרך {providerName(provider)} מול הלקוח, או לחבר עכשיו את <b>PayPlus</b> לסליקה אוטומטית באתר.
+                  בינתיים אפשר לקבל הזמנות באתר ולגבות דרך {providerName(provider)} מול הלקוח.
                   נשמח לעזור - <a href={`mailto:${SUPPORT_EMAIL}`} className="text-[#3b6d11] hover:underline">{SUPPORT_EMAIL}</a>.
                 </p>
               </div>

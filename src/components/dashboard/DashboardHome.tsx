@@ -2,7 +2,6 @@ import { Eye, ChevronLeft, AlertTriangle, ShoppingCart, TrendingUp, Package, Use
 import { Button } from "@/components/ui/button";
 import type { DashboardView } from "./DashboardNav";
 import type { BusinessType } from "@/lib/businessModules";
-import DashboardAnalytics from "./DashboardAnalytics";
 import ReferralBox from "./ReferralBox";
 import WowStrip from "./WowStrip";
 import type { PopupId, PopupState } from "./PostLaunchPopups";
@@ -182,9 +181,6 @@ const DashboardHome = ({
 
       {/* 7. ReferralBox */}
       <ReferralBox />
-
-      {/* 8. DashboardAnalytics */}
-      <DashboardAnalytics businessId={businessId} />
     </div>
   );
 };

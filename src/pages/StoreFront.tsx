@@ -865,7 +865,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     hasPayment: business.payment_enabled ?? false,
     customLabels: (b?.custom_labels as Record<string, string> | null) ?? undefined,
     // Every layout renders this right after its hero (prominent, framed, titled).
-    verticalSlot: <StorefrontVertical business={business as any} onAddToCart={handleAddToCart} />,
+    verticalSlot: <StorefrontVertical business={business as any} />,
   };
 
   // Pick layout component based on template layoutId

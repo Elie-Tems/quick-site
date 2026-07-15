@@ -28,11 +28,8 @@ const Section = ({ title, subtitle, accent, children }: { title: string; subtitl
   </section>
 );
 
-import type { Product } from "@/components/storefront/StoreProducts";
-
-const StorefrontVertical = ({ business, onAddToCart }: {
+const StorefrontVertical = ({ business }: {
   business: (BusinessLike & { id: string; primary_color?: string | null; phone?: string | null }) | null | undefined;
-  onAddToCart?: (product: Product) => void;
 }) => {
   if (!business?.id) return null;
   const modules = getEnabledModules(business);
@@ -46,7 +43,7 @@ const StorefrontVertical = ({ business, onAddToCart }: {
         </Section>
       )}
       {modules.includes("listings") && (
-        <ListingsBoard businessId={business.id} businessPhone={business.phone ?? undefined} onAddToCart={onAddToCart} />
+        <ListingsBoard businessId={business.id} businessPhone={business.phone ?? undefined} />
       )}
       {modules.includes("donations") && (
         <Section title="לתרומה" subtitle="כל תרומה עושה הבדל" accent={accent}>

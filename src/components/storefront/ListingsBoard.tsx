@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Flame, X, ArrowLeft, Loader2, BedDouble, Maximize, Building2, Phone, ShoppingCart } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MapPin, Flame, X, Loader2, BedDouble, Maximize, Building2, Phone, Send } from "lucide-react";
 import { toast } from "sonner";
-import { useListings, type Listing } from "@/hooks/useListings";
-import type { Product } from "@/components/storefront/StoreProducts";
+import { useListings, useSubmitLead, type Listing } from "@/hooks/useListings";
 
 const CATS = [
   { key: "all", label: "הכל" },
@@ -28,30 +26,76 @@ function Pill({ children }: { children: React.ReactNode }) {
   );
 }
 
-const listingToProduct = (l: Listing): Product => ({
-  id: l.id,
-  name: l.title,
-  price: l.price ?? 0,
-  imageUrl: l.media?.images?.[0],
-  description: l.description ?? undefined,
-  isHot: l.is_hot ?? false,
-});
-
-const ListingsBoard = ({ businessId, businessPhone, onAddToCart }: {
+function LeadForm({ listing, businessId, businessPhone, onClose }: {
+  listing: Listing;
   businessId: string;
   businessPhone?: string;
-  onAddToCart?: (product: Product) => void;
+  onClose: () => void;
+}) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const submitLead = useSubmitLead();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !phone.trim()) return;
+    try {
+      await submitLead.mutateAsync({
+        businessId,
+        name: name.trim(),
+        phone: phone.trim(),
+        title: listing.title,
+        value: listing.price ?? undefined,
+        details: { listingId: listing.id, city: listing.city, category: listing.category },
+      });
+      toast.success("הפרטים נשלחו - ניצור איתך קשר בקרוב!");
+      onClose();
+    } catch (err) {
+      toast.error("שליחה נכשלה - נסה שוב");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3" dir="rtl">
+      <p className="text-sm font-semibold text-foreground">השאר פרטים ונחזור אליך</p>
+      <input
+        value={name} onChange={(e) => setName(e.target.value)}
+        placeholder="שם מלא"
+        required
+        className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+      />
+      <input
+        value={phone} onChange={(e) => setPhone(e.target.value)}
+        placeholder="טלפון"
+        type="tel"
+        required
+        className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+      />
+      <button
+        type="submit"
+        disabled={submitLead.isPending || !name.trim() || !phone.trim()}
+        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+      >
+        {submitLead.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+        שלח פרטים
+      </button>
+      {businessPhone && (
+        <a href={`tel:${businessPhone}`}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-sm text-foreground hover:bg-muted transition-colors">
+          <Phone className="w-4 h-4" /> התקשר עכשיו
+        </a>
+      )}
+    </form>
+  );
+}
+
+const ListingsBoard = ({ businessId, businessPhone }: {
+  businessId: string;
+  businessPhone?: string;
 }) => {
   const [cat, setCat] = useState("all");
   const { data: listings = [], isLoading } = useListings(businessId, { category: cat });
   const [open, setOpen] = useState<Listing | null>(null);
-
-  const handleAddToCart = (l: Listing) => {
-    if (!onAddToCart) return;
-    onAddToCart(listingToProduct(l));
-    toast.success("הנכס נוסף לסל");
-    setOpen(null);
-  };
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-10">
@@ -88,52 +132,34 @@ const ListingsBoard = ({ businessId, businessPhone, onAddToCart }: {
             <motion.button key={l.id} onClick={() => setOpen(l)} className="text-right"
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
               <div className="rounded-2xl overflow-hidden border border-border bg-card group h-full hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-                {/* Photo */}
                 <div className="relative aspect-[16/11] overflow-hidden bg-muted">
                   {img
                     ? <img src={img} alt={l.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     : <div className="w-full h-full flex items-center justify-center"><Building2 className="w-12 h-12 text-muted-foreground/30" /></div>
                   }
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  {/* Hot badge */}
                   {l.is_hot && (
                     <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500 text-white text-xs font-bold shadow-lg">
                       <Flame className="w-3.5 h-3.5" /> מציאה
                     </span>
                   )}
-                  {/* Category badge */}
                   {l.category && CAT_LABELS[l.category] && (
                     <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur text-white text-xs">
                       {CAT_LABELS[l.category]}
                     </span>
                   )}
-                  {/* Price overlay */}
                   {price && (
                     <div className="absolute bottom-3 right-3 text-white font-display font-bold text-lg drop-shadow">
                       {price}
                     </div>
                   )}
                 </div>
-
-                {/* Card body */}
                 <div className="p-4">
                   <div className="font-display font-bold text-foreground mb-2 leading-snug">{l.title}</div>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
-                    {l.city && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5" /> {l.city}
-                      </span>
-                    )}
-                    {rooms != null && rooms > 0 && (
-                      <span className="flex items-center gap-1">
-                        <BedDouble className="w-3.5 h-3.5" /> {rooms}
-                      </span>
-                    )}
-                    {size != null && (
-                      <span className="flex items-center gap-1">
-                        <Maximize className="w-3.5 h-3.5" /> {size} מ״ר
-                      </span>
-                    )}
+                    {l.city && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {l.city}</span>}
+                    {rooms != null && rooms > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> {rooms}</span>}
+                    {size != null && <span className="flex items-center gap-1"><Maximize className="w-3.5 h-3.5" /> {size} מ״ר</span>}
                   </div>
                 </div>
               </div>
@@ -150,7 +176,6 @@ const ListingsBoard = ({ businessId, businessPhone, onAddToCart }: {
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setOpen(null)} />
             <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
               className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-background border border-border">
-              {/* Hero image */}
               <div className="relative h-56">
                 {open.media?.images?.[0]
                   ? <img src={open.media.images[0]} alt="" className="w-full h-full object-cover" />
@@ -163,8 +188,7 @@ const ListingsBoard = ({ businessId, businessPhone, onAddToCart }: {
                 </button>
               </div>
 
-              <div className="p-5">
-                {/* Title + price */}
+              <div className="p-5" dir="rtl">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
                     <h2 className="text-2xl font-display font-bold text-foreground">{open.title}</h2>
@@ -179,17 +203,10 @@ const ListingsBoard = ({ businessId, businessPhone, onAddToCart }: {
                   )}
                 </div>
 
-                {/* Attribute pills */}
                 <div className="flex gap-2 mb-4 flex-wrap">
-                  {(open.attrs as any)?.rooms > 0 && (
-                    <Pill><BedDouble className="w-3.5 h-3.5" /> {(open.attrs as any).rooms} חד'</Pill>
-                  )}
-                  {(open.attrs as any)?.size && (
-                    <Pill><Maximize className="w-3.5 h-3.5" /> {(open.attrs as any).size} מ״ר</Pill>
-                  )}
-                  {open.category && CAT_LABELS[open.category] && (
-                    <Pill><Building2 className="w-3.5 h-3.5" /> {CAT_LABELS[open.category]}</Pill>
-                  )}
+                  {(open.attrs as any)?.rooms > 0 && <Pill><BedDouble className="w-3.5 h-3.5" /> {(open.attrs as any).rooms} חד'</Pill>}
+                  {(open.attrs as any)?.size && <Pill><Maximize className="w-3.5 h-3.5" /> {(open.attrs as any).size} מ״ר</Pill>}
+                  {open.category && CAT_LABELS[open.category] && <Pill><Building2 className="w-3.5 h-3.5" /> {CAT_LABELS[open.category]}</Pill>}
                   {open.is_hot && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs">
                       <Flame className="w-3.5 h-3.5" /> מציאה
@@ -201,20 +218,7 @@ const ListingsBoard = ({ businessId, businessPhone, onAddToCart }: {
                   <p className="text-sm text-foreground/80 leading-relaxed mb-5">{open.description}</p>
                 )}
 
-                {/* CTA */}
-                <div className="flex flex-col gap-2">
-                  {onAddToCart && (
-                    <Button className="w-full" onClick={() => handleAddToCart(open)}>
-                      <ShoppingCart className="w-4 h-4 ml-2" /> הוסף לסל
-                    </Button>
-                  )}
-                  {businessPhone && (
-                    <a href={`tel:${businessPhone}`}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-sm text-foreground hover:bg-muted transition-colors">
-                      <Phone className="w-4 h-4" /> התקשר עכשיו
-                    </a>
-                  )}
-                </div>
+                <LeadForm listing={open} businessId={businessId} businessPhone={businessPhone} onClose={() => setOpen(null)} />
               </div>
             </motion.div>
           </motion.div>
