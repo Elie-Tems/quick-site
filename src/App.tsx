@@ -78,6 +78,7 @@ const RedesignEmails = lazy(() => import("./pages/preview-redesign/EmailsVertica
 const RedesignTemplates = lazy(() => import("./pages/preview-redesign/TemplateShowcase"));
 const RedesignBoutique = lazy(() => import("./pages/preview-redesign/BoutiqueSite"));
 const RedesignFitness = lazy(() => import("./pages/preview-redesign/FitnessSite"));
+const RedesignFitnessDash = lazy(() => import("./pages/preview-redesign/FitnessDashboard"));
 const PreviewWhatsApp = lazy(() => import("./pages/PreviewWhatsApp"));
 const PreviewEmail = lazy(() => import("./pages/PreviewEmail"));
 const OnboardingCompleteGate = lazy(() => import("./pages/OnboardingCompleteGate"));
@@ -223,6 +224,7 @@ const App = () => {
                   <Route path="/preview/redesign/nonprofit-dashboard" element={<AdminOnlyRoute><RedesignNonprofitDash /></AdminOnlyRoute>} />
                   <Route path="/preview/redesign/campaign-dashboard" element={<AdminOnlyRoute><RedesignCampaignDash /></AdminOnlyRoute>} />
                   <Route path="/preview/redesign/vacation-dashboard" element={<AdminOnlyRoute><RedesignVacationDash /></AdminOnlyRoute>} />
+                  <Route path="/preview/redesign/fitness-dashboard" element={<AdminOnlyRoute><RedesignFitnessDash /></AdminOnlyRoute>} />
                   <Route path="/preview/redesign/emails" element={<AdminOnlyRoute><RedesignEmails /></AdminOnlyRoute>} />
                   <Route path="/preview/redesign/templates" element={<AdminOnlyRoute><RedesignTemplates /></AdminOnlyRoute>} />
                   <Route path="/preview/whatsapp" element={<AdminOnlyRoute><PreviewWhatsApp /></AdminOnlyRoute>} />

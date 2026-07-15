@@ -5,7 +5,7 @@ import {
   Home, LayoutDashboard, Rocket, LogIn, Shield, ArrowLeft, Sparkles,
   Layers, CalendarClock, CalendarCheck, Building2, Inbox, Compass, ClipboardList,
   Heart, HandHeart, Camera, Wrench, Car, Tent, CalendarDays, Palette, Mail,
-  ShoppingBag, CreditCard, FileText, HandCoins, MailCheck, FileCheck2,
+  ShoppingBag, CreditCard, FileText, HandCoins, MailCheck, FileCheck2, Dumbbell, UserCheck,
 } from "lucide-react";
 import { AuroraBg, Card, PreviewThemeRoot, ThemeToggle } from "@/components/preview-redesign/kit";
 
@@ -60,6 +60,13 @@ const GROUPS: { title: string; note?: string; items: Item[] }[] = [
     items: [
       { to: "/preview/redesign/vacation", icon: Tent, title: "צימר / דירת נופש - אתר", desc: "גלריה, יחידות, מתקנים, ובחירת תאריכים עם מחיר ללילה", tag: "צד לקוח", tone: "primary" },
       { to: "/preview/redesign/vacation-dashboard", icon: CalendarDays, title: "צימר / דירת נופש - ניהול", desc: "תפוסה, הזמנות, יומן זמינות וסנכרון Booking/Airbnb", tag: "צד מארח", tone: "primary" },
+    ],
+  },
+  {
+    title: "כושר וספורט",
+    items: [
+      { to: "/preview/redesign/fitness", icon: Dumbbell, title: "סטודיו כושר - אתר", desc: "צד לקוח: hero, מנויים, לוח שיעורים, הזמנת מאמן וטופס הצטרפות", tag: "צד לקוח", tone: "primary" },
+      { to: "/preview/redesign/fitness-dashboard", icon: UserCheck, title: "סטודיו כושר - ניהול", desc: "צד סוחר: ניהול מנויים, לוח שיעורים עם תפוסה ונוכחות שבועית", tag: "צד סוחר", tone: "primary" },
     ],
   },
   {
