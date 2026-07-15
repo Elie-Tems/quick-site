@@ -812,7 +812,14 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     logoUrl: business.logo_url || undefined,
     phone: business.phone || undefined,
     tagline: business.tagline as string | null | undefined,
-    ctaText: business.cta_text as string | null | undefined,
+    ctaText: (() => {
+      const raw = business.cta_text as string | null | undefined;
+      const layoutId = template?.layoutId;
+      // Type-aware defaults — AI-generated CTAs are often wrong for non-commerce layouts
+      if (layoutId === 'property') return raw && !/(קולקציה|מוצר|חנות)/i.test(raw) ? raw : 'לנכסים שלנו';
+      if (layoutId === 'charity')  return raw && !/(קולקציה|נכס)/i.test(raw)  ? raw : 'לתרומה';
+      return raw;
+    })(),
     heroTitle: business.hero_title as string | null | undefined,
     heroBadge: b?.hero_badge || undefined,
     heroImageUrl: b?.hero_image_url || undefined,
