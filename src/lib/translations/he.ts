@@ -287,7 +287,7 @@ const he: Record<string, string> = {
   'engine.commerce.label': 'חנויות אונליין',
   'engine.commerce.type': 'אתר מכירות',
   'engine.commerce.subtitle1': 'תמיד רציתם אתר מכירות, אבל העלויות, הדומיינים והבלגן עצרו אתכם.',
-  'engine.commerce.subtitle2': 'עם סיאנגו זה אפשרי במהירות ובקלות: חנות מקצועית תוך כמה דקות.',
+  'engine.commerce.subtitle2': 'עם סיאנגו תקימו חנות מקצועית תוך כמה דקות.',
   'engine.commerce.step1.title': 'בוחרים סוג חנות',
   'engine.commerce.step1.desc': 'חנות מוצרים, בוטיק, מאפייה — בוחרים ואנחנו מתאימים את הכלים',
   'engine.commerce.step2.title': 'מגדירים שם, לוגו ופרטים',
