@@ -1,4 +1,4 @@
-import { Eye, ChevronLeft, AlertTriangle, ShoppingCart, TrendingUp, Package, Users, CreditCard, FileText, ArrowLeft, Palette, PenLine } from "lucide-react";
+import { Eye, ChevronLeft, AlertTriangle, ShoppingCart, TrendingUp, Package, Users, CreditCard, FileText, ArrowLeft, Palette, PenLine, Link2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DashboardView } from "./DashboardNav";
 import type { BusinessType } from "@/lib/businessModules";
@@ -16,6 +16,7 @@ interface DashboardHomeProps {
     totalCustomers: number;
   };
   businessId?: string;
+  storeSlug?: string;
   isPublished?: boolean;
   isSubscribed?: boolean;
   /** Set when the subscription was CANCELLED but the site is still live until this date (grace period). */
@@ -32,6 +33,7 @@ interface DashboardHomeProps {
 const DashboardHome = ({
   stats,
   businessId,
+  storeSlug,
   isSubscribed,
   cancelledUntil,
   hasPaymentFailure,
@@ -42,6 +44,7 @@ const DashboardHome = ({
   popupState,
   onReopenPopup,
 }: DashboardHomeProps) => {
+  const slugHasHebrew = storeSlug ? /[֐-׿]/.test(storeSlug) : false;
   // Per-business-type label mapping
   const typeLabels: Record<string, { orders: string; sales: string; products: string; customers: string; addProducts: string }> = {
     nonprofit:  { orders: 'תרומות',       sales: 'סה"כ תרומות', products: 'מיזמים',  customers: 'תורמים',  addProducts: 'הוסף פרויקטים ומיזמים' },
@@ -162,6 +165,26 @@ const DashboardHome = ({
         </span>
         <ChevronLeft className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
       </button>
+
+      {/* Slug warning - shown only when store URL contains Hebrew chars (gets long when shared) */}
+      {slugHasHebrew && (
+        <div className="rounded-2xl border border-amber-400/30 bg-amber-50 dark:bg-amber-950/20 p-4 flex items-start gap-3">
+          <Link2 className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">הקישור לחנות שלך ארוך מדי</p>
+            <p className="text-xs text-amber-700/80 dark:text-amber-300/70 mt-0.5 truncate" dir="ltr">
+              siango.app/store/{storeSlug}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate("settings")}
+            className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 hover:bg-amber-200 dark:hover:bg-amber-800/50 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <Pencil className="h-3 w-3" /> תקן
+          </button>
+        </div>
+      )}
 
       {/* 6. Subscription upsell - free tier, shown at bottom */}
       {!isSubscribed && !cancelledUntil && (
