@@ -109,10 +109,14 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   const businessCategory = (business as any)?.business_category as BusinessCategory | undefined;
   const needsAgeVerification = businessCategory === "wine_alcohol";
 
-  // Load template based on business template_id
+  // previewTemplateId is set via postMessage from the dashboard live editor.
+  // It overrides the saved template_id so changes are visible instantly without saving.
+  const [previewTemplateId, setPreviewTemplateId] = useState<StoreTemplateId | null>(null);
+
+  // Load template based on business template_id (or live-preview override)
   const template = useMemo(() => {
-    return getTemplate(business?.template_id as StoreTemplateId);
-  }, [business?.template_id]);
+    return getTemplate((previewTemplateId ?? business?.template_id) as StoreTemplateId);
+  }, [business?.template_id, previewTemplateId]);
 
   // Apply dynamic theme colors from template
   useEffect(() => {
@@ -219,14 +223,16 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   useEffect(() => {
     function handleDesignPreview(event: MessageEvent) {
       if (!event.data || event.data.type !== "DESIGN_PREVIEW") return;
-      const { primaryColor, headingFont, bodyFont, theme } = event.data as {
+      const { primaryColor, headingFont, bodyFont, theme, templateId } = event.data as {
         type: string;
         primaryColor?: string;
         headingFont?: string;
         bodyFont?: string;
         theme?: "light" | "dark";
+        templateId?: string;
       };
 
+      if (templateId) setPreviewTemplateId(templateId as StoreTemplateId);
       if (primaryColor) {
         document.documentElement.style.setProperty("--primary-color", primaryColor);
         document.documentElement.style.setProperty("--color-primary", primaryColor);

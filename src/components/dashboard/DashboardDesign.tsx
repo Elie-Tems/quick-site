@@ -160,7 +160,8 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
     if ((biz as any)?.hero_image_url) setHeroImageUrl((biz as any).hero_image_url);
   }, [(biz as any)?.hero_image_url]);
 
-  // Send postMessage to iframe preview whenever relevant state changes
+  // Send postMessage to iframe preview whenever relevant state changes.
+  // Includes templateId so the storefront can switch layout without saving.
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
@@ -169,6 +170,7 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
     iframe.contentWindow?.postMessage(
       {
         type: "DESIGN_PREVIEW",
+        templateId: selectedTemplate,
         primaryColor,
         theme: previewTheme,
         headingFont: headingFont || undefined,
@@ -176,7 +178,7 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
       },
       "*"
     );
-  }, [primaryColor, previewTheme, fontHeading, fontBody]);
+  }, [selectedTemplate, primaryColor, previewTheme, fontHeading, fontBody]);
 
   const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -324,20 +326,52 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
             </div>
           </div>
 
-          {/* ── Palette presets ── */}
+          {/* ── Palette presets + custom color picker ── */}
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">צבע ראשי</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-3">
               {PALETTE_PRESETS.map((p) => (
                 <button
                   key={p.name}
                   type="button"
                   title={p.name}
                   onClick={() => { setPrimaryColor(p.primary); setHasUnsavedChanges(true); }}
-                  className={`w-7 h-7 rounded-full border-2 transition-all ${primaryColor === p.primary ? "border-foreground scale-110" : "border-transparent"}`}
+                  className={`w-7 h-7 rounded-full border-2 transition-all ${primaryColor === p.primary ? "border-foreground scale-110" : "border-transparent hover:scale-105"}`}
                   style={{ backgroundColor: p.primary }}
                 />
               ))}
+            </div>
+            {/* Color wheel + hex input */}
+            <div className="flex items-center gap-2">
+              <label className="relative cursor-pointer" title="בחרו צבע מותאם אישית">
+                <input
+                  type="color"
+                  value={primaryColor || "#16a34a"}
+                  onChange={e => { setPrimaryColor(e.target.value); setHasUnsavedChanges(true); }}
+                  className="sr-only"
+                />
+                <div
+                  className="w-8 h-8 rounded-full border-2 border-border flex items-center justify-center text-[10px] font-bold text-white shadow-sm hover:scale-105 transition-transform"
+                  style={{ background: `conic-gradient(red, yellow, lime, cyan, blue, magenta, red)` }}
+                  title="בחרו צבע"
+                />
+              </label>
+              <input
+                type="text"
+                value={primaryColor}
+                onChange={e => {
+                  const v = e.target.value.trim();
+                  setPrimaryColor(v);
+                  if (/^#[0-9a-fA-F]{6}$/.test(v)) setHasUnsavedChanges(true);
+                }}
+                placeholder="#16a34a"
+                maxLength={7}
+                dir="ltr"
+                className="flex-1 h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+              />
+              {primaryColor && /^#[0-9a-fA-F]{6}$/.test(primaryColor) && (
+                <div className="w-8 h-8 rounded-lg border border-border shrink-0" style={{ backgroundColor: primaryColor }} />
+              )}
             </div>
           </div>
 
