@@ -42,17 +42,28 @@ const DashboardHome = ({
   popupState,
   onReopenPopup,
 }: DashboardHomeProps) => {
+  // Per-business-type label mapping
+  const typeLabels: Record<string, { orders: string; sales: string; products: string; customers: string; addProducts: string }> = {
+    nonprofit:  { orders: 'תרומות',       sales: 'סה"כ תרומות', products: 'מיזמים',  customers: 'תורמים',  addProducts: 'הוסף פרויקטים ומיזמים' },
+    synagogue:  { orders: 'תרומות ועליות', sales: 'סה"כ תרומות', products: 'מיזמים',  customers: 'תורמים',  addProducts: 'הוסף פרויקטים ומיזמים' },
+    vacation:   { orders: 'הזמנות לינה',  sales: 'הכנסות',       products: 'חדרים',   customers: 'אורחים',  addProducts: 'הוסף חדרים ויחידות' },
+    realestate: { orders: 'לידים',        sales: 'ערך עסקאות',    products: 'נכסים',   customers: 'לקוחות',  addProducts: 'הוסף נכסים' },
+    services:   { orders: 'הזמנות',       sales: 'מכירות',       products: 'שירותים', customers: 'לקוחות',  addProducts: 'הוסף שירותים' },
+    products:   { orders: 'הזמנות',       sales: 'מכירות',       products: 'מוצרים',  customers: 'לקוחות',  addProducts: 'הוסף את המוצרים שלך' },
+  };
+  const lbl = typeLabels[businessType] ?? typeLabels.products;
+
   const todos: { key: string; icon: typeof CreditCard; label: string; view: DashboardView; highlight: boolean }[] = [
     ...(!stats.paymentEnabled ? [{ key: 'payments', icon: CreditCard, label: 'חבר סליקה לקבלת תשלומים', view: 'payments' as DashboardView, highlight: true }] : []),
     ...(!hasAbout ? [{ key: 'about', icon: FileText, label: 'כתוב "אודות" בחנות', view: 'about' as DashboardView, highlight: false }] : []),
-    ...(stats.totalProducts === 0 ? [{ key: 'products', icon: Package, label: 'הוסף את המוצרים שלך', view: 'products' as DashboardView, highlight: false }] : []),
+    ...(stats.totalProducts === 0 ? [{ key: 'products', icon: Package, label: lbl.addProducts, view: 'products' as DashboardView, highlight: false }] : []),
   ];
 
   const statCards = [
-    { value: String(stats.totalOrders), label: 'הזמנות', icon: ShoppingCart, view: 'orders' as DashboardView },
-    { value: `₪${stats.totalSales?.toLocaleString('he-IL') ?? 0}`, label: 'מכירות', icon: TrendingUp, view: 'orders' as DashboardView },
-    { value: String(stats.totalProducts), label: 'מוצרים', icon: Package, view: 'products' as DashboardView },
-    { value: String(stats.totalCustomers ?? 0), label: 'לקוחות', icon: Users, view: 'customers' as DashboardView },
+    { value: String(stats.totalOrders), label: lbl.orders, icon: ShoppingCart, view: 'orders' as DashboardView },
+    { value: `₪${stats.totalSales?.toLocaleString('he-IL') ?? 0}`, label: lbl.sales, icon: TrendingUp, view: 'orders' as DashboardView },
+    { value: String(stats.totalProducts), label: lbl.products, icon: Package, view: 'products' as DashboardView },
+    { value: String(stats.totalCustomers ?? 0), label: lbl.customers, icon: Users, view: 'customers' as DashboardView },
   ];
 
   return (
