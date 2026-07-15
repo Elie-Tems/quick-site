@@ -89,7 +89,8 @@ const PropertyLayout = ({
 
         {/* Featured + side grid */}
         {verticalSlot}
-        <section id="products" className="py-12 px-4">
+        {/* Products section — hidden for real-estate businesses that use verticalSlot (listings board) instead */}
+        {products.length > 0 && <section id="products" className="py-12 px-4">
           <div className="max-w-6xl mx-auto">
             {products.length === 0 && (
               <p className="text-center text-muted-foreground py-16">אין פריטים להצגה כרגע</p>
@@ -213,7 +214,7 @@ const PropertyLayout = ({
               </div>
             )}
           </div>
-        </section>
+        </section>}
 
         {phone && (
           <section className="py-10 px-4 text-center border-t border-border">
