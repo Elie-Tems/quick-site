@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { gtm } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ExternalLink, Loader2, Check, X, HelpCircle, ShieldCheck, Shield, Zap, Lock, Eye, EyeOff, ChevronDown } from "lucide-react";
+import { ExternalLink, Loader2, Check, X, ShieldCheck, Zap, Lock, Eye, EyeOff, ImageIcon } from "lucide-react";
 import {
   PAYPLUS_SIGNUP_URL,
   usePaymentCredentials,
@@ -14,38 +14,80 @@ interface Props {
   businessId: string;
 }
 
-// One field's config + the plain-language "where do I find this in PayPlus?"
-// explainer that its (now clickable) help toggle reveals.
-const FIELDS = [
+// Each step = one copy-paste from PayPlus. No technical jargon in labels.
+// screenshot: path under /public/payplus-guide/ — swap in real images when ready.
+const STEPS = [
   {
     id: "api",
-    label: "API Key",
-    type: "text",
+    step: 1,
+    title: "הקוד הראשי",
+    where: "PayPlus ← הגדרות ← מפתחות",
+    instruction: 'בלוח PayPlus, לחצו על "הגדרות" בתפריט הצדדי, בחרו "מפתחות". ליד השורה הראשונה יש כפתור העתקה — לחצו עליו.',
+    screenshot: "/payplus-guide/step1-api-key.png",
     ph: "1a87cde2-...",
-    help: "בלוח PayPlus ← הגדרות ← מפתחות API. השורה הראשונה, ליד \"API Key\", עם כפתור העתקה.",
+    secret: false,
   },
   {
     id: "secret",
-    label: "Secret Key",
-    type: "password",
+    step: 2,
+    title: "קוד האימות",
+    where: "PayPlus ← הגדרות ← מפתחות",
+    instruction: 'באותו מסך בדיוק, ליד השורה השנייה — לחצו העתקה שוב.',
+    screenshot: "/payplus-guide/step2-secret-key.png",
     ph: "••••••••",
-    help: "באותו מסך (הגדרות ← מפתחות API), השורה \"Secret Key\". שמרו עליו - הוא כמו סיסמה.",
+    secret: true,
   },
   {
     id: "page",
-    label: "Payment Page UID",
-    type: "text",
+    step: 3,
+    title: "קוד דף התשלום",
+    where: "PayPlus ← הגדרות ← דפי תשלום",
+    instruction: 'בתפריט לחצו "הגדרות" ← "דפי תשלום". פתחו את דף התשלום שלכם — הקוד מופיע למעלה עם כפתור העתקה.',
+    screenshot: "/payplus-guide/step3-page-uid.png",
     ph: "5b616e7e-...",
-    help: "בלוח PayPlus ← הגדרות ← דפי תשלום. פתחו את דף התשלום שלכם - ה-UID מופיע למעלה ליד השם, עם כפתור העתקה.",
+    secret: false,
   },
 ] as const;
+
+// Placeholder shown when screenshot hasn't been dropped in yet.
+const ScreenshotPlaceholder = ({ src, alt }: { src: string; alt: string }) => {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+
+  if (!error && !loaded) {
+    return (
+      <>
+        <img
+          src={src}
+          alt={alt}
+          className="hidden"
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+        />
+        <div className="w-full rounded-xl border-2 border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
+          <ImageIcon className="w-7 h-7 opacity-40" />
+          <p className="text-xs">תמונת הדרכה — בקרוב</p>
+        </div>
+      </>
+    );
+  }
+
+  if (error) return null;
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="w-full rounded-xl border border-border shadow-sm"
+    />
+  );
+};
 
 const PayplusConnectForm = ({ businessId }: Props) => {
   const { data: saved } = usePaymentCredentials(businessId);
   const save = useSavePayplusCredentials();
 
   const [values, setValues] = useState<Record<string, string>>({ api: "", secret: "", page: "" });
-  const [openHelp, setOpenHelp] = useState<string | null>(null);
   const [showSecret, setShowSecret] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [verifyState, setVerifyState] = useState<"idle" | "ok" | "fail">("idle");
@@ -74,7 +116,7 @@ const PayplusConnectForm = ({ businessId }: Props) => {
     setVerifyMsg("");
     const res = await verifyPayplusCredentials(creds());
     setVerifyState(res.ok ? "ok" : "fail");
-    if (!res.ok) setVerifyMsg(res.error || "המפתחות לא תקינים");
+    if (!res.ok) setVerifyMsg(res.error || "הקודים לא תקינים — בדקו שהעתקתם נכון");
     setVerifying(false);
   };
 
@@ -85,100 +127,94 @@ const PayplusConnectForm = ({ businessId }: Props) => {
   };
 
   return (
-    <div dir="rtl" className="rounded-2xl border border-border overflow-hidden">
-      {/* Trust header band - a money screen should feel secure first. */}
-      <div className="bg-[#0f6e56] px-6 py-5 flex items-center gap-3.5">
-        <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-          <Shield className="w-6 h-6 text-white" />
+    <div dir="rtl" className="space-y-4">
+
+      {/* Header */}
+      <div className="rounded-2xl bg-[#0f6e56] px-5 py-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+          <ShieldCheck className="w-5 h-5 text-white" />
         </div>
         <div>
-          <div className="text-white font-semibold text-lg leading-tight">סליקה מאובטחת</div>
-          <div className="text-[#9fe1cb] text-xs mt-0.5">PayPlus · הכסף נכנס ישר לחשבון הבנק שלך</div>
+          <p className="text-white font-semibold">3 העתק-הדבק — וזהו</p>
+          <p className="text-[#9fe1cb] text-xs mt-0.5">פותחים PayPlus בטאב נוסף, מעתיקים 3 קודים, חוזרים לכאן</p>
         </div>
+        <a
+          href={PAYPLUS_SIGNUP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mr-auto shrink-0 inline-flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white text-xs font-medium rounded-lg px-3 py-1.5 transition-colors"
+        >
+          פתח PayPlus <ExternalLink className="w-3 h-3" />
+        </a>
       </div>
 
-      <div className="bg-card px-6 py-5 space-y-4">
-        {/* 3-step guide strip */}
-        <div className="flex items-center gap-1.5">
-          <a href={PAYPLUS_SIGNUP_URL} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#0f6e56] bg-[#e1f5ee] rounded-full px-3 py-1.5 hover:bg-[#d0efe4] transition-colors">
-            <ExternalLink className="w-3 h-3" /> פתחו חשבון
-          </a>
-          <div className="flex-1 h-0.5 rounded bg-[#9fe1cb]" />
-          <span className="text-xs font-medium text-[#0f6e56] bg-[#e1f5ee] rounded-full px-3 py-1.5">העתיקו מפתחות</span>
-          <div className="flex-1 h-0.5 rounded bg-border" />
-          <span className="text-xs font-medium text-white bg-[#639922] rounded-full px-3 py-1.5">הדביקו</span>
+      {/* Steps */}
+      {STEPS.map((s) => (
+        <div key={s.id} className="rounded-2xl border border-border bg-card overflow-hidden">
+          {/* Step header */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-muted/30">
+            <div className="w-6 h-6 rounded-full bg-[#0f6e56] flex items-center justify-center shrink-0">
+              <span className="text-white text-xs font-bold">{s.step}</span>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">{s.title}</p>
+              <p className="text-[11px] text-muted-foreground font-mono">{s.where}</p>
+            </div>
+          </div>
+
+          <div className="px-4 py-3 space-y-3">
+            {/* Instruction */}
+            <p className="text-sm text-muted-foreground leading-relaxed">{s.instruction}</p>
+
+            {/* Screenshot with arrow */}
+            <ScreenshotPlaceholder src={s.screenshot} alt={`הדרכה שלב ${s.step}`} />
+
+            {/* Input */}
+            <div className="relative">
+              <Input
+                id={s.id}
+                type={s.secret && !showSecret ? "password" : "text"}
+                dir="ltr"
+                className="font-mono text-[13px] bg-background"
+                value={values[s.id]}
+                placeholder={s.ph}
+                onChange={(e) => {
+                  setValues((v) => ({ ...v, [s.id]: e.target.value }));
+                  setVerifyState("idle");
+                }}
+              />
+              {s.secret && (
+                <button
+                  type="button"
+                  onClick={() => setShowSecret((x) => !x)}
+                  aria-label={showSecret ? "הסתר" : "הצג"}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
+      ))}
 
-        <div>
-          <p className="text-[15px] font-medium text-foreground">הדביקו את 3 המפתחות</p>
-          <p className="text-xs text-muted-foreground mt-0.5">מלוח PayPlus ← הגדרות ← מפתחות API. ליד כל ערך יש כפתור העתקה.</p>
-        </div>
-
-        {/* Fields */}
-        <div className="space-y-3">
-          {FIELDS.map((f) => {
-            const isSecret = f.id === "secret";
-            const helpOpen = openHelp === f.id;
-            return (
-              <div key={f.id}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label htmlFor={f.id} className="text-xs text-muted-foreground">{f.label}</label>
-                  <button
-                    type="button"
-                    onClick={() => setOpenHelp(helpOpen ? null : f.id)}
-                    aria-expanded={helpOpen}
-                    className="inline-flex items-center gap-1 text-[11px] text-[#3b6d11] hover:text-[#27500a] transition-colors"
-                  >
-                    {helpOpen ? <ChevronDown className="w-3 h-3" /> : <HelpCircle className="w-3 h-3" />}
-                    איפה מוצאים?
-                  </button>
-                </div>
-
-                {helpOpen && (
-                  <div className="mb-2 rounded-lg bg-[#eaf3de] px-3 py-2 text-[12px] leading-relaxed text-[#27500a]">
-                    {f.help}
-                  </div>
-                )}
-
-                <div className="relative">
-                  <Input
-                    id={f.id}
-                    type={isSecret && !showSecret ? "password" : "text"}
-                    dir="ltr"
-                    className="font-mono text-[13px] pl-9"
-                    value={values[f.id]}
-                    placeholder={f.ph}
-                    onChange={(e) => {
-                      setValues((v) => ({ ...v, [f.id]: e.target.value }));
-                      setVerifyState("idle");
-                    }}
-                  />
-                  {isSecret && (
-                    <button
-                      type="button"
-                      onClick={() => setShowSecret((s) => !s)}
-                      aria-label={showSecret ? "הסתר" : "הצג"}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Verify */}
+      {/* Verify + Save */}
+      <div className="space-y-3">
         <div className="flex items-center gap-3 flex-wrap">
-          <Button type="button" variant="outline" size="sm" onClick={handleVerify} disabled={!filled || verifying} className="gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleVerify}
+            disabled={!filled || verifying}
+            className="gap-2"
+          >
             {verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-            בדוק חיבור
+            בדוק שהכל תקין
           </Button>
           {verifyState === "ok" && (
             <span className="flex items-center gap-1.5 text-[#0f6e56] text-sm font-medium">
-              <Check className="w-4 h-4" /> החיבור תקין
+              <Check className="w-4 h-4" /> הכל תקין, מוכנים להפעיל
             </span>
           )}
           {verifyState === "fail" && (
@@ -188,7 +224,6 @@ const PayplusConnectForm = ({ businessId }: Props) => {
           )}
         </div>
 
-        {/* Activate */}
         <Button
           onClick={handleSave}
           size="lg"
@@ -196,11 +231,11 @@ const PayplusConnectForm = ({ businessId }: Props) => {
           disabled={!filled || save.isPending}
         >
           {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-          הפעל סליקה ושמור
+          הפעל סליקה
         </Button>
 
         <p className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
-          <Lock className="w-3 h-3" /> המפתחות נשמרים מוצפנים בצד השרת בלבד ולעולם לא נחשפים באתר
+          <Lock className="w-3 h-3" /> הקודים נשמרים מוצפנים ולעולם לא נחשפים באתר
         </p>
       </div>
     </div>
