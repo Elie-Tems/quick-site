@@ -468,7 +468,7 @@ const Index = () => {
         </section>
 
         {/* PER-TAB SUBTITLE SECTION — a.img as background */}
-        <section className="relative overflow-hidden">
+        <section className="relative overflow-hidden mt-8">
           <AnimatePresence mode="wait">
             <motion.img key={a.key}
               src={a.img}
