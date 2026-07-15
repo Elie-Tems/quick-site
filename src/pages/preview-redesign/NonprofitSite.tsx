@@ -15,17 +15,17 @@ import { AuroraBg, Card, Pill, PreviewBanner, PreviewThemeRoot, StoreTopBar } fr
 const AMOUNTS = [50, 100, 250, 500];
 
 const PROJECTS = [
-  { title: "ארוחות חמות לנזקקים", raised: 68000, goal: 100000, img: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&q=80" },
-  { title: "מלגות לסטודנטים", raised: 42000, goal: 80000, img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&q=80" },
-  { title: "פעילות לילדים בסיכון", raised: 91000, goal: 120000, img: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80" },
+  { title: "ארוחות חמות לנזקקים", raised: 68000, goal: 100000, img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80" },
+  { title: "סיוע לקשישים בודדים", raised: 42000, goal: 80000, img: "https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=600&q=80" },
+  { title: "ליווי חולים ומשפחות", raised: 91000, goal: 120000, img: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&q=80" },
 ];
 
 const ALBUM = [
-  "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=500&q=80",
-  "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=500&q=80",
-  "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=500&q=80",
+  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&q=80",
+  "https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=500&q=80",
+  "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=500&q=80",
   "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=500&q=80",
-  "https://images.unsplash.com/photo-1541535650810-10d26f5c2ab3?w=500&q=80",
+  "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&q=80",
 ];
 
 const Progress = ({ raised, goal }: { raised: number; goal: number }) => {
@@ -66,7 +66,7 @@ const NonprofitSite = () => {
 
       {/* HERO / תדמית */}
       <section className="relative h-[68vh] min-h-[420px] overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1593113630400-ea4288922497?w=1600&q=80" alt="" className="w-full h-full object-cover" />
+        <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80" alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/40" />
         <div className="absolute inset-0 flex items-center">
           <div className="max-w-6xl mx-auto px-4 md:px-6 w-full">

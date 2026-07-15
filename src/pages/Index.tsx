@@ -66,7 +66,7 @@ const EXAMPLES_CONFIG = [
   { key: "fitness", img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80", to: "/preview/redesign/fitness" },
   { key: "nonprofit", img: "https://images.unsplash.com/photo-1593113616828-6f22bca04804?w=600&q=80", to: "/preview/redesign/nonprofit" },
   { key: "crowdfunding", img: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=600&q=80", to: "/preview/redesign/crowdfunding" },
-  { key: "restaurant", img: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80", to: "/preview/redesign/boutique" },
+  { key: "restaurant", img: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80", to: "/preview/redesign/restaurant" },
 ];
 
 const HOW_STEP_META = [
