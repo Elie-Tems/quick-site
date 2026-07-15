@@ -88,7 +88,7 @@ const PROCESS_IMGS: Record<string, Array<{ src: string; pos: string }>> = {
   booking: [
     { src: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=900&q=80", pos: "center center" },
     { src: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=900&q=80", pos: "center top" },
-    { src: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&q=80", pos: "center top" },
+    { src: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=900&q=80", pos: "center top" },
     { src: "", pos: "" },
   ],
 };
@@ -468,7 +468,7 @@ const Index = () => {
         </section>
 
         {/* PER-TAB SUBTITLE SECTION — a.img as background */}
-        <section className="relative overflow-hidden">
+        <section className="relative overflow-hidden mt-8">
           <AnimatePresence mode="wait">
             <motion.img key={a.key}
               src={a.img}

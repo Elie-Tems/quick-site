@@ -331,7 +331,7 @@ const he: Record<string, string> = {
   'howItWorks.img.b': 'B — מוסיפים פרטי יצירת קשר',
   'howItWorks.img.c': 'C — מוסיפים מוצרים ושירותים',
   // CORE tools
-  'core.sectionTitle': 'כלים מותאמים לכל תחום',
+  'core.sectionTitle': 'אתרים מדהימים לכל תחום',
   'core.stats.label': 'סטטיסטיקות',
   'core.stats.desc': 'מכירות, הזמנות ולקוחות — הכל בזמן אמת',
   'core.products.label': 'ניהול מוצרים',
