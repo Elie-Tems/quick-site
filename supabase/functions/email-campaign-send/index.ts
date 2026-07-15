@@ -58,6 +58,22 @@ function complianceFooter(fromName: string, address: string, unsubUrl: string): 
   </td></tr>`;
 }
 
+// Resolve the campaign owner's store (id + slug) so the unsubscribe link is
+// store-scoped (StoreUnsubscribe) and suppression stays store-scoped, instead of
+// hitting the platform-wide page/list. Prefers the campaign's explicit
+// business_id; else auth-user -> profile -> business (businesses.owner_id is a
+// profiles.id, not an auth uid). Returns null for a standalone ESP owner.
+async function resolveOwnerBusiness(admin: any, ownerAuthId: string, campaignBusinessId?: string | null): Promise<{ id: string; slug: string } | null> {
+  if (campaignBusinessId) {
+    const { data } = await admin.from("businesses").select("id, slug").eq("id", campaignBusinessId).maybeSingle();
+    if (data?.slug) return data as { id: string; slug: string };
+  }
+  const { data: prof } = await admin.from("profiles").select("id").eq("user_id", ownerAuthId).maybeSingle();
+  if (!prof?.id) return null;
+  const { data: biz } = await admin.from("businesses").select("id, slug").eq("owner_id", prof.id).limit(1).maybeSingle();
+  return biz?.slug ? (biz as { id: string; slug: string }) : null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "method" }, 405);
@@ -88,7 +104,15 @@ Deno.serve(async (req) => {
 
   const fromName = campaign.from_name || "סיאנגו";
   const subject = campaign.subject || "(ללא נושא)";
+  // siteUrl (VITE_APP_URL) is the Cloudflare Pages host - used ONLY for the
+  // user-facing unsubscribe page. Tracking endpoints do NOT exist there.
   const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
+  // BUG #25: tracking links must point at the Supabase functions host
+  // (SUPABASE_URL/functions/v1), not the Pages host - the Pages host has no
+  // /functions/v1 route, so every open/click hit 404'd.
+  const trackBase = `${SUPABASE_URL}/functions/v1`;
+  // BUG #47: resolve the owner's store so unsubscribe is store-scoped, not platform-wide.
+  const ownerBiz = await resolveOwnerBusiness(admin, user.id, campaign.business_id);
 
   // Wrap links through the click tracker + add an open pixel (skips the
   // unsubscribe link). campaignId/contactId enable per-recipient analytics.
@@ -96,14 +120,16 @@ Deno.serve(async (req) => {
     if (!cid) return html;
     const wrapped = html.replace(/href="(https?:\/\/[^"]+)"/g, (m, url) =>
       (url.includes("/unsubscribe") || url.includes("/email-track-")) ? m
-        : `href="${siteUrl}/functions/v1/email-track-click?c=${cid}&e=${eid || ""}&u=${encodeURIComponent(url)}"`);
-    const pixel = `<tr><td><img src="${siteUrl}/functions/v1/email-track-open?c=${cid}&e=${eid || ""}" width="1" height="1" style="display:block;border:0" alt=""/></td></tr>`;
+        : `href="${trackBase}/email-track-click?c=${cid}&e=${eid || ""}&u=${encodeURIComponent(url)}"`);
+    const pixel = `<tr><td><img src="${trackBase}/email-track-open?c=${cid}&e=${eid || ""}" width="1" height="1" style="display:block;border:0" alt=""/></td></tr>`;
     return wrapped.replace("</table></td></tr></table></body>", pixel + "</table></td></tr></table></body>");
   };
 
   let campaignId: string | null = campaign.id ?? null;
   const buildHtml = (contact: { id?: string; name?: string; email: string }) => {
-    const unsubUrl = `${siteUrl}/unsubscribe?email=${encodeURIComponent(contact.email)}`;
+    const unsubUrl = ownerBiz?.slug
+      ? `${siteUrl}/store/${ownerBiz.slug}/unsubscribe?email=${encodeURIComponent(contact.email)}`
+      : `${siteUrl}/unsubscribe?email=${encodeURIComponent(contact.email)}`;
     const footer = complianceFooter(fromName, campaign.reply_to || "office@siango.app", unsubUrl);
     const base = renderEmail(campaign.blocks || [], { "שם": contact.name || "", "שם_העסק": fromName }, footer);
     return addTracking(base, campaignId, contact.id);
@@ -140,8 +166,11 @@ Deno.serve(async (req) => {
   }
   if (!contacts?.length) return json({ ok: true, sent: 0, note: "no matching contacts" });
 
-  // Suppress globally-unsubscribed addresses (shared list).
-  const { data: unsub } = await admin.from("email_unsubscribes").select("email");
+  // BUG #47: suppress only THIS store's opt-outs plus platform-wide rows
+  // (business_id IS NULL) - never other merchants' unsubscribes.
+  let unsubQ = admin.from("email_unsubscribes").select("email");
+  unsubQ = ownerBiz?.id ? unsubQ.or(`business_id.eq.${ownerBiz.id},business_id.is.null`) : unsubQ.is("business_id", null);
+  const { data: unsub } = await unsubQ;
   const blocked = new Set((unsub || []).map((u: any) => String(u.email).toLowerCase()));
 
   // Persist the campaign so events can reference it (needed for open/click tracking).

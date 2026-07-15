@@ -170,6 +170,7 @@ const en: Record<string, string> = {
   'login.tooManyAttempts': 'Too many login attempts. Please try again in a few minutes.',
   'login.genericError': 'An error occurred during login. Please try again.',
   'login.googleError': 'Error signing in with Google. Please try again.',
+  'login.popupBlocked': 'A popup blocker prevented sign-in. Allow popups and try again.',
   'login.welcomeBack': 'Welcome Back',
   'login.manageYourBusiness': 'Manage Your Business',
   'login.inOnePlace': 'In One Place',

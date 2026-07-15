@@ -32,9 +32,10 @@ interface Props {
 
 /**
  * Domain purchase: collects the registrant (WHOIS owner) details + a clear,
- * lawyerly consent, then creates the order (domain-purchase) and sends the
- * customer to the iCount payment page. The domain is registered on the
- * CUSTOMER's name only after payment is confirmed.
+ * lawyerly consent, then calls domain-purchase, which SYNCHRONOUSLY charges the
+ * merchant's saved Cardcom token and registers the domain server-side in one
+ * call (no hosted payment page, no redirect, no IPN/webhook round-trip). The
+ * domain is registered on the CUSTOMER's name only after the charge is confirmed.
  */
 const DomainPurchaseDialog = ({ open, onOpenChange, domain, priceIls, businessId, prefill }: Props) => {
   const [name, setName] = useState(prefill?.name || "");

@@ -35,6 +35,7 @@ import { startPayplusPayment } from "@/hooks/usePayplus";
 import { toast } from "sonner";
 import { getTemplate, type StoreTemplateId } from "@/lib/storeTemplates";
 import { getStoreFont, loadStoreFonts } from "@/lib/storeFonts";
+import { getDefaultLayout } from "@/lib/businessModules";
 import {
   ClassicLayout, ServiceLayout, PropertyLayout, MarketLayout,
   BoutiqueLayout, BeautySpaLayout, HomeProLayout, CharityLayout, RestaurantLayout,
@@ -566,6 +567,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
               : null,
           delivery_address:
             data.deliveryMethod === 'delivery' ? (data.deliveryAddress || null) : null,
+          coupon_id: couponId ?? null,
           status: 'pending',
         },
         items: cartItems.map((item) => ({
@@ -583,32 +585,6 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       });
       trackEvent(business.id, "purchase", { value: orderTotal });
       gtm.purchase(orderTotal);
-      // Customer order confirmation, sent FROM the merchant (reply-to the merchant).
-      if (data.email) {
-        supabase.functions
-          .invoke("send-platform-email", {
-            body: {
-              type: "orderConfirmationCustomer",
-              to: data.email,
-              businessId: business.id,
-              merchant: {
-                storeName: business.name,
-                email: business.email || undefined,
-                storeUrl: `https://${import.meta.env.VITE_WEBSITE_URL}/store/${business.slug}`,
-                brandColor: (business as any).primary_color || undefined,
-                logoUrl: business.logo_url || undefined,
-              },
-              order: {
-                firstName: data.fullName?.split(" ")[0],
-                orderTotal,
-                items: cartItems.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
-                // Send the confirmation in the shopper's current language.
-                lang: document.documentElement.lang || "he",
-              },
-            },
-          })
-          .catch(() => {});
-      }
       setCartItems([]);
       setViewState('thankyou');
     } catch {
@@ -873,7 +849,8 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   // Pick layout component based on template layoutId, with auto-detection for food businesses
   const LayoutComponent = (() => {
     const layoutId = template?.layoutId
-      ?? (businessCategory && FOOD_CATEGORIES.includes(businessCategory) ? 'restaurant' : undefined);
+      ?? (businessCategory && FOOD_CATEGORIES.includes(businessCategory) ? 'restaurant' : undefined)
+      ?? getDefaultLayout(business);
     switch (layoutId) {
       case 'service':     return ServiceLayout;
       case 'property':    return PropertyLayout;

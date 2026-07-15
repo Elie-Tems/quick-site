@@ -187,7 +187,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         body: {
           businessName: business.name,
           businessCategory: (business as any).business_category,
-          description: aboutBody || tagline || business.name,
+          rawText: aboutBody || tagline || business.name,
         },
       });
       if (error) throw error;

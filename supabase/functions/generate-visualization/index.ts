@@ -63,9 +63,21 @@ serve(async (req) => {
     // could write files into another merchant's storage prefix below), and
     // gpt-image-1 at high quality is the priciest path in the codebase, so cap
     // it per user.
+    // businesses.owner_id references profiles.id (NOT auth.uid), so resolve the
+    // caller's profile first, then match it against the business owner. Querying
+    // a non-existent businesses.user_id column errored and 403'd every request.
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const { data: ownsBiz } = await admin
-      .from("businesses").select("id").eq("id", businessId).eq("user_id", user.id).maybeSingle();
+    const { data: profile, error: profileErr } = await admin
+      .from("profiles").select("id").eq("user_id", user.id).maybeSingle();
+    const { data: ownsBiz, error: ownsErr } = profile
+      ? await admin
+          .from("businesses").select("id").eq("id", businessId).eq("owner_id", profile.id).maybeSingle()
+      : { data: null, error: null };
+    if (profileErr || ownsErr) {
+      // A failed ownership query is a server error, not a legitimate 403 - log it
+      // so it isn't silently masked as "forbidden".
+      console.error("generate-visualization ownership check error:", profileErr ?? ownsErr);
+    }
     if (!ownsBiz) {
       return new Response(JSON.stringify({ error: "forbidden" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },

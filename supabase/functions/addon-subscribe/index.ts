@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
 
   // Already active? no-op (idempotent).
   const { data: existingAddon } = await admin.from("subscription_addons")
-    .select("id, active").eq("user_id", user.id).eq("addon_type", addonType).maybeSingle();
+    .select("id, active").eq("business_id", businessId).eq("addon_type", addonType).maybeSingle();
   if (existingAddon && (existingAddon as { active?: boolean }).active) return json({ ok: true, alreadyActive: true });
 
   // THIS site's active subscription (for the proration window) + saved Cardcom token.
@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
   }
   const chargeGross = Math.max(1, chargeAmount(proratedGross, coupon, 0));
 
-  const idem = `addon-sub:${user.id}:${addonType}:${new Date(nextChargeAt).toISOString().slice(0, 10)}`;
+  const idem = `addon-sub:${businessId}:${addonType}:${new Date(nextChargeAt).toISOString().slice(0, 10)}`;
   const isTest = Deno.env.get("BILLING_TEST_MODE") === "true";
   const { data: existingCharge } = await admin.from("billing_charges").select("status").eq("idempotency_key", idem).maybeSingle();
   const existingStatus = (existingCharge as { status?: string } | null)?.status;

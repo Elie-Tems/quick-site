@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Globe, Search, Link2 } from "lucide-react";
+import { toast } from "sonner";
+import { Globe, Search, Link2, Loader2, Plug } from "lucide-react";
 import DomainSearch from "@/components/domains/DomainSearch";
 import DomainPurchaseDialog from "@/components/domains/DomainPurchaseDialog";
 import ConnectOwnDomain from "@/components/domains/ConnectOwnDomain";
@@ -11,14 +12,20 @@ interface Props {
 }
 
 /**
- * Merchant Domains screen: search + buy a domain (payment-first via iCount; the
- * domain is registered on the customer's name after payment), and see the
- * domains already registered for this store.
+ * Merchant Domains screen: search + buy a domain (payment-first via a synchronous
+ * Cardcom-token charge - domain-purchase charges the saved card and registers the
+ * domain server-side in one call, no redirect/webhook; the domain is registered on
+ * the customer's name only after the charge is confirmed), and see the domains
+ * already registered for this store.
  */
 const DashboardDomains = ({ businessId }: Props) => {
   const queryClient = useQueryClient();
   const [buying, setBuying] = useState<{ domain: string; price: number | null } | null>(null);
   const [mode, setMode] = useState<"buy" | "own">("buy");
+  // Which domain is currently being (re-)provisioned - manual re-trigger of the
+  // Cloudflare custom-hostname setup (provision-custom-domain), e.g. if the
+  // post-purchase auto-provision hadn't run or the connection got stuck.
+  const [provisioning, setProvisioning] = useState<string | null>(null);
 
   const { data: biz } = useQuery({
     queryKey: ["domain-biz-prefill", businessId],
@@ -60,6 +67,29 @@ const DashboardDomains = ({ businessId }: Props) => {
 
   const onBuy = (domain: string, priceIls: number | null) => {
     setBuying({ domain, price: priceIls });
+  };
+
+  // Manually (re-)connect a purchased domain to Cloudflare. Normally this runs
+  // automatically after purchase; this button is the recovery path if it didn't.
+  const onProvision = async (domain: string) => {
+    setProvisioning(domain);
+    try {
+      const { data, error } = await supabase.functions.invoke("provision-custom-domain", {
+        body: { domain, action: "provision" },
+      });
+      if (error) throw error;
+      if (data?.ok === false) throw new Error(data?.error || "provision failed");
+      if (data?.configured === false) {
+        toast.info(data.message || "חיבור דומיינים מותאמים בהקמה - יופעל בקרוב.");
+      } else {
+        toast.success(`שלחנו בקשת חיבור ל-${domain}. האבטחה (SSL) עשויה לקחת כמה דקות.`);
+      }
+      queryClient.invalidateQueries({ queryKey: ["my-domains", businessId] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "לא הצלחנו לחבר את הדומיין כרגע. נסו שוב.");
+    } finally {
+      setProvisioning(null);
+    }
   };
 
   return (
@@ -114,10 +144,28 @@ const DashboardDomains = ({ businessId }: Props) => {
                     <span className="text-[11px] rounded-full bg-muted px-2 py-0.5 text-muted-foreground">דומיין אישי</span>
                   )}
                 </div>
-                <span className="text-muted-foreground">
-                  {connectionLabel(d)}
-                  {d.expires_at ? ` · עד ${new Date(d.expires_at).toLocaleDateString("he-IL")}` : ""}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-muted-foreground">
+                    {connectionLabel(d)}
+                    {d.expires_at ? ` · עד ${new Date(d.expires_at).toLocaleDateString("he-IL")}` : ""}
+                  </span>
+                  {/* Purchased domains only: byod domains are connected via the
+                      add-on flow and have no completed domain_order to re-provision. */}
+                  {d.source !== "byod" && (
+                    <button
+                      onClick={() => onProvision(d.domain)}
+                      disabled={provisioning === d.domain}
+                      className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                    >
+                      {provisioning === d.domain ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Plug className="h-3 w-3" />
+                      )}
+                      {d.cf_ssl_status === "active" ? "חבר מחדש" : "חבר דומיין"}
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

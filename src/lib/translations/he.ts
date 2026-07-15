@@ -170,6 +170,7 @@ const he: Record<string, string> = {
   'login.tooManyAttempts': 'יותר מדי ניסיונות התחברות. נסו שוב בעוד מספר דקות.',
   'login.genericError': 'אירעה שגיאה בהתחברות. נסו שוב.',
   'login.googleError': 'שגיאה בהתחברות עם Google. נסו שוב.',
+  'login.popupBlocked': 'החלון החוסם מנע את הפתיחה. אפשרו חלונות קופצים ונסו שוב.',
   'login.welcomeBack': 'ברוכים השבים',
   'login.manageYourBusiness': 'נהלו את העסק שלכם',
   'login.inOnePlace': 'במקום אחד',

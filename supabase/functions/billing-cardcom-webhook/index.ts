@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
 
   // Redeem the coupon (best effort - must never block publish/emails).
   try {
-    const { data: sub } = await admin.from("subscriptions").select("coupon_code").eq("user_id", userId).maybeSingle();
+    const { data: sub } = await admin.from("subscriptions").select("coupon_code").eq("business_id", businessId).maybeSingle();
     const code = (sub as { coupon_code?: string })?.coupon_code;
     if (code) {
       const { data: coup } = await admin.from("subscription_coupons").select("id, redeemed_count").ilike("code", code).maybeSingle();
@@ -175,10 +175,23 @@ Deno.serve(async (req) => {
     const refCode = (me as { referred_by?: string })?.referred_by;
     if (refCode) {
       const grantFreeMonth = async (targetUserId: string) => {
-        const { data: rs } = await admin.from("subscriptions").select("free_months_credit").eq("user_id", targetUserId).maybeSingle();
-        await admin.from("subscriptions").upsert(
-          { user_id: targetUserId, free_months_credit: (((rs as { free_months_credit?: number })?.free_months_credit ?? 0) + 1), updated_at: now },
-          { onConflict: "user_id" });
+        // The UNIQUE(user_id) constraint was dropped (per-site subscriptions), so an
+        // ON CONFLICT("user_id") upsert now errors and the whole referral block is
+        // swallowed. Do a deterministic read-then-write keyed by the row's primary id
+        // instead: pick ONE target subscription row (oldest first) and credit it, or
+        // insert a fresh row if the target has none yet.
+        const { data: rs } = await admin.from("subscriptions")
+          .select("id, free_months_credit").eq("user_id", targetUserId)
+          .order("created_at", { ascending: true }).limit(1).maybeSingle();
+        const existing = rs as { id?: string; free_months_credit?: number } | null;
+        if (existing?.id) {
+          await admin.from("subscriptions")
+            .update({ free_months_credit: ((existing.free_months_credit ?? 0) + 1), updated_at: now })
+            .eq("id", existing.id);
+        } else {
+          await admin.from("subscriptions")
+            .insert({ user_id: targetUserId, free_months_credit: 1, updated_at: now });
+        }
       };
       // (a) referrer reward - once per referred buyer.
       const { data: refProf } = await admin.from("profiles").select("user_id").eq("referral_code", refCode).maybeSingle();

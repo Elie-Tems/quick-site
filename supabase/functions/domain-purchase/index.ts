@@ -21,6 +21,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Domain prices (priced.customerIls) are PRE-VAT, same convention as addon-subscribe.
+// We charge gross = net * 1.18 and issue the invoice on the gross (vatFree:false).
+const VAT_RATE = 0.18;
+const gross = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
+
 // TLDs we register through Openprovider. .co.il is intentionally excluded here
 // (Openprovider is expensive for it - it gets a cheaper Israeli registrar later).
 const ALLOWED_EXT = new Set(["com", "co", "net", "online", "shop", "store", "biz", "info"]);
@@ -150,9 +155,10 @@ Deno.serve(async (req) => {
     return json({ ok: false, needsCard: true, message: "אין כרטיס שמור. יש לפרסם אתר (מנוי) כדי לשמור כרטיס תחילה." });
   }
 
-  // Charge the token for the domain price (customerIls is the final, VAT-inclusive
-  // amount) and issue the tax invoice in the SAME call. Idempotent per order.
-  const amount = priced.customerIls;
+  // Charge the token for the domain price. customerIls is PRE-VAT (the dialog shows
+  // it as "+ מע\"מ"), so we gross it up by VAT and issue the tax invoice on the gross
+  // in the SAME call. Idempotent per order.
+  const amount = gross(priced.customerIls);
   const idem = `domain:${order.id}`;
   const isTest = Deno.env.get("BILLING_TEST_MODE") === "true";
   await admin.from("billing_charges").insert({
