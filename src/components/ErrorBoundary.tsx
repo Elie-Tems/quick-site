@@ -48,7 +48,7 @@ class ErrorBoundary extends Component<Props, State> {
               אירעה תקלה זמנית. נסו לרענן את הדף - אנחנו כבר יודעים על זה.
             </p>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => { try { sessionStorage.removeItem("siango_chunk_reloaded"); } catch {} window.location.reload(); }}
               style={{
                 padding: "0.75rem 1.5rem",
                 borderRadius: "0.5rem",
