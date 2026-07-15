@@ -601,7 +601,7 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (currentView) {
       case 'home':
-        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} cancelledUntil={cancelledUntil} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} businessType={getBusinessType(business)} onNavigate={goToView} popupState={popupState} onReopenPopup={(id: PopupId) => { setPopupState(prev => prev ? { ...prev, shown: prev.shown.filter(s => s !== id), dismissed: prev.dismissed.filter(d => d !== id) } : prev); }} />;
+        return <DashboardHome stats={stats} businessId={business?.id} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} cancelledUntil={cancelledUntil} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} legalApprovedAt={(business as any)?.legal_approved_at ?? null} businessType={getBusinessType(business)} onNavigate={goToView} popupState={popupState} onReopenPopup={(id: PopupId) => { setPopupState(prev => prev ? { ...prev, shown: prev.shown.filter(s => s !== id), dismissed: prev.dismissed.filter(d => d !== id) } : prev); }} />;
       case 'verticals':
         return <VerticalModules business={business as any} />;
       case 'lifecycle-emails':
