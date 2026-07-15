@@ -684,6 +684,11 @@ const Dashboard = () => {
           />
         );
       case 'orders':
+        // Real-estate businesses don't have orders — their "לידים" tab should show
+        // the pipeline leads board (pipeline_cards), not the orders table.
+        if (getBusinessType(business) === 'realestate') {
+          return <VerticalModules business={business as any} />;
+        }
         return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} businessType={getBusinessType(business)} />;
       case 'customers':
       case 'profitability':
