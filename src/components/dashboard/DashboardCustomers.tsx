@@ -364,79 +364,58 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
 
   return (
     <div className="space-y-4" dir="rtl">
+      {/* Top bar: count + export */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2"><Users className="w-5 h-5 text-primary" /> לקוחות</h2>
-          <p className="text-sm text-muted-foreground">נבנה אוטומטית מההזמנות שלך</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">{customers.length} לקוחות</span>
-          <button onClick={() => exportCsv(filtered)} className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-1.5 hover:bg-muted transition-colors">
-            <Download className="w-4 h-4" /> ייצוא לאקסל
-          </button>
-        </div>
+        <span className="text-sm text-muted-foreground">
+          {customers.length} לקוחות
+          {isDemo && <span className="mr-2 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">תצוגת דמו</span>}
+        </span>
+        <button onClick={() => exportCsv(filtered)} className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-1.5 hover:bg-muted transition-colors">
+          <Download className="w-4 h-4" /> ייצוא לאקסל
+        </button>
       </div>
 
-      {isDemo && (
-        <div className="rounded-xl border border-primary/30 bg-primary/5 p-3.5 flex items-center gap-2.5">
-          <Eye className="w-4 h-4 text-primary shrink-0" />
-          <p className="text-xs text-foreground">זוהי <b>תצוגת דמו</b> - כך ייראה ה-CRM שלכם עם לקוחות אמיתיים. הנתונים יתמלאו אוטומטית עם ההזמנה הראשונה.</p>
-        </div>
-      )}
-
-      {/* KPI summary - the "this is a real CRM" header */}
+      {/* KPI strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="rounded-xl bg-card border border-border p-3.5">
-          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Users className="w-3.5 h-3.5" /> סה"כ לקוחות</div>
-          <div className="text-2xl font-semibold">{customers.length}</div>
-        </div>
-        <div className="rounded-xl bg-card border border-border p-3.5">
+        <div className="rounded-xl bg-card border border-border p-3">
           <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Repeat className="w-3.5 h-3.5" /> לקוחות חוזרים</div>
           <div className="text-2xl font-semibold">{repeatPct}%</div>
         </div>
-        <div className="rounded-xl bg-card border border-border p-3.5">
+        <div className="rounded-xl bg-card border border-border p-3">
           <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Crown className="w-3.5 h-3.5" /> ערך ממוצע (LTV)</div>
           <div className="text-2xl font-semibold">{fmtPrice(avgLtv)}</div>
         </div>
-        <div className="rounded-xl bg-card border border-border p-3.5">
+        <div className="rounded-xl bg-card border border-border p-3">
           <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-amber-500" /> בסיכון / רדומים</div>
           <div className="text-2xl font-semibold">{counts.at_risk + counts.dormant}</div>
         </div>
+        <div className="rounded-xl bg-card border border-border p-3">
+          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Repeat className="w-3.5 h-3.5" /> מוכנים לקנייה חוזרת</div>
+          <div className="text-2xl font-semibold">{counts.reorder}</div>
+        </div>
       </div>
 
-      {/* Opportunity: reorder - customers in their natural repeat-purchase window */}
-      {counts.reorder > 0 && (
-        <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 flex items-start gap-3">
-          <Repeat className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-sm font-medium">{counts.reorder} לקוחות מוכנים לקנייה חוזרת</p>
-            <p className="text-xs text-muted-foreground mt-0.5">לפי קצב הקנייה האישי שלהם, הגיע הזמן שהם יזמינו שוב. תזכורת קטנה (וואטסאפ/מייל) בדיוק עכשיו ממירה מצוין. אתם בוחרים אם לפנות.</p>
-          </div>
-          <button onClick={() => setSegment("reorder")} className="text-sm font-medium text-primary hover:underline shrink-0">הצג אותם</button>
-        </div>
-      )}
-
-      {/* Opportunity: at-risk - catch them BEFORE they go dormant (better timing) */}
-      {counts.at_risk > 0 && (
-        <div className="rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 flex items-start gap-3">
-          <Bell className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-sm font-medium">{counts.at_risk} לקוחות מתחילים להתרחק ({AT_RISK_DAYS}-{DORMANT_DAYS} יום)</p>
-            <p className="text-xs text-muted-foreground mt-0.5">הרגע הכי טוב להחזיר אותם - לפני שהם הופכים לרדומים. הצעה קטנה עכשיו שווה הרבה.</p>
-          </div>
-          <button onClick={() => setSegment("at_risk")} className="text-sm font-medium text-amber-600 hover:underline shrink-0">הצג אותם</button>
-        </div>
-      )}
-
-      {/* Opportunity: dormant win-back */}
-      {counts.dormant > 0 && (
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-start gap-3">
-          <Bell className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-sm font-medium">{counts.dormant} לקוחות לא קנו מעל {DORMANT_DAYS} יום</p>
-            <p className="text-xs text-muted-foreground mt-0.5">הזדמנות להחזיר אותם עם הטבה. שליחה אוטומטית תתאפשר כשמודול וואטסאפ/מייל יעלה - בינתיים אפשר לראות מי הם וליצור קשר.</p>
-          </div>
-          <button onClick={() => setSegment("dormant")} className="text-sm font-medium text-primary hover:underline shrink-0">הצג אותם</button>
+      {/* Compact opportunity row - only when there's something to act on */}
+      {(counts.reorder > 0 || counts.at_risk > 0 || counts.dormant > 0) && (
+        <div className="flex flex-wrap gap-2">
+          {counts.reorder > 0 && (
+            <button onClick={() => setSegment("reorder")}
+              className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 transition-colors">
+              <Repeat className="w-3.5 h-3.5" /> {counts.reorder} מוכנים לקנייה חוזרת
+            </button>
+          )}
+          {counts.at_risk > 0 && (
+            <button onClick={() => setSegment("at_risk")}
+              className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/5 text-amber-600 hover:bg-amber-500/10 transition-colors">
+              <Bell className="w-3.5 h-3.5" /> {counts.at_risk} מתחילים להתרחק
+            </button>
+          )}
+          {counts.dormant > 0 && (
+            <button onClick={() => setSegment("dormant")}
+              className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-rose-500/30 bg-rose-500/5 text-rose-600 hover:bg-rose-500/10 transition-colors">
+              <Bell className="w-3.5 h-3.5" /> {counts.dormant} רדומים
+            </button>
+          )}
         </div>
       )}
 
