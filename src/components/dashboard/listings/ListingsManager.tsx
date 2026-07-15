@@ -17,9 +17,9 @@ const EMPTY_DRAFT = { title: "", price: "", city: "", category: "sale", is_hot: 
 async function uploadListingImage(businessId: string, file: File): Promise<string> {
   const ext = file.name.split(".").pop() ?? "jpg";
   const path = `listings/${businessId}/${Date.now()}.${ext}`;
-  const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
+  const { error } = await supabase.storage.from("business-assets").upload(path, file, { upsert: true });
   if (error) throw error;
-  const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+  const { data } = supabase.storage.from("business-assets").getPublicUrl(path);
   return data.publicUrl;
 }
 
