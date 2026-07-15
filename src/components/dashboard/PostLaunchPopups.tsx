@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { DashboardView } from "./DashboardNav";
 
-export type PopupId = "products" | "legal" | "payments" | "crm" | "share";
+export type PopupId = "products" | "legal" | "payments" | "crm" | "share" | "design" | "content";
 
 interface PopupConfig {
   id: PopupId;
@@ -67,6 +67,26 @@ export const POPUPS: PopupConfig[] = [
     ctaLabel: "שתף עכשיו",
     ctaView: null,
     color: "from-amber-500 to-orange-400",
+  },
+  {
+    id: "design",
+    emoji: "🎨",
+    skipTodo: true,
+    title: "עיצובים ופלטות צבע",
+    body: "לאתר שלך יש יותר מעיצוב אחד! תוכל לבחור מתוך פריסות שונות - קלאסי, בוטיק, שירותים, נדל\"ן ועוד - ולשנות את פלטת הצבעים בלחיצה אחת.",
+    ctaLabel: "שנה עיצוב",
+    ctaView: "design",
+    color: "from-pink-600 to-rose-500",
+  },
+  {
+    id: "content",
+    emoji: "✏️",
+    skipTodo: true,
+    title: "ערוך את הטקסטים שלך",
+    body: "הכותרת, הטאגליין, הטקסט של האודות - כל אלה ניתנים לעריכה בקלות. תן לאתר שלך קול אישי שמשקף את העסק שלך.",
+    ctaLabel: "ערוך תוכן",
+    ctaView: "content",
+    color: "from-cyan-600 to-sky-500",
   },
 ];
 
