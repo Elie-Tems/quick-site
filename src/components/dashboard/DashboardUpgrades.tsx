@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   Users, Star, Globe, Wand2, MessageCircle, Mail, Tag, Target, Clock, Crown,
@@ -7,6 +8,7 @@ import {
 import type { DashboardView } from "@/components/dashboard/DashboardNav";
 import { whatsappEnabled, emailEnabled } from "@/lib/featureFlags";
 import { useCrmEntitled } from "@/hooks/useCrmEntitled";
+import { supabase } from "@/integrations/supabase/client";
 import UpgradeCheckoutModal, { type CheckoutItem } from "./upgrades/UpgradeCheckoutModal";
 
 /**
@@ -20,7 +22,7 @@ import UpgradeCheckoutModal, { type CheckoutItem } from "./upgrades/UpgradeCheck
 
 interface Props {
   onNavigate: (v: DashboardView) => void;
-  business?: { id?: string; reviews_paid?: boolean } | null;
+  business?: { id?: string; reviews_paid?: boolean; tracking_paid?: boolean } | null;
 }
 
 type Goal = "sell" | "know" | "pro" | "time";
@@ -56,7 +58,7 @@ const PRODUCTS: Product[] = [
   {
     view: "tracking", title: "תגי שיווק ומעקב", priceLabel: 'חד-פעמי ₪149 + מע"מ',
     desc: "Google Ads, פיקסל פייסבוק וטיקטוק - מדידת המרות וקהלי ריטרגטינג.",
-    goal: "sell", icon: Tag, preview: "tag", show: true, comingSoon: true,
+    goal: "sell", icon: Tag, preview: "tag", show: true,
   },
   {
     view: "customers", addon: "crm", title: "CRM - ניהול לקוחות", netIls: 49, priceLabel: '₪49/חודש + מע"מ',
@@ -134,8 +136,27 @@ const DashboardUpgrades = ({ onNavigate, business }: Props) => {
   const [cart, setCart] = useState<string[]>([]);
   const [checkout, setCheckout] = useState(false);
 
+  // Google Reviews can only deliver if Siango's Google Places key is configured
+  // server-side. If it isn't, we must NOT sell it - show it as "בקרוב" everywhere
+  // until the key exists (then it opens automatically). Defaults to configured so
+  // a transient probe error never hides an add-on that actually works.
+  const { data: reviewsConfigured = true } = useQuery({
+    queryKey: ["reviews-configured"],
+    queryFn: async () => {
+      const { data } = await supabase.functions.invoke("google-reviews", { body: { action: "status" } });
+      return data?.configured !== false;
+    },
+  });
+
+  // Resolve each product's live availability (reviews depends on the key probe).
+  const products: Product[] = PRODUCTS.map((p) =>
+    p.view === "reviews" ? { ...p, comingSoon: !reviewsConfigured } : p,
+  );
+
   const isActive = (p: Product) =>
-    (p.addon === "crm" && crmEntitled) || (p.addon === "reviews" && !!business?.reviews_paid);
+    (p.addon === "crm" && crmEntitled) ||
+    (p.addon === "reviews" && !!business?.reviews_paid) ||
+    (p.view === "tracking" && !!business?.tracking_paid);
 
   const inCart = (addon?: string) => !!addon && cart.includes(addon);
   const toggleCart = (addon?: string) => {
@@ -144,7 +165,7 @@ const DashboardUpgrades = ({ onNavigate, business }: Props) => {
   };
 
   const cartItems: CheckoutItem[] = cart
-    .map((addon) => PRODUCTS.find((p) => p.addon === addon))
+    .map((addon) => products.find((p) => p.addon === addon))
     .filter((p): p is Product => !!p && !!p.netIls)
     .map((p) => ({ addon: p.addon!, title: p.title, netIls: p.netIls!, color: GOALS[p.goal].color }));
   const cartNet = cartItems.reduce((s, i) => s + i.netIls, 0);
@@ -171,7 +192,7 @@ const DashboardUpgrades = ({ onNavigate, business }: Props) => {
           const g = GOALS[goal];
           // Live tools in each goal band; everything "בקרוב" is collected into one
           // section at the very bottom instead of scattered inside the bands.
-          const prods = PRODUCTS.filter((p) => p.goal === goal && p.show && !p.comingSoon);
+          const prods = products.filter((p) => p.goal === goal && p.show && !p.comingSoon);
           if (prods.length === 0) return null;
           const GIcon = g.icon;
           return (
@@ -246,7 +267,7 @@ const DashboardUpgrades = ({ onNavigate, business }: Props) => {
 
         {/* "בקרוב" - all upcoming tools collected at the bottom */}
         {(() => {
-          const soon = PRODUCTS.filter((p) => p.show && p.comingSoon);
+          const soon = products.filter((p) => p.show && p.comingSoon);
           if (soon.length === 0) return null;
           return (
             <section>
