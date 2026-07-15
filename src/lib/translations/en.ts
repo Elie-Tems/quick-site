@@ -383,6 +383,7 @@ const en: Record<string, string> = {
   'example.car.title': 'Car Dealer',
   'example.car.tag': 'Automotive',
   'example.homepro.title': 'Home Renovation',
+  'example.fitness.title': 'Fitness Studio',
   'example.homepro.tag': 'Tradespeople',
   'example.nonprofit.title': 'Nonprofit',
   'example.nonprofit.tag': 'Donations',

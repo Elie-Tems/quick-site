@@ -379,6 +379,7 @@ const ar: Record<string, string> = {
   'example.car.title': 'تاجر سيارات',
   'example.car.tag': 'سيارات',
   'example.homepro.title': 'تجديد المنازل',
+  'example.fitness.title': 'استوديو لياقة',
   'example.homepro.tag': 'حرفيون',
   'example.nonprofit.title': 'منظمة',
   'example.nonprofit.tag': 'تبرعات',

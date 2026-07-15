@@ -379,6 +379,7 @@ const ru: Record<string, string> = {
   'example.car.title': 'Автодилер',
   'example.car.tag': 'Авто',
   'example.homepro.title': 'Ремонт и обслуживание',
+  'example.fitness.title': 'Фитнес-студия',
   'example.homepro.tag': 'Мастера',
   'example.nonprofit.title': 'НКО',
   'example.nonprofit.tag': 'Пожертвования',

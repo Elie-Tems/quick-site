@@ -63,6 +63,7 @@ const EXAMPLES_CONFIG = [
   { key: "project", img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80", to: "/preview/redesign/project" },
   { key: "car", img: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&q=80", to: "/preview/redesign/car-dealer" },
   { key: "homepro", img: "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=600&q=80", to: "/preview/redesign/home-pro" },
+  { key: "fitness", img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80", to: "/preview/redesign/fitness" },
   { key: "nonprofit", img: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=600&q=80", to: "/preview/redesign/nonprofit" },
 ];
 
