@@ -1,4 +1,4 @@
-import { Eye, ChevronLeft, AlertTriangle } from "lucide-react";
+import { Eye, ChevronLeft, AlertTriangle, ShoppingCart, TrendingUp, Package, Users, CreditCard, FileText, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DashboardView } from "./DashboardNav";
 import type { BusinessType } from "@/lib/businessModules";
@@ -42,10 +42,17 @@ const DashboardHome = ({
   popupState,
   onReopenPopup,
 }: DashboardHomeProps) => {
-  const todos = [
-    ...(!stats.paymentEnabled ? [{ key: 'payments', emoji: '💳', label: 'חבר סליקה לקבלת תשלומים', view: 'payments' as DashboardView, highlight: true }] : []),
-    ...(!hasAbout ? [{ key: 'about', emoji: '📝', label: 'כתוב "אודות" בחנות', view: 'about' as DashboardView, highlight: false }] : []),
-    ...(stats.totalProducts === 0 ? [{ key: 'products', emoji: '🛍️', label: 'הוסף את המוצרים שלך', view: 'products' as DashboardView, highlight: false }] : []),
+  const todos: { key: string; icon: typeof CreditCard; label: string; view: DashboardView; highlight: boolean }[] = [
+    ...(!stats.paymentEnabled ? [{ key: 'payments', icon: CreditCard, label: 'חבר סליקה לקבלת תשלומים', view: 'payments' as DashboardView, highlight: true }] : []),
+    ...(!hasAbout ? [{ key: 'about', icon: FileText, label: 'כתוב "אודות" בחנות', view: 'about' as DashboardView, highlight: false }] : []),
+    ...(stats.totalProducts === 0 ? [{ key: 'products', icon: Package, label: 'הוסף את המוצרים שלך', view: 'products' as DashboardView, highlight: false }] : []),
+  ];
+
+  const statCards = [
+    { value: String(stats.totalOrders), label: 'הזמנות', icon: ShoppingCart, view: 'orders' as DashboardView },
+    { value: `₪${stats.totalSales?.toLocaleString('he-IL') ?? 0}`, label: 'מכירות', icon: TrendingUp, view: 'orders' as DashboardView },
+    { value: String(stats.totalProducts), label: 'מוצרים', icon: Package, view: 'products' as DashboardView },
+    { value: String(stats.totalCustomers ?? 0), label: 'לקוחות', icon: Users, view: 'customers' as DashboardView },
   ];
 
   return (
@@ -93,24 +100,18 @@ const DashboardHome = ({
         </div>
       )}
 
-      {/* 2. Stats - 4 simple cards */}
+      {/* 2. Stats - 4 cards with icons */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <button onClick={() => onNavigate('orders')} className="rounded-2xl bg-card border border-border p-4 text-right hover:border-primary/40 transition-colors">
-          <p className="text-2xl font-bold text-foreground">{stats.totalOrders}</p>
-          <p className="text-xs text-muted-foreground mt-1">הזמנות</p>
-        </button>
-        <button onClick={() => onNavigate('orders')} className="rounded-2xl bg-card border border-border p-4 text-right hover:border-primary/40 transition-colors">
-          <p className="text-2xl font-bold text-foreground">₪{stats.totalSales?.toLocaleString('he-IL') ?? 0}</p>
-          <p className="text-xs text-muted-foreground mt-1">מכירות</p>
-        </button>
-        <button onClick={() => onNavigate('products')} className="rounded-2xl bg-card border border-border p-4 text-right hover:border-primary/40 transition-colors">
-          <p className="text-2xl font-bold text-foreground">{stats.totalProducts}</p>
-          <p className="text-xs text-muted-foreground mt-1">מוצרים</p>
-        </button>
-        <button onClick={() => onNavigate('customers')} className="rounded-2xl bg-card border border-border p-4 text-right hover:border-primary/40 transition-colors">
-          <p className="text-2xl font-bold text-foreground">{stats.totalCustomers ?? 0}</p>
-          <p className="text-xs text-muted-foreground mt-1">לקוחות</p>
-        </button>
+        {statCards.map((s) => (
+          <button key={s.label} onClick={() => onNavigate(s.view)}
+            className="group rounded-2xl bg-card border border-border p-4 text-right hover:border-primary/40 hover:shadow-sm transition-all">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/15 transition-colors">
+              <s.icon className="w-4 h-4 text-primary" strokeWidth={1.8} />
+            </div>
+            <p className="text-2xl font-bold text-foreground tracking-tight">{s.value}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+          </button>
+        ))}
       </div>
 
       {/* 3. Todo items - only pending ones */}
@@ -124,15 +125,19 @@ const DashboardHome = ({
                 onClick={() => onNavigate(todo.view)}
                 className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-right transition-colors ${
                   todo.highlight
-                    ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-950/50'
-                    : 'bg-muted/40 hover:bg-muted/70'
+                    ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-800/40 hover:bg-blue-100/70 dark:hover:bg-blue-950/50'
+                    : 'bg-muted/40 hover:bg-muted/70 border border-transparent'
                 }`}
               >
-                <span className="text-xl">{todo.emoji}</span>
-                <span className={`text-sm font-medium ${todo.highlight ? 'text-blue-700 dark:text-blue-300' : 'text-foreground'}`}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                  todo.highlight ? 'bg-blue-100 dark:bg-blue-900/50' : 'bg-background border border-border'
+                }`}>
+                  <todo.icon className={`w-4 h-4 ${todo.highlight ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`} strokeWidth={1.8} />
+                </div>
+                <span className={`text-sm font-medium flex-1 ${todo.highlight ? 'text-blue-700 dark:text-blue-300' : 'text-foreground'}`}>
                   {todo.label}
                 </span>
-                <span className="mr-auto text-muted-foreground text-xs">←</span>
+                <ArrowLeft className="w-4 h-4 text-muted-foreground shrink-0" />
               </button>
             ))}
           </div>
@@ -151,12 +156,15 @@ const DashboardHome = ({
       <button
         type="button"
         onClick={() => onNavigate("preview")}
-        className="w-full rounded-2xl border border-border bg-card p-4 flex items-center justify-between hover:border-primary/40 transition-colors"
+        className="w-full rounded-2xl border border-border bg-card p-4 flex items-center justify-between hover:border-primary/40 hover:shadow-sm transition-all group"
       >
-        <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-          <Eye className="h-4 w-4 text-primary" /> הכנס לחנות שלך
+        <span className="flex items-center gap-2.5 text-sm font-medium text-foreground">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+            <Eye className="h-4 w-4 text-primary" strokeWidth={1.8} />
+          </div>
+          הכנס לחנות שלך
         </span>
-        <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+        <ChevronLeft className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
       </button>
 
       {/* 6. ReferralBox */}

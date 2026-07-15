@@ -244,10 +244,12 @@ const DashboardNav = ({
                   return (
                     <div
                       key={item.id}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground/50 cursor-default select-none"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground/50 cursor-default select-none"
                       title="המודול הזה יהיה זמין בקרוב"
                     >
-                      <Icon className="h-5 w-5 flex-shrink-0" />
+                      <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
+                        <Icon className="h-3.5 w-3.5" />
+                      </div>
                       <span>{item.label}</span>
                       <span className="mr-auto px-1.5 py-0.5 text-[10px] font-bold bg-muted text-muted-foreground rounded">בקרוב</span>
                     </div>
@@ -258,13 +260,18 @@ const DashboardNav = ({
                     key={item.id}
                     onClick={() => onViewChange(item.id)}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-right relative",
+                      "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-right relative",
                       isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <Icon className="h-5 w-5 flex-shrink-0" />
+                    <div className={cn(
+                      "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                      isActive ? "bg-primary/15" : "bg-muted"
+                    )}>
+                      <Icon className={cn("h-3.5 w-3.5", isActive ? "text-primary" : "text-muted-foreground")} />
+                    </div>
                     <span>{item.label}</span>
                     {item.premium && (
                       <span className="mr-auto px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded">
