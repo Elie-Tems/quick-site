@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useBusinessById, useUpdateBusiness } from "@/hooks/useBusiness";
-import { ExternalLink, Loader2, Plus, Trash2, Wand2, FileText, LayoutTemplate, Tags, BookOpen, Upload, X } from "lucide-react";
+import { ExternalLink, Loader2, Plus, Trash2, Wand2, FileText, LayoutTemplate, Tags, BookOpen, Upload, X, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import AboutEditor from "./AboutEditor";
@@ -17,17 +17,19 @@ interface DashboardContentProps {
 }
 
 const ABOUT_LABELS: Record<BusinessType, { title: string; desc: string; saveLabel: string }> = {
-  products:   { title: "אודות העסק",  desc: "ספרו על העסק — הסיפור, הערכים, מה מייחד אתכם.",                   saveLabel: "שמרו אודות העסק"   },
-  services:   { title: "אודות העסק",  desc: "ספרו על השירות, הניסיון, ומה מייחד אתכם.",                        saveLabel: "שמרו אודות העסק"   },
-  nonprofit:  { title: "על הארגון",   desc: "ספרו על מטרת הארגון, הפעילות, ומה מניע אתכם לפעול.",              saveLabel: "שמרו על הארגון"    },
-  synagogue:  { title: "על בית הכנסת", desc: "ספרו על הקהילה, נוסח התפילה, השיעורים והפעילות.",                saveLabel: "שמרו על בית הכנסת" },
-  realestate: { title: "על המשרד",    desc: "ספרו על משרד הנדל\"ן, הניסיון, ואזורי הפעילות שלכם.",             saveLabel: "שמרו על המשרד"     },
+  products:   { title: "אודות העסק",    desc: "ספרו על העסק — הסיפור, הערכים, מה מייחד אתכם.",                saveLabel: "שמרו אודות העסק"    },
+  services:   { title: "אודות העסק",    desc: "ספרו על השירות, הניסיון, ומה מייחד אתכם.",                      saveLabel: "שמרו אודות העסק"    },
+  nonprofit:  { title: "הסיפור שלנו",   desc: "ספרו על מטרת הארגון, הפעילות, ומה מניע אתכם לפעול.",            saveLabel: "שמרו את הסיפור"      },
+  synagogue:  { title: "על בית הכנסת",  desc: "ספרו על הקהילה, נוסח התפילה, השיעורים והפעילות.",              saveLabel: "שמרו על בית הכנסת"  },
+  realestate: { title: "על המשרד",      desc: "ספרו על משרד הנדל\"ן, הניסיון, ואזורי הפעילות שלכם.",           saveLabel: "שמרו על המשרד"       },
+  vacation:   { title: "על הנכס",       desc: "ספרו על מה שמיוחד במקום — הנוף, האווירה, מה כלול.",             saveLabel: "שמרו על הנכס"        },
 };
 
-type ContentTab = "hero" | "about" | "labels" | "rabbi" | "hosting";
+type ContentTab = "hero" | "about" | "labels" | "rabbi" | "hosting" | "donations";
 
 const DashboardContent = ({ businessId, businessType = "products", businessSubType }: DashboardContentProps) => {
   const isTorahCenter = businessSubType === "torah-center";
+  const isDonationBased = businessType === "nonprofit" || businessType === "synagogue";
   const { data: business, isLoading } = useBusinessById(businessId);
   const updateBusiness = useUpdateBusiness();
   const [activeTab, setActiveTab] = useState<ContentTab>("hero");
@@ -73,6 +75,10 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
   // Hosting policy (vacation only)
   const [hostingPolicy, setHostingPolicy] = useState<Record<string, string>>({});
 
+  // Donation amounts (nonprofit / synagogue only)
+  const [donationAmounts, setDonationAmounts] = useState<number[]>([50, 100, 200, 500]);
+  const [isSavingDonations, setIsSavingDonations] = useState(false);
+
   // Rabbi message fields (torah-center only)
   const [rabbiName, setRabbiName] = useState("");
   const [rabbiTitle, setRabbiTitle] = useState("");
@@ -106,6 +112,8 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
     setRabbiImageUrl((business as any).rabbi_image_url || "");
     const hp = (business as any).settings?.hosting_policy || {};
     setHostingPolicy(hp);
+    const da = (business as any).settings?.donation_amounts;
+    if (Array.isArray(da) && da.length > 0) setDonationAmounts(da);
   }, [business]);
 
   const handleSaveHero = async () => {
@@ -237,7 +245,24 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
     }
   };
 
-  const aboutLabels = ABOUT_LABELS[businessType];
+  const handleSaveDonations = async () => {
+    if (!businessId) return;
+    const valid = donationAmounts.filter(n => n > 0);
+    if (valid.length === 0) return;
+    setIsSavingDonations(true);
+    try {
+      await supabase.from("business_profiles").update({
+        settings: { ...(business as any)?.settings, donation_amounts: valid },
+      } as any).eq("id", businessId);
+      toast.success("סכומי התרומה עודכנו");
+    } catch {
+      toast.error("שגיאה בשמירה");
+    } finally {
+      setIsSavingDonations(false);
+    }
+  };
+
+  const aboutLabels = ABOUT_LABELS[businessType] ?? ABOUT_LABELS.products;
   const storeUrl = business?.slug
     ? `${window.location.origin}/store/${business.slug}`
     : null;
@@ -278,6 +303,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           { id: "labels" as ContentTab, label: "כותרות סקשנים", icon: Tags },
           ...(isTorahCenter ? [{ id: "rabbi" as ContentTab, label: "דבר הרב", icon: BookOpen }] : []),
           ...(businessType === "vacation" ? [{ id: "hosting" as ContentTab, label: "מדיניות אירוח", icon: FileText }] : []),
+          ...(isDonationBased ? [{ id: "donations" as ContentTab, label: "סכומי תרומה", icon: Heart }] : []),
         ]).map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -604,6 +630,65 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Donation amounts tab (nonprofit / synagogue only) */}
+      {activeTab === "donations" && isDonationBased && (
+        <div className="space-y-4 max-w-2xl">
+          <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
+            <div>
+              <h2 className="text-base font-semibold">סכומי תרומה מוצעים</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                ארבעת הכפתורים שיופיעו בדף התרומה. תורמים יכולים גם להכניס סכום חופשי.
+              </p>
+            </div>
+
+            {/* Preview */}
+            <div className="rounded-xl bg-muted/40 p-3">
+              <p className="text-xs text-muted-foreground mb-2 font-medium">תצוגה מקדימה</p>
+              <div className="grid grid-cols-4 gap-2">
+                {donationAmounts.map((amt, i) => (
+                  <div key={i} className={`py-2.5 rounded-xl text-sm font-bold border text-center ${i === 1 ? "bg-primary text-primary-foreground border-primary" : "border-border bg-background"}`}>
+                    ₪{amt || "?"}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Edit amounts */}
+            <div className="grid grid-cols-2 gap-3">
+              {donationAmounts.map((amt, i) => (
+                <div key={i} className="space-y-1">
+                  <label className="text-xs text-muted-foreground">כפתור {i + 1}</label>
+                  <div className="relative">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">₪</span>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={amt}
+                      onChange={e => {
+                        const next = [...donationAmounts];
+                        next[i] = Number(e.target.value) || 0;
+                        setDonationAmounts(next);
+                      }}
+                      className="pr-7"
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              טיפ: הסכום השני בולט יותר בעיצוב — שימו שם את הסכום הנפוץ ביותר.
+            </p>
+          </div>
+
+          <Button onClick={handleSaveDonations} disabled={isSavingDonations} className="w-full">
+            {isSavingDonations && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+            שמרו סכומי תרומה
+          </Button>
         </div>
       )}
 

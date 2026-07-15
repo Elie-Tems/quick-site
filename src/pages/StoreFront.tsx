@@ -822,6 +822,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     aboutText: b?.about_text || undefined,
     whatsappEnabled: business.whatsapp_enabled ?? true,
     whatsappMessage: b?.whatsapp_message || undefined,
+    donationAmounts: (b?.settings as any)?.donation_amounts || undefined,
     showMarqueeBar: b?.marquee_bar_enabled ?? true,
     businessCategory: b?.business_category as BusinessCategory | undefined,
     // Only pass reviews if the business has paid for the feature and wants them shown

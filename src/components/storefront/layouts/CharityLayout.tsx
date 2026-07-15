@@ -4,14 +4,18 @@ import { Heart, Phone, MessageCircle, ArrowLeft, Users, Target, Gift, ChevronDow
 import type { StorefrontLayoutProps } from "./StorefrontLayout.types";
 
 const FALLBACK_HERO = "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1600&q=80";
-const DONATION_AMOUNTS = [50, 100, 200, 500];
+const DEFAULT_DONATION_AMOUNTS = [50, 100, 200, 500];
 
 export default function CharityLayout(props: StorefrontLayoutProps) {
   const {
     businessName, tagline, heroTitle, aboutText, heroImageUrl,
     logoUrl, phone, products, banners, heroBenefits,
-    whatsappEnabled, reviewsCache, customLabels,
+    whatsappEnabled, reviewsCache, customLabels, donationAmounts,
   } = props;
+
+  const DONATION_AMOUNTS = (donationAmounts && donationAmounts.length > 0)
+    ? donationAmounts
+    : DEFAULT_DONATION_AMOUNTS;
 
   const [donationAmt, setDonationAmt] = useState<number | null>(100);
   const [customAmt, setCustomAmt] = useState("");

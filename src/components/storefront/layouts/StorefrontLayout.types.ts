@@ -39,6 +39,7 @@ export interface StorefrontLayoutProps {
   aboutText?: string;
   whatsappEnabled?: boolean;
   whatsappMessage?: string;
+  donationAmounts?: number[];
   showMarqueeBar?: boolean;
   businessCategory?: BusinessCategory;
   reviewsCache?: ReviewsCache | null;
