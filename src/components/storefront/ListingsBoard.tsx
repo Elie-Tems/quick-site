@@ -42,7 +42,10 @@ const ListingsBoard = ({ businessId, businessPhone }: { businessId: string; busi
         details: { listing_id: open.id, category: open.category } },
       {
         onSuccess: () => { toast.success("פנייתך נשלחה! נחזור אליך בהקדם"); setOpen(null); setLead({ name: "", phone: "" }); },
-        onError: () => toast.error("שליחה נכשלה, נסו שוב"),
+        onError: (err) => {
+          console.error("Lead submit failed:", err);
+          toast.error(`שליחה נכשלה: ${(err as Error).message || "שגיאה לא ידועה"}`);
+        },
       },
     );
   };

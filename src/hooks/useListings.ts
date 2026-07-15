@@ -80,8 +80,15 @@ export const useSubmitLead = () =>
       message?: string; title?: string; value?: number; details?: Record<string, unknown>;
     }) => {
       const { data, error } = await supabase.functions.invoke("contacts-capture", { body: p });
-      if (error) throw error;
-      if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+      if (error) {
+        console.error("contacts-capture error:", error);
+        throw new Error(typeof error === "object" && "message" in error ? (error as any).message : JSON.stringify(error));
+      }
+      if ((data as { error?: string })?.error) {
+        const msg = (data as { error: string }).error;
+        console.error("contacts-capture data error:", msg, data);
+        throw new Error(msg);
+      }
       return data as { ok: true; contactId: string };
     },
   });
