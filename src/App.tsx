@@ -263,6 +263,13 @@ const App = () => {
                   <Route path="/templates" element={<AllTemplates />} />
                   <Route path="/template-concepts" element={<TemplateConcepts />} />
                   <Route path="/contact" element={<Contact />} />
+                  {/* Short store URLs: siango.app/slug → storefront. Must be last so
+                      platform routes (/dashboard, /login, /terms, etc.) take priority. */}
+                  <Route path="/:slug" element={<StoreFront />} />
+                  <Route path="/:slug/about" element={<StoreAboutPage />} />
+                  <Route path="/:slug/terms" element={<StoreLegalPage docType="terms" />} />
+                  <Route path="/:slug/privacy" element={<StoreLegalPage docType="privacy" />} />
+                  <Route path="/:slug/my-orders" element={<MyOrders />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
