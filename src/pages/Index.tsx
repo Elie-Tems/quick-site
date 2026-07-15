@@ -66,7 +66,7 @@ const EXAMPLES_CONFIG = [
   { key: "fitness", img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80", to: "/preview/redesign/fitness" },
   { key: "nonprofit", img: "https://images.unsplash.com/photo-1593113616828-6f22bca04804?w=600&q=80", to: "/preview/redesign/nonprofit" },
   { key: "crowdfunding", img: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=600&q=80", to: "/preview/redesign/crowdfunding" },
-  { key: "restaurant", img: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80", to: "/preview/redesign/services" },
+  { key: "restaurant", img: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80", to: "/preview/redesign/boutique" },
 ];
 
 const HOW_STEP_META = [
@@ -568,9 +568,9 @@ const Index = () => {
                       <div className="relative aspect-[16/10] overflow-hidden">
                         <img src={e.img} alt={t(`example.${e.key}.title`)} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                        <div className="absolute bottom-3 right-3 left-3 flex items-center justify-between">
+                        <div className="absolute bottom-3 right-3 left-3 flex items-center justify-between" dir="ltr">
                           <span className="font-display font-bold text-white text-lg">{t(`example.${e.key}.title`)}</span>
-                          <ArrowLeft className="w-5 h-5 text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                          <ArrowLeft className="w-5 h-5 text-white opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                         </div>
                       </div>
                       <div className="px-4 py-2.5 text-xs pv-muted text-right">{t("examples.priceNote")}</div>

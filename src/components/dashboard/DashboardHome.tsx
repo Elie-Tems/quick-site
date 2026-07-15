@@ -58,6 +58,7 @@ const DashboardHome = ({
     ...(!stats.paymentEnabled ? [{ key: 'payments', icon: CreditCard, label: 'חבר סליקה לקבלת תשלומים', view: 'payments' as DashboardView, highlight: true }] : []),
     ...(!hasAbout ? [{ key: 'about', icon: FileText, label: 'כתוב "אודות" בחנות', view: 'about' as DashboardView, highlight: false }] : []),
     ...(stats.totalProducts === 0 ? [{ key: 'products', icon: Package, label: lbl.addProducts, view: 'products' as DashboardView, highlight: false }] : []),
+    ...(!legalApprovedAt ? [{ key: 'legal', icon: FileText, label: 'עדכן את התקנון שלך', view: 'legal' as DashboardView, highlight: false }] : []),
   ];
 
   const statCards = [
@@ -70,8 +71,8 @@ const DashboardHome = ({
   return (
     <div className="p-4 md:p-6 space-y-5">
 
-      {/* 1. Subscription banner */}
-      {!isSubscribed && cancelledUntil ? (
+      {/* 1. Cancelled subscription warning - urgent, stays at top */}
+      {!isSubscribed && cancelledUntil && (
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
             <p className="text-base font-semibold text-foreground">המנוי בוטל - אבל האתר עדיין באוויר</p>
@@ -83,20 +84,7 @@ const DashboardHome = ({
             חידוש המנוי <ChevronLeft className="h-4 w-4" />
           </Button>
         </div>
-      ) : !isSubscribed ? (
-        <div className="rounded-2xl bg-gradient-to-l from-orange-600 to-red-600 p-5 text-white flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <p className="font-bold text-base">האתר שלך במצב תצוגה מוקדמת</p>
-            <p className="text-sm text-white/80 mt-0.5">שדרג ל-69 ש"ח לחודש ללא התחייבות כדי שהחנות תעלה לאוויר</p>
-          </div>
-          <button
-            onClick={() => onNavigate('subscription')}
-            className="shrink-0 bg-white text-orange-600 font-bold text-sm px-4 py-2 rounded-xl hover:bg-orange-50 transition-colors"
-          >
-            שדרג עכשיו ←
-          </button>
-        </div>
-      ) : null}
+      )}
 
       {/* Failed payment banner */}
       {isSubscribed && hasPaymentFailure && (
@@ -109,27 +97,6 @@ const DashboardHome = ({
           <Button variant="outline" size="sm" onClick={() => onNavigate("subscription")} className="border-red-500/35 text-red-600 hover:bg-red-500/8 shrink-0">
             עדכנו כרטיס <ChevronLeft className="h-4 w-4" />
           </Button>
-        </div>
-      )}
-
-      {/* Legal docs banner — shown until merchant reviews & approves their own terms */}
-      {!legalApprovedAt && (
-        <div className="rounded-2xl border border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="flex items-start gap-3 flex-1">
-            <span className="text-xl shrink-0" aria-hidden="true">📄</span>
-            <div>
-              <p className="text-sm font-semibold text-foreground">עדכנו את התקנון שלכם</p>
-              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                הכנו לכם תבנית מוכנה — אבל היא צריכה את הפרטים שלכם: שם העסק, כתובת, מייל. האחריות המשפטית על תוכן המסמכים היא שלכם.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => onNavigate("legal")}
-            className="shrink-0 text-xs font-semibold bg-amber-500/20 text-amber-800 dark:text-amber-300 px-4 py-2 rounded-xl hover:bg-amber-500/30 transition-colors whitespace-nowrap"
-          >
-            עדכן את התקנון שלי ←
-          </button>
         </div>
       )}
 
@@ -195,10 +162,26 @@ const DashboardHome = ({
         <ChevronLeft className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
       </button>
 
-      {/* 6. ReferralBox */}
+      {/* 6. Subscription upsell - free tier, shown at bottom */}
+      {!isSubscribed && !cancelledUntil && (
+        <div className="rounded-2xl bg-gradient-to-l from-orange-600 to-red-600 p-5 text-white flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p className="font-bold text-base">האתר שלך במצב תצוגה מוקדמת</p>
+            <p className="text-sm text-white/80 mt-0.5">שדרג ל-69 ש"ח לחודש ללא התחייבות כדי שהחנות תעלה לאוויר</p>
+          </div>
+          <button
+            onClick={() => onNavigate('subscription')}
+            className="shrink-0 bg-white text-orange-600 font-bold text-sm px-4 py-2 rounded-xl hover:bg-orange-50 transition-colors"
+          >
+            שדרג עכשיו ←
+          </button>
+        </div>
+      )}
+
+      {/* 7. ReferralBox */}
       <ReferralBox />
 
-      {/* 7. DashboardAnalytics */}
+      {/* 8. DashboardAnalytics */}
       <DashboardAnalytics businessId={businessId} />
     </div>
   );
