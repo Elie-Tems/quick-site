@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, Link } from "react-router-dom";
-import { Eye, Store, Building2, Phone, Package, Rocket, Check, ArrowLeft, Clock, CreditCard, Globe, Image, Wand2 } from "lucide-react";
+import { Eye, Store, Building2, Phone, Package, Rocket, Check, ArrowLeft, Clock, CreditCard, Globe, Image, Wand2, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuroraBg, Card, PreviewLogo, PreviewThemeRoot, ThemeToggle } from "@/components/preview-redesign/kit";
 import StepBusinessType from "@/components/onboarding/StepBusinessType";
@@ -10,10 +10,9 @@ import StepContentAI from "@/components/onboarding/StepContentAI";
 import StepContact from "@/components/onboarding/StepContact";
 import StepProducts from "@/components/onboarding/StepProducts";
 import StepBannerUpload from "@/components/onboarding/StepBannerUpload";
-import StepFinish from "@/components/onboarding/StepFinish";
 import OnboardingComplete from "@/components/onboarding/OnboardingComplete";
-import { StoreTemplateId } from "@/lib/storeTemplates";
-import { BusinessCategory } from "@/lib/categoryConfig";
+import { StoreTemplateId, getTemplate } from "@/lib/storeTemplates";
+import { BusinessCategory, getCategoryConfig } from "@/lib/categoryConfig";
 import { BusinessType } from "@/components/onboarding/StepBusinessType";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,6 +21,42 @@ import { useProducts } from "@/hooks/useProducts";
 import { useBanners } from "@/hooks/useBanners";
 import { useProductCategories } from "@/hooks/useProductCategories";
 import { cleanImageUrl } from "@/lib/imageUrl";
+import { useCreateBusiness } from "@/hooks/useCreateBusiness";
+import { getPublishFeeIls } from "@/lib/publishPaymentConfig";
+import { toast } from "@/hooks/use-toast";
+
+const SUB_TYPE_TO_CATEGORY: Record<string, BusinessCategory> = {
+  fashion: 'clothing', bakery: 'bakery', 'general-store': 'other',
+  food: 'restaurant', jewelry: 'jewelry', 'home-decor': 'home',
+  electronics: 'electronics', sports: 'other', cosmetics: 'beauty',
+  pets: 'pets', books: 'books', flowers: 'flowers',
+  beauty: 'beauty', barber: 'beauty', fitness: 'fitness',
+  renovation: 'handmade', photography: 'art', vacation: 'other',
+  broker: 'other', health: 'other', consulting: 'other',
+  legal: 'other', developer: 'other', 'car-dealer': 'automotive',
+  charity: 'other', crowdfunding: 'other', community: 'other',
+  education: 'other', social: 'other', animals: 'pets',
+};
+
+const SUB_TYPE_LABELS: Record<string, string> = {
+  fashion: 'אופנה / בוטיק', bakery: 'מאפייה / קונדיטוריה', 'general-store': 'חנות כללית',
+  food: 'מזון ומשקאות', jewelry: 'תכשיטים / עבודות יד', 'home-decor': 'מוצרי בית / עיצוב',
+  electronics: 'אלקטרוניקה', sports: 'ספורט וציוד', cosmetics: 'קוסמטיקה / טיפוח',
+  pets: 'חיות מחמד', books: 'ספרים', flowers: 'פרחים ומתנות',
+  beauty: 'קוסמטיקה / יופי', barber: 'מספרה', fitness: 'כושר / פילאטיס',
+  renovation: 'שיפוצים / בנייה', photography: 'צילום', vacation: 'צימר / נופש',
+  broker: 'מתווך / נדל"ן', health: 'בריאות / קליניקה', consulting: 'ייעוץ עסקי',
+  legal: 'עו"ד / רו"ח', developer: 'יזם / פרויקט נדל"ן', 'car-dealer': 'רכב / מכירות',
+  charity: 'תרומות כלליות', crowdfunding: 'גיוס המונים', community: 'קהילה',
+  education: 'חינוך / עמותת ילדים', social: 'רווחה חברתית', animals: 'הגנת בעלי חיים',
+};
+
+const PUBLISH_STAGES = [
+  { at: 0, label: "מקימים את החנות..." },
+  { at: 25, label: "מעלים מוצרים ותמונות..." },
+  { at: 55, label: "מחילים עיצוב וצבעים..." },
+  { at: 80, label: "מפרסמים את האתר..." },
+];
 
 const ONBOARDING_STEPS = [
   { id: 1, label: "תחום", icon: Store },
@@ -114,11 +149,14 @@ const Onboarding = () => {
   const { data: existingBanners } = useBanners(existingBusiness?.id);
   const { categories: existingCategories } = useProductCategories(existingBusiness?.id);
   
+  const createBusiness = useCreateBusiness();
   const [currentStep, setCurrentStep] = useState(1);
   const [isComplete, setIsComplete] = useState(false);
   const [hasUpdatedStatus, setHasUpdatedStatus] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [publishProgress, setPublishProgress] = useState(0);
   
   const [data, setData] = useState<OnboardingData>({
     businessType: null,
@@ -248,10 +286,133 @@ const Onboarding = () => {
 
   const getDisplayStep = () => currentStep;
 
+  const handleFinish = async (latestData: OnboardingData) => {
+    if (!user) {
+      toast({ title: "נדרשת התחברות", variant: "destructive" });
+      navigate("/login");
+      return;
+    }
+    setIsCreating(true);
+    setPublishProgress(8);
+    const iv = setInterval(() => {
+      setPublishProgress(p => (p < 92 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
+    }, 400);
+    try {
+      const branding = latestData.extractedBranding;
+      const template = getTemplate(latestData.storeTemplate);
+      const primaryColor = branding?.primaryColor || template.theme.primaryColor;
+      const colorPalette = branding?.colorPalette || [
+        template.theme.accentColor, template.theme.mutedColor, template.theme.cardColor,
+      ];
+      const businessTypeLabels: Record<string, string> = { products: "מוצרים", services: "שירותים", nonprofit: "עמותה" };
+      const resolvedCategory: BusinessCategory =
+        (latestData.businessSubType ? SUB_TYPE_TO_CATEGORY[latestData.businessSubType] : null)
+        || (latestData.businessCategory !== "other" ? latestData.businessCategory : null)
+        || 'other';
+      const effectiveCustomName = latestData.customCategoryName
+        || (latestData.businessSubType ? SUB_TYPE_LABELS[latestData.businessSubType] : null)
+        || (latestData.businessType ? businessTypeLabels[latestData.businessType] : undefined);
+      const categoryConfig = getCategoryConfig(resolvedCategory);
+      const categoriesToCreate = latestData.productCategories?.length
+        ? latestData.productCategories.slice()
+        : categoryConfig.categories.map((name, idx) => ({ id: `config-${idx}-${name}`, name, description: undefined }));
+
+      const slug = latestData.businessName.toLowerCase().replace(/\s+/g, "-").replace(/[^֐-׿a-z0-9-]/g, "");
+
+      const result = await createBusiness.mutateAsync({
+        businessName: latestData.businessName,
+        phone: latestData.phone,
+        email: latestData.orderEmail,
+        slug,
+        tagline: latestData.tagline || branding?.suggestedTagline,
+        heroTitle: latestData.heroTitle,
+        aboutText: latestData.aboutText,
+        heroBenefits: latestData.heroBenefits,
+        promoText: latestData.promoText,
+        primaryColor,
+        colorPalette,
+        brandStyle: branding?.brandStyle || "modern",
+        businessCategory: resolvedCategory,
+        customCategoryName: effectiveCustomName,
+        isReligiousAudience: latestData.isReligiousAudience,
+        businessType: latestData.businessType,
+        businessSubType: latestData.businessSubType,
+        paymentEnabled: false,
+        paymentProvider: null,
+        logo: latestData.logo,
+        heroImageUrl: branding?.heroImageUrl,
+        templateId: latestData.storeTemplate,
+        productCategories: categoriesToCreate,
+        products: latestData.products.map(p => ({
+          id: p.id, name: p.name, description: p.description, price: p.price,
+          image: p.image, imageUrl: p.imageUrl, categoryId: p.categoryId,
+        })),
+      });
+
+      const skipPublishPayment = import.meta.env.VITE_PUBLISH_SKIP_PAYMENT === "true";
+      if (skipPublishPayment) {
+        const token = crypto.randomUUID();
+        await supabase.from("publish_checkout_sessions").insert({
+          user_id: user.id, business_id: result.businessId,
+          session_token: token, status: "pending",
+          amount_ils: getPublishFeeIls(), provider: "icount",
+        });
+        const { data: fin } = await supabase.functions.invoke("finalize-publish", { body: { sessionToken: token } });
+        if (fin?.ok) { navigate("/onboarding/complete", { state: { data: latestData } }); return; }
+      }
+      navigate(`/publish-payment?businessId=${encodeURIComponent(result.businessId)}`, { state: { onboardingData: latestData } });
+    } catch (error: any) {
+      toast({ title: "שגיאה ביצירת האתר", description: error.message || "משהו השתבש, נסה שוב", variant: "destructive" });
+      setIsCreating(false);
+    } finally {
+      clearInterval(iv);
+    }
+  };
+
   if (isComplete) {
     return <OnboardingComplete data={data} />;
   }
 
+  if (isCreating) {
+    const stage = [...PUBLISH_STAGES].reverse().find(s => publishProgress >= s.at) || PUBLISH_STAGES[0];
+    return (
+      <PreviewThemeRoot>
+        <AuroraBg />
+        <div className="min-h-screen flex flex-col items-center justify-center px-4" dir="rtl">
+          <div className="space-y-8 w-full max-w-md py-6">
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                <Rocket className="w-7 h-7 text-primary animate-pulse" />
+              </div>
+              <h1 className="text-2xl font-medium pv-strong">בונים את האתר שלך...</h1>
+              <p className="text-sm pv-muted">{stage.label}</p>
+            </div>
+            <div className="space-y-4">
+              <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                <div className="h-full bg-primary transition-all duration-500 ease-out rounded-full" style={{ width: `${publishProgress}%` }} />
+              </div>
+              <p className="text-center text-xs font-medium pv-muted">{Math.round(publishProgress)}%</p>
+              <div className="space-y-2.5 pt-2">
+                {PUBLISH_STAGES.map((s, i) => {
+                  const nextAt = PUBLISH_STAGES[i + 1]?.at ?? 100;
+                  const done = publishProgress >= nextAt;
+                  const active = stage.at === s.at && !done;
+                  return (
+                    <div key={i} className="flex items-center gap-3 text-sm">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${done ? "bg-primary text-white" : active ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+                        {done ? <Check className="w-3.5 h-3.5" /> : active ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+                      </div>
+                      <span className={active ? "pv-strong font-medium" : done ? "pv-muted" : "pv-faint"}>{s.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </PreviewThemeRoot>
+    );
+  }
 
   if (currentStep === 0) {
     return (
@@ -312,9 +473,7 @@ const Onboarding = () => {
       case 5:
         return <StepProducts data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 6:
-        return <StepBannerUpload data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
-      case 7:
-        return <StepFinish data={data} updateData={updateData} onBack={prevStep} />;
+        return <StepBannerUpload data={data} updateData={updateData} onNext={() => handleFinish(data)} onBack={prevStep} />;
       default:
         return null;
     }
