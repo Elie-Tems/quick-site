@@ -578,8 +578,8 @@ const PublishPayment = () => {
     // server-side computation; the server recomputes the real charge at checkout.
     const discNet = couponInfo
       ? (couponInfo.discount_type === "percent"
-          ? Math.max(0, fee * (1 - Math.min(100, couponInfo.discount_value) / 100))
-          : Math.max(0, fee - couponInfo.discount_value))
+          ? Math.round(Math.max(0, fee * (1 - Math.min(100, couponInfo.discount_value) / 100)))
+          : Math.round(Math.max(0, fee - couponInfo.discount_value)))
       : fee;
     const hasDiscount = !!couponInfo && discNet < fee;
     return (
