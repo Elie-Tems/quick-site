@@ -15,7 +15,7 @@ const options = [
     id: "orders-only" as const,
     icon: ShoppingCart,
     title: "מערכת הזמנות בלבד",
-    description: "קבלת הזמנות ללא סליקה אונליין. תוכל לגבות בהעברה או במזומן.",
+    description: "קבלת הזמנות ללא סליקה אונליין. אפשר לגבות בהעברה או במזומן.",
     features: ["קבלת הזמנות", "ניהול לקוחות", "התראות אימייל"],
   },
   {
@@ -40,7 +40,7 @@ const StepOrderType = ({ data, updateData, onNext, onBack }: StepOrderTypeProps)
           שלב 5
         </span>
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-          איך תרצה לקבל הזמנות?
+          איך תרצו לקבל הזמנות?
         </h1>
         <p className="text-muted-foreground">
           תמיד אפשר לשנות את זה בהמשך

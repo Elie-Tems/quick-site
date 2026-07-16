@@ -144,10 +144,10 @@ const DashboardTracking = ({ businessId }: Props) => {
           <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Lock className="w-7 h-7 text-primary" />
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-2">תדע מאיפה מגיעים הלקוחות שלך</h2>
+          <h2 className="text-xl font-bold text-foreground mb-2">דעו מאיפה מגיעים הלקוחות שלכם</h2>
           <p className="text-muted-foreground max-w-lg mx-auto mb-6">
-            כשמישהו קונה בחנות - תוכל לראות אם הגיע מגוגל, מפייסבוק, מטיקטוק, או ישירות.
-            בלי המידע הזה, אתה מפרסם בעיוורון. תשלום חד-פעמי, בלי מתכנת.
+            כשמישהו קונה בחנות - תוכלו לראות אם הגיע/ה מגוגל, מפייסבוק, מטיקטוק, או ישירות.
+            בלי המידע הזה, מפרסמים בעיוורון. תשלום חד-פעמי, בלי מתכנת.
           </p>
           <div className="flex flex-col items-center gap-1 mb-6">
             <div className="text-4xl font-extrabold text-foreground">

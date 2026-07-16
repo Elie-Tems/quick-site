@@ -9,10 +9,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendLifecycleEmail } from "../_shared/email/lifecycle.ts";
-import { sendViaResend } from "../_shared/email/resend.ts";
 import { consumeRateLimit } from "../_shared/rateLimit.ts";
-
-const esc = (s: unknown) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -56,7 +53,7 @@ Deno.serve(async (req) => {
 
   // Only accept leads for a real business (avoids polluting the CRM of arbitrary
   // UUIDs and sending lead_reply mail on behalf of a non-existent store).
-  const { data: bizRow } = await admin.from("businesses").select("id, business_type, name, email, phone").eq("id", businessId).maybeSingle();
+  const { data: bizRow } = await admin.from("businesses").select("id").eq("id", businessId).maybeSingle();
   if (!bizRow) return json({ error: "store not found" }, 404);
 
   // Lead-spam guard 2: cap rapid repeat leads from the same phone per business.
@@ -80,29 +77,24 @@ Deno.serve(async (req) => {
     body: message || `פנייה${title ? ` לגבי ${title}` : ""}`, meta: details ?? {},
   });
 
-  // Drop into the default pipeline (first stage). If the business has no pipeline
-  // yet, create a default one on the fly - otherwise the lead would be captured as a
-  // contact but never surface on the merchant's Leads board (which reads pipeline_cards).
-  const { data: pipes } = await admin.from("pipelines")
+  // Drop into the default pipeline (create one lazily if missing).
+  let { data: pipes } = await admin.from("pipelines")
     .select("id, stages").eq("business_id", businessId)
     .order("is_default", { ascending: false }).limit(1);
-  let pipeline = pipes?.[0] ?? null;
+  let pipeline = pipes?.[0];
+
   if (!pipeline) {
-    // Stages mirror LeadsBoard DEFAULT_STAGES so the board renders correctly.
-    const DEFAULT_STAGES = [
-      { key: "new", label: "חדש" },
-      { key: "contacted", label: "יצרנו קשר" },
-      { key: "viewing", label: "תואם ביקור" },
-      { key: "offer", label: "הצעה" },
-      { key: "closed_won", label: "נסגר", is_won: true },
+    const defaultStages = [
+      { key: "new",         label: "חדש" },
+      { key: "in_progress", label: "בטיפול" },
+      { key: "closed",      label: "סגור" },
     ];
-    const { data: created, error: pErr } = await admin.from("pipelines").insert({
-      business_id: businessId, vertical: bizRow.business_type || "lead",
-      name: "לידים", stages: DEFAULT_STAGES, is_default: true,
-    }).select("id, stages").single();
-    if (pErr) console.warn("default pipeline create failed:", businessId, pErr.message);
+    const { data: created } = await admin.from("pipelines")
+      .insert({ business_id: businessId, name: "לידים", stages: defaultStages, is_default: true })
+      .select("id, stages").single();
     pipeline = created ?? null;
   }
+
   if (pipeline) {
     const stages = (pipeline.stages as { key: string }[]) ?? [];
     const firstStage = stages[0]?.key ?? "new";
@@ -110,25 +102,6 @@ Deno.serve(async (req) => {
       business_id: businessId, pipeline_id: pipeline.id, contact_id: contact.id,
       stage_key: firstStage, title: title || name, value: value ?? null, details: details ?? {},
     });
-  }
-
-  // Notify the MERCHANT that a lead came in (best-effort). The lead_reply below acks
-  // the CUSTOMER; without this the merchant only sees the lead if they happen to open
-  // the board, so a time-sensitive real-estate/vehicle lead gets missed.
-  if (bizRow.email) {
-    try {
-      const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
-      const rows = [
-        ["שם", name], ["טלפון", phone], email ? ["אימייל", email] : null,
-        title ? ["מתעניין ב", title] : null, message ? ["הודעה", message] : null,
-      ].filter(Boolean).map((r) => `<tr><td style="padding:4px 12px 4px 0;color:#666">${esc((r as string[])[0])}</td><td style="padding:4px 0;font-weight:600">${esc((r as string[])[1])}</td></tr>`).join("");
-      await sendViaResend({
-        to: bizRow.email,
-        subject: `ליד חדש מהאתר${title ? ` - ${title}` : ""} 📥`,
-        fromName: bizRow.name || "Siango",
-        html: `<div dir="rtl" style="font-family:Arial,sans-serif;font-size:15px;color:#111"><h2 style="margin:0 0 10px">קיבלת ליד חדש מהאתר</h2><table style="border-collapse:collapse">${rows}</table><p style="margin-top:16px"><a href="${siteUrl}/dashboard" style="color:#0b8f6a;font-weight:600">לצפייה וניהול בלוח הלידים ←</a></p></div>`,
-      });
-    } catch (e) { console.warn("merchant lead notify failed:", contact.id, String(e)); }
   }
 
   // Auto-acknowledge the lead by email (best-effort; only if they left one).

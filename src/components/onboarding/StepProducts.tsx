@@ -707,7 +707,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         categoryId: undefined,
       }));
       updateData({ products: demo });
-      toast.success("יצרנו לך 5 מוצרי דמו להתחלה - תוכל להחליף, לערוך או למחוק אותם בכל רגע במסך המוצרים בלוח הניהול.", { duration: 6000 });
+      toast.success("יצרנו 5 מוצרי דמו להתחלה - אפשר להחליף, לערוך או למחוק אותם בכל רגע במסך המוצרים בלוח הניהול.", { duration: 6000 });
     }
     onNext();
   };

@@ -219,7 +219,7 @@ const AboutEditor = ({
     if (rawText.trim()) {
       toast({
         title: "תמלול הושלם! ✨",
-        description: "תוכל לערוך את הטקסט וללחוץ על יצירת טקסט מקצועי",
+        description: "תוכלו לערוך את הטקסט וללחוץ על יצירת טקסט מקצועי",
       });
     }
   }, [rawText]);
@@ -265,7 +265,7 @@ const AboutEditor = ({
         }
         toast({
           title: "הטקסט שופר בהצלחה! ✨",
-          description: "תוכל לערוך אותו לפני השמירה",
+          description: "תוכלו לערוך אותו לפני השמירה",
         });
       }
     } catch (error: any) {
@@ -312,7 +312,7 @@ const AboutEditor = ({
         }
         toast({
           title: "הטקסט נוצר בהצלחה! ✨",
-          description: "תוכל לערוך אותו לפני השמירה",
+          description: "תוכלו לערוך אותו לפני השמירה",
         });
       }
     } catch (error: any) {
