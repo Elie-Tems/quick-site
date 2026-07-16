@@ -18,13 +18,18 @@ const json = (b: unknown, s = 200) =>
 interface ReqBody {
   businessId: string;
   items: { product_id: string; quantity: number; variant_id?: string | null; variant_color?: string | null; variant_size?: string | null }[];
-  customer: { fullName: string; phone: string; email: string };
+  customer: { fullName?: string; name?: string; phone: string; email: string };
   notes?: string;
   deliveryMethod?: "pickup" | "delivery";
   deliveryAddress?: string;
   couponId?: string;
   couponCode?: string;
   slug?: string;
+  // Lodging (vacation) booking path - present instead of `items` when booking a unit.
+  unitProductId?: string;
+  checkinDate?: string;   // "YYYY-MM-DD"
+  checkoutDate?: string;  // "YYYY-MM-DD"
+  numGuests?: number;
 }
 
 Deno.serve(async (req) => {
@@ -35,14 +40,22 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
 
   const { businessId, items, customer } = body;
-  if (!businessId || !Array.isArray(items) || items.length === 0 || !customer?.email) {
-    return json({ error: "businessId, items and customer are required" }, 400);
-  }
 
   const admin = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
+
+  // ── Lodging (vacation) booking path ───────────────────────────────────────
+  // Detected by unitProductId + check-in/out dates. Prices, nights and the total
+  // are recomputed here from the DB (weekend-aware); the client never sends a price.
+  if (body.unitProductId && body.checkinDate && body.checkoutDate) {
+    return await handleLodging(admin, body);
+  }
+
+  if (!businessId || !Array.isArray(items) || items.length === 0 || !customer?.email) {
+    return json({ error: "businessId, items and customer are required" }, 400);
+  }
 
   const { data: business } = await admin
     .from("businesses")
@@ -213,3 +226,127 @@ Deno.serve(async (req) => {
 
   return json({ ok: true, order_id: order.id, total_price: order.total_price });
 });
+
+// ── Lodging booking handler ──────────────────────────────────────────────────
+// Server-authoritative: looks up the unit, recomputes nights + total (Fri/Sat
+// nights bill at price_weekend if set, else price_per_night), validates
+// min_nights / max_guests, and inserts a 'pending' COD order carrying the stay
+// details. Mirrors the merchant + customer email sends of the product-cart path.
+async function handleLodging(admin: any, body: ReqBody): Promise<Response> {
+  const { businessId, unitProductId, checkinDate, checkoutDate } = body;
+  const customer = body.customer || ({} as ReqBody["customer"]);
+  const customerName = (customer.name || customer.fullName || "").trim();
+  if (!businessId || !unitProductId || !checkinDate || !checkoutDate || !customer.email) {
+    return json({ error: "businessId, unit, dates and customer email are required" }, 400);
+  }
+
+  const parseDate = (s: string): Date | null => {
+    const [y, m, d] = String(s).split("-").map(Number);
+    if (!y || !m || !d) return null;
+    return new Date(Date.UTC(y, m - 1, d));
+  };
+  const ci = parseDate(checkinDate);
+  const co = parseDate(checkoutDate);
+  if (!ci || !co) return json({ error: "Invalid dates" }, 400);
+  const nights = Math.round((co.getTime() - ci.getTime()) / 86_400_000);
+  if (nights <= 0) return json({ error: "checkout must be after checkin" }, 400);
+
+  const { data: business } = await admin
+    .from("businesses")
+    .select("id, name, email")
+    .eq("id", businessId)
+    .single();
+  if (!business) return json({ error: "Business not found" }, 404);
+
+  // Order-spam guard - same window/caps as the product path (public endpoint).
+  const windowStart = new Date(Date.now() - 60_000).toISOString();
+  const { count: sameEmailCount } = await admin
+    .from("orders").select("id", { count: "exact", head: true })
+    .eq("business_id", businessId).eq("customer_email", customer.email).gte("created_at", windowStart);
+  if ((sameEmailCount ?? 0) >= 3) return json({ error: "rate_limited" }, 429);
+  const { count: storeBurst } = await admin
+    .from("orders").select("id", { count: "exact", head: true })
+    .eq("business_id", businessId).gte("created_at", windowStart);
+  if ((storeBurst ?? 0) >= 30) return json({ error: "rate_limited" }, 429);
+
+  // Canonical unit from the DB - never trust client-sent pricing.
+  const { data: unit } = await admin
+    .from("products")
+    .select("id, name, active, price_per_night, price_weekend, max_guests, min_nights")
+    .eq("business_id", businessId)
+    .eq("id", unitProductId)
+    .maybeSingle();
+  if (!unit || unit.active !== true) return json({ error: "Unit not found" }, 400);
+  if (unit.price_per_night == null) return json({ error: "Unit is not bookable" }, 400);
+
+  const nightly = Number(unit.price_per_night) || 0;
+  const weekend = unit.price_weekend != null ? Number(unit.price_weekend) : nightly;
+  const minNights = unit.min_nights != null ? Number(unit.min_nights) : 1;
+  const maxGuests = unit.max_guests != null ? Number(unit.max_guests) : null;
+
+  if (nights < minNights) return json({ error: `מינימום ${minNights} לילות להזמנה` }, 400);
+  const numGuests = Math.max(1, Math.floor(Number(body.numGuests) || 1));
+  if (maxGuests != null && numGuests > maxGuests) return json({ error: `עד ${maxGuests} אורחים ביחידה זו` }, 400);
+
+  // Weekend-aware total: iterate each night (checkin .. checkout-1) in UTC.
+  let totalPrice = 0;
+  const d = new Date(ci);
+  for (let i = 0; i < nights; i++) {
+    const day = d.getUTCDay(); // 5 = Fri, 6 = Sat
+    totalPrice += (day === 5 || day === 6) ? weekend : nightly;
+    d.setUTCDate(d.getUTCDate() + 1);
+  }
+
+  const { data: order, error: orderErr } = await admin.from("orders").insert({
+    business_id: businessId,
+    customer_name: customerName,
+    customer_phone: customer.phone || null,
+    customer_email: customer.email,
+    notes: body.notes || null,
+    total_price: totalPrice,
+    status: "pending",
+    payment_status: "not_required",
+    checkin_date: checkinDate,
+    checkout_date: checkoutDate,
+    num_guests: numGuests,
+    unit_name: unit.name,
+  }).select("id, total_price").single();
+
+  if (orderErr || !order) return json({ error: "Could not create order" }, 500);
+
+  // Notify the merchant - money-first subject, works for COD. Best-effort.
+  const merchantEmail = (business as any).email;
+  if (merchantEmail) {
+    try {
+      const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
+      const mail = newOrderMerchant({
+        businessName: business.name,
+        amountIls: totalPrice,
+        dashboardUrl: `${siteUrl}/dashboard`,
+        recipientEmail: merchantEmail,
+      });
+      await sendViaResend({ to: merchantEmail, subject: mail.subject, html: mail.html, fromName: "Siango" });
+    } catch (e) {
+      console.warn("merchant lodging email failed:", e);
+    }
+  }
+
+  // Customer confirmation - merchant-editable lifecycle email. Best-effort.
+  try {
+    const stayHtml =
+      `<div dir="rtl" style="font-size:15px;line-height:1.9">` +
+      `<strong>${unit.name}</strong><br/>` +
+      `כניסה: ${checkinDate} · יציאה: ${checkoutDate}<br/>` +
+      `${nights} לילות · ${numGuests} אורחים<br/>` +
+      `סה״כ לתשלום מול המארח: <strong>₪${totalPrice.toLocaleString()}</strong>` +
+      `</div>`;
+    await sendLifecycleEmail(admin, {
+      businessId, key: "order_confirm", to: customer.email, name: customerName,
+      extraHtml: stayHtml,
+    });
+  } catch (e) {
+    console.warn("customer lodging confirmation email failed:", e);
+  }
+
+  return json({ ok: true, order_id: order.id, total_price: order.total_price });
+}

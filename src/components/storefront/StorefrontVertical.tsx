@@ -1,7 +1,10 @@
-import { getEnabledModules, type BusinessLike } from "@/lib/businessModules";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { getBusinessType, getEnabledModules, type BusinessLike } from "@/lib/businessModules";
 import BookingWidget from "./BookingWidget";
 import ListingsBoard from "./ListingsBoard";
 import DonationWidget from "./DonationWidget";
+import LodgingWidget, { type LodgingUnit } from "./LodgingWidget";
 import StoreDifferentiation from "./StoreDifferentiation";
 import StoreGallery from "./StoreGallery";
 import StoreLeadForm from "./StoreLeadForm";
@@ -34,12 +37,36 @@ const Section = ({ title, subtitle, accent, children }: { title: string; subtitl
 const StorefrontVertical = ({ business }: {
   business: (BusinessLike & { id: string; primary_color?: string | null; phone?: string | null }) | null | undefined;
 }) => {
+  const isVacation = getBusinessType(business) === "vacation";
+
+  // Vacation units = this business's products that have a nightly rate set. Loaded
+  // here (the parent StoreFront doesn't pass products into this slot) and handed to
+  // LodgingWidget. Gated so non-vacation stores never run the query.
+  const { data: lodgingUnits = [] } = useQuery({
+    queryKey: ["lodging-units", business?.id],
+    queryFn: async (): Promise<LodgingUnit[]> => {
+      if (!business?.id) return [];
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("business_id", business.id)
+        .eq("active", true)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return ((data as any[]) || []).filter((p) => p.price_per_night != null) as LodgingUnit[];
+    },
+    enabled: !!business?.id && isVacation,
+  });
+
   if (!business?.id) return null;
   const modules = getEnabledModules(business);
   const accent = business.primary_color || "#0b8f6a";
 
   return (
     <>
+      {isVacation && lodgingUnits.length > 0 && (
+        <LodgingWidget businessId={business.id} units={lodgingUnits} />
+      )}
       {modules.includes("booking") && (
         <Section title="קביעת תור" subtitle="בחרו שירות ומועד - ונתראה" accent={accent}>
           <BookingWidget businessId={business.id} />

@@ -89,6 +89,47 @@ export const useCreateOrder = () => {
   });
 };
 
+// Create a lodging (vacation) booking order. Like useCreateOrder, all pricing is
+// recomputed server-side by orders-create (weekend-aware nights x nightly rate) —
+// the client sends only the unit id, dates and guest count, never a price.
+// COD / no-online-payment path: the order lands as 'pending' and the host collects
+// payment directly.
+export const useCreateLodgingOrder = () => {
+  return useMutation({
+    mutationFn: async (input: {
+      businessId: string;
+      unitProductId: string;
+      checkinDate: string;
+      checkoutDate: string;
+      numGuests: number;
+      customer: { name: string; phone: string; email: string };
+    }) => {
+      const { data, error } = await supabase.functions.invoke('orders-create', {
+        body: {
+          businessId: input.businessId,
+          unitProductId: input.unitProductId,
+          checkinDate: input.checkinDate,
+          checkoutDate: input.checkoutDate,
+          numGuests: input.numGuests,
+          customer: {
+            name: input.customer.name,
+            fullName: input.customer.name,
+            phone: input.customer.phone,
+            email: input.customer.email,
+          },
+        },
+      });
+
+      if (error) throw new Error(error.message);
+      if (!data?.ok) throw new Error(data?.error || 'שגיאה ביצירת ההזמנה');
+      return data;
+    },
+    onError: (error) => {
+      toast.error('שגיאה בשליחת ההזמנה: ' + error.message);
+    },
+  });
+};
+
 // Update order status (for dashboard)
 export const useUpdateOrder = () => {
   const queryClient = useQueryClient();

@@ -857,7 +857,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     // lead/donation-based (no "add to cart"). This is what makes a realestate store show
     // the property/lead experience regardless of the saved template.
     const COMMERCE_LAYOUTS = new Set(['classic', 'market', 'boutique', 'restaurant']);
-    const NON_COMMERCE_VERTICALS = new Set(['realestate', 'nonprofit', 'synagogue']);
+    const NON_COMMERCE_VERTICALS = new Set(['realestate', 'nonprofit', 'synagogue', 'vacation']);
     if (NON_COMMERCE_VERTICALS.has(getBusinessType(business)) && (!layoutId || COMMERCE_LAYOUTS.has(layoutId))) {
       layoutId = getDefaultLayout(business);
     }
