@@ -305,14 +305,14 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   // ── Quick add ──────────────────────────────────────────────────────────────
 
   const handleQuickAdd = () => {
-    if (!quickName.trim() || !quickPrice.trim()) return;
+    if (!quickName.trim()) return;
     const categoryId = data.productOrganization === "categories" ? selectedCategoryId || undefined : undefined;
     updateData({
       products: [...data.products, {
         id: Date.now().toString(),
         name: quickName.trim(),
         description: quickDesc.trim(),
-        price: parseFloat(quickPrice),
+        price: quickPrice.trim() ? parseFloat(quickPrice) : null,
         imageUrl: quickImageUrl || undefined,
         categoryId,
       }],
@@ -689,7 +689,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     updateData({ productCategories: data.productCategories.map(c => c.id === id ? { ...c, ...updates } : c) });
 
   const handleRemoveProduct = (id: string) => updateData({ products: data.products.filter(p => p.id !== id) });
-  const handleUpdateProduct = (id: string, patch: Partial<{ name: string; price: number }>) =>
+  const handleUpdateProduct = (id: string, patch: Partial<{ name: string; price: number | null }>) =>
     updateData({ products: data.products.map(p => p.id === id ? { ...p, ...patch } : p) });
 
   // Continue to the next step. If the merchant is skipping with an empty store,
@@ -720,7 +720,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         {products.slice(0, 15).map((p, i) => (
           <div key={i} className="flex items-center justify-between px-3 py-2 text-sm">
             <span className="font-medium truncate flex-1">{p.name}</span>
-            <span className="text-muted-foreground shrink-0 mr-3">₪{p.price}</span>
+            <span className="text-muted-foreground shrink-0 mr-3">{p.price != null ? `₪${p.price}` : "ללא מחיר"}</span>
           </div>
         ))}
         {products.length > 15 && (
@@ -812,25 +812,25 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 dir="rtl"
               />
               <input
-                defaultValue={product.price || ""}
+                defaultValue={product.price != null ? product.price : ""}
                 type="number"
                 min="0"
-                placeholder="₪"
-                onBlur={e => { handleUpdateProduct(product.id, { price: Number(e.target.value) || 0 }); setEditingFieldProductId(null); }}
+                placeholder="ללא מחיר"
+                onBlur={e => { handleUpdateProduct(product.id, { price: e.target.value.trim() ? Number(e.target.value) : null }); setEditingFieldProductId(null); }}
                 onKeyDown={e => {
                   if (e.key === "Enter" || e.key === "Escape") {
-                    handleUpdateProduct(product.id, { price: Number(e.currentTarget.value) || 0 });
+                    handleUpdateProduct(product.id, { price: e.currentTarget.value.trim() ? Number(e.currentTarget.value) : null });
                     setEditingFieldProductId(null);
                   }
                 }}
-                className="w-20 h-8 rounded-lg border border-primary/50 bg-background px-2 text-sm text-left focus:outline-none focus:ring-1 focus:ring-primary/40"
+                className="w-24 h-8 rounded-lg border border-primary/50 bg-background px-2 text-sm text-left focus:outline-none focus:ring-1 focus:ring-primary/40"
                 dir="ltr"
               />
             </div>
           ) : (
             <div className="flex items-center gap-1.5">
               <p className="text-sm font-medium truncate">{product.name}</p>
-              <span className="text-sm text-muted-foreground shrink-0">· ₪{product.price}</span>
+              <span className="text-sm text-muted-foreground shrink-0">{product.price != null ? `· ₪${product.price}` : "· ללא מחיר"}</span>
               <button
                 onClick={e => { e.stopPropagation(); setEditingFieldProductId(product.id); }}
                 className="p-0.5 opacity-40 hover:opacity-100 hover:text-primary transition-all shrink-0"
@@ -1098,7 +1098,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                     className="h-10 rounded-xl"
                   />
                   <Input
-                    placeholder="₪ מחיר"
+                    placeholder="₪ מחיר (אופציונלי)"
                     type="number"
                     value={quickPrice}
                     onChange={e => setQuickPrice(e.target.value)}

@@ -122,7 +122,7 @@ export interface OnboardingData {
     id: string;
     name: string;
     description: string;
-    price: number;
+    price: number | null;
     sku?: string;
     image?: File | null;
     imageUrl?: string;
