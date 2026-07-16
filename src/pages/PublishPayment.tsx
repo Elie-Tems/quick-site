@@ -420,7 +420,7 @@ const PublishPayment = () => {
                   src={cardcomUrl}
                   className="w-full grow min-h-[min(80vh,820px)] border-0 bg-white"
                   allow="payment *"
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-top-navigation-by-user-activation"
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-top-navigation-by-user-activation"
                 />
                 <div className="px-4 py-3 border-t border-border bg-muted/20 text-center">
                   <a
@@ -803,7 +803,7 @@ const PublishPayment = () => {
                   src={checkoutUrl}
                   className="w-full grow min-h-[min(80vh,800px)] border-0 bg-background"
                   allow="payment *"
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-top-navigation-by-user-activation"
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-top-navigation-by-user-activation"
                 />
                 <div className="px-4 py-3 border-t border-border bg-muted/20 text-center">
                   <a
