@@ -555,8 +555,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         body: { audio: base64, mimeType: blob.type },
       });
       if (error) throw error;
-      if (result?.transcript) setVoiceTranscript(result.transcript);
-      if (result?.products?.length) setVoiceParsed(result.products);
+      if (result?.products?.length) importParsed(result.products, true);
       else toast.error("לא זוהו מוצרים בהקלטה — נסו שוב");
     } catch {
       toast.error("שגיאה בתמלול — נסו שוב");
