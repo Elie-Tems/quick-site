@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Loader2, ArrowRight, RotateCcw } from "lucide-react";
 import { KNOWLEDGE_BASE } from "@/lib/knowledgeBase";
 import { PLANS, VAT_SUFFIX } from "@/lib/pricingConfig";
@@ -45,9 +44,9 @@ const HARDCODED_ANSWERS: Record<string, string> = {
 
 6️⃣ **לוחצים "שמור"** ✅
 
-זהו! המוצר שלך באתר 🎉
+זהו! המוצר שלכם באתר 🎉
 
-צריך עזרה נוספת? שאל בשמחה! 😊`,
+צריכים עזרה נוספת? שאלו בשמחה! 😊`,
 
   "איך אני יוצר טקסט אודות?": `מעולה ששאלת! 🌟 יצירת טקסט "אודות" זה ממש פשוט.
 
@@ -198,11 +197,15 @@ ${PLANS.map((p) => {
 const HelpCenter = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [chatInput, setChatInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [openArticle, setOpenArticle] = useState<string | null>(null);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const { user } = useAuth();
   const { data: business } = useMyBusiness();
+  const chatRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Per-customer memory: load saved conversation once on mount and persist after each exchange
   const conversationLoaded = useRef(false);
@@ -344,7 +347,7 @@ const HelpCenter = () => {
       console.error(e);
       setMessages(prev => [
         ...prev,
-        { role: "assistant", content: "😅 סליחה, משהו השתבש. נסה שוב בבקשה." },
+        { role: "assistant", content: "😅 סליחה, משהו השתבש. נסו שוב בבקשה." },
       ]);
     } finally {
       setIsLoading(false);
@@ -358,6 +361,20 @@ const HelpCenter = () => {
       void (supabase as any).from("help_conversations").delete().eq("user_id", user.id);
     }
   };
+
+  // Scroll chat panel into view when first message appears
+  useEffect(() => {
+    if (messages.length === 1) {
+      setTimeout(() => chatRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+    }
+  }, [messages.length]);
+
+  // Scroll to bottom of messages when new message arrives
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const el = scrollContainerRef.current;
+    if (el) setTimeout(() => { el.scrollTop = el.scrollHeight; }, 50);
+  }, [messages, isLoading]);
 
   useEffect(() => {
     setOpenArticle(null);
@@ -454,7 +471,7 @@ const HelpCenter = () => {
           className="text-center mb-8"
         >
           <h1 className="text-3xl font-bold mb-2">איך אפשר לעזור? 🤗</h1>
-          <p className="text-muted-foreground">שאל שאלה חופשית או עיין לפי נושא</p>
+          <p className="text-muted-foreground">שאלו שאלה חופשית או עיינו לפי נושא</p>
         </motion.div>
 
         {/* Search / Chat bar */}
@@ -470,7 +487,7 @@ const HelpCenter = () => {
             <Input
               value={input}
               onChange={e => setInput(e.target.value)}
-              placeholder="שאל שאלה חופשית..."
+              placeholder="שאלו שאלה חופשית..."
               className="flex-1 border-0 shadow-none focus-visible:ring-0 h-10 bg-transparent text-foreground placeholder:text-muted-foreground"
               disabled={isLoading}
             />
@@ -532,7 +549,7 @@ const HelpCenter = () => {
                     onClick={() => handleSend(input)}
                     className="gap-1.5"
                   >
-                    שלח את השאלה לבוט
+                    שלחו את השאלה לבוט
                     <span>←</span>
                   </Button>
                 </div>
@@ -631,6 +648,7 @@ const HelpCenter = () => {
         <AnimatePresence>
           {messages.length > 0 && (
             <motion.div
+              ref={chatRef}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
@@ -652,7 +670,7 @@ const HelpCenter = () => {
               </div>
 
               {/* Messages */}
-              <ScrollArea className="h-[300px] p-4">
+              <div ref={scrollContainerRef} className="h-[360px] overflow-y-auto p-4">
                 <div className="space-y-4">
                   {messages.map((msg, i) => (
                     <motion.div
@@ -709,16 +727,43 @@ const HelpCenter = () => {
                       </div>
                     </motion.div>
                   )}
+                  <div ref={messagesEndRef} />
                 </div>
-              </ScrollArea>
+              </div>
 
-              {/* Chat footer link */}
+              {/* Chat reply input */}
               <div className="border-t border-border/50 p-3">
+                <form
+                  onSubmit={e => {
+                    e.preventDefault();
+                    if (!chatInput.trim() || isLoading) return;
+                    handleSend(chatInput);
+                    setChatInput("");
+                  }}
+                  className="flex gap-2 items-center"
+                >
+                  <Input
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    placeholder="כתבו הודעה נוספת..."
+                    className="flex-1 h-9 text-sm"
+                    disabled={isLoading}
+                    dir="rtl"
+                  />
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={isLoading || !chatInput.trim()}
+                    className="shrink-0"
+                  >
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  </Button>
+                </form>
                 <a
                   href="mailto:office@siango.app"
-                  className="block text-center text-xs text-muted-foreground hover:text-primary transition-colors"
+                  className="block text-center text-xs text-muted-foreground hover:text-primary transition-colors mt-2"
                 >
-                  לא מצאת תשובה? שלח מייל לתמיכה →
+                  לא מצאתם תשובה? שלחו מייל לתמיכה →
                 </a>
               </div>
             </motion.div>
@@ -728,9 +773,9 @@ const HelpCenter = () => {
         {/* Bottom contact link — shown when no chat panel */}
         {messages.length === 0 && (
           <div className="text-center mt-8 text-sm text-muted-foreground">
-            לא מצאת תשובה?{" "}
+            לא מצאתם תשובה?{" "}
             <a href="mailto:office@siango.app" className="text-primary hover:underline">
-              צור קשר עם התמיכה
+              צרו קשר עם התמיכה
             </a>
           </div>
         )}
