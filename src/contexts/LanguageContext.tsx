@@ -64,15 +64,17 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   // writes to storage - so geo-detection never overrides an explicit choice.
   const hadExplicitChoice = useRef(
     typeof window !== 'undefined' &&
-      ['he', 'en', 'ar', 'ru', 'fr'].includes(localStorage.getItem(STORAGE_KEY) || ''),
+      ['he', 'en', 'ar', 'ru', 'fr'].includes((() => { try { return localStorage.getItem(STORAGE_KEY); } catch { return null; } })() || ''),
   );
 
   const [language, setLanguageState] = useState<Language>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved && ['he', 'en', 'ar', 'ru', 'fr'].includes(saved)) {
-        return saved as Language;
-      }
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved && ['he', 'en', 'ar', 'ru', 'fr'].includes(saved)) {
+          return saved as Language;
+        }
+      } catch { /* storage blocked */ }
     }
     return 'he';
   });
@@ -135,7 +137,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     // Update document direction and lang
     document.documentElement.dir = currentLanguage.dir;
     document.documentElement.lang = language;
-    localStorage.setItem(STORAGE_KEY, language);
+    try { localStorage.setItem(STORAGE_KEY, language); } catch { /* storage blocked */ }
   }, [language, currentLanguage.dir]);
 
   const setLanguage = (lang: Language) => {

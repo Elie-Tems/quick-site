@@ -10,9 +10,16 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const safeGet = (key: string): string | null => {
+  try { return localStorage.getItem(key); } catch { return null; }
+};
+const safeSet = (key: string, value: string): void => {
+  try { localStorage.setItem(key, value); } catch { /* storage blocked */ }
+};
+
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('dashboard-theme') as Theme;
+    const savedTheme = safeGet('dashboard-theme') as Theme;
     // Default to LIGHT (Moti's call) - feels cleaner/more familiar for merchants.
     // The toggle still lets them switch to dark and the choice is remembered.
     return savedTheme || 'light';
@@ -20,7 +27,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    localStorage.setItem('dashboard-theme', theme);
+    safeSet('dashboard-theme', theme);
     // Also put the theme class on <html> so Radix dialogs/dropdowns/popovers
     // (which render in a portal at document.body, OUTSIDE the wrapper div below)
     // inherit the correct light/dark CSS variables. Without this, inputs inside
