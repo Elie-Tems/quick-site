@@ -199,9 +199,11 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
     if (!businessId) return;
     setIsSavingLabels(true);
     try {
+      const existingLabels = (business as any)?.custom_labels || {};
       await updateBusiness.mutateAsync({
         id: businessId,
         custom_labels: {
+          ...existingLabels,
           ...(labelProducts ? { productsTitle: labelProducts } : {}),
           ...(labelAbout ? { aboutTitle: labelAbout } : {}),
           ...(labelCta ? { ctaTitle: labelCta } : {}),
