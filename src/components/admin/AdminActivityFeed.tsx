@@ -25,7 +25,7 @@ const AdminActivityFeed = () => {
       <h3 className="font-semibold text-lg flex items-center gap-2">
         <Zap className="h-5 w-5 text-yellow-500" />
         פעילות אחרונה
-        <span className="text-xs text-muted-foreground font-normal mr-auto">מתעדכן כל 30 שניות</span>
+        <span className="text-xs text-muted-foreground font-normal mr-auto">מתעדכן כל 2 דקות</span>
       </h3>
 
       {isLoading ? (

@@ -22,11 +22,9 @@ function lifecycleStage(c: CustomerRow): { label: string; tone: Tone; hint: stri
   const b = c.business;
   if (!b) return { label: "רשום · ללא חנות", tone: "muted", hint: "נרשם אך לא הקים חנות" };
   const ageDays = (Date.now() - new Date(b.created_at).getTime()) / 86_400_000;
-  const paid = b.subscription_plan === "recommended" || b.subscription_plan === "premium";
   if (!b.is_published) return { label: "בהקמה", tone: "amber", hint: "חנות נוצרה אך עוד לא פורסמה" };
-  if (paid) return { label: "פעיל · משלם", tone: "green", hint: "חנות פעילה עם מנוי בתשלום" };
-  if (ageDays <= 30) return { label: "חדש", tone: "blue", hint: "חנות פורסמה לאחרונה" };
-  return { label: "בסיכון", tone: "amber", hint: "חנות פורסמה, ללא מנוי בתשלום - יעד לשדרוג" };
+  if (ageDays <= 30) return { label: "חדש · פעיל", tone: "blue", hint: "חנות פורסמה לאחרונה" };
+  return { label: "פעיל", tone: "green", hint: "חנות פורסמה ופעילה" };
 }
 const TONE_CLS: Record<Tone, string> = {
   green: "text-green-700 bg-green-100",
@@ -47,12 +45,11 @@ interface CustomerRow {
   status: string | null;
   business?: {
     id: string;
-    business_name: string;
+    name: string;
     slug: string | null;
     is_published: boolean | null;
     business_category: string | null;
     created_at: string;
-    subscription_plan: string | null;
     orders_count?: number;
   } | null;
 }
@@ -130,7 +127,7 @@ function CustomerCard({ c, onResetOnboarding }: { c: CustomerRow; onResetOnboard
 
         {/* Store name */}
         <div className="hidden md:block flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{b?.business_name || "אין חנות"}</p>
+          <p className="text-sm font-medium truncate">{b?.name || "אין חנות"}</p>
           <p className="text-xs text-muted-foreground">{b?.business_category || ""}</p>
         </div>
 
@@ -148,12 +145,6 @@ function CustomerCard({ c, onResetOnboarding }: { c: CustomerRow; onResetOnboard
           {stage.label}
         </span>
 
-        {/* Plan */}
-        {b?.subscription_plan && (
-          <span className={`hidden md:inline text-xs font-medium px-2 py-0.5 rounded-full ${PLAN_COLORS[b.subscription_plan] ?? "bg-muted text-muted-foreground"}`}>
-            {PLAN_LABELS[b.subscription_plan] ?? b.subscription_plan}
-          </span>
-        )}
 
         {/* Date */}
         <p className="hidden lg:block text-xs text-muted-foreground shrink-0">
@@ -194,7 +185,7 @@ function CustomerCard({ c, onResetOnboarding }: { c: CustomerRow; onResetOnboard
             <p className="text-xs font-semibold text-muted-foreground uppercase">פרטי חנות</p>
             {b ? (
               <>
-                <p className="font-medium">{b.business_name}</p>
+                <p className="font-medium">{b.name}</p>
                 <p className="text-xs text-muted-foreground">{b.business_category || "ללא קטגוריה"}</p>
                 <p className="text-xs text-muted-foreground">
                   נוצרה: {format(new Date(b.created_at), "dd/MM/yyyy", { locale: he })}
@@ -314,7 +305,7 @@ const AdminCustomers = () => {
         .select(`
           id, user_id, full_name, email, phone, created_at, onboarding_completed_at, status,
           businesses (
-            id, business_name, slug, is_published, business_category, created_at, subscription_plan
+            id, name, slug, is_published, business_category, created_at
           )
         `)
         .order("created_at", { ascending: false });

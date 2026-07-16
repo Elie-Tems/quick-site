@@ -20,6 +20,7 @@ export interface CommandCenterData {
     arr: number;
     activeStores: number;
     totalUsers: number;
+    activeSubscribers: number;
   };
   alerts: {
     lowDomainBalance: { balance: number; currency: string } | null;
@@ -58,7 +59,7 @@ export function useCommandCenter() {
         balanceRow, failedDomainOrders, pendingCancellations,
       ] = await Promise.allSettled([
         countSince("profiles", "created_at", today),
-        countSince("businesses", "published_at", today, (q) => q.eq("is_published", true)),
+        countSince("businesses", "updated_at", today, (q) => q.eq("is_published", true)),
         countSince("subscriptions", "created_at", today),
         countSince("domains", "created_at", today),
         (supabase as any).from("orders").select("total_price").gte("created_at", today),
@@ -73,9 +74,8 @@ export function useCommandCenter() {
       const ordersRows = (val(ordersToday as any, { data: [] }).data || []) as Array<{ total_price: number | null }>;
       const subsRows = (val(subs as any, { data: [] }).data || []) as Array<{ monthly_total: number | null; paid_until: string | null; status: string | null }>;
       const now = new Date();
-      const mrr = subsRows
-        .filter((s) => s.status === "active" && s.paid_until && new Date(s.paid_until) > now)
-        .reduce((sum, s) => sum + (Number(s.monthly_total) || 69), 0);
+      const activeSubs = subsRows.filter((s) => s.status === "active" && s.paid_until && new Date(s.paid_until) > now);
+      const mrr = activeSubs.reduce((sum, s) => sum + (Number(s.monthly_total) || 79), 0);
 
       const balance = val(balanceRow as any, { data: null }).data as { balance: number | null; currency: string | null } | null;
 
@@ -93,6 +93,7 @@ export function useCommandCenter() {
           arr: mrr * 12,
           activeStores: val(activeStores as any, { count: 0 }).count || 0,
           totalUsers: val(totalUsers as any, { count: 0 }).count || 0,
+          activeSubscribers: activeSubs.length,
         },
         alerts: {
           lowDomainBalance:

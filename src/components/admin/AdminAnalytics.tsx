@@ -96,7 +96,7 @@ const AdminAnalytics = () => {
           <Skeleton className="h-64 w-full" />
         ) : viewsData && viewsData.length > 0 ? (
           <div className="space-y-2">
-            {viewsData.slice(-14).map((item) => (
+            {viewsData.map((item) => (
               <div key={item.date} className="flex items-center gap-3">
                 <span className="text-xs text-muted-foreground w-20 text-left">
                   {item.date}

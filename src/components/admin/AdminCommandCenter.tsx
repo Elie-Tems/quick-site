@@ -254,6 +254,7 @@ const AdminCommandCenter = () => {
   const kpis = [
     { label: "הכנסה חודשית", value: k ? ils(k.mrr) : undefined, icon: TrendingUp },
     { label: "הכנסה שנתית", value: k ? ils(k.arr) : undefined, icon: TrendingUp },
+    { label: "מנויים פעילים", value: k ? fmt(k.activeSubscribers) : undefined, icon: CreditCard },
     { label: "חנויות פעילות", value: k ? fmt(k.activeStores) : undefined, icon: Building2 },
     { label: "סה\"כ משתמשים", value: k ? fmt(k.totalUsers) : undefined, icon: Users },
   ];
@@ -340,7 +341,7 @@ const AdminCommandCenter = () => {
       {/* Headline KPIs */}
       <div>
         <h3 className="text-sm font-semibold text-muted-foreground mb-3">מדדים מובילים</h3>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           {kpis.map((kp, i) => {
             const Icon = kp.icon;
             return (
