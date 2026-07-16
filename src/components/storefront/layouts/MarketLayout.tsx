@@ -23,7 +23,7 @@ const MarketLayout = ({
   onAddToCart, onUpdateQuantity, onRemoveFromCart, onCheckout, onNavigateToCart,
   onNavigateToFavorites, onScrollToProducts, onNavigateHome, favoriteIds, onToggleFavorite,
   hasPayment,
-  verticalSlot,
+  customLabels, verticalSlot,
 }: StorefrontLayoutProps) => {
   const totalCartItems = cartItems.reduce((s, i) => s + i.quantity, 0);
   const pc = primaryColor || '#6b21a8';
@@ -139,6 +139,7 @@ const MarketLayout = ({
               onToggleFavorite={onToggleFavorite}
               productCardStyle={template.productCardStyle}
               productGrid="4col"
+              sectionTitle={customLabels?.productsTitle}
             />
           </div>
         </section>

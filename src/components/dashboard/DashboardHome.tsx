@@ -1,4 +1,4 @@
-import { Eye, ChevronLeft, AlertTriangle, ShoppingCart, TrendingUp, Package, Users, CreditCard, FileText, ArrowLeft, Palette, PenLine, Link2, Pencil } from "lucide-react";
+import { Eye, ChevronLeft, AlertTriangle, ShoppingCart, TrendingUp, Package, Users, CreditCard, FileText, ArrowLeft, Link2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DashboardView } from "./DashboardNav";
 import type { BusinessType } from "@/lib/businessModules";
@@ -60,9 +60,6 @@ const DashboardHome = ({
     ...(!stats.paymentEnabled ? [{ key: 'payments', icon: CreditCard, label: 'חבר סליקה לקבלת תשלומים', view: 'payments' as DashboardView, highlight: true }] : []),
     ...(!hasAbout ? [{ key: 'about', icon: FileText, label: 'כתוב "אודות" בחנות', view: 'about' as DashboardView, highlight: false }] : []),
     ...(stats.totalProducts === 0 ? [{ key: 'products', icon: Package, label: lbl.addProducts, view: 'products' as DashboardView, highlight: false }] : []),
-    ...(!legalApprovedAt ? [{ key: 'legal', icon: FileText, label: 'עדכן את התקנון שלך', view: 'legal' as DashboardView, highlight: false }] : []),
-    { key: 'design', icon: Palette, label: 'התאם עיצוב וצבעים לאתר שלך', view: 'design' as DashboardView, highlight: false },
-    { key: 'content', icon: PenLine, label: 'ערוך את הטקסטים והתוכן של האתר', view: 'content' as DashboardView, highlight: false },
   ];
 
   const statCards = [
@@ -75,7 +72,23 @@ const DashboardHome = ({
   return (
     <div className="p-4 md:p-6 space-y-5">
 
-      {/* 1. Cancelled subscription warning - urgent, stays at top */}
+      {/* 1. Not subscribed yet - preview mode banner (top, non-dismissible) */}
+      {!isSubscribed && !cancelledUntil && (
+        <div className="rounded-2xl bg-gradient-to-l from-orange-600 to-red-600 p-5 text-white flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p className="font-bold text-base">האתר שלך במצב תצוגה מוקדמת</p>
+            <p className="text-sm text-white/80 mt-0.5">שדרג ל-69 ש"ח לחודש ללא התחייבות כדי שהחנות תעלה לאוויר</p>
+          </div>
+          <button
+            onClick={() => onNavigate('subscription')}
+            className="shrink-0 bg-white text-orange-600 font-bold text-sm px-4 py-2 rounded-xl hover:bg-orange-50 transition-colors"
+          >
+            שדרג עכשיו ←
+          </button>
+        </div>
+      )}
+
+      {/* 2. Cancelled subscription warning */}
       {!isSubscribed && cancelledUntil && (
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
@@ -186,23 +199,7 @@ const DashboardHome = ({
         </div>
       )}
 
-      {/* 6. Subscription upsell - free tier, shown at bottom */}
-      {!isSubscribed && !cancelledUntil && (
-        <div className="rounded-2xl bg-gradient-to-l from-orange-600 to-red-600 p-5 text-white flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <p className="font-bold text-base">האתר שלך במצב תצוגה מוקדמת</p>
-            <p className="text-sm text-white/80 mt-0.5">שדרג ל-69 ש"ח לחודש ללא התחייבות כדי שהחנות תעלה לאוויר</p>
-          </div>
-          <button
-            onClick={() => onNavigate('subscription')}
-            className="shrink-0 bg-white text-orange-600 font-bold text-sm px-4 py-2 rounded-xl hover:bg-orange-50 transition-colors"
-          >
-            שדרג עכשיו ←
-          </button>
-        </div>
-      )}
-
-      {/* 7. ReferralBox */}
+      {/* 6. ReferralBox */}
       <ReferralBox />
     </div>
   );

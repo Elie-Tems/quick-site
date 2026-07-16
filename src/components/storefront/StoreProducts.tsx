@@ -43,6 +43,7 @@ interface StoreProductsProps {
   onToggleFavorite?: (productId: string) => void;
   productCardStyle?: StoreTemplate['productCardStyle'];
   productGrid?: StoreTemplate['productGrid'];
+  sectionTitle?: string;
 }
 
 type SortOption = "default" | "price_asc" | "price_desc" | "name_asc" | "name_desc";
@@ -63,7 +64,7 @@ const FILTER_LABELS: Record<FilterOption, string> = {
   hot: "חם",
 };
 
-const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, productCardStyle, productGrid }: StoreProductsProps) => {
+const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, productCardStyle, productGrid, sectionTitle }: StoreProductsProps) => {
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
@@ -271,9 +272,11 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
           )}
 
           <div className="flex items-baseline gap-2 mt-1.5">
-            <span className={`font-bold ${product.originalPrice ? "text-red-500" : "text-foreground"} text-sm`}>
-              {formatPrice(product.price)}
-            </span>
+            {product.price != null && (
+              <span className={`font-bold ${product.originalPrice ? "text-red-500" : "text-foreground"} text-sm`}>
+                {formatPrice(product.price)}
+              </span>
+            )}
             {product.originalPrice && (
               <span className="text-xs text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
             )}
@@ -351,7 +354,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
           {/* Title + count - שורה נפרדת במובייל */}
           <div className="flex items-baseline gap-2 flex-shrink-0">
             <h2 className="text-sm font-bold tracking-[0.15em] uppercase text-foreground whitespace-nowrap">
-              {hotProducts.length > 0 ? "כל המוצרים" : "המוצרים שלנו"}
+              {sectionTitle || (hotProducts.length > 0 ? "כל המוצרים" : "המוצרים שלנו")}
             </h2>
             <span className="text-xs text-muted-foreground whitespace-nowrap">{displayedProducts.length} פריטים</span>
           </div>

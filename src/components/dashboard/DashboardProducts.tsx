@@ -62,8 +62,8 @@ const SECTION_CONFIG: Record<string, { emoji: string; title: string; description
   services:   { emoji: "⚡",  title: "השירותים שלך",       description: "מה אתה מציע ללקוחות",              addLabel: "הוסף שירות" },
   realestate: { emoji: "🏘️", title: "הנכסים שלך",         description: "נכסים לקנייה, שכירות, ייזום",     addLabel: "הוסף נכס" },
   vacation:   { emoji: "🛏️", title: "החדרים והיחידות",    description: "מה האורחים יכולים לבחור",          addLabel: "הוסף חדר / יחידה" },
-  nonprofit:  { emoji: "💙",  title: "הפרויקטים שלך",      description: "יעדי גיוס ופרויקטים פעילים",      addLabel: "הוסף פרויקט" },
-  synagogue:  { emoji: "✡️",  title: "הפרויקטים שלך",      description: "פרויקטים ויעדי גיוס",              addLabel: "הוסף פרויקט" },
+  nonprofit:  { emoji: "💙",  title: "הפעילויות שלך",      description: "פעילויות, מיזמים ויעדי גיוס",      addLabel: "הוסף פעילות" },
+  synagogue:  { emoji: "✡️",  title: "הפעילויות שלך",      description: "פעילויות ויעדי גיוס",               addLabel: "הוסף פעילות" },
 };
 
 // Per-type label overrides for DashboardProducts
@@ -71,8 +71,8 @@ const PRODUCT_LABELS: Record<import("@/lib/businessModules").BusinessType, { tit
   products:   { title: 'מוצרים',    addBtn: 'הוסיפו מוצר',    addForm: 'הוספת מוצר',    editForm: 'עריכת מוצר',    emptyFirst: 'הוסיפו מוצר ראשון' },
   services:   { title: 'שירותים',   addBtn: 'הוסיפו שירות',   addForm: 'הוספת שירות',   editForm: 'עריכת שירות',   emptyFirst: 'הוסיפו שירות ראשון' },
   vacation:   { title: 'יחידות',    addBtn: 'הוסיפו יחידה',   addForm: 'הוספת יחידה',   editForm: 'עריכת יחידה',   emptyFirst: 'הוסיפו יחידה ראשונה' },
-  nonprofit:  { title: 'פרויקטים', addBtn: 'הוסיפו פרויקט', addForm: 'הוספת פרויקט', editForm: 'עריכת פרויקט', emptyFirst: 'הוסיפו פרויקט ראשון' },
-  synagogue:  { title: 'פרויקטים', addBtn: 'הוסיפו פרויקט', addForm: 'הוספת פרויקט', editForm: 'עריכת פרויקט', emptyFirst: 'הוסיפו פרויקט ראשון' },
+  nonprofit:  { title: 'פעילויות', addBtn: 'הוסיפו פעילות', addForm: 'הוספת פעילות', editForm: 'עריכת פעילות', emptyFirst: 'הוסיפו פעילות ראשונה' },
+  synagogue:  { title: 'פעילויות', addBtn: 'הוסיפו פעילות', addForm: 'הוספת פעילות', editForm: 'עריכת פעילות', emptyFirst: 'הוסיפו פעילות ראשונה' },
   realestate: { title: 'נכסים',     addBtn: 'הוסיפו נכס',     addForm: 'הוספת נכס',     editForm: 'עריכת נכס',     emptyFirst: 'הוסיפו נכס ראשון' },
 };
 

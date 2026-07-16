@@ -23,28 +23,29 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 const HARDCODED_ANSWERS: Record<string, string> = {
-  "איך אני מוסיף מוצר חדש?": `היי! 👋 אשמח לעזור לך להוסיף מוצר חדש.
+  "איך אני מוסיף מוצר חדש?": `היי! 👋 אשמח לעזור להוסיף מוצר חדש.
 
 **הנה השלבים:**
 
-1️⃣ **נכנסים לדשבורד** - לוח הבקרה שלך
+1️⃣ **נכנסים לדשבורד** - לוח הבקרה
 
 2️⃣ **לוחצים על "מוצרים"** בתפריט הצדדי
+   (לעסקי שירות: "שירותים" | לעמותות: "פעילויות")
 
-3️⃣ **לוחצים על "+ הוסף מוצר"** (הכפתור הירוק)
+3️⃣ **לוחצים על "+ הוסף מוצר"**
 
 4️⃣ **ממלאים את הפרטים:**
    - שם המוצר 📝
-   - מחיר 💰
+   - מחיר 💰 (אופציונלי)
    - תיאור (אופציונלי)
    - קטגוריה
 
 5️⃣ **מעלים תמונה** 📸
-   - אפשר גם להשתמש ב-AI לשדרוג התמונה!
+   - אפשר גם ליצור תמונה עם AI!
 
 6️⃣ **לוחצים "שמור"** ✅
 
-זהו! המוצר שלכם באתר 🎉
+זהו! המוצר באתר 🎉
 
 צריכים עזרה נוספת? שאלו בשמחה! 😊`,
 
@@ -365,7 +366,7 @@ const HelpCenter = () => {
   // Scroll chat panel into view when first message appears
   useEffect(() => {
     if (messages.length === 1) {
-      setTimeout(() => chatRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+      setTimeout(() => chatRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 150);
     }
   }, [messages.length]);
 
@@ -525,6 +526,132 @@ const HelpCenter = () => {
           )}
         </AnimatePresence>
 
+        {/* AI Chat panel — appears directly below the input, above articles */}
+        <AnimatePresence>
+          {messages.length > 0 && (
+            <motion.div
+              ref={chatRef}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="mb-6 border border-border rounded-2xl overflow-hidden"
+            >
+              {/* Chat header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-muted/30">
+                <span className="text-sm font-medium">שיחה עם העוזר</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleReset}
+                  className="gap-1.5 text-muted-foreground h-7 px-2"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  איפוס
+                </Button>
+              </div>
+
+              {/* Messages */}
+              <div ref={scrollContainerRef} className="h-[360px] overflow-y-auto p-4">
+                <div className="space-y-4">
+                  {messages.map((msg, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[90%] rounded-2xl px-4 py-3 text-right ${
+                          msg.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted"
+                        }`}
+                      >
+                        {msg.role === "assistant" ? (
+                          msg.content.startsWith("__SUGGESTED_QUESTIONS__") ? (
+                            <div className="space-y-2" dir="rtl">
+                              <p className="text-sm font-medium mb-2">שאלות נוספות:</p>
+                              {JSON.parse(
+                                msg.content.replace("__SUGGESTED_QUESTIONS__", "")
+                              ).map((q: string, idx: number) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => handleSend(q)}
+                                  className="block w-full text-right text-sm border border-border/60 rounded-lg px-3 py-2 hover:bg-background/50 transition-colors"
+                                >
+                                  {q}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div
+                              className="prose prose-sm dark:prose-invert max-w-none text-right"
+                              dir="rtl"
+                            >
+                              <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            </div>
+                          )
+                        ) : (
+                          <p dir="rtl">{msg.content}</p>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                  {isLoading && messages[messages.length - 1]?.role === "user" && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex justify-start"
+                    >
+                      <div className="bg-muted rounded-2xl px-4 py-3">
+                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      </div>
+                    </motion.div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </div>
+
+              {/* Chat reply input */}
+              <div className="border-t border-border/50 p-3">
+                <form
+                  onSubmit={e => {
+                    e.preventDefault();
+                    if (!chatInput.trim() || isLoading) return;
+                    handleSend(chatInput);
+                    setChatInput("");
+                  }}
+                  className="flex gap-2 items-center"
+                >
+                  <Input
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    placeholder="כתבו הודעה נוספת..."
+                    className="flex-1 h-9 text-sm"
+                    disabled={isLoading}
+                    dir="rtl"
+                  />
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={isLoading || !chatInput.trim()}
+                    className="shrink-0"
+                  >
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  </Button>
+                </form>
+                <a
+                  href="mailto:office@siango.app"
+                  className="block text-center text-xs text-muted-foreground hover:text-primary transition-colors mt-2"
+                >
+                  לא מצאתם תשובה? שלחו מייל לתמיכה →
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Search results OR category accordion */}
         <AnimatePresence mode="wait">
           {input.trim() ? (
@@ -639,132 +766,6 @@ const HelpCenter = () => {
                     </div>
                   );
                 })}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* AI Chat panel — appears only when there are messages */}
-        <AnimatePresence>
-          {messages.length > 0 && (
-            <motion.div
-              ref={chatRef}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.2 }}
-              className="mt-8 border border-border rounded-2xl overflow-hidden"
-            >
-              {/* Chat header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-muted/30">
-                <span className="text-sm font-medium">שיחה עם העוזר</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleReset}
-                  className="gap-1.5 text-muted-foreground h-7 px-2"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  איפוס
-                </Button>
-              </div>
-
-              {/* Messages */}
-              <div ref={scrollContainerRef} className="h-[360px] overflow-y-auto p-4">
-                <div className="space-y-4">
-                  {messages.map((msg, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-[90%] rounded-2xl px-4 py-3 text-right ${
-                          msg.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
-                        }`}
-                      >
-                        {msg.role === "assistant" ? (
-                          msg.content.startsWith("__SUGGESTED_QUESTIONS__") ? (
-                            <div className="space-y-2" dir="rtl">
-                              <p className="text-sm font-medium mb-2">שאלות נוספות:</p>
-                              {JSON.parse(
-                                msg.content.replace("__SUGGESTED_QUESTIONS__", "")
-                              ).map((q: string, idx: number) => (
-                                <button
-                                  key={idx}
-                                  onClick={() => handleSend(q)}
-                                  className="block w-full text-right text-sm border border-border/60 rounded-lg px-3 py-2 hover:bg-background/50 transition-colors"
-                                >
-                                  {q}
-                                </button>
-                              ))}
-                            </div>
-                          ) : (
-                            <div
-                              className="prose prose-sm dark:prose-invert max-w-none text-right"
-                              dir="rtl"
-                            >
-                              <ReactMarkdown>{msg.content}</ReactMarkdown>
-                            </div>
-                          )
-                        ) : (
-                          <p dir="rtl">{msg.content}</p>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
-                  {isLoading && messages[messages.length - 1]?.role === "user" && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex justify-start"
-                    >
-                      <div className="bg-muted rounded-2xl px-4 py-3">
-                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                      </div>
-                    </motion.div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-              </div>
-
-              {/* Chat reply input */}
-              <div className="border-t border-border/50 p-3">
-                <form
-                  onSubmit={e => {
-                    e.preventDefault();
-                    if (!chatInput.trim() || isLoading) return;
-                    handleSend(chatInput);
-                    setChatInput("");
-                  }}
-                  className="flex gap-2 items-center"
-                >
-                  <Input
-                    value={chatInput}
-                    onChange={e => setChatInput(e.target.value)}
-                    placeholder="כתבו הודעה נוספת..."
-                    className="flex-1 h-9 text-sm"
-                    disabled={isLoading}
-                    dir="rtl"
-                  />
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={isLoading || !chatInput.trim()}
-                    className="shrink-0"
-                  >
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  </Button>
-                </form>
-                <a
-                  href="mailto:office@siango.app"
-                  className="block text-center text-xs text-muted-foreground hover:text-primary transition-colors mt-2"
-                >
-                  לא מצאתם תשובה? שלחו מייל לתמיכה →
-                </a>
               </div>
             </motion.div>
           )}

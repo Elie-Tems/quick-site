@@ -393,7 +393,6 @@ const ar: Record<string, string> = {
   'finalCta.gradientLine': 'بدون صداع.',
   'finalCta.desc1': 'بضع دقائق ولديكم موقع رائع.',
   'finalCta.price79': '79 ش.ج./شهر، بدون التزام.',
-  'finalCta.cta': 'ابدأ الآن',
 };
 
 export default ar;

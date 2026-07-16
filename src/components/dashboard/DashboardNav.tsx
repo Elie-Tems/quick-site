@@ -33,15 +33,17 @@ const TYPE_CONFIG: Record<BusinessType, {
   itemOverrides?: Partial<Record<DashboardView, { label?: string; shortLabel?: string; icon?: React.ComponentType<{ className?: string }> }>>;
 }> = {
   products:  { hiddenItems: ['visualization-studio'] },
-  services:  { hiddenItems: ['visualization-studio'] },
+  services:  {
+    hiddenItems: ['visualization-studio'],
+    itemOverrides: {
+      products: { label: "שירותים", shortLabel: "שירותים", icon: Package },
+    },
+  },
   nonprofit: {
     managementGroupLabel: "ניהול תרומות",
-    // 'orders' (relabeled "תרומות") points at the commerce orders table, which
-    // donation businesses never write to → permanently empty. Their real donations
-    // live in the "verticals" tab, so hide the dead orders tab.
     hiddenItems: ['orders', 'shipping', 'coupons', 'visualization-studio'],
     itemOverrides: {
-      products: { label: "פרויקטים / מיזמים", shortLabel: "פרויקטים", icon: Heart },
+      products: { label: "פעילויות ומיזמים", shortLabel: "פעילויות", icon: Heart },
       orders: { label: "תרומות", shortLabel: "תרומות", icon: Heart },
     },
   },

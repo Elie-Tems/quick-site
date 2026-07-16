@@ -420,7 +420,7 @@ const PublishPayment = () => {
                   src={cardcomUrl}
                   className="w-full grow min-h-[min(80vh,820px)] border-0 bg-white"
                   allow="payment *"
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-top-navigation-by-user-activation"
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-top-navigation-by-user-activation"
                 />
                 <div className="px-4 py-3 border-t border-border bg-muted/20 text-center">
                   <a
@@ -578,8 +578,8 @@ const PublishPayment = () => {
     // server-side computation; the server recomputes the real charge at checkout.
     const discNet = couponInfo
       ? (couponInfo.discount_type === "percent"
-          ? Math.max(0, fee * (1 - Math.min(100, couponInfo.discount_value) / 100))
-          : Math.max(0, fee - couponInfo.discount_value))
+          ? Math.round(Math.max(0, fee * (1 - Math.min(100, couponInfo.discount_value) / 100)))
+          : Math.round(Math.max(0, fee - couponInfo.discount_value)))
       : fee;
     const hasDiscount = !!couponInfo && discNet < fee;
     return (
@@ -803,7 +803,7 @@ const PublishPayment = () => {
                   src={checkoutUrl}
                   className="w-full grow min-h-[min(80vh,800px)] border-0 bg-background"
                   allow="payment *"
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-top-navigation-by-user-activation"
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-top-navigation-by-user-activation"
                 />
                 <div className="px-4 py-3 border-t border-border bg-muted/20 text-center">
                   <a

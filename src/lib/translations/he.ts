@@ -367,7 +367,7 @@ const he: Record<string, string> = {
   'profession.other': 'אחר',
   // Examples section
   'examples.sectionTitle': 'אתר מדהים בדקות בודדות',
-  'examples.sectionSubtitle': 'לחצו על דוגמה כדי לראות אותה מלאה',
+  'examples.sectionSubtitle': 'לחצו על דוגמה כדי להתרשם',
   'examples.priceNote': '79 ש"ח לחודש · ללא התחייבות',
   'example.boutique.title': 'חנות בוטיק',
   'example.boutique.tag': 'מסחר',
@@ -397,7 +397,6 @@ const he: Record<string, string> = {
   'finalCta.gradientLine': 'בלי כאב ראש.',
   'finalCta.desc1': 'כמה דקות ויש לכם אתר מדהים.',
   'finalCta.price79': '79 ש"ח לחודש, ללא התחייבות.',
-  'finalCta.cta': 'התחילו עכשיו',
 };
 
 export default he;

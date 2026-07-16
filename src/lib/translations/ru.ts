@@ -393,7 +393,6 @@ const ru: Record<string, string> = {
   'finalCta.gradientLine': 'Без головной боли.',
   'finalCta.desc1': 'Несколько минут — и у вас потрясающий сайт.',
   'finalCta.price79': '₪79/мес, без обязательств.',
-  'finalCta.cta': 'Начать сейчас',
 };
 
 export default ru;

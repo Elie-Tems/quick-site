@@ -211,7 +211,7 @@ const HomeMulti = () => {
                 <Sparkles className="w-4 h-4 text-primary" /> <span className="text-sm pv-text">דוגמאות אתרים</span>
               </div>
               <h2 className="text-3xl md:text-5xl font-display font-bold pv-strong mb-3">אתר אמיתי לכל תחום</h2>
-              <p className="text-lg pv-muted">לחצו על דוגמה כדי לראות אותה מלאה</p>
+              <p className="text-lg pv-muted">לחצו על דוגמה כדי להתרשם</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {EXAMPLES.map((e, i) => (

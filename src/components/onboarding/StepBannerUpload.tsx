@@ -112,6 +112,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
       const { data: heroData, error } = await supabase.functions.invoke('generate-hero-image', {
         body: {
           category: categoryToUse,
+          businessSubType: data.businessSubType || undefined,
           businessName: data.businessName || 'העסק שלי',
           bannerStyle: data.bannerStyle,
           brandData,

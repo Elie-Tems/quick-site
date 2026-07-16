@@ -24,7 +24,7 @@ const ClassicLayout = ({
   favoritesCount, onAddToCart, onUpdateQuantity, onRemoveFromCart, onCheckout,
   onNavigateToCart, onNavigateToFavorites, onScrollToProducts, onNavigateHome,
   favoriteIds, onToggleFavorite, hasPayment,
-  verticalSlot,
+  customLabels, verticalSlot,
 }: StorefrontLayoutProps) => {
   const totalCartItems = cartItems.reduce((s, i) => s + i.quantity, 0);
 
@@ -90,6 +90,7 @@ const ClassicLayout = ({
               onToggleFavorite={onToggleFavorite}
               productCardStyle={template.productCardStyle}
               productGrid={template.productGrid}
+              sectionTitle={customLabels?.productsTitle}
             />
           </div>
         </section>
