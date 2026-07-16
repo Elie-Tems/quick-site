@@ -120,7 +120,19 @@ export default function PostLaunchPopups({ businessId, onNavigate, popupState, o
         !popupState.shown.includes(p.id)
     );
     setActivePopup(next ?? null);
-  }, [popupState]);
+    // Mark as shown immediately so re-entering dashboard won't re-trigger it
+    if (next && businessId) {
+      const nextState: PopupState = {
+        ...popupState,
+        shown: [...new Set([...popupState.shown, next.id])],
+      };
+      onStateChange(nextState);
+      supabase
+        .from("businesses")
+        .update({ popup_state: nextState as unknown as Record<string, unknown> })
+        .eq("id", businessId);
+    }
+  }, [popupState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function updateState(next: PopupState) {
     if (!businessId) return;
