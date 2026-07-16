@@ -1,14 +1,15 @@
 import { useMemo, useState } from "react";
-import { Users, Truck, TrendingUp, Lock } from "lucide-react";
+import { Users, Truck, TrendingUp, Lock, LayoutKanban } from "lucide-react";
 import DashboardCustomers from "./DashboardCustomers";
 import DashboardSuppliers from "./DashboardSuppliers";
 import DashboardProfitability from "./DashboardProfitability";
 import DashboardAnalytics from "./DashboardAnalytics";
+import DashboardLeadsPipeline from "./DashboardLeadsPipeline";
 import type { Order } from "./DashboardOrders";
 import type { BusinessType } from "@/lib/businessModules";
 import { useContacts } from "@/hooks/useCrm";
 
-type CrmTab = "customers" | "suppliers" | "profitability";
+type CrmTab = "customers" | "pipeline" | "suppliers" | "profitability";
 
 interface DashboardCRMProps {
   orders: Order[];
@@ -215,7 +216,7 @@ function ContactsCustomerView({ businessId, kind, hasCrmAddon }: { businessId?: 
               onClick={() => window.dispatchEvent(new CustomEvent("open-upgrades"))}
               className="rounded-xl bg-violet-600 text-white px-5 py-2 text-sm font-semibold hover:bg-violet-700 transition-colors"
             >
-              שדרגו ל-CRM+ - 49 ₪/חודש ←
+              שדרג ל-CRM+ - 49 ₪/חודש ←
             </button>
           </div>
         </div>
@@ -252,22 +253,28 @@ function LockedTabView({ tab }: { tab: "suppliers" | "profitability" }) {
   );
 }
 
-const TABS: { id: CrmTab; label: string; icon: typeof Users }[] = [
+const BASE_TABS: { id: CrmTab; label: string; icon: typeof Users }[] = [
   { id: "customers",     label: "לקוחות",  icon: Users },
   { id: "suppliers",     label: "ספקים",   icon: Truck },
   { id: "profitability", label: "רווחיות", icon: TrendingUp },
 ];
 
+const REALESTATE_TABS: { id: CrmTab; label: string; icon: typeof Users }[] = [
+  { id: "pipeline",      label: "לוח לידים", icon: LayoutKanban },
+  { id: "customers",     label: "אנשי קשר",  icon: Users },
+  { id: "suppliers",     label: "ספקים",     icon: Truck },
+  { id: "profitability", label: "רווחיות",   icon: TrendingUp },
+];
+
 const DashboardCRM = ({ orders, businessId, demoMode, initialTab = "customers", hasCrmAddon = false, businessType }: DashboardCRMProps) => {
-  const [tab, setTab] = useState<CrmTab>(initialTab);
+  const isRealEstate = businessType === "realestate";
+  const defaultTab: CrmTab = isRealEstate ? "pipeline" : "customers";
+  const [tab, setTab] = useState<CrmTab>(initialTab === "customers" ? defaultTab : initialTab);
 
-  // Lead/donation verticals keep their people in `contacts`, not `orders`, so the
-  // customers tab must read from there. Commerce (products/services/vacation) stays
-  // orders-based as before.
   const contactsVertical = isContactsVertical(businessType);
-  const contactKind: "lead" | "donation" = businessType === "realestate" ? "lead" : "donation";
+  const contactKind: "lead" | "donation" = isRealEstate ? "lead" : "donation";
+  const TABS = isRealEstate ? REALESTATE_TABS : BASE_TABS;
 
-  // The customer list component for the current vertical + tier.
   const customersView = contactsVertical
     ? <ContactsCustomerView businessId={businessId} kind={contactKind} hasCrmAddon={hasCrmAddon} />
     : hasCrmAddon
@@ -279,9 +286,9 @@ const DashboardCRM = ({ orders, businessId, demoMode, initialTab = "customers", 
       <h1 className="text-xl font-bold text-foreground">ניהול לקוחות & CRM</h1>
 
       {/* Tab bar - always visible; ספקים/רווחיות show lock icon for free tier */}
-      <div className="inline-flex items-center gap-1 rounded-xl bg-muted p-1">
+      <div className="inline-flex items-center gap-1 rounded-xl bg-muted p-1 flex-wrap">
         {TABS.map((t) => {
-          const locked = !hasCrmAddon && t.id !== "customers";
+          const locked = !hasCrmAddon && t.id !== "customers" && t.id !== "pipeline";
           return (
             <button
               key={t.id}
@@ -301,13 +308,15 @@ const DashboardCRM = ({ orders, businessId, demoMode, initialTab = "customers", 
       {/* Tab content */}
       {hasCrmAddon ? (
         <>
+          {tab === "pipeline"      && <DashboardLeadsPipeline businessId={businessId} />}
           {tab === "customers"     && <>{customersView}<DashboardAnalytics businessId={businessId} /></>}
           {tab === "suppliers"     && <DashboardSuppliers businessId={businessId} demoMode={demoMode} />}
           {tab === "profitability" && <DashboardProfitability businessId={businessId} demoMode={demoMode} />}
         </>
       ) : (
         <>
-          {tab === "customers"                                && <>{customersView}<DashboardAnalytics businessId={businessId} /></>}
+          {tab === "pipeline"                                 && <DashboardLeadsPipeline businessId={businessId} />}
+          {tab === "customers"                               && customersView}
           {(tab === "suppliers" || tab === "profitability")  && <LockedTabView tab={tab} />}
         </>
       )}

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Plus, Phone, MessageCircle, Calendar, ChevronLeft, X, AlertCircle, Clock, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
 import { usePipeline, useContacts, useMoveCard, useSetFollowUp, useCreateLead, type PipelineCard } from "@/hooks/useCrm";
 import { supabase } from "@/integrations/supabase/client";
@@ -102,13 +102,12 @@ interface CardDetailProps {
 function CardDetail({ card, contactName, contactPhone, contactEmail, stageName, onClose, onMoveToStage, stages }: CardDetailProps) {
   const setFollowUp = useSetFollowUp();
   const [notes, setNotes] = useState("");
-  const [notesLoaded, setNotesLoaded] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     if (!card.contact_id) return;
     sb.from("contacts").select("notes").eq("id", card.contact_id).single()
-      .then(({ data }: any) => { if (data?.notes) setNotes(data.notes); setNotesLoaded(true); });
-  });
+      .then(({ data }: any) => { if (data?.notes) setNotes(data.notes); });
+  }, [card.contact_id]);
 
   const saveNotes = async () => {
     if (!card.contact_id) return;
