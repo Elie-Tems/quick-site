@@ -121,7 +121,7 @@ function FreeCustomerView({ orders }: { orders: Order[] }) {
 // Customer list for lead/donation verticals - sourced from the `contacts` table
 // (via useContacts) instead of orders. ltv_cached / txn_count come from the CRM
 // aggregation so donors/leads show their total given and count.
-function ContactsCustomerView({ businessId, kind }: { businessId?: string; kind: "lead" | "donation" }) {
+function ContactsCustomerView({ businessId, kind, hasCrmAddon }: { businessId?: string; kind: "lead" | "donation"; hasCrmAddon: boolean }) {
   const { data: contacts = [], isLoading } = useContacts(businessId);
   const sorted = useMemo(
     () => [...contacts].sort((a, b) => (b.ltv_cached ?? 0) - (a.ltv_cached ?? 0)),
@@ -165,6 +165,52 @@ function ContactsCustomerView({ businessId, kind }: { businessId?: string; kind:
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* CRM+ blurred preview — shown only on free tier */}
+      {!hasCrmAddon && (
+        <div className="relative rounded-2xl border border-border overflow-hidden">
+          <div className="blur-sm pointer-events-none select-none p-4 space-y-3" aria-hidden="true">
+            <div className="grid grid-cols-2 gap-2">
+              {[["67%", "חוזרים"], ["₪1,245", "LTV ממוצע"]].map(([v, l]) => (
+                <div key={l} className="rounded-xl bg-muted/50 p-3">
+                  <div className="text-2xl font-bold">{v}</div>
+                  <div className="text-xs text-muted-foreground">{l}</div>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-1.5 flex-wrap">
+              {["VIP (1)", "בסיכון (2)", "רדומים (3)"].map((s) => (
+                <span key={s} className="text-xs px-3 py-1 rounded-full bg-primary/10 border border-primary/20">{s}</span>
+              ))}
+            </div>
+            <div className="space-y-2 pt-1">
+              {["ישראל ישראלי", "דנה כהן"].map((n) => (
+                <div key={n} className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-muted shrink-0" />
+                  <div className="flex-1 h-2.5 rounded-full bg-muted/60" />
+                  <div className="w-14 h-2.5 rounded-full bg-muted/40" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-[2px]">
+            <div className="w-10 h-10 rounded-2xl bg-violet-500/15 flex items-center justify-center mb-3">
+              <Lock className="w-5 h-5 text-violet-600" />
+            </div>
+            <p className="text-sm font-semibold text-foreground mb-1">CRM+ - ניהול מתקדם</p>
+            <p className="text-xs text-muted-foreground text-center mb-4 max-w-[220px] leading-relaxed">
+              פילוחים, LTV, התראות, וואטסאפ, ספקים ורווחיות
+            </p>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("open-upgrades"))}
+              className="rounded-xl bg-violet-600 text-white px-5 py-2 text-sm font-semibold hover:bg-violet-700 transition-colors"
+            >
+              שדרגו ל-CRM+ - 49 ₪/חודש ←
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -216,7 +262,7 @@ const DashboardCRM = ({ orders, businessId, demoMode, initialTab = "customers", 
 
   // The customer list component for the current vertical + tier.
   const customersView = contactsVertical
-    ? <ContactsCustomerView businessId={businessId} kind={contactKind} />
+    ? <ContactsCustomerView businessId={businessId} kind={contactKind} hasCrmAddon={hasCrmAddon} />
     : hasCrmAddon
       ? <DashboardCustomers orders={orders} businessId={businessId} demoMode={demoMode} />
       : <FreeCustomerView orders={orders} />;
