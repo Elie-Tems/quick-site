@@ -839,7 +839,20 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     favoriteIds,
     onToggleFavorite: toggleFavorite,
     hasPayment: business.payment_enabled ?? false,
-    customLabels: (b?.custom_labels as Record<string, string> | null) ?? undefined,
+    customLabels: (() => {
+      const stored = (b?.custom_labels as Record<string, string> | null) ?? {};
+      const bt = getBusinessType(business);
+      const defaultTitle: Record<string, string> = {
+        services:   'השירותים שלנו',
+        nonprofit:  'הפעילויות שלנו',
+        vacation:   'החדרים שלנו',
+        realestate: 'הנכסים שלנו',
+      };
+      return {
+        ...stored,
+        productsTitle: stored.productsTitle || defaultTitle[bt] || undefined,
+      };
+    })(),
     // Every layout renders this right after its hero (prominent, framed, titled).
     verticalSlot: <StorefrontVertical business={business as any} />,
   };

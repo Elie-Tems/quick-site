@@ -966,8 +966,18 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       {/* Header */}
       {(() => {
         const bt = data.businessType;
-        const title = bt === 'nonprofit' ? 'הפרויקטים שלך' : bt === 'realestate' ? 'הנכסים שלך' : 'המוצרים שלך';
-        const sub = bt === 'nonprofit' ? 'הוסיפו פרויקטים ומיזמים — אפשר לשלב כמה שיטות' : bt === 'realestate' ? 'הוסיפו נכסים — אפשר לשלב כמה שיטות' : 'הוסיפו מוצרים — אפשר לשלב כמה שיטות';
+        const title =
+          bt === 'services'   ? 'השירותים שלך' :
+          bt === 'nonprofit'  ? 'הפעילויות שלך' :
+          bt === 'realestate' ? 'הנכסים שלך' :
+          bt === 'vacation'   ? 'החדרים שלך' :
+                                'המוצרים שלך';
+        const sub =
+          bt === 'services'   ? 'הוסיפו שירותים — ייעוץ, טיפול, כל מה שאתם מציעים' :
+          bt === 'nonprofit'  ? 'הוסיפו פעילויות, תרומות ומיזמים — אפשר לשלב כמה שיטות' :
+          bt === 'realestate' ? 'הוסיפו נכסים — אפשר לשלב כמה שיטות' :
+          bt === 'vacation'   ? 'הוסיפו חדרים, קוטג\'ים וסוויטות — אפשר לשלב כמה שיטות' :
+                                'הוסיפו מוצרים — אפשר לשלב כמה שיטות';
         return (
           <div className="text-center">
             <h1 className="text-2xl font-medium text-foreground mb-1">{title}</h1>
@@ -985,7 +995,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground leading-snug mb-1">
-                כרגע — העלו רק כמה {data.businessType === 'nonprofit' ? 'פרויקטים' : data.businessType === 'realestate' ? 'נכסים' : 'מוצרים'} בודדים
+                כרגע — העלו רק כמה {data.businessType === 'services' ? 'שירותים' : data.businessType === 'nonprofit' ? 'פעילויות' : data.businessType === 'realestate' ? 'נכסים' : data.businessType === 'vacation' ? 'חדרים' : 'מוצרים'} בודדים
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 אפשר גם לייצר מוצרי דמו בלחיצה אחת ולהמשיך. את כל הפרטים — תמונות, תיאורים, מחירים — ממשיכים בנחת מהדשבורד אחרי שהאתר עולה.
