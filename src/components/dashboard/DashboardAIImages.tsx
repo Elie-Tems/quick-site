@@ -57,28 +57,28 @@ const DashboardAIImages = ({ businessId, onNavigateToProducts }: DashboardAIImag
         </div>
       </div>
 
-      {/* Where to create images */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="py-4 flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-full shrink-0">
-            <Package className="h-6 w-6 text-primary" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-foreground">יצירת התמונות מתבצעת בתוך המוצר</h3>
-            <p className="text-sm text-muted-foreground">
-              נכנסים למוצר, ושם יוצרים או משדרגים את התמונה (על דוגמנית, גוון עור, רקעי סטודיו ועוד) לצד עריכת השם והתיאור.
-            </p>
-          </div>
-          {onNavigateToProducts && (
-            <Button onClick={onNavigateToProducts} className="gap-2 shrink-0">
-              עבור למוצרים <ArrowLeft className="h-4 w-4" />
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Credit packages */}
       <AICreditPackages businessId={businessId} currentCredits={creditsRemaining} onPurchaseComplete={() => refetchCredits()} />
+
+      {/* After buying — go use credits in products */}
+      {onNavigateToProducts && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="py-4 flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-full shrink-0">
+              <Package className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground">יש לכם קרדיטים? ממשו אותם במוצרים</h3>
+              <p className="text-sm text-muted-foreground">
+                נכנסים למוצר ויוצרים או משדרגים את התמונה לצד עריכת השם והתיאור.
+              </p>
+            </div>
+            <Button onClick={onNavigateToProducts} className="gap-2 shrink-0">
+              עברו למוצרים <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent generated images */}
       {jobs && jobs.length > 0 && (
