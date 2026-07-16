@@ -99,6 +99,13 @@ serve(async (req) => {
 
     const categoryContext = businessCategory ? `for a ${businessCategory} business` : "";
 
+    // Hard constraints that always apply — keep product clean regardless of scene
+    const hardConstraints = `STRICTLY FORBIDDEN (image is invalid if present):
+- NO text, words, letters, or numbers
+- NO logos or brand names
+- NO watermarks or signatures
+- NO multiple products or props`;
+
     // Build the prompt. In edit mode the instruction leads; otherwise it's a
     // full product-photo brief.
     let prompt: string;
@@ -107,6 +114,20 @@ serve(async (req) => {
 catalog-ready e-commerce product photo (single product, neutral background, no text/logos/watermarks).
 
 EDIT INSTRUCTION: ${String(editInstruction).trim()}`;
+    } else if (customPrompt && customPrompt.trim()) {
+      // Custom prompt is the primary scene — user knows what they want.
+      // Keep quality + no-text rules, but let the scene be fully custom.
+      prompt = `Professional product photography of: ${productName}.
+${productDescription ? `Product description: ${productDescription}` : ""}
+
+SCENE: ${customPrompt.trim()}
+
+QUALITY REQUIREMENTS:
+- Sharp focus, professional studio lighting
+- Single product only, realistic proportions
+- 1:1 square aspect ratio
+
+${hardConstraints}`;
     } else {
       prompt = `Commercial e-commerce product photography ${categoryContext}.
 
@@ -123,18 +144,9 @@ STYLE REQUIREMENTS:
 - Professional studio photography aesthetic
 - 1:1 square aspect ratio
 
-STRICTLY FORBIDDEN (image is invalid if present):
-- NO text, words, letters, or numbers
-- NO logos or brand names
-- NO watermarks or signatures
-- NO artistic or abstract effects
-- NO dramatic angles or unusual perspectives
-- NO multiple products or props
+${hardConstraints}
 
 Generate a clean, professional e-commerce product photo suitable for an online catalog.`;
-      if (customPrompt && customPrompt.trim()) {
-        prompt += `\n\nADDITIONAL REQUIREMENTS: ${customPrompt.trim()}`;
-      }
     }
     if (isReligiousAudience) {
       prompt += `\n\nIMPORTANT: The image is intended for a Haredi (ultra-Orthodox Jewish) audience. Do not generate women, immodest clothing, revealing images, or suggestive content. Use only modest and appropriate visuals such as landscapes, products, buildings, men in modest attire, or neutral graphic elements.`;
