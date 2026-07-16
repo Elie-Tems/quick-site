@@ -126,7 +126,7 @@ export default function PostLaunchPopups({ businessId, onNavigate, popupState, o
     if (!businessId) return;
     onStateChange(next);
     await supabase
-      .from("business_profiles")
+      .from("businesses")
       .update({ popup_state: next as unknown as Record<string, unknown> })
       .eq("id", businessId);
   }

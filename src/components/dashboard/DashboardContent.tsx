@@ -83,7 +83,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(async () => {
       if (!businessId) return;
-      await supabase.from("business_profiles").update(data as any).eq("id", businessId);
+      await supabase.from("businesses").update(data as any).eq("id", businessId);
     }, 2000);
   }
 
