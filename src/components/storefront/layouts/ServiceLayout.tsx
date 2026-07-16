@@ -1,4 +1,4 @@
-﻿import { Phone, MessageCircle, ArrowLeft } from 'lucide-react';
+import { Phone, MessageCircle, ArrowLeft } from 'lucide-react';
 import StoreHeader from '@/components/storefront/StoreHeader';
 import StoreBanners from '@/components/storefront/StoreBanners';
 import StorePromoPopup from '@/components/storefront/StorePromoPopup';
@@ -14,7 +14,7 @@ import { useState } from 'react';
 
 /**
  * Service Card layout:
- * Sticky header ג†’ split hero (text right, image left) ג†’ service cards 2-col ג†’ about ג†’ reviews
+ * Sticky header → split hero (text right, image left) → service cards 2-col → about → reviews
  * Best for: service providers, nonprofits, portfolios.
  * Services = products rendered as large feature cards instead of a product grid.
  */
@@ -83,7 +83,7 @@ const ServiceLayout = ({
                       style={{ backgroundColor: pc }}
                       aria-hidden="true"
                     >
-                      ג“
+                      ✓
                     </span>
                     {b}
                   </li>
@@ -96,7 +96,7 @@ const ServiceLayout = ({
                 className="px-7 py-3 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: pc }}
               >
-                {ctaText || '׳׳©׳™׳¨׳•׳×׳™׳ ׳©׳׳ ׳•'} <ArrowLeft className="inline w-4 h-4 mr-1" />
+                {ctaText || 'לשירותים שלנו'} <ArrowLeft className="inline w-4 h-4 mr-1" />
               </button>
               {phone && (
                 <a
@@ -124,7 +124,7 @@ const ServiceLayout = ({
                 className="w-full h-full flex items-center justify-center"
                 style={{ backgroundColor: `${pc}1a` }}
               >
-                <span className="text-8xl opacity-20" aria-hidden="true">נ›</span>
+                <span className="text-8xl opacity-20" aria-hidden="true">🛎</span>
               </div>
             )}
           </div>
@@ -151,7 +151,7 @@ const ServiceLayout = ({
             <h2
               className="text-2xl font-semibold text-center text-foreground mb-2"
             >
-              {customLabels?.productsTitle || "׳”׳©׳™׳¨׳•׳×׳™׳ ׳©׳׳ ׳•"}
+              {customLabels?.productsTitle || "השירותים שלנו"}
             </h2>
             <p className="text-sm text-muted-foreground text-center mb-10">
               {tagline || ''}
@@ -181,7 +181,7 @@ const ServiceLayout = ({
                           className="text-sm font-semibold shrink-0 px-2 py-0.5 rounded-full text-white"
                           style={{ backgroundColor: pc }}
                         >
-                          ג‚×{product.price}
+                          ₪{product.price}
                         </span>
                       )}
                     </div>
@@ -192,7 +192,7 @@ const ServiceLayout = ({
                       className="mt-4 text-sm font-medium flex items-center gap-1"
                       style={{ color: pc }}
                     >
-                      ׳׳₪׳¨׳˜׳™׳ ׳ ׳•׳¡׳₪׳™׳ <ArrowLeft className="w-3.5 h-3.5" />
+                      לפרטים נוספים <ArrowLeft className="w-3.5 h-3.5" />
                     </div>
                   </div>
                 </button>
@@ -207,8 +207,8 @@ const ServiceLayout = ({
             className="py-12 px-4 text-center"
             style={{ backgroundColor: `${pc}0d` }}
           >
-            <h3 className="text-xl font-semibold text-foreground mb-2">{customLabels?.ctaTitle || "׳׳•׳›׳ ׳™׳ ׳׳”׳×׳—׳™׳?"}</h3>
-            <p className="text-sm text-muted-foreground mb-6">׳¦׳¨׳• ׳§׳©׳¨ ׳•׳ ׳©׳׳— ׳׳¢׳–׳•׳¨</p>
+            <h3 className="text-xl font-semibold text-foreground mb-2">{customLabels?.ctaTitle || "מוכנים להתחיל?"}</h3>
+            <p className="text-sm text-muted-foreground mb-6">צרו קשר ונשמח לעזור</p>
             <div className="flex flex-wrap justify-center gap-3">
               <a
                 href={`tel:${phone}`}

@@ -1,4 +1,4 @@
-﻿import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Loader2, Phone, Mail, MapPin } from "lucide-react";
 import { useStorefront } from "@/hooks/useStorefront";
@@ -27,12 +27,12 @@ const StoreAboutPage = ({ slugOverride }: { slugOverride?: string } = {}) => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-md px-4">
           <h1 className="text-2xl font-bold text-foreground mb-2">
-            {isUnpublished ? '׳”׳׳×׳¨ ׳¢׳“׳™׳™׳ ׳׳ ׳₪׳•׳¨׳¡׳' : '׳”׳—׳ ׳•׳× ׳׳ ׳ ׳׳¦׳׳”'}
+            {isUnpublished ? 'האתר עדיין לא פורסם' : 'החנות לא נמצאה'}
           </h1>
           <p className="text-muted-foreground mb-6">
             {isUnpublished 
-              ? '׳׳×׳¨ ׳–׳” ׳¢׳“׳™׳™׳ ׳׳ ׳₪׳•׳¨׳¡׳ ׳׳¦׳™׳‘׳•׳¨.'
-              : '׳׳ ׳”׳¦׳׳—׳ ׳• ׳׳׳¦׳•׳ ׳—׳ ׳•׳× ׳‘׳›׳×׳•׳‘׳× ׳”׳–׳•.'
+              ? 'אתר זה עדיין לא פורסם לציבור.'
+              : 'לא הצלחנו למצוא חנות בכתובת הזו.'
             }
           </p>
         </div>
@@ -41,7 +41,7 @@ const StoreAboutPage = ({ slugOverride }: { slugOverride?: string } = {}) => {
   }
 
   const title =
-    ((business as any).about_page_title as string) || `׳׳•׳“׳•׳× ${business.name}`;
+    ((business as any).about_page_title as string) || `אודות ${business.name}`;
   const body =
     ((business as any).about_page_body as string) ||
     (business.about_text as string) ||
@@ -90,7 +90,7 @@ const StoreAboutPage = ({ slugOverride }: { slugOverride?: string } = {}) => {
 
       <main dir="rtl" className="min-h-screen bg-background pb-20">
 
-        {/* ג”€ג”€ Page Header ג”€ג”€ */}
+        {/* ── Page Header ── */}
         <div className="border-b border-foreground/10">
           <div className="container px-4 md:px-6 py-10 md:py-14">
             <div className="flex items-center gap-3 justify-center">
@@ -105,7 +105,7 @@ const StoreAboutPage = ({ slugOverride }: { slugOverride?: string } = {}) => {
 
         <div className="container px-4 md:px-6 max-w-2xl py-12 md:py-16 space-y-12">
 
-          {/* ג”€ג”€ Body text ג”€ג”€ */}
+          {/* ── Body text ── */}
           {body && (
             <section>
               <p
@@ -118,13 +118,13 @@ const StoreAboutPage = ({ slugOverride }: { slugOverride?: string } = {}) => {
             </section>
           )}
 
-          {/* ג”€ג”€ Contact ג”€ג”€ */}
+          {/* ── Contact ── */}
           {hasContact && (
             <section className="border-t border-foreground/10 pt-10">
               {/* Section label */}
               <div className="flex items-center gap-3 mb-8">
                 <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-muted-foreground">
-                  ׳™׳¦׳™׳¨׳× ׳§׳©׳¨
+                  יצירת קשר
                 </span>
                 <div className="h-px flex-1 bg-foreground/10" />
               </div>

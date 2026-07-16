@@ -14,7 +14,7 @@ import type { StorefrontLayoutProps } from './StorefrontLayout.types';
 /**
  * Classic Store layout:
  * Full header ג†’ full-width hero ג†’ banners ג†’ 3-col product grid ג†’ about ג†’ footer
- * The universal default ג€” works for any product-focused business.
+ * The universal default - works for any product-focused business.
  */
 const ClassicLayout = ({
   businessName, businessSlug, logoUrl, phone, tagline, ctaText, heroTitle, heroBadge,

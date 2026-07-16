@@ -1,4 +1,4 @@
-﻿import StoreHeader from '@/components/storefront/StoreHeader';
+import StoreHeader from '@/components/storefront/StoreHeader';
 import StoreBanners from '@/components/storefront/StoreBanners';
 import StorePromoPopup from '@/components/storefront/StorePromoPopup';
 import StoreProducts from '@/components/storefront/StoreProducts';
@@ -12,7 +12,7 @@ import type { StorefrontLayoutProps } from './StorefrontLayout.types';
 
 /**
  * Market layout:
- * Compact header ג†’ slim hero banner ג†’ prominent category tabs ג†’ 4-col dense product grid
+ * Compact header → slim hero banner → prominent category tabs → 4-col dense product grid
  * Best for: broad product catalogs, grocery, multi-category stores.
  */
 const MarketLayout = ({
@@ -107,7 +107,7 @@ const MarketLayout = ({
                       : { backgroundColor: 'transparent', color: 'var(--foreground)' }
                   }
                 >
-                  ׳”׳›׳
+                  הכל
                 </button>
                 {categories.map(cat => (
                   <button
