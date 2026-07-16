@@ -35,7 +35,7 @@ import { startPayplusPayment } from "@/hooks/usePayplus";
 import { toast } from "sonner";
 import { getTemplate, type StoreTemplateId } from "@/lib/storeTemplates";
 import { getStoreFont, loadStoreFonts } from "@/lib/storeFonts";
-import { getDefaultLayout } from "@/lib/businessModules";
+import { getDefaultLayout, getBusinessType } from "@/lib/businessModules";
 import {
   ClassicLayout, ServiceLayout, PropertyLayout, MarketLayout,
   BoutiqueLayout, BeautySpaLayout, HomeProLayout, CharityLayout, RestaurantLayout,
@@ -848,9 +848,19 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
 
   // Pick layout component based on template layoutId, with auto-detection for food businesses
   const LayoutComponent = (() => {
-    const layoutId = template?.layoutId
+    let layoutId = template?.layoutId
       ?? (businessCategory && FOOD_CATEGORIES.includes(businessCategory) ? 'restaurant' : undefined)
       ?? getDefaultLayout(business);
+    // A lead/donation vertical (real estate, nonprofit, synagogue) must NEVER render a
+    // commerce cart layout, even if the merchant kept a legacy commerce template. Force
+    // its business_type default layout (property/service) so the storefront stays
+    // lead/donation-based (no "add to cart"). This is what makes a realestate store show
+    // the property/lead experience regardless of the saved template.
+    const COMMERCE_LAYOUTS = new Set(['classic', 'market', 'boutique', 'restaurant']);
+    const NON_COMMERCE_VERTICALS = new Set(['realestate', 'nonprofit', 'synagogue']);
+    if (NON_COMMERCE_VERTICALS.has(getBusinessType(business)) && (!layoutId || COMMERCE_LAYOUTS.has(layoutId))) {
+      layoutId = getDefaultLayout(business);
+    }
     switch (layoutId) {
       case 'service':     return ServiceLayout;
       case 'property':    return PropertyLayout;
