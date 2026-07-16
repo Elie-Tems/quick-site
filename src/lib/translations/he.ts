@@ -397,7 +397,6 @@ const he: Record<string, string> = {
   'finalCta.gradientLine': 'בלי כאב ראש.',
   'finalCta.desc1': 'כמה דקות ויש לכם אתר מדהים.',
   'finalCta.price79': '79 ש"ח לחודש, ללא התחייבות.',
-  'finalCta.cta': 'התחילו עכשיו',
 };
 
 export default he;

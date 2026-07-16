@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Users, Truck, TrendingUp, Lock, LayoutKanban } from "lucide-react";
+import { Users, Truck, TrendingUp, Lock, Kanban } from "lucide-react";
 import DashboardCustomers from "./DashboardCustomers";
 import DashboardSuppliers from "./DashboardSuppliers";
 import DashboardProfitability from "./DashboardProfitability";
@@ -260,7 +260,7 @@ const BASE_TABS: { id: CrmTab; label: string; icon: typeof Users }[] = [
 ];
 
 const REALESTATE_TABS: { id: CrmTab; label: string; icon: typeof Users }[] = [
-  { id: "pipeline",      label: "לוח לידים", icon: LayoutKanban },
+  { id: "pipeline",      label: "לוח לידים", icon: Kanban },
   { id: "customers",     label: "אנשי קשר",  icon: Users },
   { id: "suppliers",     label: "ספקים",     icon: Truck },
   { id: "profitability", label: "רווחיות",   icon: TrendingUp },
