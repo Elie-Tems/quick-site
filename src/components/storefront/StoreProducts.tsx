@@ -271,9 +271,11 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
           )}
 
           <div className="flex items-baseline gap-2 mt-1.5">
-            <span className={`font-bold ${product.originalPrice ? "text-red-500" : "text-foreground"} text-sm`}>
-              {formatPrice(product.price)}
-            </span>
+            {product.price != null && (
+              <span className={`font-bold ${product.originalPrice ? "text-red-500" : "text-foreground"} text-sm`}>
+                {formatPrice(product.price)}
+              </span>
+            )}
             {product.originalPrice && (
               <span className="text-xs text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
             )}

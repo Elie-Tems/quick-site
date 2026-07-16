@@ -186,13 +186,11 @@ const ProductDetailModal = ({
             )}
 
             <div className="flex items-baseline gap-3 mb-6 pb-6 border-b border-border">
-              <span
-                className={`text-3xl font-bold ${
-                  product.originalPrice ? "text-red-500" : "text-foreground"
-                }`}
-              >
-                {formatPrice(product.price)}
-              </span>
+              {product.price != null && (
+                <span className={`text-3xl font-bold ${product.originalPrice ? "text-red-500" : "text-foreground"}`}>
+                  {formatPrice(product.price)}
+                </span>
+              )}
               {product.originalPrice && (
                 <span className="text-xl text-muted-foreground line-through">
                   {formatPrice(product.originalPrice)}
