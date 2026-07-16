@@ -78,6 +78,8 @@ const DashboardSubscription = () => {
   const [approvalNum, setApprovalNum] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [showApprovalInput, setShowApprovalInput] = useState(false);
+  const [cardUpdateUrl, setCardUpdateUrl] = useState<string | null>(null);
+  const [isLoadingCardUpdate, setIsLoadingCardUpdate] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -190,6 +192,23 @@ const DashboardSubscription = () => {
       toast.error('לא הצלחנו לחדש כרגע. נסו שוב עוד רגע.');
     } finally {
       setIsCancelling(false);
+    }
+  };
+
+  const handleUpdateCard = async () => {
+    if (!business?.id) return;
+    setIsLoadingCardUpdate(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("billing-update-card", {
+        body: { businessId: business.id },
+      });
+      if (error || !data?.ok) throw new Error((data as any)?.error || error?.message);
+      setCardUpdateUrl((data as any).saleUrl);
+    } catch (e) {
+      toast.error("לא הצלחנו לפתוח דף עדכון כרטיס. נסה שוב.");
+      console.error(e);
+    } finally {
+      setIsLoadingCardUpdate(false);
     }
   };
 
@@ -663,36 +682,86 @@ const DashboardSubscription = () => {
         </Card>
       )}
 
+      {/* Card update iframe — shown after handleUpdateCard() */}
+      {cardUpdateUrl && (
+        <Card className="border-blue-200 bg-blue-50/30">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">עדכון כרטיס אשראי</CardTitle>
+              <button
+                onClick={() => setCardUpdateUrl(null)}
+                className="text-muted-foreground hover:text-foreground text-sm"
+              >
+                ✕ סגור
+              </button>
+            </div>
+            <CardDescription>הזינו את פרטי הכרטיס החדש. תחויבו ₪1 לאימות שיוחזר אוטומטית תוך 24 שעות.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <iframe
+              src={cardUpdateUrl}
+              className="w-full rounded-xl border border-border"
+              style={{ height: 460 }}
+              title="עדכון כרטיס אשראי"
+            />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Subscription Management Card */}
       <Card>
         <CardHeader>
           <CardTitle>ניהול מנוי</CardTitle>
-          <CardDescription>שדרג, שנה או בטל את המנוי שלך</CardDescription>
+          <CardDescription>עדכן כרטיס, הוסף תוספות או בטל את המנוי</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3">
-            <Button 
-              variant="outline" 
+            {/* Update card — always shown for active/past_due Cardcom subs */}
+            {subscription && subscription.status !== 'cancelled' && (
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={handleUpdateCard}
+                disabled={isLoadingCardUpdate}
+              >
+                {isLoadingCardUpdate ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+                עדכנו כרטיס אשראי
+              </Button>
+            )}
+
+            {/* Upgrade — opens add-ons */}
+            <Button
+              variant="outline"
               className="w-full justify-start gap-2"
               disabled={subscription?.status === 'cancelled'}
+              onClick={() => {
+                const el = document.getElementById("addons-section");
+                el ? el.scrollIntoView({ behavior: "smooth" }) : window.location.hash = "#addons-section";
+              }}
             >
               <ArrowUpCircle className="h-4 w-4" />
-              שדרגו תוכנית
+              הוסיפו תוספות לחנות
             </Button>
-            
-            <Button 
-              variant="outline" 
+
+            {/* Downgrade — scroll to cancel if only one plan */}
+            <Button
+              variant="outline"
               className="w-full justify-start gap-2"
-              disabled={subscription?.status === 'cancelled' || subscription?.plan_name === 'basic'}
+              disabled={subscription?.status === 'cancelled'}
+              onClick={() => {
+                const el = document.getElementById("cancel-section");
+                el ? el.scrollIntoView({ behavior: "smooth" }) : setCancelDialogOpen(true);
+              }}
             >
               <ArrowDownCircle className="h-4 w-4" />
-              שנמך תוכנית
+              הורידו תוכנית / בטלו מנוי
             </Button>
 
             {subscription && subscription.status !== 'cancelled' && (
               <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
                 <AlertDialogTrigger asChild>
                   <Button
+                    id="cancel-section"
                     variant="ghost"
                     className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive hover:bg-transparent text-sm"
                     disabled={isCancelling}

@@ -79,6 +79,14 @@ verify_jwt = true
 [functions.billing-cardcom-webhook]
 verify_jwt = false
 
+# billing-update-card-webhook: Cardcom callback for the card-update flow (same auth pattern).
+[functions.billing-update-card-webhook]
+verify_jwt = false
+
+# billing-expiry-warning: monthly cron, no user JWT.
+[functions.billing-expiry-warning]
+verify_jwt = false
+
 # orders-create is the COD/no-payment checkout, called from the PUBLIC storefront
 # by anonymous end-customers (prices are recomputed server-side).
 [functions.orders-create]

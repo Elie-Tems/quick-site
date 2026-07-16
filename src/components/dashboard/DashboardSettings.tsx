@@ -816,11 +816,15 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
           {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
           שמרו הגדרות
         </Button>
+      </form>
+
+      {/* Account section — email + password. Separate from the business form. */}
+      <AccountSection />
 
         {/* Dev: reset onboarding — admin-only. This wipes onboarding_completed_at and
             throws the account back into the setup wizard, so it must never be exposed
             to real merchants. */}
-        {isAdmin && (
+      {isAdmin && (
           <div className="border-t border-border pt-4 mt-2">
             <p className="text-xs text-muted-foreground mb-2 text-right">בדיקות ופיתוח (אדמין)</p>
             <Button
@@ -837,9 +841,117 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
             </Button>
           </div>
         )}
-      </form>
     </div>
   );
 };
+
+// ── AccountSection: email + password change (separate from business form) ─────
+function AccountSection() {
+  const { user } = useAuth();
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSavingEmail, setIsSavingEmail] = useState(false);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+
+  const handleEmailChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEmail.trim()) return;
+    setIsSavingEmail(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
+      if (error) throw error;
+      toast({ title: "נשלח אימות", description: "שלחנו לינק אימות לכתובת החדשה. לחצו עליו כדי לאשר את השינוי." });
+      setNewEmail("");
+    } catch (err: any) {
+      toast({ title: "שגיאה", description: err.message || "לא הצלחנו לעדכן אימייל", variant: "destructive" });
+    } finally {
+      setIsSavingEmail(false);
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      toast({ title: "סיסמה קצרה מדי", description: "הסיסמה חייבת להכיל לפחות 6 תווים.", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "סיסמאות לא תואמות", description: "וודאו שאתם מקלידים את אותה סיסמה פעמיים.", variant: "destructive" });
+      return;
+    }
+    setIsSavingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast({ title: "הסיסמה עודכנה", description: "הסיסמה שונתה בהצלחה." });
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      toast({ title: "שגיאה", description: err.message || "לא הצלחנו לשנות סיסמה", variant: "destructive" });
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3 border-t border-border pt-4 mt-2" dir="rtl">
+      <p className="text-sm font-semibold text-foreground">פרטי חשבון</p>
+
+      {/* Current email (read-only display) */}
+      <div className="rounded-xl border border-border bg-muted/40 px-4 py-3 flex items-center justify-between">
+        <div>
+          <p className="text-xs text-muted-foreground mb-0.5">אימייל נוכחי</p>
+          <p className="text-sm font-medium text-foreground">{user?.email}</p>
+        </div>
+      </div>
+
+      {/* Change email */}
+      <form onSubmit={handleEmailChange} className="space-y-2">
+        <Label htmlFor="new-email" className="text-xs text-muted-foreground">שינוי אימייל</Label>
+        <div className="flex gap-2">
+          <Input
+            id="new-email"
+            type="email"
+            placeholder="כתובת אימייל חדשה"
+            value={newEmail}
+            onChange={e => setNewEmail(e.target.value)}
+            className="flex-1 text-sm"
+            dir="ltr"
+          />
+          <Button type="submit" variant="outline" size="sm" disabled={isSavingEmail || !newEmail.trim()}>
+            {isSavingEmail ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "שנה"}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">ישלח אימות לכתובת החדשה לפני שהשינוי ייכנס לתוקף.</p>
+      </form>
+
+      {/* Change password */}
+      <form onSubmit={handlePasswordChange} className="space-y-2 pt-1">
+        <Label className="text-xs text-muted-foreground">שינוי סיסמה</Label>
+        <Input
+          type="password"
+          placeholder="סיסמה חדשה (6 תווים לפחות)"
+          value={newPassword}
+          onChange={e => setNewPassword(e.target.value)}
+          className="text-sm"
+          dir="ltr"
+        />
+        <Input
+          type="password"
+          placeholder="אישור סיסמה"
+          value={confirmPassword}
+          onChange={e => setConfirmPassword(e.target.value)}
+          className="text-sm"
+          dir="ltr"
+        />
+        <Button type="submit" variant="outline" size="sm" className="w-full" disabled={isSavingPassword || !newPassword}>
+          {isSavingPassword ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
+          עדכנו סיסמה
+        </Button>
+      </form>
+    </div>
+  );
+}
 
 export default DashboardSettings;

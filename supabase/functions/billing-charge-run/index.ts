@@ -136,6 +136,26 @@ serve(async (req) => {
       failed++; continue;
     }
 
+    // Proactively skip expired cards and send a targeted email instead of a generic
+    // "charge failed" email. Card expires at end-of-month of cc_exp_month/cc_exp_year.
+    const fullExpYear = Number(expYear) < 100 ? 2000 + Number(expYear) : Number(expYear);
+    const expiredMs = new Date(fullExpYear, Number(expMonth), 1).getTime(); // first day AFTER the exp month
+    if (nowMs >= expiredMs) {
+      await admin.from("billing_charges").update({ status: "failed", error_code: "card_expired" }).eq("idempotency_key", idem);
+      if (email) {
+        fetch(`${url}/functions/v1/send-platform-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
+          body: JSON.stringify({
+            type: "cardExpired",
+            to: email,
+            ctx: { updateUrl: "https://siango.app/dashboard?tab=subscription", recipientEmail: email, lang: "he" },
+          }),
+        }).catch(() => {});
+      }
+      failed++; continue;
+    }
+
     // Charge the stored Cardcom token for the total (base + add-ons), issuing ONE
     // multi-line tax invoice/receipt. Cardcom requires the Document total to EQUAL the
     // charged Amount and treats UnitCost as VAT-INCLUSIVE, so each line is GROSS.
