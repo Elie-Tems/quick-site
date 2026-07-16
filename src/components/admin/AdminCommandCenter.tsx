@@ -137,8 +137,8 @@ function FailedDomainsModal() {
   const { data, isLoading } = useFailedDomainOrders(true);
 
   const statusLabel: Record<string, string> = {
-    failed: "נכשל",
-    failed_funds: "כסף לא מספיק",
+    failed: "שגיאה כללית",
+    failed_funds: "יתרה נמוכה",
   };
 
   if (isLoading) {
@@ -149,53 +149,31 @@ function FailedDomainsModal() {
     );
   }
 
-  return (
-    <div className="space-y-4" dir="rtl">
-      <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-        <p className="font-semibold text-foreground mb-1">למה רכישות נכשלות?</p>
-        <ul className="space-y-1 list-disc list-inside">
-          <li><span className="font-medium">failed_funds</span> - יתרה לא מספיקה ב-Openprovider. יש לטעון יתרה ולנסות שוב.</li>
-          <li><span className="font-medium">failed</span> - שגיאה כללית (דומיין תפוס, שגיאת API, בעיית DNS). בדוק לוגים.</li>
-        </ul>
-      </div>
+  if (!data || data.length === 0) {
+    return <p className="text-center text-muted-foreground py-6">אין רכישות כושלות כרגע</p>;
+  }
 
-      {data && data.length === 0 ? (
-        <p className="text-center text-muted-foreground py-4">אין רכישות כושלות כרגע</p>
-      ) : (
-        <div className="space-y-2">
-          {data?.map((o) => (
-            <div key={o.id} className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="font-medium text-foreground">{o.domain_name || "—"}</div>
-                  <div className="text-muted-foreground text-xs mt-0.5">
-                    {o.businesses?.name || o.business_id} · {new Date(o.created_at).toLocaleDateString("he-IL")}
-                  </div>
-                </div>
-                <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${
-                  o.status === "failed_funds"
-                    ? "bg-destructive/10 text-destructive"
-                    : "bg-amber-500/10 text-amber-600"
-                }`}>
-                  {statusLabel[o.status] ?? o.status}
-                </span>
+  return (
+    <div className="space-y-2" dir="rtl">
+      {data.map((o) => (
+        <div key={o.id} className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <div className="font-medium text-foreground">{o.domain_name || "—"}</div>
+              <div className="text-muted-foreground text-xs mt-0.5">
+                {o.businesses?.name || o.business_id} · {new Date(o.created_at).toLocaleDateString("he-IL")}
               </div>
             </div>
-          ))}
+            <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${
+              o.status === "failed_funds"
+                ? "bg-destructive/10 text-destructive"
+                : "bg-amber-500/10 text-amber-600"
+            }`}>
+              {statusLabel[o.status] ?? o.status}
+            </span>
+          </div>
         </div>
-      )}
-
-      <div className="space-y-2">
-        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">פעולה מומלצת</div>
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => window.open("https://cp.openprovider.eu/domain/list.php", "_blank")}
-        >
-          <ExternalLink className="h-4 w-4 ml-1" />
-          פתח ממשק דומיינים ב-Openprovider
-        </Button>
-      </div>
+      ))}
     </div>
   );
 }
@@ -219,52 +197,37 @@ function CancellationsModal() {
     );
   }
 
+  if (!data || data.length === 0) {
+    return <p className="text-center text-muted-foreground py-6">אין ביטולים עתידיים כרגע</p>;
+  }
+
   return (
-    <div className="space-y-4" dir="rtl">
-      <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-        <p className="font-semibold text-foreground mb-1">ביטולים עתידיים — מה זה?</p>
-        <p>
-          אלו מנויים שסימנו "ביטול בסוף תקופה". האתר שלהם עדיין פעיל, אבל בתאריך הביטול
-          הוא יורד אוטומטית. שווה לנסות לשמר אותם.
-        </p>
-      </div>
-
-      {data && data.length === 0 ? (
-        <p className="text-center text-muted-foreground py-4">אין ביטולים עתידיים כרגע</p>
-      ) : (
-        <div className="space-y-2">
-          {data?.map((s) => {
-            const cancelDate = new Date(s.cancel_at);
-            const daysLeft = Math.ceil((cancelDate.getTime() - Date.now()) / 86_400_000);
-            return (
-              <div key={s.id} className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="font-medium text-foreground">{s.businesses?.name || s.business_id}</div>
-                    <div className="text-muted-foreground text-xs mt-0.5">
-                      {s.plan ?? "ללא מסלול"} ·{" "}
-                      {s.cancel_type === "immediate" ? "ביטול מיידי" : "סוף תקופה"}
-                    </div>
-                    {s.cancel_reason && (
-                      <div className="text-xs mt-1 text-amber-600">
-                        סיבה: {reasonLabels[s.cancel_reason] ?? s.cancel_reason}
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-left shrink-0">
-                    <div className="text-xs font-semibold text-destructive">{daysLeft} ימים</div>
-                    <div className="text-xs text-muted-foreground">{cancelDate.toLocaleDateString("he-IL")}</div>
-                  </div>
+    <div className="space-y-2" dir="rtl">
+      {data.map((s) => {
+        const cancelDate = new Date(s.cancel_at);
+        const daysLeft = Math.ceil((cancelDate.getTime() - Date.now()) / 86_400_000);
+        return (
+          <div key={s.id} className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="font-medium text-foreground">{s.businesses?.name || s.business_id}</div>
+                <div className="text-muted-foreground text-xs mt-0.5">
+                  {s.plan ?? "ללא מסלול"} · {s.cancel_type === "immediate" ? "ביטול מיידי" : "סוף תקופה"}
                 </div>
+                {s.cancel_reason && (
+                  <div className="text-xs mt-1 text-amber-500">
+                    סיבה: {reasonLabels[s.cancel_reason] ?? s.cancel_reason}
+                  </div>
+                )}
               </div>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-amber-700 dark:text-amber-400">
-        טיפ: צור קשר עם לקוחות שיש להם עוד 7+ ימים — יש סיכוי טוב לשמר אותם עם הטבה.
-      </div>
+              <div className="text-left shrink-0">
+                <div className="text-xs font-semibold text-destructive">{daysLeft} ימים</div>
+                <div className="text-xs text-muted-foreground">{cancelDate.toLocaleDateString("he-IL")}</div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
