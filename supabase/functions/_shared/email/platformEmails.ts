@@ -48,6 +48,12 @@ export interface PlatformCtx {
   autoRenew?: boolean;
   registrantName?: string;
   siteHost?: string;
+  /** New-lead notification fields (newLeadMerchant). */
+  leadName?: string;
+  leadPhone?: string;
+  leadEmail?: string;
+  leadTitle?: string;
+  leadMessage?: string;
   /** Recipient address - embedded in the one-click unsubscribe link. */
   recipientEmail?: string;
   /** Recipient language (defaults "he"). Only localized templates honour it. */
@@ -705,6 +711,46 @@ export const newOrderMerchant = (c: PlatformCtx): BuiltEmail => {
   };
 };
 
+/** New lead captured from a storefront form -> notify the MERCHANT (Siango sender).
+ *  Same branded template as the other platform emails. Lead values are escaped. */
+export const newLeadMerchant = (c: PlatformCtx): BuiltEmail => {
+  const lang = c.lang || "he";
+  const dir = dirForLang(lang);
+  const b = bizL(c, lang);
+  const escv = (s?: string) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const L = {
+    he: { name: "שם", phone: "טלפון", email: "אימייל", interest: "מתעניין ב", msg: "הודעה" },
+    en: { name: "Name", phone: "Phone", email: "Email", interest: "Interested in", msg: "Message" },
+    ar: { name: "الاسم", phone: "الهاتف", email: "البريد", interest: "مهتم بـ", msg: "رسالة" },
+    fr: { name: "Nom", phone: "Téléphone", email: "E-mail", interest: "Intéressé par", msg: "Message" },
+    ru: { name: "Имя", phone: "Телефон", email: "Email", interest: "Интересует", msg: "Сообщение" },
+  }[lang];
+  const line = (label: string, val?: string, isLtr = false) =>
+    val ? `<b>${label}:</b> ${isLtr ? ltr(escv(val)) : escv(val)}<br>` : "";
+  const details =
+    line(L.name, c.leadName) + line(L.phone, c.leadPhone, true) + line(L.email, c.leadEmail, true) +
+    line(L.interest, c.leadTitle) + line(L.msg, c.leadMessage);
+  const T = {
+    he: { subject: `📥 ליד חדש${c.leadTitle ? ` - ${c.leadTitle}` : ""}!`, preview: "מישהו השאיר פרטים באתר שלכם",
+      h1: "ליד חדש מחכה לך! 📥", p1: `${hiL(c, lang)}מישהו השאיר פרטים ב-${b}${c.leadTitle ? ` לגבי ${c.leadTitle}` : ""}. כדאי לחזור אליו מהר - לידים חמים מתקררים. 🔥`, btn: "לצפייה בלוח הלידים" },
+    en: { subject: `📥 New lead${c.leadTitle ? ` - ${c.leadTitle}` : ""}!`, preview: "Someone left their details on your site",
+      h1: "A new lead is waiting! 📥", p1: `${hiL(c, lang)}Someone left their details at ${b}${c.leadTitle ? ` about ${c.leadTitle}` : ""}. Best to get back to them fast - hot leads cool off. 🔥`, btn: "View your leads" },
+    ar: { subject: `📥 عميل محتمل جديد${c.leadTitle ? ` - ${c.leadTitle}` : ""}!`, preview: "ترك أحدهم بياناته على موقعك",
+      h1: "عميل محتمل جديد بانتظارك! 📥", p1: `${hiL(c, lang)}ترك أحدهم بياناته في ${b}${c.leadTitle ? ` بخصوص ${c.leadTitle}` : ""}. من الأفضل التواصل معه بسرعة. 🔥`, btn: "عرض العملاء المحتملين" },
+    fr: { subject: `📥 Nouveau prospect${c.leadTitle ? ` - ${c.leadTitle}` : ""} !`, preview: "Quelqu'un a laissé ses coordonnées sur votre site",
+      h1: "Un nouveau prospect vous attend ! 📥", p1: `${hiL(c, lang)}Quelqu'un a laissé ses coordonnées sur ${b}${c.leadTitle ? ` à propos de ${c.leadTitle}` : ""}. Mieux vaut le rappeler vite. 🔥`, btn: "Voir les prospects" },
+    ru: { subject: `📥 Новый лид${c.leadTitle ? ` - ${c.leadTitle}` : ""}!`, preview: "Кто-то оставил свои данные на вашем сайте",
+      h1: "Вас ждёт новый лид! 📥", p1: `${hiL(c, lang)}Кто-то оставил свои данные на ${b}${c.leadTitle ? ` по поводу ${c.leadTitle}` : ""}. Лучше связаться быстрее. 🔥`, btn: "Посмотреть лиды" },
+  }[lang];
+  return {
+    subject: T.subject,
+    html: renderEmail({
+      sender: siangoSender(c), previewText: T.preview, lang, dir,
+      bodyHtml: h1(T.h1) + p(T.p1) + emailHighlight(details, BRAND, dir) + emailButton(T.btn, dash(c), BRAND),
+    }),
+  };
+};
+
 /** Customer-facing order confirmation (transactional). sender = the MERCHANT.
  *  Localized to the shopper's language (defaults to Hebrew). */
 export const orderConfirmationCustomer = (
@@ -1015,6 +1061,6 @@ export const PLATFORM_EMAILS = {
   publishPaymentFailed,
   paymentReceipt, paymentFailed, paymentReminder, siteFrozen,
   deletionWarning, siteDeleted, siteReactivated, subscriptionCancelled,
-  newOrderMerchant, domainPurchased, domainExpiryReminder, domainExpiringUnpaid,
+  newOrderMerchant, newLeadMerchant, domainPurchased, domainExpiryReminder, domainExpiringUnpaid,
   domainFundsAlert, domainLowBalance,
 } as const;

@@ -10,9 +10,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendLifecycleEmail } from "../_shared/email/lifecycle.ts";
 import { sendViaResend } from "../_shared/email/resend.ts";
+import { newLeadMerchant } from "../_shared/email/platformEmails.ts";
 import { consumeRateLimit } from "../_shared/rateLimit.ts";
-
-const esc = (s: unknown) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -114,17 +113,14 @@ Deno.serve(async (req) => {
   // only sees the lead if they happen to open the board, so a time-sensitive lead is missed.
   if (bizRow.email) {
     try {
-      const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
-      const rows = [
-        ["שם", name], ["טלפון", phone], email ? ["אימייל", email] : null,
-        title ? ["מתעניין ב", title] : null, message ? ["הודעה", message] : null,
-      ].filter(Boolean).map((r) => `<tr><td style="padding:4px 12px 4px 0;color:#666">${esc((r as string[])[0])}</td><td style="padding:4px 0;font-weight:600">${esc((r as string[])[1])}</td></tr>`).join("");
-      await sendViaResend({
-        to: bizRow.email,
-        subject: `ליד חדש מהאתר${title ? ` - ${title}` : ""} 📥`,
-        fromName: bizRow.name || "Siango",
-        html: `<div dir="rtl" style="font-family:Arial,sans-serif;font-size:15px;color:#111"><h2 style="margin:0 0 10px">קיבלת ליד חדש מהאתר</h2><table style="border-collapse:collapse">${rows}</table><p style="margin-top:16px"><a href="${siteUrl}/dashboard" style="color:#0b8f6a;font-weight:600">לצפייה וניהול בלוח הלידים ←</a></p></div>`,
+      const mail = newLeadMerchant({
+        businessName: bizRow.name || undefined,
+        recipientEmail: bizRow.email,
+        leadName: name, leadPhone: phone, leadEmail: email || undefined,
+        leadTitle: title || undefined, leadMessage: message || undefined,
+        lang: "he",
       });
+      await sendViaResend({ to: bizRow.email, subject: mail.subject, html: mail.html, fromName: "Siango" });
     } catch (e) { console.warn("merchant lead notify failed:", contact.id, String(e)); }
   }
 
