@@ -49,6 +49,11 @@ export interface PaymentProvider {
    *  not authoritative). PayPlus leaves this false: its verify is a pure HMAC/header
    *  authenticity check and the paid signal comes from parseCallback().approved. */
   verificationImpliesPaid?: boolean;
+  /** Optional: re-query the gateway BY our payment reference and return true only if
+   *  the sale is genuinely paid. Used by payments-confirm (on-return recovery) when a
+   *  plain verifyCallbackSignature can't authenticate a synthetic/headerless request
+   *  (PayPlus's verify is IPN-header HMAC only). Read-only status lookup - no charge. */
+  verifyByReference?(creds: ProviderCredentials, ref: string, env: PaymentEnv): Promise<boolean>;
   /** Ask the gateway for a hosted payment page; return its link + a tracking id. */
   createPaymentPage(creds: ProviderCredentials, input: CreatePageInput, env: PaymentEnv): Promise<CreatePageResult>;
   /** Pull the tracking id + result out of a callback payload (no secrets needed). */

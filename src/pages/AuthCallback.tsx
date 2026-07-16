@@ -140,7 +140,22 @@ const AuthCallback = () => {
             .eq("user_id", user.id);
           // Fire sign_up for new Google users (account created in the last 2 minutes)
           const isNewUser = user.created_at && (Date.now() - new Date(user.created_at).getTime()) < 120_000;
-          if (isNewUser) gtm.signUp("google");
+          if (isNewUser) {
+            gtm.signUp("google");
+            // Recover referral attribution: Google OAuth drops signInWithOAuth
+            // options.data, so `referred_by` never reached the signup trigger.
+            // Register stashed the code before redirect - apply it now (best-effort;
+            // apply-referral no-ops if already attributed / self-referral / bad code).
+            const referral = localStorage.getItem("onboarding_referral");
+            if (referral) {
+              try {
+                await supabase.functions.invoke("apply-referral", { body: { code: referral } });
+              } catch (e) {
+                console.warn("apply-referral failed (non-fatal):", e);
+              }
+              localStorage.removeItem("onboarding_referral");
+            }
+          }
         }
 
         if (cancelled) return;

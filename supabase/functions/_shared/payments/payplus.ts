@@ -76,6 +76,30 @@ export const payplus: PaymentProvider = {
     return safeEqual(sent, a) || safeEqual(sent, b);
   },
 
+  // On-return recovery (payments-confirm): re-query PayPlus by our page_request_uid
+  // via the documented read-only endpoint PaymentPages/ipn-full, which accepts
+  // payment_request_uid and returns the transaction's result. We reuse parseCallback's
+  // approved-detection (status_code "000" / status "approved"). SAFE-FAIL: returns true
+  // ONLY when the gateway clearly reports the sale approved; any error/unknown => false
+  // (so a stuck order simply stays pending, never wrongly marked paid).
+  // NOTE: verify the exact ipn-full response shape against a real PayPlus transaction.
+  async verifyByReference(c, ref, env): Promise<boolean> {
+    if (!ref || !c.api_key || !c.secret_key) return false;
+    try {
+      const res = await fetch(`${apiBase(env)}/PaymentPages/ipn-full`, {
+        method: "POST", headers: authHeaders(c),
+        body: JSON.stringify({ payment_request_uid: ref }),
+      });
+      if (!res.ok) return false;
+      const json = await res.json().catch(() => ({}));
+      // ipn-full echoes the transaction payload; the same fields parseCallback reads.
+      return this.parseCallback(json).approved === true;
+    } catch (e) {
+      console.warn("payplus verifyByReference error:", String(e));
+      return false;
+    }
+  },
+
   async verifyCredentials(c, env): Promise<{ ok: boolean; error?: string }> {
     try {
       const res = await fetch(`${apiBase(env)}/PaymentPages/generateLink`, {

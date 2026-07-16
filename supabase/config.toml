@@ -121,6 +121,11 @@ verify_jwt = true
 [functions.send-platform-email]
 verify_jwt = true
 
+# apply-referral is called by a just-signed-up user (Google OAuth) to attach their
+# referral code server-side (metadata is dropped by OAuth). Requires the user's JWT.
+[functions.apply-referral]
+verify_jwt = true
+
 # domain-purchase is called by the logged-in merchant to start a domain buy.
 [functions.domain-purchase]
 verify_jwt = true

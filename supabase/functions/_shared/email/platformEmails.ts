@@ -766,6 +766,73 @@ export const orderConfirmationCustomer = (
   };
 };
 
+/** Customer-facing order STATUS update (transactional). sender = the MERCHANT.
+ *  Sent when the merchant marks an order completed / cancelled in the dashboard.
+ *  Hebrew / RTL, merchant-branded. Compliant footer (Chok HaSpam) via renderEmail:
+ *  one-click unsubscribe embeds the recipient address, exactly like the order
+ *  confirmation email. */
+export const orderStatusCustomer = (args: {
+  businessName: string;
+  /** 'completed' | 'cancelled'. Anything else is treated as 'completed'. */
+  status: string;
+  orderTotal?: number;
+  storeUrl?: string;
+  brandColor?: string;
+  logoUrl?: string;
+  /** Merchant contact - shown in the footer and used as reply-to upstream. */
+  email?: string;
+  /** Shopper's first name for a warmer greeting (optional). */
+  firstName?: string;
+  /** Recipient address - embedded in the one-click unsubscribe link. */
+  recipientEmail?: string;
+}): BuiltEmail => {
+  const store = args.businessName || "החנות";
+  const storeUrl = (args.storeUrl || "https://siango.app").replace(/\/$/, "");
+  const brand = args.brandColor || BRAND;
+  const amt = args.orderTotal ? ils(args.orderTotal) : "";
+  const nm = args.firstName;
+  const greet = nm ? `היי ${nm}! ` : "היי! ";
+  const cancelled = args.status === "cancelled";
+
+  const sender: EmailSender = {
+    businessName: store,
+    email: args.email,
+    brandColor: brand,
+    logoUrl: args.logoUrl,
+    unsubscribeUrl: args.recipientEmail
+      ? `${storeUrl}/unsubscribe?email=${encodeURIComponent(args.recipientEmail)}`
+      : `${storeUrl}/unsubscribe`,
+  };
+
+  const T = cancelled
+    ? {
+        subject: `עדכון על ההזמנה שלך מ${store} - ההזמנה בוטלה`,
+        preview: "פרטים על ביטול ההזמנה",
+        h1: "ההזמנה בוטלה",
+        p1: `${greet}רצינו לעדכן שההזמנה שלך ב${store}${amt ? ` בסך ${amt}` : ""} בוטלה. אם כבר בוצע חיוב, הזיכוי יוחזר לאמצעי התשלום שלך בהתאם לנהלי חברת האשראי.`,
+        hl: "❓ ביטלת בטעות, או שיש לך שאלה על ההזמנה? פשוט השב/י למייל הזה - נשמח לעזור.",
+        btn: "חזרה לחנות",
+      }
+    : {
+        subject: `ההזמנה שלך מ${store} הושלמה 🎉`,
+        preview: "ההזמנה הושלמה - תודה שקנית אצלנו!",
+        h1: "ההזמנה הושלמה! 🎉",
+        p1: `${greet}יש חדשות טובות - ההזמנה שלך ב${store}${amt ? ` בסך ${amt}` : ""} טופלה והושלמה. תודה רבה שקנית אצלנו! 🙏`,
+        hl: "📦 קיבלת את ההזמנה או שיש לך שאלה? פשוט השב/י למייל הזה - אנחנו כאן בשבילך.",
+        btn: "חזרה לחנות",
+      };
+
+  return {
+    subject: T.subject,
+    html: renderEmail({
+      sender,
+      previewText: T.preview,
+      lang: "he",
+      bodyHtml: h1(T.h1) + p(T.p1) + emailHighlight(T.hl, brand) + emailButton(T.btn, storeUrl, brand),
+    }),
+  };
+};
+
 /** Domain registered successfully - ownership + connection guide. Localized. */
 export const domainPurchased = (c: PlatformCtx): BuiltEmail => {
   const lang = c.lang || "he";

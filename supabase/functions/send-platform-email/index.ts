@@ -4,7 +4,7 @@
 // No-ops gracefully if RESEND_API_KEY is not configured yet.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { PLATFORM_EMAILS, orderConfirmationCustomer } from "../_shared/email/platformEmails.ts";
+import { PLATFORM_EMAILS, orderConfirmationCustomer, orderStatusCustomer } from "../_shared/email/platformEmails.ts";
 import { sendViaResend } from "../_shared/email/resend.ts";
 
 const corsHeaders = {
@@ -60,7 +60,11 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { type, to, ctx, fromName, replyTo, merchant, order, businessId } = await req.json();
+    const { type, to, ctx, fromName, replyTo, merchant, order, businessId, orderId } = await req.json();
+    // For orderStatusCustomer: the DB order resolved (and ownership-verified) in the
+    // anti-phishing gate, reused in the send section so branding/total come from the
+    // trusted row - never from client-supplied fields.
+    let resolvedOrder: { business_id: string; customer_email: string | null; total_price: number | string | null } | null = null;
     if (!to) {
       return new Response(JSON.stringify({ ok: false, error: "to is required" }), {
         status: 400,
@@ -100,6 +104,49 @@ serve(async (req) => {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+    } else if (type === "orderStatusCustomer") {
+      // Customer-facing ORDER STATUS email FROM the merchant, triggered when the
+      // merchant marks an order completed/cancelled in the dashboard. Anti-phishing
+      // gate: look up the order by id, then require BOTH (a) the recipient equals
+      // that order's own customer_email, and (b) the authenticated caller OWNS the
+      // order's business. This stops a signed-in user from wearing another store's
+      // identity to mail arbitrary inboxes. Service-role callers (cron/webhook) are
+      // exempt from the ownership check but still bound to the real order/recipient.
+      const oid = orderId || (ctx as any)?.orderNumber || (order as any)?.id;
+      if (!oid) {
+        return new Response(JSON.stringify({ ok: false, error: "orderId required" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const admin0 = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      const { data: ord } = await admin0
+        .from("orders")
+        .select("id, business_id, customer_email, total_price")
+        .eq("id", oid)
+        .maybeSingle();
+      const target = String(Array.isArray(to) ? to[0] : to).toLowerCase();
+      if (!ord || (ord.customer_email || "").toLowerCase() !== target) {
+        return new Response(JSON.stringify({ ok: false, error: "recipient does not match the order" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (!isServiceRole) {
+        // businesses.owner_id references profiles.id (NOT auth.uid) - resolve the
+        // caller's profile first, then confirm they own the order's business.
+        const { data: { user } } = await admin0.auth.getUser(authToken);
+        const { data: profile } = user
+          ? await admin0.from("profiles").select("id").eq("user_id", user.id).maybeSingle()
+          : { data: null };
+        const { data: ownsBiz } = profile
+          ? await admin0.from("businesses").select("id").eq("id", ord.business_id).eq("owner_id", profile.id).maybeSingle()
+          : { data: null };
+        if (!ownsBiz) {
+          return new Response(JSON.stringify({ ok: false, error: "not your order" }), {
+            status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+      resolvedOrder = ord as typeof resolvedOrder;
     } else if (!isServiceRole) {
       // Authenticated (non service-role) callers may only send a platform
       // lifecycle email to THEIR OWN address. This stops any signed-up user from
@@ -181,6 +228,49 @@ serve(async (req) => {
           lang: ["he", "en", "ar", "fr", "ru"].includes(order?.lang) ? order.lang : "he",
         },
       );
+      subject = built.subject;
+      html = built.html;
+      sendFromName = storeName;            // shown as the sender
+      sendReplyTo = storeEmail || replyTo; // replies go to the merchant
+    } else if (type === "orderStatusCustomer") {
+      // Merchant-branded order status update. Derive the store identity (and the
+      // order total) from the DB - the order was verified in the gate above, so we
+      // trust resolvedOrder.business_id over any client-supplied businessId.
+      const bId = resolvedOrder?.business_id || businessId;
+      let storeName = "החנות";
+      let storeEmail: string | undefined;
+      let storeUrl = "https://siango.app";
+      let brandColor: string | undefined;
+      let logoUrl: string | undefined;
+      if (bId) {
+        const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        const { data: bizRow } = await admin
+          .from("businesses")
+          .select("name, email, slug, primary_color, logo_url")
+          .eq("id", bId)
+          .maybeSingle();
+        if (bizRow) {
+          storeName = (bizRow as any).name || storeName;
+          storeEmail = (bizRow as any).email || undefined;
+          brandColor = (bizRow as any).primary_color || undefined;
+          logoUrl = (bizRow as any).logo_url || undefined;
+          if ((bizRow as any).slug) storeUrl = `https://siango.app/store/${(bizRow as any).slug}`;
+        }
+      }
+      const rawTotal = resolvedOrder?.total_price;
+      const orderTotal = rawTotal != null && rawTotal !== "" ? Number(rawTotal) : undefined;
+      const recipient = Array.isArray(to) ? to[0] : to;
+      const built = orderStatusCustomer({
+        businessName: storeName,
+        status: (ctx as any)?.status,
+        orderTotal: Number.isFinite(orderTotal as number) ? (orderTotal as number) : undefined,
+        storeUrl,
+        brandColor,
+        logoUrl,
+        email: storeEmail,
+        firstName: (ctx as any)?.firstName,
+        recipientEmail: recipient,
+      });
       subject = built.subject;
       html = built.html;
       sendFromName = storeName;            // shown as the sender

@@ -174,6 +174,12 @@ const Register = () => {
     if (formData.email) {
       localStorage.setItem("onboarding_email", formData.email);
     }
+    // Google OAuth drops signInWithOAuth options.data, so `referred_by` never reaches
+    // the handle_new_user trigger. Persist the code and recover it in /auth/callback
+    // (apply-referral) once the new user lands, so referral attribution survives.
+    if (referralCode) {
+      localStorage.setItem("onboarding_referral", referralCode);
+    }
 
     setIsGoogleLoading(true);
     setSubmitError("");

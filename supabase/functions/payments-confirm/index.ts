@@ -40,12 +40,19 @@ Deno.serve(async (req) => {
     .eq("business_id", order.business_id).eq("provider", provider.id).maybeSingle();
   if (!creds) return json({ ok: true, paid: false });
 
-  // Re-query the gateway with our order ref (the same authoritative check the IPN uses).
+  // Re-query the gateway with our order ref. Prefer verifyByReference (a real status
+  // re-query by our reference) when the provider offers it - PayPlus needs this because
+  // its verifyCallbackSignature is a pure IPN-header HMAC check that can't authenticate a
+  // synthetic headerless request. iCount's verifyCallbackSignature already re-queries, so
+  // it falls back to that.
   const ref = order.payment_page_request_uid;
-  const payload = { x_order_id: ref, custom_client_id: ref, order_id: ref };
+  const env = { get: (k: string) => Deno.env.get(k) };
   let paid = false;
-  try { paid = await provider.verifyCallbackSignature(creds, "", new Headers(), payload); }
-  catch (e) { console.warn("payments-confirm: verify error", e); }
+  try {
+    paid = provider.verifyByReference
+      ? await provider.verifyByReference(creds, ref, env)
+      : await provider.verifyCallbackSignature(creds, "", new Headers(), { x_order_id: ref, custom_client_id: ref, order_id: ref });
+  } catch (e) { console.warn("payments-confirm: verify error", e); }
   console.log("payments-confirm: order", orderId, "provider", provider.id, "paid", paid);
 
   if (!paid) return json({ ok: true, paid: false });
