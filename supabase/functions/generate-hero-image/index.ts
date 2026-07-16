@@ -26,7 +26,36 @@ const categoryPrompts: Record<string, string> = {
   books: `A cozy bookstore with wooden shelves full of books, reading nooks, warm lighting. Intellectual and inviting atmosphere. Professional interior photography. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
   home: `A stylish home decor store with modern furniture, decorative items, and plants. Scandinavian design aesthetic. Professional interior photography. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
   grocery: `A fresh grocery market with colorful fruits and vegetables, artisan products, warm lighting. Farm-to-table aesthetic. Professional food photography. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
-  other: `A modern, professional storefront with clean design, welcoming atmosphere, and premium aesthetic. Professional commercial photography. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  other: `A modern, professional office or business environment with clean design, welcoming atmosphere, and premium aesthetic. Professional commercial photography. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+};
+
+// Sub-type specific prompts — more precise than category-level
+const subTypePrompts: Record<string, string> = {
+  // Products
+  fashion: categoryPrompts.clothing,
+  'general-store': categoryPrompts.grocery,
+  food: categoryPrompts.restaurant,
+  'home-decor': categoryPrompts.home,
+  sports: `A dynamic sports equipment store with premium athletic gear, running shoes, and workout accessories on modern displays. Energetic, motivational atmosphere. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  cosmetics: categoryPrompts.beauty,
+  // Services
+  barber: `A classic modern barbershop with vintage barber chairs, grooming tools, mirrors, and warm Edison bulb lighting. Stylish and masculine atmosphere. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  renovation: `A professional construction and renovation workspace with quality tools, architectural blueprints, material samples — tiles, wood, stone. Clean and professional. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  photography: `A professional photography studio with camera equipment, lighting rigs, a clean backdrop, and artistic prints on the wall. Creative and polished atmosphere. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  vacation: `A breathtaking vacation retreat — a luxury cabin or villa surrounded by nature, lush greenery, serene landscape with warm golden-hour lighting. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  broker: `A sleek real-estate office interior with architectural scale models, luxury property photos on the walls, modern desk, and city views through large windows. Professional atmosphere. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  health: `A clean, modern medical or wellness clinic with professional medical equipment, plants, natural light, and a calm healing atmosphere. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  consulting: `A premium business consulting office — a polished conference table, large windows with a city skyline, professional decor, and an atmosphere of expertise and authority. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  legal: `An elegant law office with floor-to-ceiling bookshelves filled with legal volumes, a mahogany desk, a gavel, scales of justice, and formal professional decor. Authoritative and trustworthy atmosphere. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  developer: `A luxury real-estate development project — architectural models, blueprints, high-rise building renders, and a modern sales office with city panorama views. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  'car-dealer': categoryPrompts.automotive,
+  // Nonprofit
+  charity: `Warm, hopeful imagery of community volunteers helping people — diverse hands joined together, charitable acts of kindness, soft warm lighting, emotionally uplifting atmosphere. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  crowdfunding: `Inspiring imagery of a community rallying around a shared goal — diverse people collaborating, creative energy, optimism and teamwork. Modern and vibrant. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  community: `A vibrant community gathering space — people of all ages connecting, a warm community center or outdoor plaza with greenery and natural light. Inclusive and welcoming. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  education: `A bright, inspiring classroom or library — bookshelves, learning materials, desks, warm natural light streaming through large windows. Intellectual and nurturing atmosphere. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  social: `Heartwarming social welfare imagery — caring professionals helping families, a supportive environment with soft warm lighting and human connection. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
+  animals: `A warm animal shelter or veterinary clinic — happy, healthy animals, caring staff, clean bright space with natural light. Compassionate and joyful atmosphere. Ultra high resolution. ${NO_TEXT_INSTRUCTION}`,
 };
 
 serve(async (req) => {
@@ -66,7 +95,7 @@ serve(async (req) => {
       );
     }
 
-    const { category, businessName, businessId, bannerStyle, brandData, customPrompt } = await req.json();
+    const { category, businessSubType, businessName, businessId, bannerStyle, brandData, customPrompt } = await req.json();
 
     if (!category) {
       return new Response(
@@ -276,17 +305,29 @@ serve(async (req) => {
       console.log("Brand context added to prompt:", brandContext);
     }
 
-    // Get the prompt for this category - always enforce no text
-    const basePrompt = categoryPrompts[category] || categoryPrompts.other;
-    
-    // Combine: scene from category + colors from brand
-    let prompt = brandContext 
-      ? `Generate an image: ${basePrompt} ${styleModifier} ${brandContext} ABSOLUTELY NO TEXT OR WRITING IN THE IMAGE.`
-      : `${basePrompt} ${styleModifier} Style should match a business in the ${category} industry. ABSOLUTELY NO TEXT OR WRITING IN THE IMAGE.`;
+    // Resolve the most specific prompt available:
+    // 1. Custom prompt from user (primary - replaces default scene entirely)
+    // 2. Sub-type specific prompt (e.g. "legal" → law office scene)
+    // 3. Category prompt (e.g. "beauty")
+    // 4. Generic fallback
+    let prompt: string;
 
-    // Add custom prompt if provided
     if (customPrompt && customPrompt.trim()) {
-      prompt += `\n\nADDITIONAL REQUIREMENTS: ${customPrompt.trim()}`;
+      // Custom prompt IS the scene — wrap it with quality/style constraints
+      const scene = customPrompt.trim();
+      prompt = brandContext
+        ? `A professional, high-quality photograph: ${scene}. ${styleModifier} ${brandContext} ABSOLUTELY NO TEXT OR WRITING IN THE IMAGE. Ultra high resolution, cinematic quality.`
+        : `A professional, high-quality photograph: ${scene}. ${styleModifier} ABSOLUTELY NO TEXT OR WRITING IN THE IMAGE. Ultra high resolution, cinematic quality.`;
+    } else {
+      // Auto-select the best matching default prompt
+      const basePrompt =
+        (businessSubType && subTypePrompts[businessSubType]) ||
+        categoryPrompts[category] ||
+        categoryPrompts.other;
+
+      prompt = brandContext
+        ? `Generate an image: ${basePrompt} ${styleModifier} ${brandContext} ABSOLUTELY NO TEXT OR WRITING IN THE IMAGE.`
+        : `${basePrompt} ${styleModifier} ABSOLUTELY NO TEXT OR WRITING IN THE IMAGE.`;
     }
 
     // Add religious audience restrictions if applicable
