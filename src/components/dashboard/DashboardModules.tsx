@@ -2,13 +2,13 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   ShoppingBag, CalendarClock, Building2, Heart, Landmark,
-  Hotel, ClipboardList, Images, Check, Loader2, Blocks, Sparkles,
+  Hotel, ClipboardList, Images, Check, Loader2, Blocks, Sparkles, Award,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  getEnabledModules, MODULES, type ModuleKey, type BusinessType,
+  getEnabledModules, getBusinessType, MODULES, type ModuleKey, type BusinessType,
 } from "@/lib/businessModules";
 
 /**
@@ -39,11 +39,32 @@ const LIVE: Live[] = [
   { key: "synagogue", icon: Landmark,      color: "#c07d12", title: "בית כנסת",         desc: "עליות ונדרים, מקומות קבועים וזמני תפילה." },
 ];
 
+/** Which LIVE module keys make sense to offer per business type. */
+const ALLOWED_LIVE: Record<BusinessType, ModuleKey[]> = {
+  products:   ["commerce"],
+  services:   ["commerce", "booking"],
+  realestate: ["listings", "booking"],
+  nonprofit:  ["donations", "commerce"],
+  synagogue:  ["donations", "synagogue"],
+  vacation:   ["commerce", "booking"],
+};
+
+type SoonItem = {
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  color: string;
+  title: string;
+  desc: string;
+  types?: BusinessType[]; // if set, only show for these types
+};
+
 // Phase-2 modules - shown as an invitation, not yet toggleable.
-const SOON = [
-  { icon: Hotel,         color: "#6d4bd0", title: "חדרים / יחידות אירוח", desc: "יחידות עם זמינות בלוח, מחיר ללילה והזמנה - לצימרים ואירוח." },
-  { icon: Images,        color: "#0b9e77", title: "גלריה / תיק עבודות",   desc: "תצוגת עבודות ופרויקטים - לצלמים, מעצבים ובעלי מקצוע." },
-  { icon: ClipboardList, color: "#c07d12", title: "טופס לידים עצמאי",     desc: "\"השאירו פרטים\" ללא לוח נכסים - נכנס ישר ל-CRM." },
+const SOON: SoonItem[] = [
+  { icon: Hotel,         color: "#6d4bd0", title: "חדרים / יחידות אירוח", desc: "יחידות עם זמינות בלוח, מחיר ללילה והזמנה - לצימרים ואירוח.", types: ["vacation", "services"] },
+  { icon: Images,        color: "#0b9e77", title: "גלריה / תיק עבודות",   desc: "תצוגת עבודות ופרויקטים - לצלמים, מעצבים ובעלי מקצוע.", types: ["services", "products"] },
+  { icon: Images,        color: "#6d4bd0", title: "גלריית אווירה",         desc: "תמונות מרחב, שכונה ואורח חיים - לשדר ללקוח איך זה להגיע לנכס.", types: ["realestate"] },
+  { icon: ClipboardList, color: "#c07d12", title: "טופס לידים",            desc: "\"השאירו פרטים\" - נכנס ישר ל-CRM בלי לוח נכסים.", types: ["realestate", "services"] },
+  { icon: Award,         color: "#1785c2", title: "מה הבידול שלנו",        desc: "סקשן ייעודי לסיפור המקצועי שלכם - למה אתם ולא אחרים.", types: ["realestate", "services"] },
+  { icon: ClipboardList, color: "#c07d12", title: "טופס לידים עצמאי",     desc: "\"השאירו פרטים\" ללא לוח נכסים - נכנס ישר ל-CRM.", types: ["products", "nonprofit", "synagogue"] },
 ];
 
 const fade = (d = 0) => ({ initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: d } });
@@ -52,6 +73,10 @@ const DashboardModules = ({ business }: Props) => {
   const qc = useQueryClient();
   const [pending, setPending] = useState<ModuleKey | null>(null);
   const current = getEnabledModules(business as { business_type?: BusinessType } | null);
+  const bType = getBusinessType(business as { business_type?: BusinessType } | null);
+  const allowedKeys = ALLOWED_LIVE[bType] ?? Object.keys(MODULES) as ModuleKey[];
+  const visibleLive = LIVE.filter((m) => allowedKeys.includes(m.key));
+  const visibleSoon = SOON.filter((m) => !m.types || m.types.includes(bType));
 
   const save = useMutation({
     mutationFn: async (next: ModuleKey[]) => {
@@ -94,7 +119,7 @@ const DashboardModules = ({ business }: Props) => {
 
       {/* Live modules */}
       <div className="grid sm:grid-cols-2 gap-4">
-        {LIVE.map((m, i) => {
+        {visibleLive.map((m, i) => {
           const on = current.includes(m.key);
           const Icon = m.icon;
           const busy = pending === m.key;
@@ -139,7 +164,7 @@ const DashboardModules = ({ business }: Props) => {
           <Sparkles className="w-4 h-4" /> בקרוב - מודולים נוספים בפיתוח
         </div>
         <div className="grid sm:grid-cols-3 gap-3">
-          {SOON.map((m) => {
+          {visibleSoon.map((m) => {
             const Icon = m.icon;
             return (
               <div key={m.title} className="rounded-2xl border border-border bg-card/60 p-4 opacity-80">
