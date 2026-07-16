@@ -1,15 +1,12 @@
--- Schedule the two email-marketing background jobs that were documented as
--- "invoked by pg_cron" but never actually scheduled (audit finding #21):
---   - email-scheduled-run  : sends campaigns whose scheduled time has arrived.
---   - email-abandoned-run  : sends abandoned-cart reminder emails.
--- Both edge functions are FAIL-CLOSED on the CRON_SECRET (they 401 unless the
--- x-cron-secret header matches). We never store the secret in the repo, so this
--- migration extracts the live CRON_SECRET from an existing scheduled job that
--- already carries it, then (re)schedules both jobs with it. Idempotent:
--- cron.schedule upserts by job name.
+-- Ensure the two email-marketing background jobs are scheduled (audit #21 flagged
+-- them as missing). IMPORTANT: on production they were ALREADY scheduled under the
+-- names siango-email-scheduled (*/15) and siango-email-abandoned (hourly), both
+-- posting to email-scheduled-run / email-abandoned-run - so #21 was a false positive.
 --
--- If no existing job carries the secret (fresh project), it raises a NOTICE and
--- skips - set CRON_SECRET on a scheduled job first, then re-run.
+-- This migration is therefore GUARDED: it only creates a job if NO existing cron
+-- already posts to that function, so it is a no-op on the current DB and correct on
+-- a fresh one (never creating duplicates that would double-send). Both functions are
+-- fail-closed on CRON_SECRET, so we extract the live secret from an existing job.
 
 DO $$
 DECLARE
@@ -27,27 +24,17 @@ BEGIN
    LIMIT 1;
 
   IF secret IS NULL THEN
-    RAISE NOTICE 'No existing cron carries CRON_SECRET; email crons NOT scheduled. Set CRON_SECRET on a job and re-run.';
+    RAISE NOTICE 'No existing cron carries CRON_SECRET; email crons NOT scheduled.';
     RETURN;
   END IF;
 
-  PERFORM cron.schedule(
-    'siango-email-scheduled-run',
-    '*/5 * * * *',
-    format($f$select net.http_post(
-      url := 'https://ytqgeoviokgxxwalieev.supabase.co/functions/v1/email-scheduled-run',
-      headers := jsonb_build_object('Content-Type','application/json','x-cron-secret','%s','Authorization','Bearer %s')
-    );$f$, secret, anon)
-  );
+  IF NOT EXISTS (SELECT 1 FROM cron.job WHERE command LIKE '%email-scheduled-run%') THEN
+    PERFORM cron.schedule('siango-email-scheduled', '*/15 * * * *',
+      format($f$select net.http_post(url := 'https://ytqgeoviokgxxwalieev.supabase.co/functions/v1/email-scheduled-run', headers := jsonb_build_object('Content-Type','application/json','x-cron-secret','%s','Authorization','Bearer %s'));$f$, secret, anon));
+  END IF;
 
-  PERFORM cron.schedule(
-    'siango-email-abandoned-run',
-    '0 * * * *',
-    format($f$select net.http_post(
-      url := 'https://ytqgeoviokgxxwalieev.supabase.co/functions/v1/email-abandoned-run',
-      headers := jsonb_build_object('Content-Type','application/json','x-cron-secret','%s','Authorization','Bearer %s')
-    );$f$, secret, anon)
-  );
-
-  RAISE NOTICE 'Scheduled siango-email-scheduled-run (*/5m) + siango-email-abandoned-run (hourly).';
+  IF NOT EXISTS (SELECT 1 FROM cron.job WHERE command LIKE '%email-abandoned-run%') THEN
+    PERFORM cron.schedule('siango-email-abandoned', '0 * * * *',
+      format($f$select net.http_post(url := 'https://ytqgeoviokgxxwalieev.supabase.co/functions/v1/email-abandoned-run', headers := jsonb_build_object('Content-Type','application/json','x-cron-secret','%s','Authorization','Bearer %s'));$f$, secret, anon));
+  END IF;
 END $$;
