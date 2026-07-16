@@ -38,6 +38,7 @@ const SynagogueSettingsManager = ({ businessId, slug }: { businessId: string; sl
   };
 
   const screenUrl = slug ? `${window.location.origin}/shul/${slug}/screen` : null;
+  const memberUrl = slug ? `${window.location.origin}/shul/${slug}` : null;
 
   if (isLoading) return <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>;
 
@@ -84,6 +85,20 @@ const SynagogueSettingsManager = ({ businessId, slug }: { businessId: string; sl
         {screenUrl ? (
           <a href={screenUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary font-medium shrink-0">
             פתיחת המסך <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        ) : <span className="text-xs text-muted-foreground">פרסמו את האתר לקבלת הקישור</span>}
+      </div>
+
+      {/* Member self-service area - where members look up + pay their aliyot/nedarim */}
+      <div className="p-4 rounded-xl border border-primary/30 bg-primary/[0.04] flex items-center gap-3">
+        <ExternalLink className="w-5 h-5 text-primary shrink-0" />
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium text-foreground">אזור המתפללים</div>
+          <div className="text-xs text-muted-foreground">שתפו עם המתפללים - כאן הם רואים ומשלמים עליות ונדרים.</div>
+        </div>
+        {memberUrl ? (
+          <a href={memberUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary font-medium shrink-0">
+            פתיחה <ExternalLink className="w-3.5 h-3.5" />
           </a>
         ) : <span className="text-xs text-muted-foreground">פרסמו את האתר לקבלת הקישור</span>}
       </div>
