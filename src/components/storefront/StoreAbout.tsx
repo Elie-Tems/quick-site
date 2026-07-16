@@ -27,7 +27,7 @@ const StoreAbout = ({ aboutText, businessName }: StoreAboutProps) => {
   const { headline, body } = enrichAbout(aboutText, businessName);
 
   return (
-    <section dir="rtl" className="py-16 md:py-24 border-t border-border bg-background">
+    <section id="about" dir="rtl" className="py-16 md:py-24 border-t border-border bg-background">
       <div className="container px-4 md:px-6">
         <motion.div
           initial={{ opacity: 0, y: 16 }}

@@ -1,4 +1,4 @@
-import StoreHeader from '@/components/storefront/StoreHeader';
+﻿import StoreHeader from '@/components/storefront/StoreHeader';
 import StoreHero from '@/components/storefront/StoreHero';
 import StoreBanners from '@/components/storefront/StoreBanners';
 import StorePromoPopup from '@/components/storefront/StorePromoPopup';
@@ -13,8 +13,8 @@ import type { StorefrontLayoutProps } from './StorefrontLayout.types';
 
 /**
  * Classic Store layout:
- * Full header → full-width hero → banners → 3-col product grid → about → footer
- * The universal default — works for any product-focused business.
+ * Full header ג†’ full-width hero ג†’ banners ג†’ 3-col product grid ג†’ about ג†’ footer
+ * The universal default ג€” works for any product-focused business.
  */
 const ClassicLayout = ({
   businessName, businessSlug, logoUrl, phone, tagline, ctaText, heroTitle, heroBadge,
@@ -44,7 +44,7 @@ const ClassicLayout = ({
         storeCategories={categories}
         selectedCategoryId={selectedCategoryId}
         onSelectCategory={onSelectCategory}
-        aboutPath={`/store/${businessSlug}/about`}
+        onScrollToAbout={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
         onNavigateHome={onNavigateHome}
         onScrollToProducts={onScrollToProducts}
         onNavigateToFavorites={onNavigateToFavorites}

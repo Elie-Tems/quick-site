@@ -1,4 +1,4 @@
-import { Phone, ArrowLeft } from 'lucide-react';
+﻿import { Phone, ArrowLeft } from 'lucide-react';
 import StoreHeader from '@/components/storefront/StoreHeader';
 import StoreBanners from '@/components/storefront/StoreBanners';
 import StoreAbout from '@/components/storefront/StoreAbout';
@@ -9,7 +9,7 @@ import type { StorefrontLayoutProps } from './StorefrontLayout.types';
 
 /**
  * Property Grid layout (real-estate / lead vertical):
- * Header → centered hero → listings board (lead capture) → about → reviews.
+ * Header ג†’ centered hero ג†’ listings board (lead capture) ג†’ about ג†’ reviews.
  *
  * This is a LEAD-based storefront, never e-commerce. The property listings and
  * their contact/lead forms are rendered by `verticalSlot` (ListingsBoard) - a
@@ -42,7 +42,7 @@ const PropertyLayout = ({
         storeCategories={categories}
         selectedCategoryId={selectedCategoryId}
         onSelectCategory={onSelectCategory}
-        aboutPath={`/store/${businessSlug}/about`}
+        onScrollToAbout={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
         onNavigateHome={onNavigateHome}
         onScrollToProducts={onScrollToProducts}
         onNavigateToFavorites={onNavigateToFavorites}
@@ -73,7 +73,7 @@ const PropertyLayout = ({
               onClick={onScrollToProducts}
               className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white border border-white/40 hover:bg-white/10 transition-colors backdrop-blur-sm"
             >
-              {ctaText || 'צפו בנכסים'} <ArrowLeft className="inline w-4 h-4 mr-1" />
+              {ctaText || '׳¦׳₪׳• ׳‘׳ ׳›׳¡׳™׳'} <ArrowLeft className="inline w-4 h-4 mr-1" />
             </button>
           </div>
         </section>
@@ -87,7 +87,7 @@ const PropertyLayout = ({
 
         {phone && (
           <section className="py-10 px-4 text-center border-t border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">מעוניינים לשמוע עוד?</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">׳׳¢׳•׳ ׳™׳™׳ ׳™׳ ׳׳©׳׳•׳¢ ׳¢׳•׳“?</h3>
             <a
               href={`tel:${phone}`}
               className="inline-flex items-center gap-2 px-8 py-3 rounded-lg text-sm font-semibold text-white"

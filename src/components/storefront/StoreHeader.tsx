@@ -21,7 +21,7 @@ interface StoreHeaderProps {
   storeCategories?: StoreCategoryItem[];
   selectedCategoryId?: string | null;
   onSelectCategory?: (categoryId: string | null) => void;
-  aboutPath?: string;
+  onScrollToAbout?: () => void;
   onScrollToProducts?: () => void;
   onNavigateToFavorites?: () => void;
   onNavigateToCart?: () => void;
@@ -40,10 +40,10 @@ const StoreHeader = ({
   selectedCategoryId = null,
   onSelectCategory,
   onScrollToProducts,
+  onScrollToAbout,
   onNavigateToFavorites,
   onNavigateToCart,
   onNavigateHome,
-  aboutPath,
 }: StoreHeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -177,14 +177,14 @@ const StoreHeader = ({
                     </button>
                   );
                 })}
-                {aboutPath && (
-                  <a
-                    href={aboutPath}
+                {onScrollToAbout && (
+                  <button
+                    onClick={onScrollToAbout}
                     className="text-[11px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors relative group"
                   >
                     אודות
                     <span className="absolute -bottom-0.5 right-0 h-px bg-foreground transition-all duration-300 group-hover:w-full w-0" />
-                  </a>
+                  </button>
                 )}
               </nav>
 
@@ -280,14 +280,13 @@ const StoreHeader = ({
                 {cat.name}
               </button>
             ))}
-            {aboutPath && (
-              <a
-                href={aboutPath}
-                onClick={() => setMobileMenuOpen(false)}
+            {onScrollToAbout && (
+              <button
+                onClick={() => { onScrollToAbout(); setMobileMenuOpen(false); }}
                 className="block w-full text-right py-4 text-sm font-bold tracking-[0.15em] uppercase text-foreground hover:text-muted-foreground transition-colors"
               >
                 אודות
-              </a>
+              </button>
             )}
           </nav>
 

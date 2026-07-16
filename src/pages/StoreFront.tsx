@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+﻿import { useState, useEffect, useRef, useMemo } from "react";
 import { gtm } from "@/lib/gtm";
 import { cleanImageUrl, cleanImageList } from "@/lib/imageUrl";
 import { useParams } from "react-router-dom";
@@ -70,7 +70,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   });
   
   // If this store is not published, redirect the owner to the payment flow.
-  // Must be in useEffect — never call window.location inside render.
+  // Must be in useEffect ג€” never call window.location inside render.
   const isUnpublishedError = isError && error instanceof Error && error.message === 'SITE_NOT_PUBLISHED';
   useEffect(() => {
     if (!isUnpublishedError) return;
@@ -394,7 +394,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         supabase.functions.invoke("payments-confirm", { body: { order_id: orderId } }).catch(() => {});
       }
     } else if (p === "failed" || p === "cancelled") {
-      toast.error("התשלום לא הושלם. אפשר לנסות שוב.");
+      toast.error("׳”׳×׳©׳׳•׳ ׳׳ ׳”׳•׳©׳׳. ׳׳₪׳©׳¨ ׳׳ ׳¡׳•׳× ׳©׳•׳‘.");
       setViewState("checkout");
     }
     const url = new URL(window.location.href);
@@ -408,7 +408,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">טוען את החנות...</p>
+          <p className="text-muted-foreground">׳˜׳•׳¢׳ ׳׳× ׳”׳—׳ ׳•׳×...</p>
         </div>
       </div>
     );
@@ -418,7 +418,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   if (isError || !business) {
     const isSuspended = error instanceof Error && error.message === 'SITE_SUSPENDED';
 
-    // Owner arrived at their own unpublished store → useEffect above redirects them.
+    // Owner arrived at their own unpublished store ג†’ useEffect above redirects them.
     if (isUnpublishedError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-background">
@@ -434,16 +434,16 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
             <Store className="h-10 w-10 text-muted-foreground" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">
-            {isSuspended ? 'האתר אינו זמין כעת' : 'החנות לא נמצאה'}
+            {isSuspended ? '׳”׳׳×׳¨ ׳׳™׳ ׳• ׳–׳׳™׳ ׳›׳¢׳×' : '׳”׳—׳ ׳•׳× ׳׳ ׳ ׳׳¦׳׳”'}
           </h1>
           <p className="text-muted-foreground mb-6">
             {isSuspended
-              ? 'האתר מושהה זמנית. אנא נסו שוב מאוחר יותר.'
-              : 'לא הצלחנו למצוא חנות בכתובת הזו. ייתכן שהיא הוסרה או שהכתובת שגויה.'
+              ? '׳”׳׳×׳¨ ׳׳•׳©׳”׳” ׳–׳׳ ׳™׳×. ׳׳ ׳ ׳ ׳¡׳• ׳©׳•׳‘ ׳׳׳•׳—׳¨ ׳™׳•׳×׳¨.'
+              : '׳׳ ׳”׳¦׳׳—׳ ׳• ׳׳׳¦׳•׳ ׳—׳ ׳•׳× ׳‘׳›׳×׳•׳‘׳× ׳”׳–׳•. ׳™׳™׳×׳›׳ ׳©׳”׳™׳ ׳”׳•׳¡׳¨׳” ׳׳• ׳©׳”׳›׳×׳•׳‘׳× ׳©׳’׳•׳™׳”.'
             }
           </p>
           <Button onClick={() => window.location.href = '/'}>
-            חזרה לדף הבית
+            ׳—׳–׳¨׳” ׳׳“׳£ ׳”׳‘׳™׳×
           </Button>
         </div>
       </div>
@@ -458,10 +458,10 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
           {business.logo_url && (
             <img src={business.logo_url} alt={business.name} className="h-16 w-auto mx-auto mb-6" />
           )}
-          <div className="text-5xl mb-4">🕯️</div>
+          <div className="text-5xl mb-4">נ•¯ן¸</div>
           <h1 className="text-3xl font-bold text-foreground mb-2">{business.name}</h1>
-          <p className="text-xl text-muted-foreground mb-1">החנות סגורה בשבת</p>
-          <p className="text-muted-foreground">נשמח לראותכם שוב בצאת השבת 🙏</p>
+          <p className="text-xl text-muted-foreground mb-1">׳”׳—׳ ׳•׳× ׳¡׳’׳•׳¨׳” ׳‘׳©׳‘׳×</p>
+          <p className="text-muted-foreground">׳ ׳©׳׳— ׳׳¨׳׳•׳×׳›׳ ׳©׳•׳‘ ׳‘׳¦׳׳× ׳”׳©׳‘׳× נ™</p>
         </div>
       </div>
     );
@@ -524,7 +524,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   ) => {
     const orderTotal = total ?? cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-    // Online payment enabled → create the order server-side and hand off to the
+    // Online payment enabled ג†’ create the order server-side and hand off to the
     // PayPlus hosted payment page. The customer returns via ?payment=success.
     if (business.payment_enabled) {
       try {
@@ -542,7 +542,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         // The gateway's success_url (?payment=success) escapes the frame to the top window.
         setPaymentIframeUrl(link);
       } catch (e: any) {
-        toast.error("שגיאה במעבר לתשלום: " + (e?.message || "נסו שוב"));
+        toast.error("׳©׳’׳™׳׳” ׳‘׳׳¢׳‘׳¨ ׳׳×׳©׳׳•׳: " + (e?.message || "׳ ׳¡׳• ׳©׳•׳‘"));
         // Re-throw so the checkout does NOT show the "order received" success
         // screen when the payment never went through.
         throw e;
@@ -605,7 +605,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   const totalCartItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   // Hosted payment page in an on-site iframe (the customer never leaves Siango). The
-  // gateway's success_url (?payment=success&order=…) navigates the TOP window out of
+  // gateway's success_url (?payment=success&order=ג€¦) navigates the TOP window out of
   // the frame, back to the storefront which handles the success param. The fallback
   // link does a full-page redirect if the gateway refuses to be framed.
   if (paymentIframeUrl) {
@@ -613,18 +613,18 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       <div dir="rtl" className="min-h-screen bg-background flex flex-col">
         <div className="w-full max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <button onClick={() => setPaymentIframeUrl(null)} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowRight className="w-4 h-4" /> חזרה
+            <ArrowRight className="w-4 h-4" /> ׳—׳–׳¨׳”
           </button>
-          <h1 className="text-lg md:text-xl font-bold text-foreground">תשלום מאובטח</h1>
+          <h1 className="text-lg md:text-xl font-bold text-foreground">׳×׳©׳׳•׳ ׳׳׳•׳‘׳˜׳—</h1>
           <div className="w-[64px]" />
         </div>
         <div className="w-full max-w-4xl mx-auto grow flex px-4 pb-6">
           <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-lg flex flex-col w-full">
             <div className="px-4 py-3 border-b border-border bg-primary/5 text-sm font-medium text-foreground text-center flex items-center justify-center gap-2">
-              <ShieldCheck className="w-4 h-4" /> תשלום מאובטח - פרטי האשראי נשמרים אצל חברת הסליקה בלבד
+              <ShieldCheck className="w-4 h-4" /> ׳×׳©׳׳•׳ ׳׳׳•׳‘׳˜׳— - ׳₪׳¨׳˜׳™ ׳”׳׳©׳¨׳׳™ ׳ ׳©׳׳¨׳™׳ ׳׳¦׳ ׳—׳‘׳¨׳× ׳”׳¡׳׳™׳§׳” ׳‘׳׳‘׳“
             </div>
             <iframe
-              title="תשלום מאובטח"
+              title="׳×׳©׳׳•׳ ׳׳׳•׳‘׳˜׳—"
               src={paymentIframeUrl}
               className="w-full grow min-h-[min(80vh,820px)] border-0 bg-white"
               allow="payment *"
@@ -632,7 +632,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
             />
             <div className="px-4 py-3 border-t border-border bg-muted/20 text-center">
               <a href={paymentIframeUrl} target="_top" rel="noopener" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
-                <ExternalLink className="w-4 h-4" /> התשלום לא נטען? המשיכו לעמוד הסליקה
+                <ExternalLink className="w-4 h-4" /> ׳”׳×׳©׳׳•׳ ׳׳ ׳ ׳˜׳¢׳? ׳”׳׳©׳™׳›׳• ׳׳¢׳׳•׳“ ׳”׳¡׳׳™׳§׳”
               </a>
             </div>
           </div>
@@ -701,7 +701,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
           storeCategories={categories}
           selectedCategoryId={selectedCategoryId}
           onSelectCategory={setSelectedCategoryId}
-          aboutPath={`/store/${business.slug || slug}/about`}
+          onScrollToAbout={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
           onNavigateHome={goToShopping}
           onScrollToProducts={scrollToProductsSection}
           onNavigateToFavorites={() => setViewState('favorites')}
@@ -744,7 +744,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
           storeCategories={categories}
           selectedCategoryId={selectedCategoryId}
           onSelectCategory={setSelectedCategoryId}
-          aboutPath={`/store/${business.slug || slug}/about`}
+          onScrollToAbout={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
           onNavigateHome={goToShopping}
           onScrollToProducts={scrollToProductsSection}
           onNavigateToFavorites={() => setViewState('favorites')}
@@ -781,7 +781,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     sku: p.sku,
   }));
 
-  // Build shared layout props — all 4 layouts receive the same data object
+  // Build shared layout props ג€” all 4 layouts receive the same data object
   const layoutProps: StorefrontLayoutProps = {
     businessName: business.name,
     businessSlug: business.slug || slug || '',
@@ -791,9 +791,9 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     ctaText: (() => {
       const raw = business.cta_text as string | null | undefined;
       const layoutId = template?.layoutId;
-      // Type-aware defaults — AI-generated CTAs are often wrong for non-commerce layouts
-      if (layoutId === 'property') return raw && !/(קולקציה|מוצר|חנות)/i.test(raw) ? raw : 'לנכסים שלנו';
-      if (layoutId === 'charity')  return raw && !/(קולקציה|נכס)/i.test(raw)  ? raw : 'לתרומה';
+      // Type-aware defaults ג€” AI-generated CTAs are often wrong for non-commerce layouts
+      if (layoutId === 'property') return raw && !/(׳§׳•׳׳§׳¦׳™׳”|׳׳•׳¦׳¨|׳—׳ ׳•׳×)/i.test(raw) ? raw : '׳׳ ׳›׳¡׳™׳ ׳©׳׳ ׳•';
+      if (layoutId === 'charity')  return raw && !/(׳§׳•׳׳§׳¦׳™׳”|׳ ׳›׳¡)/i.test(raw)  ? raw : '׳׳×׳¨׳•׳׳”';
       return raw;
     })(),
     heroTitle: business.hero_title as string | null | undefined,
@@ -843,10 +843,10 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       const stored = (b?.custom_labels as Record<string, string> | null) ?? {};
       const bt = getBusinessType(business);
       const defaultTitle: Record<string, string> = {
-        services:   'השירותים שלנו',
-        nonprofit:  'הפעילויות שלנו',
-        vacation:   'החדרים שלנו',
-        realestate: 'הנכסים שלנו',
+        services:   '׳”׳©׳™׳¨׳•׳×׳™׳ ׳©׳׳ ׳•',
+        nonprofit:  '׳”׳₪׳¢׳™׳׳•׳™׳•׳× ׳©׳׳ ׳•',
+        vacation:   '׳”׳—׳“׳¨׳™׳ ׳©׳׳ ׳•',
+        realestate: '׳”׳ ׳›׳¡׳™׳ ׳©׳׳ ׳•',
       };
       return {
         ...stored,
