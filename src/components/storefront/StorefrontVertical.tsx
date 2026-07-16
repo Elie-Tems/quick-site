@@ -2,6 +2,9 @@ import { getEnabledModules, type BusinessLike } from "@/lib/businessModules";
 import BookingWidget from "./BookingWidget";
 import ListingsBoard from "./ListingsBoard";
 import DonationWidget from "./DonationWidget";
+import StoreDifferentiation from "./StoreDifferentiation";
+import StoreGallery from "./StoreGallery";
+import StoreLeadForm from "./StoreLeadForm";
 
 /**
  * Storefront vertical renderer. Given the business, shows the module-specific
@@ -63,6 +66,20 @@ const StorefrontVertical = ({ business }: {
             </a>
           </div>
         </Section>
+      )}
+      <StoreDifferentiation data={(business as any).differentiation} accent={accent} />
+      <StoreGallery
+        images={(business as any).gallery_images?.images}
+        heading={(business as any).gallery_images?.heading}
+        accent={accent}
+      />
+      {(business as any).lead_form_enabled && (
+        <StoreLeadForm
+          businessId={business.id}
+          accent={accent}
+          heading={(business as any).custom_labels?.leadFormHeading}
+          subheading={(business as any).custom_labels?.leadFormSubheading}
+        />
       )}
     </>
   );

@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useBusinessById, useUpdateBusiness } from "@/hooks/useBusiness";
-import { ExternalLink, Loader2, Plus, Trash2, Wand2, FileText, LayoutTemplate, Tags, BookOpen, Upload, X, Heart } from "lucide-react";
+import { ExternalLink, Loader2, Plus, Trash2, Wand2, FileText, LayoutTemplate, Tags, BookOpen, Upload, X, Heart, Award, Images, ClipboardList, ToggleLeft, ToggleRight } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import AboutEditor from "./AboutEditor";
@@ -25,7 +25,7 @@ const ABOUT_LABELS: Record<BusinessType, { title: string; desc: string; saveLabe
   vacation:   { title: "על הנכס",       desc: "ספרו על מה שמיוחד במקום — הנוף, האווירה, מה כלול.",             saveLabel: "שמרו על הנכס"        },
 };
 
-type ContentTab = "hero" | "about" | "labels" | "rabbi" | "hosting" | "donations";
+type ContentTab = "hero" | "about" | "labels" | "rabbi" | "hosting" | "donations" | "differentiation" | "gallery" | "leadform";
 
 const DashboardContent = ({ businessId, businessType = "products", businessSubType }: DashboardContentProps) => {
   const isTorahCenter = businessSubType === "torah-center";
@@ -56,6 +56,25 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
   const [aboutBody, setAboutBody] = useState("");
   const [aboutContact, setAboutContact] = useState("");
   const [isSavingAbout, setIsSavingAbout] = useState(false);
+
+  // Differentiation section
+  const [diffHeading, setDiffHeading] = useState("");
+  const [diffSubheading, setDiffSubheading] = useState("");
+  const [diffItems, setDiffItems] = useState<{ icon: string; title: string; body: string }[]>([]);
+  const [isSavingDiff, setIsSavingDiff] = useState(false);
+
+  // Gallery
+  const [galleryHeading, setGalleryHeading] = useState("");
+  const [galleryImages, setGalleryImages] = useState<{ url: string; caption: string }[]>([]);
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [isSavingGallery, setIsSavingGallery] = useState(false);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  // Lead form
+  const [leadFormEnabled, setLeadFormEnabled] = useState(false);
+  const [leadFormHeading, setLeadFormHeading] = useState("");
+  const [leadFormSubheading, setLeadFormSubheading] = useState("");
+  const [isSavingLeadForm, setIsSavingLeadForm] = useState(false);
 
   // Auto-save ref
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -114,6 +133,24 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
     setHostingPolicy(hp);
     const da = (business as any).settings?.donation_amounts;
     if (Array.isArray(da) && da.length > 0) setDonationAmounts(da);
+    // Differentiation
+    const rawDiff = (business as any).differentiation;
+    if (rawDiff && typeof rawDiff === "object") {
+      setDiffHeading(rawDiff.heading || "");
+      setDiffSubheading(rawDiff.subheading || "");
+      setDiffItems(Array.isArray(rawDiff.items) ? rawDiff.items : []);
+    }
+    // Gallery
+    const rawGallery = (business as any).gallery_images;
+    if (rawGallery && typeof rawGallery === "object") {
+      setGalleryHeading(rawGallery.heading || "");
+      setGalleryImages(Array.isArray(rawGallery.images) ? rawGallery.images : []);
+    }
+    // Lead form
+    setLeadFormEnabled(!!(business as any).lead_form_enabled);
+    const clLeadForm = (business as any).custom_labels || {};
+    setLeadFormHeading(clLeadForm.leadFormHeading || "");
+    setLeadFormSubheading(clLeadForm.leadFormSubheading || "");
   }, [business]);
 
   const handleSaveHero = async () => {
@@ -262,6 +299,67 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
     }
   };
 
+  const handleSaveDiff = async () => {
+    if (!businessId) return;
+    setIsSavingDiff(true);
+    try {
+      await updateBusiness.mutateAsync({
+        id: businessId,
+        differentiation: { heading: diffHeading, subheading: diffSubheading, items: diffItems.filter(it => it.title.trim()) },
+      } as any);
+      toast.success("סקשן הבידול עודכן");
+    } catch { toast.error("שגיאה בשמירה"); }
+    finally { setIsSavingDiff(false); }
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !businessId) return;
+    setIsUploadingGallery(true);
+    try {
+      const uploaded: { url: string; caption: string }[] = [];
+      for (const file of Array.from(files)) {
+        const ext = file.name.split(".").pop() || "jpg";
+        const path = `${businessId}/gallery-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error } = await supabase.storage.from("business-assets").upload(path, file, { upsert: true });
+        if (error) throw error;
+        const { data } = supabase.storage.from("business-assets").getPublicUrl(path);
+        uploaded.push({ url: data.publicUrl, caption: "" });
+      }
+      setGalleryImages(prev => [...prev, ...uploaded]);
+      toast.success(`${uploaded.length} תמונות הועלו`);
+    } catch { toast.error("שגיאה בהעלאת תמונות"); }
+    finally { setIsUploadingGallery(false); if (galleryInputRef.current) galleryInputRef.current.value = ""; }
+  };
+
+  const handleSaveGallery = async () => {
+    if (!businessId) return;
+    setIsSavingGallery(true);
+    try {
+      await updateBusiness.mutateAsync({
+        id: businessId,
+        gallery_images: { heading: galleryHeading, images: galleryImages.filter(img => img.url) },
+      } as any);
+      toast.success("גלריה עודכנה");
+    } catch { toast.error("שגיאה בשמירה"); }
+    finally { setIsSavingGallery(false); }
+  };
+
+  const handleSaveLeadForm = async () => {
+    if (!businessId) return;
+    setIsSavingLeadForm(true);
+    try {
+      const cl = (business as any)?.custom_labels || {};
+      await updateBusiness.mutateAsync({
+        id: businessId,
+        lead_form_enabled: leadFormEnabled,
+        custom_labels: { ...cl, leadFormHeading, leadFormSubheading },
+      } as any);
+      toast.success("טופס הפנייה עודכן");
+    } catch { toast.error("שגיאה בשמירה"); }
+    finally { setIsSavingLeadForm(false); }
+  };
+
   const aboutLabels = ABOUT_LABELS[businessType] ?? ABOUT_LABELS.products;
   const storeUrl = business?.slug
     ? `${window.location.origin}/store/${business.slug}`
@@ -304,6 +402,9 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           ...(isTorahCenter ? [{ id: "rabbi" as ContentTab, label: "דבר הרב", icon: BookOpen }] : []),
           ...(businessType === "vacation" ? [{ id: "hosting" as ContentTab, label: "מדיניות אירוח", icon: FileText }] : []),
           ...(isDonationBased ? [{ id: "donations" as ContentTab, label: "סכומי תרומה", icon: Heart }] : []),
+          ...((businessType === "realestate" || businessType === "services") ? [{ id: "differentiation" as ContentTab, label: "מה הבידול שלנו", icon: Award }] : []),
+          ...((businessType === "realestate" || businessType === "services" || businessType === "vacation") ? [{ id: "gallery" as ContentTab, label: "גלריה", icon: Images }] : []),
+          ...((businessType === "realestate" || businessType === "services") ? [{ id: "leadform" as ContentTab, label: "טופס פנייה", icon: ClipboardList }] : []),
         ]).map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -688,6 +789,171 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           <Button onClick={handleSaveDonations} disabled={isSavingDonations} className="w-full">
             {isSavingDonations && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
             שמרו סכומי תרומה
+          </Button>
+        </div>
+      )}
+
+      {/* Differentiation tab */}
+      {activeTab === "differentiation" && (businessType === "realestate" || businessType === "services") && (
+        <div className="space-y-4 max-w-2xl">
+          <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
+            <div>
+              <h2 className="text-base font-semibold">מה הבידול שלנו</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">סקשן ייחודי שמסביר ללקוח למה לבחור בכם ולא באחרים</p>
+            </div>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label>כותרת הסקשן</Label>
+                <Input value={diffHeading} onChange={e => setDiffHeading(e.target.value)} placeholder="למה לבחור בנו?" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>תת-כותרת (אופציונלי)</Label>
+                <Input value={diffSubheading} onChange={e => setDiffSubheading(e.target.value)} placeholder="ניסיון של שנים, שקיפות מלאה, ותוצאות אמיתיות." />
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2 border-t border-border">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">כרטיסי יתרונות</p>
+                {diffItems.length < 6 && (
+                  <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-muted-foreground"
+                    onClick={() => setDiffItems([...diffItems, { icon: "", title: "", body: "" }])}>
+                    <Plus className="h-3.5 w-3.5" /> הוסיפו כרטיס
+                  </Button>
+                )}
+              </div>
+              {diffItems.map((item, i) => (
+                <div key={i} className="rounded-xl border border-border bg-muted/30 p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Input value={item.icon} onChange={e => { const n = [...diffItems]; n[i] = { ...n[i], icon: e.target.value }; setDiffItems(n); }} placeholder="אמוג'י (אופציונלי) 🏆" className="w-32" />
+                    <Input value={item.title} onChange={e => { const n = [...diffItems]; n[i] = { ...n[i], title: e.target.value }; setDiffItems(n); }} placeholder="כותרת היתרון" className="flex-1" />
+                    <Button type="button" variant="ghost" size="icon" onClick={() => setDiffItems(diffItems.filter((_, j) => j !== i))}>
+                      <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </div>
+                  <Textarea value={item.body} onChange={e => { const n = [...diffItems]; n[i] = { ...n[i], body: e.target.value }; setDiffItems(n); }} placeholder="תיאור קצר של היתרון..." rows={2} />
+                </div>
+              ))}
+              {diffItems.length === 0 && (
+                <button type="button" onClick={() => setDiffItems([{ icon: "", title: "", body: "" }])}
+                  className="w-full py-6 rounded-xl border-2 border-dashed border-border text-sm text-muted-foreground hover:border-primary/40 transition-colors">
+                  + הוסיפו את כרטיס הבידול הראשון
+                </button>
+              )}
+            </div>
+          </div>
+          <Button onClick={handleSaveDiff} disabled={isSavingDiff} className="w-full">
+            {isSavingDiff && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+            שמרו סקשן בידול
+          </Button>
+        </div>
+      )}
+
+      {/* Gallery tab */}
+      {activeTab === "gallery" && (businessType === "realestate" || businessType === "services" || businessType === "vacation") && (
+        <div className="space-y-4 max-w-2xl">
+          <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
+            <div>
+              <h2 className="text-base font-semibold">גלריית תמונות</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {businessType === "realestate" ? "תמונות אווירה, שכונה ואורח חיים" : businessType === "vacation" ? "תמונות הנכס, הסביבה והאווירה" : "תיק עבודות ודוגמאות"}
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <Label>כותרת הגלריה</Label>
+              <Input value={galleryHeading} onChange={e => setGalleryHeading(e.target.value)}
+                placeholder={businessType === "services" ? "תיק עבודות" : "גלריית אווירה"} />
+            </div>
+
+            <div className="space-y-2">
+              <input ref={galleryInputRef} type="file" accept="image/*" multiple onChange={handleGalleryUpload} className="hidden" />
+              <button
+                type="button"
+                onClick={() => galleryInputRef.current?.click()}
+                disabled={isUploadingGallery}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-border text-sm text-muted-foreground hover:border-primary/50 transition-colors w-full justify-center"
+              >
+                {isUploadingGallery ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                העלו תמונות לגלריה (ניתן להעלות כמה בו-זמנית)
+              </button>
+            </div>
+
+            {galleryImages.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {galleryImages.map((img, i) => (
+                  <div key={i} className="relative group">
+                    <img src={img.url} alt={img.caption || `תמונה ${i + 1}`} className="w-full aspect-square object-cover rounded-xl border border-border" />
+                    <button
+                      onClick={() => setGalleryImages(galleryImages.filter((_, j) => j !== i))}
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                    <Input
+                      value={img.caption}
+                      onChange={e => { const n = [...galleryImages]; n[i] = { ...n[i], caption: e.target.value }; setGalleryImages(n); }}
+                      placeholder="כיתוב (אופציונלי)"
+                      className="mt-1 text-xs h-7 px-2"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <Button onClick={handleSaveGallery} disabled={isSavingGallery} className="w-full">
+            {isSavingGallery && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+            שמרו גלריה
+          </Button>
+        </div>
+      )}
+
+      {/* Lead form tab */}
+      {activeTab === "leadform" && (businessType === "realestate" || businessType === "services") && (
+        <div className="space-y-4 max-w-2xl">
+          <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold">טופס פנייה</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">טופס "השאירו פרטים" שמוסיף כל פנייה ישר ל-CRM שלכם</p>
+              </div>
+              <button type="button" onClick={() => setLeadFormEnabled(!leadFormEnabled)} className="shrink-0 mt-0.5">
+                {leadFormEnabled
+                  ? <ToggleRight className="w-10 h-10 text-primary" />
+                  : <ToggleLeft className="w-10 h-10 text-muted-foreground" />}
+              </button>
+            </div>
+
+            {!leadFormEnabled && (
+              <div className="rounded-xl bg-muted/40 p-3 text-sm text-muted-foreground text-center">
+                הטופס כבוי - הדליקו אותו כדי שיופיע באתר
+              </div>
+            )}
+
+            {leadFormEnabled && (
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label>כותרת הטופס</Label>
+                  <Input value={leadFormHeading} onChange={e => setLeadFormHeading(e.target.value)}
+                    placeholder={businessType === "realestate" ? "מעוניינים? השאירו פרטים" : "רוצים לשמוע עוד? צרו קשר"} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>תת-כותרת (אופציונלי)</Label>
+                  <Input value={leadFormSubheading} onChange={e => setLeadFormSubheading(e.target.value)}
+                    placeholder="נחזור אליכם בהקדם האפשרי" />
+                </div>
+                <div className="rounded-xl bg-primary/5 border border-primary/20 p-3 text-xs text-muted-foreground space-y-1">
+                  <p className="font-medium text-foreground">מה הלקוח יראה בטופס:</p>
+                  <p>• שם מלא (חובה)</p>
+                  <p>• טלפון (חובה)</p>
+                  <p>• אימייל (אופציונלי)</p>
+                  <p>• הודעה חופשית (אופציונלי)</p>
+                </div>
+              </div>
+            )}
+          </div>
+          <Button onClick={handleSaveLeadForm} disabled={isSavingLeadForm} className="w-full">
+            {isSavingLeadForm && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+            שמרו הגדרות טופס
           </Button>
         </div>
       )}

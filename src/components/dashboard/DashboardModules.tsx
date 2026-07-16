@@ -61,11 +61,8 @@ type SoonItem = {
 // Phase-2 modules - shown as an invitation, not yet toggleable.
 const SOON: SoonItem[] = [
   { icon: Hotel,         color: "#6d4bd0", title: "חדרים / יחידות אירוח", desc: "יחידות עם זמינות בלוח, מחיר ללילה והזמנה - לצימרים ואירוח.", types: ["vacation", "services"] },
-  { icon: Images,        color: "#0b9e77", title: "גלריה / תיק עבודות",   desc: "תצוגת עבודות ופרויקטים - לצלמים, מעצבים ובעלי מקצוע.", types: ["services", "products"] },
-  { icon: Images,        color: "#6d4bd0", title: "גלריית אווירה",         desc: "תמונות מרחב, שכונה ואורח חיים - לשדר ללקוח איך זה להגיע לנכס.", types: ["realestate"] },
-  { icon: ClipboardList, color: "#c07d12", title: "טופס לידים",            desc: "\"השאירו פרטים\" - נכנס ישר ל-CRM בלי לוח נכסים.", types: ["realestate", "services"] },
-  { icon: Award,         color: "#1785c2", title: "מה הבידול שלנו",        desc: "סקשן ייעודי לסיפור המקצועי שלכם - למה אתם ולא אחרים.", types: ["realestate", "services"] },
-  { icon: ClipboardList, color: "#c07d12", title: "טופס לידים עצמאי",     desc: "\"השאירו פרטים\" ללא לוח נכסים - נכנס ישר ל-CRM.", types: ["products", "nonprofit", "synagogue"] },
+  { icon: Images,        color: "#0b9e77", title: "גלריה / תיק עבודות",   desc: "תצוגת עבודות ופרויקטים - לצלמים, מעצבים ובעלי מקצוע.", types: ["products"] },
+  { icon: ClipboardList, color: "#c07d12", title: "טופס לידים עצמאי",     desc: "\"השאירו פרטים\" - נכנס ישר ל-CRM.", types: ["products", "nonprofit", "synagogue"] },
 ];
 
 /** The module that is the core identity of each business type. Disabling it shows a warning. */
