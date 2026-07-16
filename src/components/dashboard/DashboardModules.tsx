@@ -2,11 +2,12 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   ShoppingBag, CalendarClock, Building2, Heart, Landmark,
-  Hotel, ClipboardList, Images, Check, Loader2, Blocks, Sparkles, Award,
+  Hotel, ClipboardList, Images, Check, Loader2, Blocks, Sparkles, Award, AlertTriangle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   getEnabledModules, getBusinessType, MODULES, type ModuleKey, type BusinessType,
 } from "@/lib/businessModules";
@@ -67,11 +68,29 @@ const SOON: SoonItem[] = [
   { icon: ClipboardList, color: "#c07d12", title: "טופס לידים עצמאי",     desc: "\"השאירו פרטים\" ללא לוח נכסים - נכנס ישר ל-CRM.", types: ["products", "nonprofit", "synagogue"] },
 ];
 
+/** The module that is the core identity of each business type. Disabling it shows a warning. */
+const PRIMARY_MODULE: Record<BusinessType, ModuleKey> = {
+  products:   "commerce",
+  services:   "booking",
+  realestate: "listings",
+  nonprofit:  "donations",
+  synagogue:  "donations",
+  vacation:   "commerce",
+};
+
+const PRIMARY_WARNING: Partial<Record<ModuleKey, string>> = {
+  commerce:  "כיבוי חנות מוצרים יסתיר את החנות מהאתר לחלוטין - הלקוחות לא יוכלו להזמין.",
+  booking:   "כיבוי יומן ותורים יסיר את אפשרות קביעת התור מהאתר - לקוחות לא יוכלו לקבוע.",
+  listings:  "כיבוי לוח הנכסים יסתיר את כל הנכסים מהאתר וימנע קבלת לידים חדשים.",
+  donations: "כיבוי מודול התרומות יסגור את אפשרות התרומה באתר - לא ניתן יהיה לקבל תרומות.",
+};
+
 const fade = (d = 0) => ({ initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: d } });
 
 const DashboardModules = ({ business }: Props) => {
   const qc = useQueryClient();
   const [pending, setPending] = useState<ModuleKey | null>(null);
+  const [warnKey, setWarnKey] = useState<ModuleKey | null>(null);
   const current = getEnabledModules(business as { business_type?: BusinessType } | null);
   const bType = getBusinessType(business as { business_type?: BusinessType } | null);
   const allowedKeys = ALLOWED_LIVE[bType] ?? Object.keys(MODULES) as ModuleKey[];
@@ -95,12 +114,21 @@ const DashboardModules = ({ business }: Props) => {
     onSettled: () => setPending(null),
   });
 
-  const toggle = (key: ModuleKey) => {
+  const doToggle = (key: ModuleKey) => {
     const on = current.includes(key);
     const next = on ? current.filter((k) => k !== key) : [...current, key];
     if (next.length === 0) { toast.error("צריך להשאיר לפחות מודול אחד פעיל."); return; }
     setPending(key);
     save.mutate(next, { onSuccess: () => toast.success(on ? `${MODULES[key].label} כובה` : `${MODULES[key].label} הופעל`) });
+  };
+
+  const toggle = (key: ModuleKey) => {
+    const on = current.includes(key);
+    if (on && PRIMARY_MODULE[bType] === key && PRIMARY_WARNING[key]) {
+      setWarnKey(key);
+      return;
+    }
+    doToggle(key);
   };
 
   return (
@@ -185,6 +213,44 @@ const DashboardModules = ({ business }: Props) => {
       <p className="text-xs text-muted-foreground text-center">
         כשמדליקים מודול - הכלי שלו מופיע אוטומטית בתפריט הדשבורד ובאתר הציבורי. אפשר לשנות בכל רגע.
       </p>
+
+      {/* Warning dialog for primary module disable */}
+      {warnKey && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={() => setWarnKey(null)}
+        >
+          <div
+            className="bg-card rounded-2xl border border-border shadow-xl max-w-sm w-full p-6 space-y-4"
+            dir="rtl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+              </div>
+              <h3 className="font-bold text-base">כיבוי מודול ראשי</h3>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {PRIMARY_WARNING[warnKey]}
+              <br /><br />
+              בטוחים שרוצים לכבות?
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={() => { doToggle(warnKey); setWarnKey(null); }}
+              >
+                כבה בכל זאת
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={() => setWarnKey(null)}>
+                ביטול
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

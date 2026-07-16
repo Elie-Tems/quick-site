@@ -103,7 +103,7 @@ const navItems: {
   { id: "ai-images", label: "תמונות AI", shortLabel: "תמונות AI", icon: ImagePlus, group: "תוכן ועיצוב" },
   { id: "ai-generated-images", label: "גלריית תמונות", shortLabel: "גלריה", icon: Image, group: "תוכן ועיצוב" },
   { id: "visualization-studio", label: "סטודיו הדמיות", shortLabel: "הדמיות", icon: Layers, group: "תוכן ועיצוב" },
-  { id: "modules", label: "מודולים", icon: Blocks, group: "תוכן ועיצוב" },
+  { id: "modules", label: "יכולות ומודולים", shortLabel: "מודולים", icon: Blocks, group: "הגדרות" },
 
   // שיווק
   { id: "coupons", label: "קופונים", icon: Ticket, group: "שיווק" },
