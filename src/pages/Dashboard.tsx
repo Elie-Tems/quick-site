@@ -27,6 +27,7 @@ import DashboardStoreTexts from "@/components/dashboard/DashboardStoreTexts";
 import DashboardWhatsAppButton from "@/components/dashboard/DashboardWhatsAppButton";
 import DashboardTracking from "@/components/dashboard/DashboardTracking";
 import DashboardReviews from "@/components/dashboard/DashboardReviews";
+import DashboardLeadsPipeline from "@/components/dashboard/DashboardLeadsPipeline";
 import DashboardSubscription from "@/components/dashboard/DashboardSubscription";
 import DashboardAIImages from "@/components/dashboard/DashboardAIImages";
 import DashboardAIGeneratedImages from "@/components/dashboard/DashboardAIGeneratedImages";
@@ -690,10 +691,8 @@ const Dashboard = () => {
           />
         );
       case 'orders':
-        // Real-estate businesses don't have orders — their "לידים" tab should show
-        // the pipeline leads board (pipeline_cards), not the orders table.
         if (getBusinessType(business) === 'realestate') {
-          return <VerticalModules business={business as any} />;
+          return <DashboardLeadsPipeline businessId={business?.id} />;
         }
         return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} businessType={getBusinessType(business)} />;
       case 'customers':

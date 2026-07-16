@@ -29,18 +29,20 @@ const fmtPrice = (n: number) =>
 const CONTACTS_VERTICALS: BusinessType[] = ["realestate", "nonprofit", "synagogue"];
 const isContactsVertical = (t?: BusinessType): boolean => !!t && CONTACTS_VERTICALS.includes(t);
 
-// Free tier: customer name + total spent. All segments/analytics are CRM+.
+// Free tier: customer name + what they bought + total. All segments/analytics are CRM+.
 function FreeCustomerView({ orders }: { orders: Order[] }) {
   const customers = useMemo(() => {
-    const map = new Map<string, { name: string; total: number }>();
+    const map = new Map<string, { name: string; total: number; items: string[] }>();
     for (const o of orders) {
       const key = (o.customerEmail || o.customerPhone || o.customerName || "").trim().toLowerCase();
       if (!key) continue;
       const ex = map.get(key);
+      const itemNames = (o.items || []).map((it: any) => it.name || it.productName).filter(Boolean);
       if (ex) {
         ex.total += o.total || 0;
+        itemNames.forEach((n: string) => { if (!ex.items.includes(n)) ex.items.push(n); });
       } else {
-        map.set(key, { name: o.customerName || "לקוח", total: o.total || 0 });
+        map.set(key, { name: o.customerName || "לקוח", total: o.total || 0, items: itemNames });
       }
     }
     return Array.from(map.values()).sort((a, b) => b.total - a.total);
@@ -60,9 +62,14 @@ function FreeCustomerView({ orders }: { orders: Order[] }) {
               <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
                 {c.name.charAt(0)}
               </div>
-              <span className="flex-1 text-sm font-medium">{c.name}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{c.name}</p>
+                {c.items.length > 0 && (
+                  <p className="text-xs text-muted-foreground truncate">{c.items.slice(0, 2).join(", ")}{c.items.length > 2 ? ` +${c.items.length - 2}` : ""}</p>
+                )}
+              </div>
               {c.total > 0 && (
-                <span className="text-sm font-semibold tabular-nums text-foreground">
+                <span className="text-sm font-semibold tabular-nums text-foreground shrink-0">
                   {fmtPrice(c.total)}
                 </span>
               )}
