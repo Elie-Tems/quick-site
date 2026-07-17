@@ -1,0 +1,14 @@
+# Enforce UTF-8 everywhere so Hebrew (and any non-ASCII) is never corrupted on save.
+# This is the fix for the 2026-07 incident where an editor saved storefront .tsx files
+# in a non-UTF-8 encoding and turned all Hebrew into gibberish on live stores.
+# Every modern editor (VS Code, JetBrains, etc.) honors .editorconfig.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+[*.{ts,tsx,js,jsx,mjs,cjs,json,css,scss,html,md,sql,toml,yml,yaml}]
+indent_style = space
+indent_size = 2

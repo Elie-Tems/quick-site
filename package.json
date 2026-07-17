@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "check:encoding": "node scripts/check-encoding.cjs",
+    "build": "node scripts/check-encoding.cjs && vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "lint:ci": "eslint --config eslint.ci.config.js \"src/**/*.{ts,tsx}\"",
