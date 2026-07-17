@@ -19,12 +19,14 @@ const FloatingHelpButton = () => {
     return null;
   }
 
+  const inDashboard = pathname.startsWith("/dashboard");
+
   return (
     <Link
       to="/help"
       title="עזרה ותמיכה"
       aria-label="עזרה ותמיכה"
-      className="group fixed bottom-5 right-5 z-40 flex items-center gap-2 h-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 ring-1 ring-black/5 pl-3.5 pr-3.5 hover:pr-4 transition-all duration-200 hover:scale-105"
+      className={`group fixed right-5 z-40 flex items-center gap-2 h-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 ring-1 ring-black/5 pl-3.5 pr-3.5 hover:pr-4 transition-all duration-200 hover:scale-105 ${inDashboard ? "bottom-20 md:bottom-5" : "bottom-5"}`}
     >
       <MessageCircleQuestion className="w-6 h-6 shrink-0" />
       {/* Label reveals on hover - keeps the resting state a clean circle. */}

@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useSearchParams, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { HelmetProvider } from "react-helmet-async";
 import { Loader2 } from "lucide-react";
@@ -124,8 +124,6 @@ const DashboardRoute = () => {
 };
 
 const FloatingWidgets = ({ tenantSlug }: { tenantSlug: string | null }) => {
-  const { pathname } = useLocation();
-  if (pathname.startsWith("/dashboard")) return null;
   return (
     <>
       <AccessibilityWidget />

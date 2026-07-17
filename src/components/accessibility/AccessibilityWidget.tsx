@@ -13,8 +13,19 @@ import {
   Check
 } from 'lucide-react';
 
+const DISMISSED_KEY = "accessibility_widget_dismissed";
+
 const AccessibilityWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISSED_KEY) === "1");
+
+  const handleDismiss = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    localStorage.setItem(DISMISSED_KEY, "1");
+    setDismissed(true);
+  };
+
+  if (dismissed) return null;
   const { 
     settings, 
     setFontSize, 
@@ -36,16 +47,25 @@ const AccessibilityWidget = () => {
         דלג לתוכן הראשי
       </a>
 
-      {/* Accessibility button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 left-4 z-50 w-12 h-12 rounded-full bg-foreground text-background shadow-lg hover:bg-foreground/85 active:bg-foreground/75 transition-all flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-        aria-label="פתח תפריט נגישות"
-        aria-expanded={isOpen}
-        aria-controls="accessibility-menu"
-      >
-        <Accessibility className="w-6 h-6" />
-      </button>
+      {/* Accessibility button + dismiss X */}
+      <div className="fixed bottom-4 left-4 z-50 group/acc">
+        <button
+          onClick={() => setIsOpen(true)}
+          className="w-12 h-12 rounded-full bg-foreground text-background shadow-lg hover:bg-foreground/85 active:bg-foreground/75 transition-all flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          aria-label="פתח תפריט נגישות"
+          aria-expanded={isOpen}
+          aria-controls="accessibility-menu"
+        >
+          <Accessibility className="w-6 h-6" />
+        </button>
+        <button
+          onClick={handleDismiss}
+          aria-label="הסתר כפתור נגישות"
+          className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-muted text-muted-foreground border border-border flex items-center justify-center opacity-0 group-hover/acc:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
+        >
+          <X className="w-3 h-3" />
+        </button>
+      </div>
 
       {/* Accessibility menu overlay */}
       {isOpen && (
