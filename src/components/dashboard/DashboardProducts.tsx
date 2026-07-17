@@ -16,7 +16,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import * as XLSX from 'xlsx';
 import {
   DndContext,
   closestCenter,
@@ -429,11 +428,12 @@ const DashboardProducts = ({
   };
 
   // Excel Import functionality
-  const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsLoadingExcel(true);
+    const XLSX = await import('xlsx');
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
@@ -545,7 +545,8 @@ const DashboardProducts = ({
     setShowImportModal(false);
   };
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
+    const XLSX = await import('xlsx');
     const templateData = [
       { 
         'שם': 'מוצר לדוגמה', 

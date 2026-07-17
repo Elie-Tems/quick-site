@@ -115,7 +115,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
                   className="p-5 rounded-2xl border border-border bg-card hover:border-primary/40 transition-colors">
                   {p.imageUrl && (
                     <div className="aspect-video rounded-xl overflow-hidden mb-4">
-                      <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                      <img src={p.imageUrl} alt={p.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     </div>
                   )}
                   <div className="flex items-start justify-between gap-3">
@@ -149,7 +149,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {displayGallery.slice(0, 8).map((img, i) => (
               <div key={i} className="aspect-square rounded-xl overflow-hidden">
-                <img src={img} alt="" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
+                <img src={img} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
               </div>
             ))}
           </div>
@@ -174,7 +174,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
                 </div>
               </div>
               <div className="aspect-[4/3] rounded-2xl overflow-hidden">
-                <img src={displayGallery[0]} alt="" className="w-full h-full object-cover" />
+                <img src={displayGallery[0]} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
               </div>
             </div>
           </div>

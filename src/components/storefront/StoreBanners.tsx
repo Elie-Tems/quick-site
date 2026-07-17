@@ -54,6 +54,8 @@ const StoreBanners = ({ banners }: StoreBannersProps) => {
                 <img
                   src={banner.imageUrl}
                   alt={banner.title || banner.text || ""}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
 

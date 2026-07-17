@@ -152,6 +152,8 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
                         <img
                           src={p.imageUrl || FALLBACK_PRODUCT_IMG}
                           alt={p.name}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
@@ -264,7 +266,7 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
                   cartItems.map((item) => (
                     <motion.div key={item.id} layout initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                       <div className="rounded-xl border border-border bg-card p-3 flex items-center gap-3">
-                        <img src={item.imageUrl || FALLBACK_PRODUCT_IMG} alt={item.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                        <img src={item.imageUrl || FALLBACK_PRODUCT_IMG} alt={item.name} loading="lazy" decoding="async" className="w-16 h-16 rounded-xl object-cover shrink-0" />
                         <div className="flex-1 min-w-0 text-right">
                           <div className="text-sm font-semibold truncate">{item.name}</div>
                           <div className="text-primary font-bold text-sm">₪{item.price}</div>

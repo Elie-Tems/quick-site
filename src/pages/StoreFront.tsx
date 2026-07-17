@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
 import { gtm } from "@/lib/gtm";
 import { cleanImageUrl, cleanImageList } from "@/lib/imageUrl";
 import { useParams } from "react-router-dom";
@@ -36,11 +36,17 @@ import { toast } from "sonner";
 import { getTemplate, type StoreTemplateId } from "@/lib/storeTemplates";
 import { getStoreFont, loadStoreFonts } from "@/lib/storeFonts";
 import { getDefaultLayout, getBusinessType } from "@/lib/businessModules";
-import {
-  ClassicLayout, ServiceLayout, PropertyLayout, MarketLayout,
-  BoutiqueLayout, BeautySpaLayout, HomeProLayout, CharityLayout, RestaurantLayout,
-  type StorefrontLayoutProps,
-} from "@/components/storefront/layouts";
+import type { StorefrontLayoutProps } from "@/components/storefront/layouts";
+
+const ClassicLayout   = lazy(() => import("@/components/storefront/layouts/ClassicLayout"));
+const ServiceLayout   = lazy(() => import("@/components/storefront/layouts/ServiceLayout"));
+const PropertyLayout  = lazy(() => import("@/components/storefront/layouts/PropertyLayout"));
+const MarketLayout    = lazy(() => import("@/components/storefront/layouts/MarketLayout"));
+const BoutiqueLayout  = lazy(() => import("@/components/storefront/layouts/BoutiqueLayout"));
+const BeautySpaLayout = lazy(() => import("@/components/storefront/layouts/BeautySpaLayout"));
+const HomeProLayout   = lazy(() => import("@/components/storefront/layouts/HomeProLayout"));
+const CharityLayout   = lazy(() => import("@/components/storefront/layouts/CharityLayout"));
+const RestaurantLayout = lazy(() => import("@/components/storefront/layouts/RestaurantLayout"));
 
 type ViewState = 'shopping' | 'checkout' | 'thankyou' | 'cart' | 'favorites';
 
@@ -909,7 +915,9 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         storeUrl={storeUrl}
       />
 
-      <LayoutComponent {...layoutProps} />
+      <Suspense fallback={null}>
+        <LayoutComponent {...layoutProps} />
+      </Suspense>
       {/* The per-vertical experience (booking / listings / donations) is rendered
           by each layout right after its hero via the verticalSlot prop. */}
     </>

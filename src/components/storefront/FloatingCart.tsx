@@ -69,7 +69,7 @@ const FloatingCart = ({
                   {/* Product Image */}
                   <div className="w-14 h-14 rounded-lg bg-muted flex-shrink-0 overflow-hidden">
                     {item.imageUrl ? (
-                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                      <img src={item.imageUrl} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <ShoppingCart className="h-5 w-5 text-muted-foreground/50" />

@@ -96,7 +96,7 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
                 <div className="grid grid-cols-2 gap-3">
                   {albumImgs.slice(0, 4).map((img, i) => (
                     <div key={i} className="aspect-square rounded-xl overflow-hidden">
-                      <img src={img} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                      <img src={img} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
                     </div>
                   ))}
                 </div>
@@ -117,7 +117,7 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
                 <div key={p.id} className="rounded-2xl border border-border bg-card overflow-hidden">
                   {p.imageUrl && (
                     <div className="aspect-video overflow-hidden">
-                      <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                      <img src={p.imageUrl} alt={p.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     </div>
                   )}
                   <div className="p-5">

@@ -146,6 +146,8 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
                         <img
                           src={item.imageUrl || FALLBACK_ITEM_IMG}
                           alt={item.name}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover"
                         />
                       </div>

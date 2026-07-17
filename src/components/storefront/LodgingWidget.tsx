@@ -127,7 +127,7 @@ function BookingModal({ unit, businessId, onClose }: {
         className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-background border border-border">
         <div className="relative h-44">
           {unit.image_url
-            ? <img src={unit.image_url} alt={unit.name} className="w-full h-full object-cover" />
+            ? <img src={unit.image_url} alt={unit.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
             : <div className="w-full h-full bg-muted flex items-center justify-center"><Home className="w-12 h-12 text-muted-foreground/30" /></div>}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <button onClick={onClose} type="button"
@@ -226,7 +226,7 @@ const LodgingWidget = ({ businessId, units }: { businessId: string; units: Lodgi
               <div className="rounded-2xl overflow-hidden border border-border bg-card group h-full hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                 <div className="relative aspect-[16/11] overflow-hidden bg-muted">
                   {u.image_url
-                    ? <img src={u.image_url} alt={u.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    ? <img src={u.image_url} alt={u.name} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     : <div className="w-full h-full flex items-center justify-center"><Home className="w-12 h-12 text-muted-foreground/30" /></div>}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-3 right-3 text-white font-display font-bold text-lg drop-shadow">

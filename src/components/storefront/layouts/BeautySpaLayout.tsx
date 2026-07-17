@@ -160,7 +160,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
               </div>
               {galleryImgs.length > 0 && (
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
-                  <img src={galleryImgs[galleryIdx]} alt="" className="w-full h-full object-cover" />
+                  <img src={galleryImgs[galleryIdx]} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   {galleryImgs.length > 1 && (
                     <>
                       <button onClick={() => setGalleryIdx(i => (i - 1 + galleryImgs.length) % galleryImgs.length)}
@@ -190,7 +190,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {galleryImgs.slice(0, 8).map((img, i) => (
                 <div key={i} className="aspect-square rounded-xl overflow-hidden">
-                  <img src={img} alt="" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
+                  <img src={img} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
                 </div>
               ))}
             </div>
@@ -240,7 +240,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
               {shopProducts.map((p) => (
                 <div key={p.id} className="rounded-2xl border border-border bg-card overflow-hidden group hover:border-primary/30 transition-colors">
                   <div className="aspect-square overflow-hidden">
-                    <img src={p.imageUrl || FALLBACK_PRODUCT} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <img src={p.imageUrl || FALLBACK_PRODUCT} alt={p.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   </div>
                   <div className="p-3">
                     <div className="text-sm font-semibold truncate">{p.name}</div>
@@ -302,7 +302,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
                   </div>
                 ) : cartItems.map(item => (
                   <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
-                    <img src={item.imageUrl || FALLBACK_PRODUCT} alt={item.name} className="w-14 h-14 rounded-lg object-cover shrink-0" />
+                    <img src={item.imageUrl || FALLBACK_PRODUCT} alt={item.name} loading="lazy" decoding="async" className="w-14 h-14 rounded-lg object-cover shrink-0" />
                     <div className="flex-1 min-w-0 text-right">
                       <div className="text-sm font-semibold truncate">{item.name}</div>
                       <div className="text-primary font-bold text-sm">₪{item.price}</div>
