@@ -246,9 +246,10 @@ const Onboarding = () => {
       
       setData(prev => ({ ...prev, ...loadedData }));
       setDataLoaded(true);
-      
-      // Start from template step in preview mode
-      setCurrentStep(7);
+
+      // Business exists but not published — send directly to dashboard to avoid blank step
+      navigate("/dashboard");
+      return;
     } else if (!businessLoading && !existingBusiness) {
       setDataLoaded(true);
     }

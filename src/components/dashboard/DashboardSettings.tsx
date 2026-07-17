@@ -170,6 +170,11 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
   const { user } = useAuth();
   const { data: isAdmin } = useIsAdmin();
   const [formData, setFormData] = useState(settings);
+
+  // Re-sync when the parent reloads business data (e.g. after save)
+  useEffect(() => {
+    setFormData(settings);
+  }, [settings.id]);
   const [isResettingOnboarding, setIsResettingOnboarding] = useState(false);
 
   const handleResetOnboarding = useCallback(async () => {

@@ -264,10 +264,9 @@ const DashboardProducts = ({
   };
 
   // עדכון סינון לפי קטגוריה כאשר מגיעים ממסך הקטגוריות
-  if (initialCategoryFilterId && categoryFilter === 'all') {
-    // נקבע רק פעם אחת על כניסה - לא נשנה שוב כשמשתמש מחליף ידנית
-    setCategoryFilter(initialCategoryFilterId);
-  }
+  useEffect(() => {
+    if (initialCategoryFilterId) setCategoryFilter(initialCategoryFilterId);
+  }, [initialCategoryFilterId]);
 
   const openAddForm = () => {
     resetForm();
@@ -525,12 +524,10 @@ const DashboardProducts = ({
         setIsLoadingExcel(false);
       }
     };
+    reader.onerror = () => setIsLoadingExcel(false);
     reader.readAsBinaryString(file);
-    
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const confirmImport = () => {

@@ -82,7 +82,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
   const regularProducts = activeProducts.filter(p => !p.isHot);
 
   const displayedProducts = useMemo(() => {
-    let list = regularProducts;
+    let list = filterBy === "hot" ? activeProducts : regularProducts;
     const q = searchQuery.trim().toLowerCase();
     if (q) list = list.filter(p =>
       p.name.toLowerCase().includes(q) ||

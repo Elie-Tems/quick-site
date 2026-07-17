@@ -24,6 +24,7 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "method" }, 405);
 
   const secret = Deno.env.get("CARDCOM_WEBHOOK_SECRET") ?? "";
+  if (!secret) return json({ error: "server misconfigured" }, 500);
   const u = new URL(req.url);
   if (!safeEqual(u.searchParams.get("secret") ?? "", secret)) return json({ error: "unauthorized" }, 401);
 

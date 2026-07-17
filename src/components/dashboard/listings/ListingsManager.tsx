@@ -96,7 +96,7 @@ const ListingsManager = ({ businessId }: { businessId: string }) => {
                 </div>
               ))}
               <button
-                onClick={() => { setUploading(l.id); editFileRef.current?.click(); editFileRef.current!.dataset.target = l.id; }}
+                onClick={() => { if (editFileRef.current) { editFileRef.current.dataset.target = l.id; editFileRef.current.click(); } }}
                 className="shrink-0 w-24 h-16 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-primary/50 transition-colors text-muted-foreground hover:text-primary"
               >
                 {uploading === l.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Image className="w-5 h-5" />}

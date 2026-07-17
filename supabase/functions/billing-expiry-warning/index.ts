@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
     const email = u?.user?.email;
     if (!email) continue;
 
-    await fetch(`${url}/functions/v1/send-platform-email`, {
+    const emailResp = await fetch(`${url}/functions/v1/send-platform-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
       body: JSON.stringify({
@@ -80,15 +80,16 @@ Deno.serve(async (req) => {
           lang: "he",
         },
       }),
-    }).catch(() => {});
+    });
 
-    // Mark as warned so we don't re-send this month
-    await admin.from("billing_tokens")
-      .update({ expiry_warning_sent_month: thisMonthKey })
-      .eq("user_id", (sub as any).user_id)
-      .eq("cc_token_id", (sub as any).cc_token_id);
-
-    warned++;
+    if (emailResp.ok) {
+      // Mark as warned so we don't re-send this month
+      await admin.from("billing_tokens")
+        .update({ expiry_warning_sent_month: thisMonthKey })
+        .eq("user_id", (sub as any).user_id)
+        .eq("cc_token_id", (sub as any).cc_token_id);
+      warned++;
+    }
   }
 
   return json({ ok: true, warned });

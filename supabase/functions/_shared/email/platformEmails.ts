@@ -1058,14 +1058,16 @@ export const domainLowBalance = (c: PlatformCtx & { balance?: number; currency?:
 
 export const cardExpiringSoon = (c: PlatformCtx & { expMonth?: string; expYear?: string; updateUrl?: string }): BuiltEmail => ({
   subject: "כרטיס האשראי שלכם פג בקרוב - עדכנו לפני החיוב הבא",
-  html: renderEmail(siangoSender({ recipientEmail: c.recipientEmail }), {
+  html: renderEmail({
+    sender: siangoSender({ recipientEmail: c.recipientEmail }),
     previewText: `הכרטיס שלכם פג ב-${c.expMonth}/${c.expYear}. עדכנו כדי שהחנות לא תרד.`,
+    lang: "he",
     dir: "rtl",
     bodyHtml: [
       h1(`${c.firstName ? `היי ${c.firstName}! ` : "היי! "}הכרטיס שלכם פג בקרוב ⚠️`),
       p(`הכרטיס המשויך למנוי Siango שלכם פג בסוף ${c.expMonth}/${c.expYear}. אם לא תעדכנו אותו לפני מועד החיוב הבא, החנות שלכם עלולה לרדת מהאוויר.`),
       p("עדכנו את הכרטיס עכשיו, לפני שזה קורה:"),
-      emailButton(c.updateUrl || "https://siango.app/dashboard?tab=subscription", "עדכנו כרטיס אשראי →"),
+      emailButton("עדכנו כרטיס אשראי →", c.updateUrl || "https://siango.app/dashboard?tab=subscription"),
       p("מצאתם בעיה? אנחנו כאן בכתובת office@siango.app"),
     ].join(""),
   }),
@@ -1073,13 +1075,15 @@ export const cardExpiringSoon = (c: PlatformCtx & { expMonth?: string; expYear?:
 
 export const cardExpired = (c: PlatformCtx & { updateUrl?: string }): BuiltEmail => ({
   subject: "החיוב נכשל - כרטיס האשראי פג תוקף",
-  html: renderEmail(siangoSender({ recipientEmail: c.recipientEmail }), {
+  html: renderEmail({
+    sender: siangoSender({ recipientEmail: c.recipientEmail }),
     previewText: "לא הצלחנו לחייב את הכרטיס. עדכנו כרטיס כדי שהחנות תמשיך לפעול.",
+    lang: "he",
     dir: "rtl",
     bodyHtml: [
       h1(`${c.firstName ? `היי ${c.firstName}! ` : "היי! "}החיוב נכשל 😟`),
       p("ניסינו לחדש את המנוי שלכם אך כרטיס האשראי המשויך פג תוקף. כדי שהחנות שלכם תמשיך לפעול - עדכנו כרטיס חדש עכשיו."),
-      emailButton(c.updateUrl || "https://siango.app/dashboard?tab=subscription", "עדכנו כרטיס אשראי →"),
+      emailButton("עדכנו כרטיס אשראי →", c.updateUrl || "https://siango.app/dashboard?tab=subscription"),
       p("יש שאלות? כתבו לנו ב-office@siango.app ונשמח לעזור."),
     ].join(""),
   }),
@@ -1087,13 +1091,15 @@ export const cardExpired = (c: PlatformCtx & { updateUrl?: string }): BuiltEmail
 
 export const cardUpdated = (c: PlatformCtx & { last4?: string }): BuiltEmail => ({
   subject: "כרטיס האשראי עודכן בהצלחה ✅",
-  html: renderEmail(siangoSender({ recipientEmail: c.recipientEmail }), {
+  html: renderEmail({
+    sender: siangoSender({ recipientEmail: c.recipientEmail }),
     previewText: "הכרטיס החדש אומת. המנוי שלכם פעיל והחנות חזרה לאוויר.",
+    lang: "he",
     dir: "rtl",
     bodyHtml: [
       h1(`${c.firstName ? `היי ${c.firstName}! ` : "היי! "}הכרטיס עודכן 🎉`),
       p(`כרטיס האשראי שלכם${c.last4 ? ` (המסתיים ב-${c.last4})` : ""} אומת בהצלחה. המנוי שלכם פעיל והחנות חזרה לאוויר.`),
-      emailButton("https://siango.app/dashboard", "לדשבורד →"),
+      emailButton("לדשבורד →", "https://siango.app/dashboard"),
     ].join(""),
   }),
 });
