@@ -8,6 +8,7 @@ import DashboardNav, { type DashboardView } from "@/components/dashboard/Dashboa
 import SubscriptionAlert from "@/components/dashboard/SubscriptionAlert";
 import DashboardHome from "@/components/dashboard/DashboardHome";
 import DashboardProducts, { type Product } from "@/components/dashboard/DashboardProducts";
+import ListingsManager from "@/components/dashboard/listings/ListingsManager";
 import DashboardOrders, { type Order } from "@/components/dashboard/DashboardOrders";
 import DashboardCRM from "@/components/dashboard/DashboardCRM";
 import PremiumOverlay from "@/components/dashboard/PremiumOverlay";
@@ -640,7 +641,10 @@ const Dashboard = () => {
               ))}
             </div>
 
-            {productsTab === 'list' && (
+            {productsTab === 'list' && getBusinessType(business) === 'realestate' && business?.id && (
+              <ListingsManager businessId={business.id} />
+            )}
+            {productsTab === 'list' && getBusinessType(business) !== 'realestate' && (
               <DashboardProducts
                 products={products}
                 onProductsChange={handleProductsChange}
