@@ -48,7 +48,7 @@ import DashboardLegal from "@/components/dashboard/DashboardLegal";
 import PostLaunchPopups, { type PopupState, type PopupId } from "@/components/dashboard/PostLaunchPopups";
 import DashboardAdBudget from "@/components/dashboard/DashboardAdBudget";
 import { useMyBusiness, useProfile } from "@/hooks/useBusiness";
-import { getBusinessType, getEnabledModules } from "@/lib/businessModules";
+import { getBusinessType, getEnabledModules, hasModule } from "@/lib/businessModules";
 import { cleanImageUrl, cleanImageList } from "@/lib/imageUrl";
 import VerticalModules from "@/components/dashboard/VerticalModules";
 import LifecycleEmailsManager from "@/components/dashboard/LifecycleEmailsManager";
@@ -57,6 +57,7 @@ import UpgradeCheckoutModal, { type CheckoutItem } from "@/components/dashboard/
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useOrders, useUpdateOrder } from "@/hooks/useOrders";
 import { useDonationStats } from "@/hooks/useDonations";
+import { useAppointments, useBookingServices } from "@/hooks/useBooking";
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner } from "@/hooks/useBanners";
 import { useProductCategories } from "@/hooks/useProductCategories";
 import { useAuth } from "@/contexts/AuthContext";
@@ -174,6 +175,13 @@ const Dashboard = () => {
   // their real activity lives in `transactions` (kind='donation'); used below to feed the
   // home overview stats instead of the always-empty orders-derived numbers.
   const { data: donationStats } = useDonationStats(business?.id);
+  // A no-deposit (or deposit-but-no-gateway-yet) booking never creates an `orders` row
+  // (see supabase/functions/booking-create/index.ts) - it lives only in
+  // booking_appointments, so the CRM customers tab and home stats were blind to it.
+  // Folded into `ordersForCrm` below (fulfillment's real `orders` list stays untouched).
+  const hasBookingModule = hasModule(business as any, 'booking');
+  const { data: appointments = [] } = useAppointments(hasBookingModule ? business?.id : undefined);
+  const { data: bookingServices = [] } = useBookingServices(hasBookingModule ? business?.id : undefined);
   const updateOrder = useUpdateOrder();
   // Persist an order status change. Maps the UI status back to the DB status
   // (inverse of the load mapping below) so it actually saves.
@@ -605,14 +613,37 @@ const Dashboard = () => {
     return null;
   }
 
+  // A no-deposit (or deposit-but-gateway-less) booking never creates an `orders` row,
+  // so it's invisible to both the home overview and the CRM customers tab unless we
+  // fold it in here as a synthetic order. Kept OUT of the real `orders` state (used by
+  // DashboardOrders for fulfillment) - this merged list feeds only stats + DashboardCRM.
+  const serviceNameById = new Map(bookingServices.map((s) => [s.id, s.name]));
+  const bookingOrders: Order[] = hasBookingModule
+    ? appointments
+        .filter((a) => a.status === 'confirmed' || a.status === 'completed')
+        .map((a) => ({
+          id: a.id,
+          date: a.starts_at,
+          customerName: a.customer_name,
+          customerPhone: a.customer_phone,
+          customerEmail: a.customer_email || '',
+          notes: a.notes || undefined,
+          items: [{ productId: a.service_id, productName: serviceNameById.get(a.service_id) || 'תור', quantity: 1, price: a.price_at_booking }],
+          total: a.price_at_booking,
+          status: 'completed' as const,
+        }))
+    : [];
+  const ordersForCrm = [...orders, ...bookingOrders];
+
   // Calculate stats
-  const totalCustomers = new Set(orders.map(o => o.customerEmail).filter(Boolean)).size;
+  const customerKey = (o: Order) => (o.customerEmail || o.customerPhone || '').trim().toLowerCase();
+  const totalCustomers = new Set(ordersForCrm.map(customerKey).filter(Boolean)).size;
   const isDonationVertical = getBusinessType(business) === 'nonprofit' || getBusinessType(business) === 'synagogue';
   const stats = {
-    totalOrders: isDonationVertical ? (donationStats?.totalDonations ?? 0) : orders.length,
+    totalOrders: isDonationVertical ? (donationStats?.totalDonations ?? 0) : ordersForCrm.length,
     totalSales: isDonationVertical
       ? (donationStats?.totalRaised ?? 0)
-      : orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total, 0),
+      : ordersForCrm.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total, 0),
     paymentEnabled: settings.paymentEnabled,
     totalProducts: products.length,
     totalCategories: productCategories?.length ?? 0,
@@ -724,7 +755,7 @@ const Dashboard = () => {
             onUpgrade={() => setCheckoutItems([CRM_ITEM])}
             busy={false}
           >
-            <DashboardCRM orders={orders} businessId={business?.id} businessType={getBusinessType(business)} demoMode={!crmEntitled} hasCrmAddon={crmEntitled} initialTab={currentView === 'profitability' ? 'profitability' : 'customers'} />
+            <DashboardCRM orders={ordersForCrm} businessId={business?.id} businessType={getBusinessType(business)} demoMode={!crmEntitled} hasCrmAddon={crmEntitled} initialTab={currentView === 'profitability' ? 'profitability' : 'customers'} />
           </PremiumOverlay>
         );
       case 'campaigns':
