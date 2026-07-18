@@ -10,7 +10,9 @@ interface ProductDetailModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart: (product: Product, variant?: SelectedVariant) => void;
+  /** Omit to render the modal read-only (no "add to cart" button) - for
+   *  businesses without the commerce module (see StorefrontLayoutProps.hasCommerce). */
+  onAddToCart?: (product: Product, variant?: SelectedVariant) => void;
   isFavorite?: boolean;
   onToggleFavorite?: (productId: string) => void;
 }
@@ -279,20 +281,22 @@ const ProductDetailModal = ({
               <p className="text-xs text-amber-600 mb-2">נותרו {selStock} במלאי</p>
             )}
 
-            <div className="mt-auto pt-6">
-              <Button
-                onClick={() => {
-                  onAddToCart(product, selectedVariant ? { id: selectedVariant.id, color: selectedVariant.color, size: selectedVariant.size, price_override: selectedVariant.price_override } : undefined);
-                  onClose();
-                }}
-                disabled={!canAdd}
-                className="w-full h-14 text-base font-bold tracking-wider uppercase gap-2"
-                size="lg"
-              >
-                <ShoppingBag className="h-5 w-5" />
-                {needsColor || needsSize ? "בחרו צבע ומידה" : (hasVariants && selStock <= 0 ? "אזל מהמלאי" : "הוסף לסל")}
-              </Button>
-            </div>
+            {onAddToCart && (
+              <div className="mt-auto pt-6">
+                <Button
+                  onClick={() => {
+                    onAddToCart(product, selectedVariant ? { id: selectedVariant.id, color: selectedVariant.color, size: selectedVariant.size, price_override: selectedVariant.price_override } : undefined);
+                    onClose();
+                  }}
+                  disabled={!canAdd}
+                  className="w-full h-14 text-base font-bold tracking-wider uppercase gap-2"
+                  size="lg"
+                >
+                  <ShoppingBag className="h-5 w-5" />
+                  {needsColor || needsSize ? "בחרו צבע ומידה" : (hasVariants && selStock <= 0 ? "אזל מהמלאי" : "הוסף לסל")}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

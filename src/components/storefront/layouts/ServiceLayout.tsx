@@ -25,8 +25,11 @@ const ServiceLayout = ({
   categories, selectedCategoryId, onSelectCategory, banners, campaignPopup, cartItems,
   favoritesCount, onAddToCart, onUpdateQuantity, onRemoveFromCart, onCheckout,
   onNavigateToCart, onNavigateToFavorites, onScrollToProducts, onNavigateHome,
-  favoriteIds, onToggleFavorite, hasPayment, customLabels, verticalSlot,
+  favoriteIds, onToggleFavorite, hasPayment, customLabels, verticalSlot, hasCommerce = true,
 }: StorefrontLayoutProps) => {
+  // ServiceLayout is the shared default for services/vacation (which DO sell via cart)
+  // AND nonprofit/synagogue (which never write to the orders table) - so cart/checkout
+  // chrome must be gated on the business's actual commerce module, not shown unconditionally.
   const totalCartItems = cartItems.reduce((s, i) => s + i.quantity, 0);
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const pc = primaryColor || '#0077b6';
@@ -50,8 +53,8 @@ const ServiceLayout = ({
         onScrollToAbout={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
         onNavigateHome={onNavigateHome}
         onScrollToProducts={onScrollToProducts}
-        onNavigateToFavorites={onNavigateToFavorites}
-        onNavigateToCart={onNavigateToCart}
+        onNavigateToFavorites={hasCommerce ? onNavigateToFavorites : undefined}
+        onNavigateToCart={hasCommerce ? onNavigateToCart : undefined}
       />
 
       <main dir="rtl">
@@ -234,15 +237,17 @@ const ServiceLayout = ({
         <StoreReviews cache={reviewsCache ?? null} primaryColor={primaryColor} />
       </main>
 
-      <StoreFooter businessName={businessName} phone={phone} storeSlug={businessSlug} />
+      <StoreFooter businessName={businessName} phone={phone} storeSlug={businessSlug} showOrders={hasCommerce} />
 
-      <FloatingCart
-        items={cartItems}
-        onUpdateQuantity={onUpdateQuantity}
-        onRemove={onRemoveFromCart}
-        onCheckout={onCheckout}
-        hasPayment={hasPayment}
-      />
+      {hasCommerce && (
+        <FloatingCart
+          items={cartItems}
+          onUpdateQuantity={onUpdateQuantity}
+          onRemove={onRemoveFromCart}
+          onCheckout={onCheckout}
+          hasPayment={hasPayment}
+        />
+      )}
 
       {phone && whatsappEnabled && (
         <FloatingWhatsApp phone={phone} message={whatsappMessage} businessName={businessName} />
@@ -252,7 +257,7 @@ const ServiceLayout = ({
         product={detailProduct}
         isOpen={!!detailProduct}
         onClose={() => setDetailProduct(null)}
-        onAddToCart={(p) => { onAddToCart(p); setDetailProduct(null); }}
+        onAddToCart={hasCommerce ? (p) => { onAddToCart(p); setDetailProduct(null); } : undefined}
         isFavorite={detailProduct ? favoriteIds.has(detailProduct.id) : false}
         onToggleFavorite={detailProduct ? () => onToggleFavorite(detailProduct.id) : undefined}
       />

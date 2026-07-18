@@ -86,3 +86,24 @@ export const useSaveDonationReporting = () => {
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["donation-reporting", v.businessId] }),
   });
 };
+
+/** Aggregate donation totals for the dashboard home overview - nonprofit/synagogue
+ *  never write to the commerce `orders` table (see businessModules.ts DEFAULT_MODULES),
+ *  so their real activity lives here instead. */
+export const useDonationStats = (businessId?: string) =>
+  useQuery({
+    queryKey: ["donation-stats", businessId],
+    enabled: !!businessId,
+    queryFn: async (): Promise<{ totalDonations: number; totalRaised: number; totalDonors: number }> => {
+      const { data, error } = await sb.from("transactions")
+        .select("amount, contact_id")
+        .eq("business_id", businessId).eq("kind", "donation").eq("status", "paid");
+      if (error) throw error;
+      const rows = (data ?? []) as { amount: number; contact_id: string | null }[];
+      return {
+        totalDonations: rows.length,
+        totalRaised: rows.reduce((s, r) => s + (Number(r.amount) || 0), 0),
+        totalDonors: new Set(rows.map((r) => r.contact_id).filter(Boolean)).size,
+      };
+    },
+  });

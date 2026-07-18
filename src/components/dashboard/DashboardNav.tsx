@@ -36,26 +36,33 @@ const TYPE_CONFIG: Record<BusinessType, {
   services:  {
     hiddenItems: ['visualization-studio'],
     itemOverrides: {
-      products: { label: "שירותים", shortLabel: "שירותים", icon: Package },
+      // NOT "שירותים" - that's the actual bookable-services manager (the "יומן ותורים"
+      // nav item). This tab edits the commerce products table (retail add-ons like
+      // creams/gift cards), so a merchant clicking "שירותים" here would land on the
+      // wrong screen looking for their bookable services.
+      products: { label: "מוצרים נלווים", shortLabel: "מוצרים", icon: Package },
     },
   },
   nonprofit: {
     managementGroupLabel: "ניהול תרומות",
-    hiddenItems: ['orders', 'shipping', 'coupons', 'visualization-studio'],
+    // 'orders' points at the commerce orders table, which nonprofits never write to
+    // (donations live in the "verticals" tab instead) → permanently empty, hidden.
+    // 'discounts' (sale price / "hot" badge) is a commerce merchandising concept with
+    // no equivalent on the donation-project storefront - also hidden.
+    hiddenItems: ['orders', 'shipping', 'coupons', 'visualization-studio', 'discounts'],
     itemOverrides: {
       products: { label: "פעילויות ומיזמים", shortLabel: "פעילויות", icon: Heart },
-      orders: { label: "תרומות", shortLabel: "תרומות", icon: Heart },
     },
   },
   synagogue: {
     managementGroupLabel: "ניהול בית הכנסת",
     // 'orders' (relabeled "תרומות ועליות") points at the commerce orders table, which
     // synagogues never write to → permanently empty. Their real donations/aliyot live
-    // in the "verticals" tab, so hide the dead orders tab.
-    hiddenItems: ['orders', 'shipping', 'coupons', 'visualization-studio'],
+    // in the "verticals" tab, so hide the dead orders tab. 'discounts' is likewise a
+    // commerce-only concept (sale price / "hot" badge) with no synagogue equivalent.
+    hiddenItems: ['orders', 'shipping', 'coupons', 'visualization-studio', 'discounts'],
     itemOverrides: {
       products: { label: "פרויקטים / מיזמים", shortLabel: "פרויקטים", icon: Heart },
-      orders: { label: "תרומות ועליות", shortLabel: "תרומות", icon: Heart },
     },
   },
   realestate: {

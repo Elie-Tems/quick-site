@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getBusinessType, getEnabledModules, type BusinessLike } from "@/lib/businessModules";
+import { useBookingServices } from "@/hooks/useBooking";
 import BookingWidget from "./BookingWidget";
 import ListingsBoard from "./ListingsBoard";
 import DonationWidget from "./DonationWidget";
@@ -38,6 +39,7 @@ const StorefrontVertical = ({ business }: {
   business: (BusinessLike & { id: string; primary_color?: string | null; phone?: string | null }) | null | undefined;
 }) => {
   const isVacation = getBusinessType(business) === "vacation";
+  const hasBookingModule = getEnabledModules(business).includes("booking");
 
   // Vacation units = this business's products that have a nightly rate set. Loaded
   // here (the parent StoreFront doesn't pass products into this slot) and handed to
@@ -58,6 +60,11 @@ const StorefrontVertical = ({ business }: {
     enabled: !!business?.id && isVacation,
   });
 
+  // Gate the booking Section on having at least one bookable service (mirrors the
+  // lodgingUnits.length>0 gate above) - otherwise every newly onboarded services
+  // business shows an empty, fully-styled "קביעת תור" frame with nothing inside.
+  const { data: bookingServices = [] } = useBookingServices(hasBookingModule ? business?.id : undefined);
+
   if (!business?.id) return null;
   const modules = getEnabledModules(business);
   const accent = business.primary_color || "#0b8f6a";
@@ -67,7 +74,7 @@ const StorefrontVertical = ({ business }: {
       {isVacation && lodgingUnits.length > 0 && (
         <LodgingWidget businessId={business.id} units={lodgingUnits} />
       )}
-      {modules.includes("booking") && (
+      {modules.includes("booking") && bookingServices.length > 0 && (
         <Section title="קביעת תור" subtitle="בחרו שירות ומועד - ונתראה" accent={accent}>
           <BookingWidget businessId={business.id} />
         </Section>

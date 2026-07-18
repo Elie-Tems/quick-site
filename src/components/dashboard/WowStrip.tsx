@@ -34,7 +34,7 @@ const TYPE_LABEL_OVERRIDES: Partial<Record<BusinessType, Array<{ label?: string;
     { label: "עיצוב ותבניות" },
     { label: "תקנון ומדיניות" },
     { label: "דומיין מותאם" },
-    { label: "יומן זמינות", view: "verticals" as DashboardView },
+    { label: "יומן זמינות", view: "availability" as DashboardView },
   ],
 };
 

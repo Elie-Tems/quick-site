@@ -56,6 +56,7 @@ import DashboardModules from "@/components/dashboard/DashboardModules";
 import UpgradeCheckoutModal, { type CheckoutItem } from "@/components/dashboard/upgrades/UpgradeCheckoutModal";
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useOrders, useUpdateOrder } from "@/hooks/useOrders";
+import { useDonationStats } from "@/hooks/useDonations";
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner } from "@/hooks/useBanners";
 import { useProductCategories } from "@/hooks/useProductCategories";
 import { useAuth } from "@/contexts/AuthContext";
@@ -169,6 +170,10 @@ const Dashboard = () => {
   const { data: dbProducts, isLoading: productsLoading } = useProducts(business?.id);
   const { categories: productCategories } = useProductCategories(business?.id);
   const { data: dbOrders, isLoading: ordersLoading } = useOrders(business?.id);
+  // nonprofit/synagogue never write to `orders` (see businessModules.ts DEFAULT_MODULES) -
+  // their real activity lives in `transactions` (kind='donation'); used below to feed the
+  // home overview stats instead of the always-empty orders-derived numbers.
+  const { data: donationStats } = useDonationStats(business?.id);
   const updateOrder = useUpdateOrder();
   // Persist an order status change. Maps the UI status back to the DB status
   // (inverse of the load mapping below) so it actually saves.
@@ -474,10 +479,17 @@ const Dashboard = () => {
           price: it.price_at_order,
         })),
         total: o.total_price,
-        status: o.status === 'pending' ? 'received' : 
+        status: o.status === 'pending' ? 'received' :
                 o.status === 'confirmed' ? 'pending_payment' :
-                o.status === 'completed' ? 'completed' : 
+                o.status === 'completed' ? 'completed' :
                 o.status === 'cancelled' ? 'cancelled' : 'received',
+        // Vacation-only stay fields (migration 20260714000004) - DashboardOrders.tsx's
+        // stay-details block reads these off the order but they were never copied here,
+        // so it silently never rendered check-in/out dates, guests or the unit name.
+        checkin_date: (o as any).checkin_date,
+        checkout_date: (o as any).checkout_date,
+        num_guests: (o as any).num_guests,
+        unit_name: (o as any).unit_name,
       })));
     }
   }, [dbOrders]);
@@ -595,15 +607,16 @@ const Dashboard = () => {
 
   // Calculate stats
   const totalCustomers = new Set(orders.map(o => o.customerEmail).filter(Boolean)).size;
+  const isDonationVertical = getBusinessType(business) === 'nonprofit' || getBusinessType(business) === 'synagogue';
   const stats = {
-    totalOrders: orders.length,
-    totalSales: orders
-      .filter(o => o.status === 'completed')
-      .reduce((sum, o) => sum + o.total, 0),
+    totalOrders: isDonationVertical ? (donationStats?.totalDonations ?? 0) : orders.length,
+    totalSales: isDonationVertical
+      ? (donationStats?.totalRaised ?? 0)
+      : orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total, 0),
     paymentEnabled: settings.paymentEnabled,
     totalProducts: products.length,
     totalCategories: productCategories?.length ?? 0,
-    totalCustomers,
+    totalCustomers: isDonationVertical ? (donationStats?.totalDonors ?? 0) : totalCustomers,
   };
 
   const renderContent = () => {
@@ -624,8 +637,8 @@ const Dashboard = () => {
             {/* One product hub: list / categories as tabs */}
             <div className="flex gap-1 border-b border-border overflow-x-auto">
               {([
-                { id: 'list', label: { products: 'רשימת מוצרים', services: 'רשימת פריטים', nonprofit: 'רשימת פרויקטים', realestate: 'רשימת נכסים' }[getBusinessType(business)] ?? 'רשימת מוצרים' },
-                { id: 'categories', label: { products: 'קטגוריות', services: 'קטגוריות', nonprofit: 'סוגי פרויקטים', realestate: 'סוגי נכסים' }[getBusinessType(business)] ?? 'קטגוריות' },
+                { id: 'list', label: { products: 'רשימת מוצרים', services: 'רשימת פריטים', nonprofit: 'רשימת פרויקטים', realestate: 'רשימת נכסים', synagogue: 'רשימת פעילויות', vacation: 'רשימת יחידות' }[getBusinessType(business)] ?? 'רשימת מוצרים' },
+                { id: 'categories', label: { products: 'קטגוריות', services: 'קטגוריות', nonprofit: 'סוגי פרויקטים', realestate: 'סוגי נכסים', synagogue: 'סוגי פעילויות', vacation: 'סוגי יחידות' }[getBusinessType(business)] ?? 'קטגוריות' },
               ] as const).map((t) => (
                 <button
                   key={t.id}

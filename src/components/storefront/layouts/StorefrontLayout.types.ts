@@ -84,6 +84,11 @@ export interface StorefrontLayoutProps {
   favoriteIds: Set<string>;
   onToggleFavorite: (productId: string) => void;
   hasPayment: boolean;
+  /** Whether this business has the "commerce" module enabled (businessHasProductCatalog).
+   *  Layouts shared across verticals (ServiceLayout: services/nonprofit/synagogue/vacation)
+   *  must gate cart/checkout/add-to-cart chrome on this - lead/donation verticals never
+   *  write to the orders table, so an unconditional cart leaks a dead-end checkout flow. */
+  hasCommerce?: boolean;
 
   /** Per-vertical customer experience (booking / listings / donations), rendered
    *  by the layout right after the hero so it's prominent - not a header above it

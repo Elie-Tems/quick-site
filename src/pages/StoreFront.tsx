@@ -9,7 +9,7 @@ import StoreHero from "@/components/storefront/StoreHero";
 import StoreBanners from "@/components/storefront/StoreBanners";
 import StorePromoPopup from "@/components/storefront/StorePromoPopup";
 import StoreProducts from "@/components/storefront/StoreProducts";
-import StorefrontVertical from "@/components/storefront/StorefrontVertical";
+import StorefrontVertical, { businessHasProductCatalog } from "@/components/storefront/StorefrontVertical";
 import StoreAbout from "@/components/storefront/StoreAbout";
 import FloatingCart, { type CartItem } from "@/components/storefront/FloatingCart";
 import FloatingWhatsApp from "@/components/storefront/FloatingWhatsApp";
@@ -263,7 +263,15 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
 
   // Transform products based on campaign display mode - must run before any early return (Rules of Hooks)
   const storeProducts = useMemo(() => {
-    const baseProducts = products.map(p => ({
+    // A vacation business's rooms/units (products rows with price_per_night set) must
+    // ONLY be booked through LodgingWidget's dates/guests flow (verticalSlot, rendered
+    // via StorefrontVertical) - never through the generic add-to-cart/checkout path,
+    // which has no concept of check-in/out dates and prices off the wrong field.
+    const isVacation = getBusinessType(business) === 'vacation';
+    const commerceProducts = isVacation
+      ? products.filter((p) => (p as { price_per_night?: number | string | null }).price_per_night == null)
+      : products;
+    const baseProducts = commerceProducts.map(p => ({
       id: p.id,
       name: p.name,
       description: p.description || undefined,
@@ -332,7 +340,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       default:
         return baseProducts;
     }
-  }, [products, activeCampaign, campaignProducts]);
+  }, [products, activeCampaign, campaignProducts, business]);
 
   // Filter products by selected category (when using store categories)
   const storeProductsFiltered = useMemo(() => {
@@ -850,12 +858,17 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     favoriteIds,
     onToggleFavorite: toggleFavorite,
     hasPayment: business.payment_enabled ?? false,
+    hasCommerce: businessHasProductCatalog(business as any),
     customLabels: (() => {
       const stored = (b?.custom_labels as Record<string, string> | null) ?? {};
       const bt = getBusinessType(business);
       const defaultTitle: Record<string, string> = {
-        services:   'השירותים שלנו',
-        nonprofit:  'הפעילויות שלנו',
+        // "services" sits directly under the real booking widget's "קביעת תור"/"בחרו
+        // שירות" heading, and is actually the commerce add-on catalog (creams, gift
+        // cards) - a second "our services" title here reads as a confusing duplicate.
+        services:   'מוצרים נוספים',
+        nonprofit:  'פעילויות ומיזמים',
+        synagogue:  'פעילויות ומיזמים',
         vacation:   'החדרים שלנו',
         realestate: 'הנכסים שלנו',
       };
@@ -881,7 +894,9 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     // lead/donation-based (no "add to cart"). This is what makes a realestate store show
     // the property/lead experience regardless of the saved template.
     const COMMERCE_LAYOUTS = new Set(['classic', 'market', 'boutique', 'restaurant']);
-    const NON_COMMERCE_VERTICALS = new Set(['realestate', 'nonprofit', 'synagogue', 'vacation']);
+    // vacation has DEFAULT_MODULES.commerce (it sells rooms + real add-on merch), unlike
+    // the 3 lead/donation verticals below - it must NOT be forced off a commerce layout.
+    const NON_COMMERCE_VERTICALS = new Set(['realestate', 'nonprofit', 'synagogue']);
     if (NON_COMMERCE_VERTICALS.has(getBusinessType(business)) && (!layoutId || COMMERCE_LAYOUTS.has(layoutId))) {
       layoutId = getDefaultLayout(business);
     }

@@ -62,9 +62,15 @@ const DashboardHome = ({
     ...(stats.totalProducts === 0 ? [{ key: 'products', icon: Package, label: lbl.addProducts, view: 'products' as DashboardView, highlight: false }] : []),
   ];
 
+  // nonprofit/synagogue never write to the orders table (donations live in
+  // `transactions` instead, surfaced under the "verticals" tab's DonationsManager)
+  // - routing their donation tiles at 'orders' would land on a screen DashboardNav
+  // itself hides from the sidebar for these exact two types.
+  const isDonationVertical = businessType === 'nonprofit' || businessType === 'synagogue';
+  const revenueView: DashboardView = isDonationVertical ? 'verticals' : 'orders';
   const statCards = [
-    { value: String(stats.totalOrders), label: lbl.orders, icon: ShoppingCart, view: 'orders' as DashboardView },
-    { value: `₪${stats.totalSales?.toLocaleString('he-IL') ?? 0}`, label: lbl.sales, icon: TrendingUp, view: 'orders' as DashboardView },
+    { value: String(stats.totalOrders), label: lbl.orders, icon: ShoppingCart, view: revenueView },
+    { value: `₪${stats.totalSales?.toLocaleString('he-IL') ?? 0}`, label: lbl.sales, icon: TrendingUp, view: revenueView },
     { value: String(stats.totalProducts), label: lbl.products, icon: Package, view: 'products' as DashboardView },
     { value: String(stats.totalCustomers ?? 0), label: lbl.customers, icon: Users, view: 'customers' as DashboardView },
   ];

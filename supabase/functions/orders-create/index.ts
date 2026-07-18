@@ -314,6 +314,16 @@ async function handleLodging(admin: any, body: ReqBody): Promise<Response> {
 
   if (orderErr || !order) return json({ error: "Could not create order" }, 500);
 
+  // Without this, useOrders' `order_items(*)` join is always empty for a lodging
+  // booking, so the dashboard order list/detail (which reads order.items) shows
+  // "0 לילות" and an empty units section even though the stay itself saved fine.
+  const { error: lodgingItemsErr } = await admin.from("order_items").insert({
+    order_id: order.id, product_id: unitProductId, product_name: unit.name,
+    price_at_order: nightly, quantity: nights, cost_at_order: null,
+    variant_id: null, variant_color: null, variant_size: null,
+  });
+  if (lodgingItemsErr) console.warn("lodging order_items insert failed:", lodgingItemsErr.message);
+
   // Notify the merchant - money-first subject, works for COD. Best-effort.
   const merchantEmail = (business as any).email;
   if (merchantEmail) {

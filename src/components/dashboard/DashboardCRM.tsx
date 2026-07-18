@@ -266,14 +266,23 @@ const REALESTATE_TABS: { id: CrmTab; label: string; icon: typeof Users }[] = [
   { id: "profitability", label: "רווחיות",   icon: TrendingUp },
 ];
 
+// nonprofit/synagogue "products" are donation projects, not purchased inventory - the
+// profitability tab reads products/orders/order_items, which are permanently empty/
+// meaningless for these verticals (no "commerce" module), so it's dropped entirely.
+const DONATION_TABS: { id: CrmTab; label: string; icon: typeof Users }[] = [
+  { id: "customers", label: "תורמים", icon: Users },
+  { id: "suppliers", label: "ספקים",  icon: Truck },
+];
+
 const DashboardCRM = ({ orders, businessId, demoMode, initialTab = "customers", hasCrmAddon = false, businessType }: DashboardCRMProps) => {
   const isRealEstate = businessType === "realestate";
+  const isDonationVertical = businessType === "nonprofit" || businessType === "synagogue";
   const defaultTab: CrmTab = isRealEstate ? "pipeline" : "customers";
   const [tab, setTab] = useState<CrmTab>(initialTab === "customers" ? defaultTab : initialTab);
 
   const contactsVertical = isContactsVertical(businessType);
   const contactKind: "lead" | "donation" = isRealEstate ? "lead" : "donation";
-  const TABS = isRealEstate ? REALESTATE_TABS : BASE_TABS;
+  const TABS = isRealEstate ? REALESTATE_TABS : isDonationVertical ? DONATION_TABS : BASE_TABS;
 
   const customersView = contactsVertical
     ? <ContactsCustomerView businessId={businessId} kind={contactKind} hasCrmAddon={hasCrmAddon} />
