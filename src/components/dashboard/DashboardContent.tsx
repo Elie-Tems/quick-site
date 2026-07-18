@@ -226,6 +226,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         body: {
           businessName: business.name,
           businessCategory: (business as any).business_category,
+          businessType,
           rawText: aboutBody || tagline || business.name,
         },
       });

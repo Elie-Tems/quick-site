@@ -43,6 +43,10 @@ Deno.serve(async (req) => {
   if (!businessId || !name?.trim() || !phone?.trim()) {
     return json({ error: "businessId, name and phone are required" }, 400);
   }
+  const phoneDigits = phone.replace(/\D/g, "");
+  if (phoneDigits.length < 9 || phoneDigits.length > 10) {
+    return json({ error: "מספר טלפון לא תקין" }, 400);
+  }
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
@@ -86,11 +90,25 @@ Deno.serve(async (req) => {
   let pipeline = pipes?.[0];
 
   if (!pipeline) {
-    const defaultStages = [
-      { key: "new",         label: "חדש" },
-      { key: "in_progress", label: "בטיפול" },
-      { key: "closed",      label: "סגור" },
-    ];
+    // Match the stages the merchant's own leads-board UI expects, so the
+    // won/lost flags actually drive its KPI/reminders logic instead of every
+    // lead ending up on a flag-less generic 3-stage pipeline. Realestate's
+    // board is DashboardLeadsPipeline.tsx (its DEFAULT_STAGES); other
+    // verticals fall back to the original generic pipeline.
+    const defaultStages = bizRow.business_type === "realestate"
+      ? [
+          { key: "new",      label: "פנייה חדשה", color: "#6366f1" },
+          { key: "interest", label: "בדיקת עניין", color: "#0ea5e9" },
+          { key: "visit",    label: "ביקור בנכס",  color: "#f59e0b" },
+          { key: "nego",     label: 'מו"מ',        color: "#f97316" },
+          { key: "signed",   label: "חתימה",       color: "#10b981", is_won: true },
+          { key: "lost",     label: "לא רלוונטי",  color: "#94a3b8", is_lost: true },
+        ]
+      : [
+          { key: "new",         label: "חדש" },
+          { key: "in_progress", label: "בטיפול" },
+          { key: "closed",      label: "סגור" },
+        ];
     // vertical is NOT NULL - omitting it makes the insert fail and the lead never
     // reaches the board. Derive it from the business type.
     const { data: created, error: pErr } = await admin.from("pipelines")

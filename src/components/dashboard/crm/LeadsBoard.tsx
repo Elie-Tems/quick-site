@@ -49,6 +49,12 @@ function followUpLabel(iso: string): string {
   return `בעוד ${days} ימים`;
 }
 
+function waLink(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  const intl = digits.startsWith("0") ? `972${digits.slice(1)}` : digits;
+  return `https://wa.me/${intl}`;
+}
+
 const LeadsBoard = ({ businessId }: { businessId: string }) => {
   const { data, isLoading } = usePipeline(businessId);
   const move = useMoveCard();
@@ -130,7 +136,8 @@ const LeadsBoard = ({ businessId }: { businessId: string }) => {
                 const u = urgencyOf(c.follow_up_at);
                 return (
                   <div key={c.id} className="p-3 rounded-xl border border-border bg-card">
-                    <div className="font-medium text-foreground text-sm truncate">{c.title || "ליד"}</div>
+                    <div className="font-medium text-foreground text-sm truncate">{c.contacts?.name || c.title || "ליד"}</div>
+                    {c.title && c.contacts?.name && <div className="text-xs text-muted-foreground truncate">{c.title}</div>}
                     {c.value != null && <div className="text-xs text-primary font-bold mt-0.5">₪{c.value.toLocaleString()}</div>}
 
                     {/* Follow-up badge (if set) */}
@@ -142,8 +149,17 @@ const LeadsBoard = ({ businessId }: { businessId: string }) => {
 
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex gap-1">
-                        <a className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary" title="חייג"><Phone className="w-3.5 h-3.5" /></a>
-                        <a className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary" title="וואטסאפ"><MessageCircle className="w-3.5 h-3.5" /></a>
+                        {c.contacts?.phone ? (
+                          <>
+                            <a href={`tel:${c.contacts.phone}`} className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary" title="חייג"><Phone className="w-3.5 h-3.5" /></a>
+                            <a href={waLink(c.contacts.phone)} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary" title="וואטסאפ"><MessageCircle className="w-3.5 h-3.5" /></a>
+                          </>
+                        ) : (
+                          <>
+                            <span className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground/40" title="אין מספר טלפון"><Phone className="w-3.5 h-3.5" /></span>
+                            <span className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground/40" title="אין מספר טלפון"><MessageCircle className="w-3.5 h-3.5" /></span>
+                          </>
+                        )}
                       </div>
                       <div className="flex gap-0.5">
                         <button onClick={() => shift(c, -1)} disabled={stageIndex(c.stage_key) === 0} className="w-6 h-6 rounded text-muted-foreground disabled:opacity-30" title="שלב קודם"><ChevronRight className="w-4 h-4" /></button>

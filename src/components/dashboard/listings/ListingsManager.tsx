@@ -12,7 +12,11 @@ const CATS = [
   { key: "commercial", label: "מסחרי" },
 ];
 
-const EMPTY_DRAFT = { title: "", price: "", city: "", category: "sale", is_hot: false };
+const EMPTY_DRAFT = { title: "", price: "", city: "", category: "sale", is_hot: false, rooms: "", size: "", description: "" };
+
+function derivedPricePeriod(category: string): string | null {
+  return category === "rent" || category === "commercial" ? "month" : null;
+}
 
 async function uploadListingImage(businessId: string, file: File): Promise<string> {
   const ext = file.name.split(".").pop() ?? "jpg";
@@ -35,23 +39,45 @@ const ListingsManager = ({ businessId }: { businessId: string }) => {
 
   const add = () => {
     if (!draft.title.trim()) return;
+    const rooms = draft.rooms ? Number(draft.rooms) : undefined;
+    const size = draft.size ? Number(draft.size) : undefined;
     upsert.mutate({
       business_id: businessId, kind: "property", title: draft.title.trim(),
       price: draft.price ? Number(draft.price) : null, city: draft.city || null,
       category: draft.category, is_hot: draft.is_hot,
+      description: draft.description.trim() || null,
+      price_period: derivedPricePeriod(draft.category),
+      attrs: { ...(rooms ? { rooms } : {}), ...(size ? { size } : {}) },
     }, { onSuccess: () => setDraft(EMPTY_DRAFT) });
   };
 
   const startEdit = (l: Listing) => {
     setEditId(l.id);
-    setEditDraft({ title: l.title, price: l.price, city: l.city, category: l.category ?? "sale", is_hot: l.is_hot, media: l.media });
+    setEditDraft({
+      title: l.title, price: l.price, city: l.city, category: l.category ?? "sale", is_hot: l.is_hot, media: l.media,
+      description: l.description ?? "",
+      attrs: l.attrs ?? {},
+    } as any);
   };
 
   const saveEdit = () => {
     if (!editId) return;
-    upsert.mutate({ id: editId, business_id: businessId, ...editDraft } as any, {
+    const category = (editDraft.category as string) ?? "sale";
+    const attrs = editDraft.attrs as { rooms?: string | number; size?: string | number } | undefined;
+    const rooms = attrs?.rooms ? Number(attrs.rooms) : undefined;
+    const size = attrs?.size ? Number(attrs.size) : undefined;
+    upsert.mutate({
+      id: editId, business_id: businessId, ...editDraft,
+      price_period: derivedPricePeriod(category),
+      attrs: { ...(rooms ? { rooms } : {}), ...(size ? { size } : {}) },
+    } as any, {
       onSuccess: () => { setEditId(null); setEditDraft({}); },
     });
+  };
+
+  const archiveListing = (l: Listing) => {
+    if (!window.confirm(`למחוק את "${l.title}"? הנכס יוסר מהאתר.`)) return;
+    upsert.mutate({ id: l.id, business_id: businessId, active: false } as any);
   };
 
   const handleImageUpload = async (file: File, listingId: string) => {
@@ -113,10 +139,13 @@ const ListingsManager = ({ businessId }: { businessId: string }) => {
                 <select value={editDraft.category ?? "sale"} onChange={e => setEditDraft(d => ({ ...d, category: e.target.value }))} className="h-10 rounded-md border border-border bg-background px-2 text-sm">
                   {CATS.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
                 </select>
+                <Input value={(editDraft.attrs as any)?.rooms ?? ""} onChange={e => setEditDraft(d => ({ ...d, attrs: { ...(d.attrs as any), rooms: e.target.value } }))} placeholder="חדרים" type="number" className="max-w-[90px]" />
+                <Input value={(editDraft.attrs as any)?.size ?? ""} onChange={e => setEditDraft(d => ({ ...d, attrs: { ...(d.attrs as any), size: e.target.value } }))} placeholder="מ״ר" type="number" className="max-w-[90px]" />
                 <button onClick={() => setEditDraft(d => ({ ...d, is_hot: !d.is_hot }))}
                   className={`h-10 px-3 rounded-md border text-sm flex items-center gap-1 ${editDraft.is_hot ? "bg-rose-500/10 border-rose-500/40 text-rose-500" : "border-border text-muted-foreground"}`}>
                   <Flame className="w-4 h-4" />
                 </button>
+                <Input value={editDraft.description ?? ""} onChange={e => setEditDraft(d => ({ ...d, description: e.target.value }))} placeholder="תיאור הנכס" className="w-full" />
                 <Button size="sm" onClick={saveEdit} disabled={upsert.isPending}><Check className="w-4 h-4" /></Button>
                 <Button size="sm" variant="ghost" onClick={() => setEditId(null)}><X className="w-4 h-4" /></Button>
               </div>
@@ -129,10 +158,13 @@ const ListingsManager = ({ businessId }: { businessId: string }) => {
                   <div className="text-xs text-muted-foreground flex items-center gap-2">
                     {l.city && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {l.city}</span>}
                     <span>{CATS.find(c => c.key === l.category)?.label ?? l.category}</span>
+                    {(l.attrs as any)?.rooms ? <span>{(l.attrs as any).rooms} חד'</span> : null}
+                    {(l.attrs as any)?.size ? <span>{(l.attrs as any).size} מ״ר</span> : null}
                   </div>
                 </div>
                 <div className="font-bold text-primary whitespace-nowrap">{l.price ? `₪${l.price.toLocaleString()}` : "-"}</div>
                 <button onClick={() => startEdit(l)} className="text-muted-foreground hover:text-foreground transition-colors"><Pencil className="w-4 h-4" /></button>
+                <button onClick={() => archiveListing(l)} className="text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             )}
           </div>
@@ -151,10 +183,13 @@ const ListingsManager = ({ businessId }: { businessId: string }) => {
         <select value={draft.category} onChange={e => setDraft({ ...draft, category: e.target.value })} className="h-10 rounded-md border border-border bg-background px-2 text-sm">
           {CATS.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
         </select>
+        <Input placeholder="חדרים" type="number" value={draft.rooms} onChange={e => setDraft({ ...draft, rooms: e.target.value })} className="max-w-[90px]" />
+        <Input placeholder="מ״ר" type="number" value={draft.size} onChange={e => setDraft({ ...draft, size: e.target.value })} className="max-w-[90px]" />
         <button onClick={() => setDraft({ ...draft, is_hot: !draft.is_hot })}
           className={`h-10 px-3 rounded-md border text-sm flex items-center gap-1 ${draft.is_hot ? "bg-rose-500/10 border-rose-500/40 text-rose-500" : "border-border text-muted-foreground"}`}>
           <Flame className="w-4 h-4" /> מציאה
         </button>
+        <Input placeholder="תיאור הנכס" value={draft.description} onChange={e => setDraft({ ...draft, description: e.target.value })} className="w-full" />
         <Button onClick={add} disabled={upsert.isPending}><Plus className="w-4 h-4 ml-1" /> הוסף נכס</Button>
       </div>
 

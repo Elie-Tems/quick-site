@@ -18,6 +18,11 @@ function fmtPrice(l: Listing) {
   return `₪${l.price.toLocaleString()}${l.price_period === "month" ? " / חודש" : ""}`;
 }
 
+function isValidPhone(raw: string): boolean {
+  const digits = raw.replace(/\D/g, "");
+  return digits.length >= 9 && digits.length <= 10;
+}
+
 function Pill({ children }: { children: React.ReactNode }) {
   return (
     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border bg-muted text-muted-foreground text-xs">
@@ -39,6 +44,7 @@ function LeadForm({ listing, businessId, businessPhone, onClose }: {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim()) return;
+    if (!isValidPhone(phone)) { toast.error("מספר טלפון לא תקין"); return; }
     try {
       await submitLead.mutateAsync({
         businessId,
@@ -96,6 +102,8 @@ const ListingsBoard = ({ businessId, businessPhone }: {
   const [cat, setCat] = useState("all");
   const { data: listings = [], isLoading } = useListings(businessId, { category: cat });
   const [open, setOpen] = useState<Listing | null>(null);
+  const [galleryIdx, setGalleryIdx] = useState(0);
+  const openImages = ((open?.media?.images ?? []).map((s) => s?.trim()).filter(Boolean)) as string[];
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-10">
@@ -123,13 +131,13 @@ const ListingsBoard = ({ businessId, businessPhone }: {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {listings.map((l, i) => {
-          const img = l.media?.images?.[0];
+          const img = l.media?.images?.[0]?.trim() || undefined;
           const rooms = (l.attrs as any)?.rooms;
           const size  = (l.attrs as any)?.size;
           const price = fmtPrice(l);
 
           return (
-            <motion.button key={l.id} onClick={() => setOpen(l)} className="text-right"
+            <motion.button key={l.id} onClick={() => { setOpen(l); setGalleryIdx(0); }} className="text-right"
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
               <div className="rounded-2xl overflow-hidden border border-border bg-card group h-full hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                 <div className="relative aspect-[16/11] overflow-hidden bg-muted">
@@ -177,8 +185,8 @@ const ListingsBoard = ({ businessId, businessPhone }: {
             <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
               className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-background border border-border">
               <div className="relative h-56">
-                {open.media?.images?.[0]
-                  ? <img src={open.media.images[0]} alt="" className="w-full h-full object-cover" />
+                {openImages.length > 0
+                  ? <img src={openImages[Math.min(galleryIdx, openImages.length - 1)]} alt="" className="w-full h-full object-cover" />
                   : <div className="w-full h-full bg-muted flex items-center justify-center"><Building2 className="w-14 h-14 text-muted-foreground/30" /></div>
                 }
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
@@ -186,6 +194,24 @@ const ListingsBoard = ({ businessId, businessPhone }: {
                   className="absolute top-3 left-3 w-9 h-9 rounded-full bg-black/50 text-white flex items-center justify-center">
                   <X className="w-5 h-5" />
                 </button>
+                {openImages.length > 1 && (
+                  <>
+                    <button onClick={() => setGalleryIdx((i) => (i - 1 + openImages.length) % openImages.length)}
+                      className="absolute top-1/2 -translate-y-1/2 right-3 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center">
+                      ‹
+                    </button>
+                    <button onClick={() => setGalleryIdx((i) => (i + 1) % openImages.length)}
+                      className="absolute top-1/2 -translate-y-1/2 left-3 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center">
+                      ›
+                    </button>
+                    <div className="absolute bottom-3 inset-x-0 flex justify-center gap-1.5">
+                      {openImages.map((_, i) => (
+                        <button key={i} onClick={() => setGalleryIdx(i)}
+                          className={`w-2 h-2 rounded-full transition-colors ${i === galleryIdx ? "bg-white" : "bg-white/40"}`} />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="p-5" dir="rtl">

@@ -21,7 +21,7 @@ const PropertyLayout = ({
   heroImageUrl, primaryColor, promoText, aboutText, whatsappEnabled,
   whatsappMessage, showMarqueeBar, businessCategory, reviewsCache,
   categories, selectedCategoryId, onSelectCategory, banners,
-  favoritesCount, onNavigateToCart, onNavigateToFavorites, onScrollToProducts,
+  favoritesCount, onScrollToProducts,
   onNavigateHome, verticalSlot,
 }: StorefrontLayoutProps) => {
   const pc = primaryColor || '#374151';
@@ -45,8 +45,8 @@ const PropertyLayout = ({
         onScrollToAbout={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
         onNavigateHome={onNavigateHome}
         onScrollToProducts={onScrollToProducts}
-        onNavigateToFavorites={onNavigateToFavorites}
-        onNavigateToCart={onNavigateToCart}
+        onNavigateToFavorites={undefined}
+        onNavigateToCart={undefined}
       />
 
       <main dir="rtl">

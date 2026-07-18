@@ -190,32 +190,36 @@ const StoreHeader = ({
 
               {/* Actions */}
               <div className="flex items-center gap-3">
-                <button
-                  onClick={onNavigateToFavorites}
-                  aria-label="מועדפים"
-                  className="relative text-foreground hover:text-foreground/70 transition-colors"
-                >
-                  <Heart
-                    className={`h-[18px] w-[18px] ${favoritesCount > 0 ? "fill-red-500 text-red-500" : ""}`}
-                  />
-                  {favoritesCount > 0 && (
-                    <span className="absolute -top-1.5 -left-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                      {favoritesCount}
-                    </span>
-                  )}
-                </button>
-                <button
-                  onClick={onNavigateToCart}
-                  aria-label="סל קניות"
-                  className="relative text-foreground hover:text-foreground/70 transition-colors"
-                >
-                  <ShoppingBag className="h-[18px] w-[18px]" />
-                  {cartItemsCount > 0 && (
-                    <span className="absolute -top-1.5 -left-1.5 w-4 h-4 bg-foreground text-background text-[9px] font-bold rounded-full flex items-center justify-center">
-                      {cartItemsCount}
-                    </span>
-                  )}
-                </button>
+                {onNavigateToFavorites && (
+                  <button
+                    onClick={onNavigateToFavorites}
+                    aria-label="מועדפים"
+                    className="relative text-foreground hover:text-foreground/70 transition-colors"
+                  >
+                    <Heart
+                      className={`h-[18px] w-[18px] ${favoritesCount > 0 ? "fill-red-500 text-red-500" : ""}`}
+                    />
+                    {favoritesCount > 0 && (
+                      <span className="absolute -top-1.5 -left-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                        {favoritesCount}
+                      </span>
+                    )}
+                  </button>
+                )}
+                {onNavigateToCart && (
+                  <button
+                    onClick={onNavigateToCart}
+                    aria-label="סל קניות"
+                    className="relative text-foreground hover:text-foreground/70 transition-colors"
+                  >
+                    <ShoppingBag className="h-[18px] w-[18px]" />
+                    {cartItemsCount > 0 && (
+                      <span className="absolute -top-1.5 -left-1.5 w-4 h-4 bg-foreground text-background text-[9px] font-bold rounded-full flex items-center justify-center">
+                        {cartItemsCount}
+                      </span>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>

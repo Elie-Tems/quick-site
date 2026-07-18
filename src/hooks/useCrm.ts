@@ -19,6 +19,7 @@ export interface PipelineCard {
   id: string; business_id: string; pipeline_id: string; contact_id: string; stage_key: string;
   title: string | null; value: number | null; follow_up_at: string | null;
   status: "open" | "won" | "lost"; details: Record<string, unknown>;
+  contacts?: { name: string | null; phone: string | null; email: string | null } | null;
 }
 
 export const useContacts = (businessId?: string) =>
@@ -42,7 +43,7 @@ export const usePipeline = (businessId?: string) =>
         .eq("business_id", businessId).order("is_default", { ascending: false }).limit(1);
       const pipeline: PipelineDef | null = pipes?.[0] ?? null;
       if (!pipeline) return { pipeline: null, cards: [] };
-      const { data: cards } = await sb.from("pipeline_cards").select("*")
+      const { data: cards } = await sb.from("pipeline_cards").select("*, contacts(name, phone, email)")
         .eq("pipeline_id", pipeline.id).order("created_at", { ascending: false });
       return { pipeline, cards: cards ?? [] };
     },

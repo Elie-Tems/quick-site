@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useUpdateBusiness, useMyBusiness } from "@/hooks/useBusiness";
-import { storeTemplates, type StoreTemplateId, type StoreTemplate, getTemplate } from "@/lib/storeTemplates";
+import { storeTemplates, layoutList, buildTemplate, type StoreTemplateId, type StoreTemplate, getTemplate } from "@/lib/storeTemplates";
+import { getBusinessType } from "@/lib/businessModules";
 import { STORE_FONTS, loadStoreFonts } from "@/lib/storeFonts";
 import { Check, Palette, Type, ImagePlus, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -229,7 +230,19 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
     }
   };
 
-  const templateList = Object.values(storeTemplates);
+  // Legacy commerce templates never include the property/service layouts, so a
+  // business whose vertical isn't plain "products" would only ever be offered
+  // shopping-store templates. Surface the layout(s) suited to this business's
+  // type first (built fresh from storeLayouts, which does include "property"),
+  // then the legacy grid for everyone else / extra choice.
+  const businessType = biz ? getBusinessType(biz as any) : undefined;
+  const suitedLayouts = businessType
+    ? layoutList.filter((l) => l.suitedFor.includes(businessType as any))
+    : [];
+  const templateList = [
+    ...suitedLayouts.map((l) => buildTemplate(l.id, l.defaultPalette)),
+    ...Object.values(storeTemplates),
+  ];
   const storeUrl = businessSlug ? `${window.location.origin}/store/${businessSlug}` : "about:blank";
 
   return (
