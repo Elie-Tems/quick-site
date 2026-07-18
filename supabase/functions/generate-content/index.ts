@@ -18,7 +18,22 @@ serve(async (req) => {
 
   try {
     const rl = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    if (!(await consumeRateLimit(rl, `gencontent:${clientIp(req)}`, 20, 3600))) {
+
+    // Rate-limit by authenticated user_id (not IP) so VPN rotation can't bypass the limit.
+    // Fall back to IP only for truly anonymous callers.
+    let rateLimitKey = `gencontent:ip:${clientIp(req)}`;
+    try {
+      const tok = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+      if (tok) {
+        const part = tok.split(".")[1]?.replace(/-/g, "+").replace(/_/g, "/");
+        if (part) {
+          const payload = JSON.parse(atob(part));
+          if (payload.sub) rateLimitKey = `gencontent:user:${payload.sub}`;
+        }
+      }
+    } catch { /* keep IP-based key */ }
+
+    if (!(await consumeRateLimit(rl, rateLimitKey, 20, 3600))) {
       return new Response(JSON.stringify({ error: "rate_limited" }), {
         status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

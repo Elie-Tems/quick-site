@@ -104,6 +104,21 @@ serve(async (req) => {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      if (!isServiceRole) {
+        // Ownership gate: stop a signed-in user from impersonating another store.
+        const { data: { user } } = await admin0.auth.getUser(authToken);
+        const { data: profile } = user
+          ? await admin0.from("profiles").select("id").eq("user_id", user.id).maybeSingle()
+          : { data: null };
+        const { data: ownsBiz } = profile
+          ? await admin0.from("businesses").select("id").eq("id", businessId).eq("owner_id", profile.id).maybeSingle()
+          : { data: null };
+        if (!ownsBiz) {
+          return new Response(JSON.stringify({ ok: false, error: "not your business" }), {
+            status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
     } else if (type === "orderStatusCustomer") {
       // Customer-facing ORDER STATUS email FROM the merchant, triggered when the
       // merchant marks an order completed/cancelled in the dashboard. Anti-phishing

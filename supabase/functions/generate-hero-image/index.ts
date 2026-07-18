@@ -201,40 +201,27 @@ serve(async (req) => {
         throw new Error('Failed to check credits');
       }
 
-      const totalCredits = creditsData?.credits_remaining || 0;
-      
-      console.log('Credits calculation:', {
-        credits_remaining: creditsData?.credits_remaining,
-        totalCredits: totalCredits,
-        hasEnough: totalCredits >= 1
-      });
-      
-      if (totalCredits < 1) {
+      console.log('Credits check: attempting atomic deduction for', businessId);
+
+      // Atomic deduction via RPC — eliminates the read-check-write race condition.
+      // Returns new credits_remaining, or -1 if insufficient.
+      const { data: newRemaining, error: rpcError } = await supabase
+        .rpc('consume_ai_credit', { p_business_id: businessId });
+
+      if (rpcError) {
+        console.error('consume_ai_credit RPC error:', rpcError);
+        throw new Error('Failed to deduct credits');
+      }
+
+      if (newRemaining === -1) {
         console.log('ERROR: Insufficient credits!');
         return new Response(
           JSON.stringify({ success: false, error: 'Insufficient credits' }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      
-      console.log('Credits check PASSED, proceeding with image generation');
 
-      // Deduct 1 credit
-      const newCreditsRemaining = Math.max(0, (creditsData?.credits_remaining || 0) - 1);
-
-      const { error: updateCreditsError } = await supabase
-        .from('ai_credits')
-        .update({
-          credits_remaining: newCreditsRemaining,
-        })
-        .eq('business_id', businessId);
-
-      if (updateCreditsError) {
-        console.error('Failed to update credits:', updateCreditsError);
-        throw new Error('Failed to deduct credits');
-      }
-
-      console.log(`Credits deducted. Remaining: ${newCreditsRemaining}`);
+      console.log(`Credits deducted atomically. Remaining: ${newRemaining}`);
       creditBusinessId = businessId;
       creditWasDeducted = true;
 
