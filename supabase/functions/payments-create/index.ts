@@ -4,6 +4,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getProvider } from "../_shared/payments/registry.ts";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,8 +36,21 @@ Deno.serve(async (req) => {
     return json({ error: "businessId, items and customer are required" }, 400);
   }
 
+  // Input length guards — unbounded strings end up in emails and DB.
+  if (customer.fullName && customer.fullName.length > 120) return json({ error: "name too long" }, 400);
+  if (body.notes && body.notes.length > 500) return json({ error: "notes too long" }, 400);
+  if (body.deliveryAddress && body.deliveryAddress.length > 300) return json({ error: "address too long" }, 400);
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+  // Rate limit: 10 payment attempts per email per store per hour, 30 per IP per hour.
+  const clientIp = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const [byEmail, byIp] = await Promise.all([
+    consumeRateLimit(admin, `pay:email:${businessId}:${customer.email.toLowerCase()}`, 10, 3600),
+    consumeRateLimit(admin, `pay:ip:${clientIp}`, 30, 3600),
+  ]);
+  if (!byEmail || !byIp) return json({ error: "יותר מדי ניסיונות. נסה שוב מאוחר יותר." }, 429);
 
   const { data: business } = await admin
     .from("businesses")

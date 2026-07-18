@@ -11,6 +11,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getProvider } from "../_shared/payments/registry.ts";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 import { sendLifecycleEmail } from "../_shared/email/lifecycle.ts";
 import { sendViaResend } from "../_shared/email/resend.ts";
 import { renderEmail, h1, p, emailButton, ltr } from "../_shared/email/rtlEmail.ts";
@@ -56,7 +57,18 @@ Deno.serve(async (req) => {
   const startMs = Date.parse(startsAt);
   if (!Number.isFinite(startMs)) return json({ error: "Invalid startsAt" }, 400);
 
+  if (customer.fullName.length > 120) return json({ error: "name too long" }, 400);
+  if (notes && notes.length > 500) return json({ error: "notes too long" }, 400);
+
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+  // Rate limit: 5 bookings per phone per store per hour, 20 per IP per hour.
+  const clientIp = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const [byPhone, byIp] = await Promise.all([
+    consumeRateLimit(admin, `book:phone:${businessId}:${customer.phone}`, 5, 3600),
+    consumeRateLimit(admin, `book:ip:${clientIp}`, 20, 3600),
+  ]);
+  if (!byPhone || !byIp) return json({ error: "יותר מדי ניסיונות. נסה שוב מאוחר יותר." }, 429);
 
   // Validate service (belongs to business, active) and compute price/deposit server-side.
   const { data: service } = await admin

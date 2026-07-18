@@ -33,10 +33,9 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "method" }, 405);
 
   const secret = Deno.env.get("RESEND_WEBHOOK_SECRET") ?? "";
-  if (secret) {
-    const given = new URL(req.url).searchParams.get("secret") ?? "";
-    if (!safeEqual(given, secret)) return json({ error: "unauthorized" }, 401);
-  }
+  if (!secret) return json({ error: "server misconfigured: RESEND_WEBHOOK_SECRET not set" }, 500);
+  const given = new URL(req.url).searchParams.get("secret") ?? "";
+  if (!safeEqual(given, secret)) return json({ error: "unauthorized" }, 401);
 
   let payload: Record<string, unknown> = {};
   try { payload = await req.json(); } catch { return json({ error: "bad body" }, 400); }

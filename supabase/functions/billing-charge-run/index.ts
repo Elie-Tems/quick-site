@@ -21,7 +21,10 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204 });
 
   const cronSecret = Deno.env.get("CRON_SECRET");
-  if (cronSecret && req.headers.get("x-cron-secret") !== cronSecret) {
+  if (!cronSecret) {
+    return new Response(JSON.stringify({ error: "server misconfigured: CRON_SECRET not set" }), { status: 500 });
+  }
+  if (req.headers.get("x-cron-secret") !== cronSecret) {
     return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
   }
 

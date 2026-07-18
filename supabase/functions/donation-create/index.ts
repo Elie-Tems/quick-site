@@ -14,6 +14,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getProvider } from "../_shared/payments/registry.ts";
+import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,8 +47,20 @@ Deno.serve(async (req) => {
     return json({ error: "businessId, donor (name + email/phone) and a positive amount are required" }, 400);
   }
 
+  if (donor.name.length > 120) return json({ error: "name too long" }, 400);
+  if (amount > 1_000_000) return json({ error: "amount exceeds maximum" }, 400);
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+  // Rate limit: 10 donation attempts per email/phone per store per hour, 30 per IP.
+  const clientIp = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const donorKey = donor.email ? donor.email.toLowerCase() : donor.phone!;
+  const [byDonor, byIp] = await Promise.all([
+    consumeRateLimit(admin, `donate:donor:${businessId}:${donorKey}`, 10, 3600),
+    consumeRateLimit(admin, `donate:ip:${clientIp}`, 30, 3600),
+  ]);
+  if (!byDonor || !byIp) return json({ error: "יותר מדי ניסיונות. נסה שוב מאוחר יותר." }, 429);
 
   const { data: business } = await admin
     .from("businesses")
