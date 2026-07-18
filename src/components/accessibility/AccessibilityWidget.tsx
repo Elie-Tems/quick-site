@@ -25,15 +25,16 @@ const AccessibilityWidget = () => {
     setDismissed(true);
   };
 
-  if (dismissed) return null;
-  const { 
-    settings, 
-    setFontSize, 
-    toggleHighContrast, 
-    toggleHighlightLinks, 
+  const {
+    settings,
+    setFontSize,
+    toggleHighContrast,
+    toggleHighlightLinks,
     toggleStopAnimations,
-    resetSettings 
+    resetSettings
   } = useAccessibility();
+
+  if (dismissed) return null;
 
   const fontSizeLabels = ['רגיל', 'גדול', 'גדול מאוד'];
 
