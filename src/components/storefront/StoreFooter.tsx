@@ -5,9 +5,13 @@ interface StoreFooterProps {
   phone?: string;
   email?: string;
   storeSlug?: string;
+  /** Lead/donation-based verticals (realestate, nonprofit, synagogue) never write
+   * to the orders table, so the "my orders" lookup has nothing to show. Default
+   * true to keep existing commerce layouts unchanged. */
+  showOrders?: boolean;
 }
 
-const StoreFooter = ({ businessName, phone, email, storeSlug }: StoreFooterProps) => {
+const StoreFooter = ({ businessName, phone, email, storeSlug, showOrders = true }: StoreFooterProps) => {
   return (
     <footer dir="rtl" className="border-t border-foreground/10 bg-background pb-24 md:pb-0">
       <div className="container px-4 md:px-6">
@@ -63,12 +67,14 @@ const StoreFooter = ({ businessName, phone, email, storeSlug }: StoreFooterProps
                   >
                     מדיניות פרטיות
                   </a>
-                  <a
-                    href={`/store/${storeSlug}/my-orders`}
-                    className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    ההזמנות שלי
-                  </a>
+                  {showOrders && (
+                    <a
+                      href={`/store/${storeSlug}/my-orders`}
+                      className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      ההזמנות שלי
+                    </a>
+                  )}
                 </>
               )}
             </div>

@@ -102,7 +102,7 @@ const PropertyLayout = ({
         <StoreReviews cache={reviewsCache ?? null} primaryColor={primaryColor} />
       </main>
 
-      <StoreFooter businessName={businessName} phone={phone} storeSlug={businessSlug} />
+      <StoreFooter businessName={businessName} phone={phone} storeSlug={businessSlug} showOrders={false} />
 
       {phone && whatsappEnabled && (
         <FloatingWhatsApp phone={phone} message={whatsappMessage} businessName={businessName} />
