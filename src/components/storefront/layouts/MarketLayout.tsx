@@ -17,7 +17,7 @@ import type { StorefrontLayoutProps } from './StorefrontLayout.types';
  */
 const MarketLayout = ({
   businessName, businessSlug, logoUrl, phone, tagline, ctaText, heroTitle,
-  heroImageUrl, primaryColor, promoText, aboutText, whatsappEnabled, whatsappMessage,
+  heroImageUrl, primaryColor, promoText, aboutText, heroBenefits, whatsappEnabled, whatsappMessage,
   showMarqueeBar, businessCategory, reviewsCache, template, products, categories,
   selectedCategoryId, onSelectCategory, banners, campaignPopup, cartItems, favoritesCount,
   onAddToCart, onUpdateQuantity, onRemoveFromCart, onCheckout, onNavigateToCart,
@@ -76,7 +76,14 @@ const MarketLayout = ({
               {heroTitle || businessName}
             </h1>
             {tagline && (
-              <p className="text-sm text-white/80">{tagline}</p>
+              <p className="text-sm text-white/80 mb-3">{tagline}</p>
+            )}
+            {heroBenefits && heroBenefits.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {heroBenefits.slice(0, 4).map((b, i) => (
+                  <span key={i} className="px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm text-white text-xs border border-white/25">{b}</span>
+                ))}
+              </div>
             )}
           </div>
         </section>

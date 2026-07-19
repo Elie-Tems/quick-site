@@ -8,7 +8,7 @@ const FALLBACK_PRODUCT_IMG = "https://images.unsplash.com/photo-1585487000160-6e
 
 export default function BoutiqueLayout(props: StorefrontLayoutProps) {
   const {
-    businessName, tagline, heroTitle, promoText, aboutText,
+    businessName, tagline, heroTitle, promoText, aboutText, heroBenefits,
     logoUrl, phone, products, categories, banners, heroImageUrl,
     cartItems, onAddToCart, onUpdateQuantity, onRemoveFromCart,
     onCheckout, favoriteIds, onToggleFavorite,
@@ -85,7 +85,14 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
                   {heroTitle || businessName}
                 </h1>
                 {(aboutText || tagline) && (
-                  <p className="text-lg text-white/80 mb-7 max-w-sm">{aboutText || tagline}</p>
+                  <p className="text-lg text-white/80 mb-4 max-w-sm">{aboutText || tagline}</p>
+                )}
+                {heroBenefits && heroBenefits.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-7">
+                    {heroBenefits.slice(0, 4).map((b, i) => (
+                      <span key={i} className="px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-sm text-white text-sm border border-white/25">{b}</span>
+                    ))}
+                  </div>
                 )}
                 <button
                   onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })}

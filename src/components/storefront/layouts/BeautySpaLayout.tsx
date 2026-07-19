@@ -14,7 +14,7 @@ const PORTFOLIO_FALLBACK = [
 
 export default function BeautySpaLayout(props: StorefrontLayoutProps) {
   const {
-    businessName, tagline, heroTitle, aboutText, heroImageUrl,
+    businessName, tagline, heroTitle, aboutText, heroImageUrl, promoText,
     logoUrl, phone, products, categories, banners, heroBenefits,
     cartItems, onAddToCart, onUpdateQuantity, onRemoveFromCart, onCheckout,
     selectedCategoryId, onSelectCategory, whatsappEnabled, reviewsCache, customLabels,
@@ -72,6 +72,12 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
           </button>
         </div>
       </header>
+
+      {promoText && (
+        <div className="bg-primary text-primary-foreground text-center py-2.5 px-4 text-sm font-semibold">
+          {promoText}
+        </div>
+      )}
 
       <main>
       {/* HERO */}

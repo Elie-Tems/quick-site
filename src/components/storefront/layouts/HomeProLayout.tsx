@@ -13,14 +13,14 @@ const TRUST_ICONS = [Shield, Award, Clock, ThumbsUp];
 
 export default function HomeProLayout(props: StorefrontLayoutProps) {
   const {
-    businessName, tagline, heroTitle, aboutText, heroImageUrl,
+    businessName, tagline, heroTitle, aboutText, heroImageUrl, promoText,
     logoUrl, phone, products, banners, heroBenefits,
     whatsappEnabled, reviewsCache, onScrollToProducts, customLabels,
   } = props;
 
   const heroImg = heroImageUrl || banners?.[0]?.imageUrl || FALLBACK_HERO;
   const workGallery = banners.slice(1).map(b => b.imageUrl!).filter(Boolean);
-  const displayGallery = workGallery.length > 0 ? workGallery : FALLBACK_WORK;
+  const displayGallery = workGallery;
 
   const trustItems = heroBenefits?.slice(0, 4) || [
     "מחיר שקוף וקבוע מראש",
@@ -56,6 +56,12 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
           )}
         </div>
       </header>
+
+      {promoText && (
+        <div className="bg-primary text-primary-foreground text-center py-2.5 px-4 text-sm font-semibold">
+          {promoText}
+        </div>
+      )}
 
       {/* HERO */}
       <section className="relative h-[80vh] min-h-[500px] overflow-hidden">
@@ -141,7 +147,8 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
         </section>
       )}
 
-      {/* WORK GALLERY */}
+      {/* WORK GALLERY — only shown when the business has uploaded banner images */}
+      {displayGallery.length > 0 && (
       <section className="py-14 px-4 bg-muted/20">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl font-display font-bold mb-2">{customLabels?.galleryTitle || "עבודות אחרונות"}</h2>
@@ -155,6 +162,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
           </div>
         </div>
       </section>
+      )}
 
       {/* ABOUT */}
       {aboutText && (
