@@ -818,7 +818,13 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     heroTitle: business.hero_title as string | null | undefined,
     heroBadge: b?.hero_badge || undefined,
     heroImageUrl: b?.hero_image_url || undefined,
-    heroBenefits: b?.hero_benefits ?? undefined,
+    heroBenefits: (() => {
+      const raw = b?.hero_benefits;
+      if (!raw) return undefined;
+      if (Array.isArray(raw)) return raw as string[];
+      // AI saves benefits as "✦ item1  ✦ item2  ✦ item3" — normalise to array.
+      return String(raw).split("✦").map(s => s.trim()).filter(Boolean);
+    })(),
     primaryColor: business.primary_color || undefined,
     promoText: b?.promo_text || undefined,
     aboutText: b?.about_text || undefined,
