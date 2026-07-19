@@ -9,6 +9,7 @@ import {
   Pill, Sofa, Refrigerator, Scissors, Search, Check, ChevronDown,
 } from "lucide-react";
 import { StepNavigation } from "./StepNavigation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StepCategoryProps {
   data: OnboardingData;
@@ -26,6 +27,7 @@ const categoryIcons: Record<BusinessCategory, React.ComponentType<any>> = {
 };
 
 const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) => {
+  const { t } = useLanguage();
   const selectedLabel = businessCategoryList.find(
     (c) => c.id === data.businessCategory && c.id !== "other",
   )?.label;
@@ -60,16 +62,16 @@ const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) =
       <div className="text-center">
         <div className="flex items-center justify-center gap-2 mb-3">
           <span className="inline-block text-sm font-semibold text-primary px-3 py-1 rounded-full bg-primary/10">
-            שלב 2
+            {t("ob.cat.step2")}
           </span>
           {onBack && (
             <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground hover:text-foreground">
-              חזרה
+              {t("ob.common.back")}
             </Button>
           )}
         </div>
-        <h1 className="text-xl md:text-2xl font-medium text-foreground mb-1.5">באיזה תחום העסק שלך?</h1>
-        <p className="text-sm text-muted-foreground">התחילו להקליד - ונשלים בשבילכם</p>
+        <h1 className="text-xl md:text-2xl font-medium text-foreground mb-1.5">{t("ob.cat.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("ob.cat.hint")}</p>
       </div>
 
       {/* Search with autocomplete */}
@@ -80,7 +82,7 @@ const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) =
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setFocused(true)}
-          placeholder="למשל: פרחים, תכשיטים, מאפייה, חנות בגדים..."
+          placeholder={t("ob.cat.placeholder")}
           className="h-12 rounded-xl pr-11"
           autoComplete="off"
         />
@@ -110,7 +112,7 @@ const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) =
             >
               <Plus className="w-5 h-5 text-muted-foreground shrink-0" />
               <span className="text-sm text-foreground">
-                השתמשו ב: <span className="font-medium">"{q}"</span> (תחום אחר)
+                {t("ob.cat.use")} <span className="font-medium">"{q}"</span> {t("ob.cat.other_field")}
               </span>
             </button>
           </div>
@@ -121,7 +123,7 @@ const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) =
       {isValid && (
         <div className="flex items-center gap-2 text-sm text-primary">
           <Check className="w-4 h-4" />
-          נבחר: <span className="font-medium">{selectionText}</span>
+          {t("ob.cat.selected")} <span className="font-medium">{selectionText}</span>
         </div>
       )}
 
@@ -133,7 +135,7 @@ const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) =
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronDown className={`w-4 h-4 transition-transform ${showAll ? "rotate-180" : ""}`} />
-          {showAll ? "הסתר" : "עיון בכל הקטגוריות"}
+          {showAll ? t("ob.cat.hide") : t("ob.cat.browse_all")}
         </button>
 
         {showAll && (
@@ -165,7 +167,7 @@ const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) =
       {data.businessCategory === "other" && !data.customCategoryName && (
         <Input
           type="text"
-          placeholder="כתבו את תחום העסק..."
+          placeholder={t("ob.cat.custom_placeholder")}
           value={data.customCategoryName || ""}
           onChange={(e) => updateData({ customCategoryName: e.target.value })}
           className="h-12 rounded-xl"
@@ -176,8 +178,8 @@ const StepCategory = ({ data, updateData, onNext, onBack }: StepCategoryProps) =
         onNext={onNext}
         onSaveAndContinue={onNext}
         onBack={onBack}
-        nextLabel="הבא"
-        saveLabel="שמרו והמשיכו"
+        nextLabel={t("ob.common.next")}
+        saveLabel={t("ob.common.save")}
         nextDisabled={!isValid}
         saveDisabled={!isValid}
         showPreview={true}
