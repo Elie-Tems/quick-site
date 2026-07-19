@@ -2,6 +2,7 @@
 import { Check, Info } from "lucide-react";
 import { StepNavigation } from "./StepNavigation";
 import { providerLogo } from "@/lib/partnerLinks";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StepPaymentsProps {
   data: OnboardingData;
@@ -20,6 +21,7 @@ const comingSoon = [
 ];
 
 const StepPayments = ({ data, updateData, onNext, onBack }: StepPaymentsProps) => {
+  const { t } = useLanguage();
   const selected = data.paymentProvider === "payplus";
 
   const handleSkip = () => {
@@ -32,10 +34,10 @@ const StepPayments = ({ data, updateData, onNext, onBack }: StepPaymentsProps) =
       {/* Header */}
       <div className="text-center">
         <span className="inline-block text-sm font-semibold text-primary mb-3 px-3 py-1 rounded-full bg-primary/10">
-          שלב 6
+          {t("ob.pay.step6")}
         </span>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">קבלת תשלומים</h1>
-        <p className="text-muted-foreground">בחרו איך לקבל תשלומים מהלקוחות באתר</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{t("ob.pay.title")}</h1>
+        <p className="text-muted-foreground">{t("ob.pay.subtitle")}</p>
       </div>
 
       {/* PayPlus - the live provider */}
@@ -52,9 +54,9 @@ const StepPayments = ({ data, updateData, onNext, onBack }: StepPaymentsProps) =
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-foreground">PayPlus</h3>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary font-medium">מומלץ</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary font-medium">{t("ob.pay.recommended")}</span>
             </div>
-            <p className="text-sm text-muted-foreground">סליקת אשראי + דף תשלום + חשבוניות אוטומטיות</p>
+            <p className="text-sm text-muted-foreground">{t("ob.pay.payplus_desc")}</p>
           </div>
           {selected && (
             <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0">
@@ -69,15 +71,14 @@ const StepPayments = ({ data, updateData, onNext, onBack }: StepPaymentsProps) =
         <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 flex items-start gap-3">
           <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <p className="text-sm text-foreground">
-            את חיבור חשבון ה-PayPlus נשלים בלוח הניהול מיד אחרי הפרסום - לוקח כ-2 דקות, עם הדרכה צעד-אחר-צעד.
-            עד אז אפשר להמשיך רגיל.
+            {t("ob.pay.next_info")}
           </p>
         </div>
       )}
 
       {/* Coming soon */}
       <div className="p-4 rounded-xl border border-border bg-card">
-        <p className="text-xs font-medium text-muted-foreground mb-2">ספקים נוספים - בקרוב:</p>
+        <p className="text-xs font-medium text-muted-foreground mb-2">{t("ob.pay.coming_soon")}</p>
         <div className="flex flex-wrap gap-2">
           {comingSoon.map((p) => (
             <span key={p.name} className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-surface-1 text-muted-foreground">
@@ -87,7 +88,7 @@ const StepPayments = ({ data, updateData, onNext, onBack }: StepPaymentsProps) =
           ))}
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          מעוניינים בספק מסוים? כתבו לנו ל-<span dir="ltr">office@siango.app</span>
+          {t("ob.pay.want_provider")}<span dir="ltr">office@siango.app</span>
         </p>
       </div>
 
@@ -96,7 +97,7 @@ const StepPayments = ({ data, updateData, onNext, onBack }: StepPaymentsProps) =
         onClick={handleSkip}
         className="w-full text-center text-muted-foreground hover:text-foreground transition-colors text-sm"
       >
-        אוסיף סליקה אחר כך ←
+        {t("ob.pay.skip")}
       </button>
 
       {/* Navigation */}
@@ -104,8 +105,8 @@ const StepPayments = ({ data, updateData, onNext, onBack }: StepPaymentsProps) =
         onNext={onNext}
         onSaveAndContinue={onNext}
         onBack={onBack}
-        nextLabel="הבא"
-        saveLabel="שמרו והמשיכו"
+        nextLabel={t("ob.common.next")}
+        saveLabel={t("ob.common.save")}
         showPreview={true}
         showSave={true}
       />

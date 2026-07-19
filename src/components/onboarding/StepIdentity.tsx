@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { OnboardingData } from "@/pages/Onboarding";
 import { Upload } from "lucide-react";
 import { StepNavigation } from "./StepNavigation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Props {
   data: OnboardingData;
@@ -12,31 +13,15 @@ interface Props {
   onBack?: () => void;
 }
 
+// Per business-type label sets, as i18n keys resolved with t() at render.
 const LABELS = {
-  nonprofit: {
-    heading: "ספרו לנו על העמותה",
-    nameLabel: "שם העמותה / הארגון *",
-    namePlaceholder: "עמותת חלום, ידידי הטבע, קהילה בלב",
-    logoLabel: "לוגו העמותה",
-    reassurance: "אלו רק הפרטים הבסיסיים - תמיד אפשר לערוך ולהרחיב הכל אחר כך מלוח הניהול.",
-  },
-  services: {
-    heading: "ספרו לנו על העסק",
-    nameLabel: "שם העסק *",
-    namePlaceholder: "סלון היופי של מיכל, קליניקת ד\"ר לוי, צילומי אורן",
-    logoLabel: "לוגו",
-    reassurance: "אלו רק הפרטים הבסיסיים - תמיד אפשר לערוך ולהרחיב הכל אחר כך מלוח הניהול שלכם.",
-  },
-  default: {
-    heading: "ספרו לנו על העסק",
-    nameLabel: "שם העסק *",
-    namePlaceholder: "",
-    logoLabel: "לוגו",
-    reassurance: "אלו רק הפרטים הבסיסיים - תמיד אפשר לערוך ולהרחיב הכל אחר כך מלוח הניהול שלכם.",
-  },
+  nonprofit: { headingKey: "ob.id.np.heading", nameKey: "ob.id.np.name", namePhKey: "ob.id.np.name_ph", logoKey: "ob.id.np.logo", reassureKey: "ob.id.np.reassure" },
+  services:  { headingKey: "ob.id.biz.heading", nameKey: "ob.id.biz.name", namePhKey: "ob.id.services.name_ph", logoKey: "ob.id.biz.logo", reassureKey: "ob.id.biz.reassure" },
+  default:   { headingKey: "ob.id.biz.heading", nameKey: "ob.id.biz.name", namePhKey: "", logoKey: "ob.id.biz.logo", reassureKey: "ob.id.biz.reassure" },
 };
 
 const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
+  const { t } = useLanguage();
   const labels = data.businessType === 'nonprofit'
     ? LABELS.nonprofit
     : data.businessType === 'services'
@@ -58,16 +43,16 @@ const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-display font-bold pv-strong mb-1">{labels.heading}</h2>
-        <p className="text-sm pv-muted">פרטים בסיסיים — אפשר לשנות בכל עת</p>
+        <h2 className="text-2xl font-display font-bold pv-strong mb-1">{t(labels.headingKey)}</h2>
+        <p className="text-sm pv-muted">{t("ob.id.subtitle")}</p>
       </div>
 
       {/* Business name */}
       <div className="space-y-2">
-        <Label htmlFor="businessName" className="font-medium pv-text">{labels.nameLabel}</Label>
+        <Label htmlFor="businessName" className="font-medium pv-text">{t(labels.nameKey)}</Label>
         <Input
           id="businessName"
-          placeholder={labels.namePlaceholder}
+          placeholder={labels.namePhKey ? t(labels.namePhKey) : ""}
           value={data.businessName}
           onChange={e => updateData({ businessName: e.target.value })}
           className="h-12 text-base rounded-xl bg-[var(--pv-surface2)] border-[var(--pv-border)] text-[var(--pv-text)] placeholder:text-[var(--pv-faint)] focus-visible:ring-primary/40"
@@ -76,7 +61,7 @@ const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
 
       {/* Logo — optional */}
       <div className="space-y-2">
-        <Label className="font-medium pv-text">{labels.logoLabel}</Label>
+        <Label className="font-medium pv-text">{t(labels.logoKey)}</Label>
         <label className="flex items-center gap-4 p-4 rounded-xl border border-dashed cursor-pointer transition-colors hover:border-primary/50" style={{ borderColor: "var(--pv-border)", background: "var(--pv-surface2)" }}>
           {logoPreview ? (
             <img src={logoPreview} alt="logo" className="w-16 h-16 object-contain rounded-lg" />
@@ -86,7 +71,7 @@ const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
             </div>
           )}
           <div>
-            <p className="text-sm font-medium pv-text">{logoPreview ? "לוגו הועלה" : "העלו לוגו"}</p>
+            <p className="text-sm font-medium pv-text">{logoPreview ? t("ob.id.logo_uploaded") : t("ob.id.logo_upload")}</p>
             <p className="text-xs pv-faint">PNG, JPG, SVG</p>
           </div>
           <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
@@ -96,11 +81,11 @@ const StepIdentity = ({ data, updateData, onNext, onBack }: Props) => {
       <StepNavigation
         onNext={onNext}
         onBack={onBack}
-        nextLabel="הבא"
+        nextLabel={t("ob.common.next")}
         nextDisabled={!isValid}
         showPreview={true}
         showSave={false}
-        reassurance={labels.reassurance}
+        reassurance={t(labels.reassureKey)}
       />
     </div>
   );
