@@ -16,6 +16,7 @@ import { BusinessCategory, getCategoryConfig } from "@/lib/categoryConfig";
 import { BusinessType } from "@/components/onboarding/StepBusinessType";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useMyBusiness } from "@/hooks/useBusiness";
 import { useProducts } from "@/hooks/useProducts";
 import { useBanners } from "@/hooks/useBanners";
@@ -51,20 +52,22 @@ const SUB_TYPE_LABELS: Record<string, string> = {
   education: 'חינוך / עמותת ילדים', social: 'רווחה חברתית', animals: 'הגנת בעלי חיים',
 };
 
+// labelKey resolves with t() at render so the publish overlay + step bar follow
+// the merchant's language. See ob.shell.* in the translation files.
 const PUBLISH_STAGES = [
-  { at: 0, label: "מקימים את החנות..." },
-  { at: 25, label: "מעלים מוצרים ותמונות..." },
-  { at: 55, label: "מחילים עיצוב וצבעים..." },
-  { at: 80, label: "מפרסמים את האתר..." },
+  { at: 0, labelKey: "ob.shell.publish.building" },
+  { at: 25, labelKey: "ob.shell.publish.uploading" },
+  { at: 55, labelKey: "ob.shell.publish.styling" },
+  { at: 80, labelKey: "ob.shell.publish.publishing" },
 ];
 
 const ONBOARDING_STEPS = [
-  { id: 1, label: "תחום", icon: Store },
-  { id: 2, label: "פרטים", icon: Building2 },
-  { id: 3, label: "תוכן", icon: Wand2 },
-  { id: 4, label: "קשר", icon: Phone },
-  { id: 5, label: "מוצרים", icon: Package },
-  { id: 6, label: "סליידר", icon: Image },
+  { id: 1, labelKey: "ob.shell.step.domain", icon: Store },
+  { id: 2, labelKey: "ob.shell.step.details", icon: Building2 },
+  { id: 3, labelKey: "ob.shell.step.content", icon: Wand2 },
+  { id: 4, labelKey: "ob.shell.step.contact", icon: Phone },
+  { id: 5, labelKey: "ob.shell.step.products", icon: Package },
+  { id: 6, labelKey: "ob.shell.step.slider", icon: Image },
 ];
 
 export type { BusinessCategory };
@@ -144,6 +147,7 @@ export interface OnboardingData {
 const Onboarding = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { data: existingBusiness, isLoading: businessLoading } = useMyBusiness();
   const { data: existingProducts } = useProducts(existingBusiness?.id);
   const { data: existingBanners } = useBanners(existingBusiness?.id);
@@ -386,7 +390,7 @@ const Onboarding = () => {
                 <Rocket className="w-7 h-7 text-primary animate-pulse" />
               </div>
               <h1 className="text-2xl font-medium pv-strong">בונים את האתר שלך...</h1>
-              <p className="text-sm pv-muted">{stage.label}</p>
+              <p className="text-sm pv-muted">{t(stage.labelKey)}</p>
             </div>
             <div className="space-y-4">
               <div className="h-2.5 rounded-full bg-muted overflow-hidden">
@@ -403,7 +407,7 @@ const Onboarding = () => {
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${done ? "bg-primary text-white" : active ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
                         {done ? <Check className="w-3.5 h-3.5" /> : active ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span className="w-1.5 h-1.5 rounded-full bg-current" />}
                       </div>
-                      <span className={active ? "pv-strong font-medium" : done ? "pv-muted" : "pv-faint"}>{s.label}</span>
+                      <span className={active ? "pv-strong font-medium" : done ? "pv-muted" : "pv-faint"}>{t(s.labelKey)}</span>
                     </div>
                   );
                 })}
@@ -520,7 +524,7 @@ const Onboarding = () => {
                       >
                         {done ? <Check className="w-5 h-5" /> : <s.icon className="w-5 h-5" />}
                       </motion.div>
-                      <span className={`text-[11px] md:text-xs text-center ${on ? "text-primary font-medium" : "pv-muted"}`}>{s.label}</span>
+                      <span className={`text-[11px] md:text-xs text-center ${on ? "text-primary font-medium" : "pv-muted"}`}>{t(s.labelKey)}</span>
                     </div>
                   );
                 })}
@@ -556,7 +560,7 @@ const Onboarding = () => {
 
           {currentStep <= 7 && (
             <p className="text-center pv-faint text-xs mt-5">
-              כל הפרטים ניתנים לשינוי בכל עת מלוח הניהול
+              {t("ob.shell.reassure")}
             </p>
           )}
         </div>
