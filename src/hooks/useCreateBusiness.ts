@@ -445,6 +445,7 @@ export function useCreateBusiness() {
         
         if (productError) {
           console.error('Failed to create product:', productError);
+          throw new Error(`יצירת מוצר "${product.name}" נכשלה: ${productError.message}`);
         } else if (insertedProduct?.id && productImageUrl) {
           // Create AI image job entry so product images from onboarding (including generate-product-image)
           // will appear in the dashboard "generated images" gallery
