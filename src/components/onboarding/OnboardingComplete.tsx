@@ -6,6 +6,7 @@ import Confetti from "@/components/ui/confetti";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { gtm } from "@/lib/gtm";
 
 interface OnboardingCompleteProps {
@@ -38,6 +39,7 @@ function hebrewToSlug(name: string): string {
 const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [actualSlug, setActualSlug] = useState<string | null>(null);
   const [actualName, setActualName] = useState<string | null>(null);
 
@@ -85,14 +87,14 @@ const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
     fetchBusinessSlugAndUpdateStatus();
   }, [user]);
 
-  const businessName = data?.businessName || actualName || "\u05d4\u05e2\u05e1\u05e7 \u05e9\u05dc\u05da";
+  const businessName = data?.businessName || actualName || t("oc.business_fallback");
   const rawSlug = actualSlug || (data?.businessName ? hebrewToSlug(data.businessName) : "");
   const businessSlug = rawSlug || "my-store";
 
   // Use internal store route instead of external URL
   const storeUrl = `/store/${businessSlug}`;
   const displayUrl = `https://${import.meta.env.VITE_WEBSITE_URL}/store/${businessSlug}`;
-  const shareText = `\u05d4\u05d9\u05d9! \u05d4\u05ea\u05d7\u05d3\u05e9\u05ea\u05d9 \ud83c\udf89 \u05e4\u05ea\u05d7\u05ea\u05d9 \u05d0\u05ea\u05e8 \u05d7\u05d3\u05e9 \u05dc\u05e2\u05e1\u05e7 \u05e9\u05dc\u05d9 \u2014 \u05e2\u05db\u05e9\u05d9\u05d5 \u05d0\u05e4\u05e9\u05e8 \u05dc\u05e8\u05d0\u05d5\u05ea, \u05dc\u05d1\u05d7\u05d5\u05e8 \u05d5\u05dc\u05d4\u05d6\u05de\u05d9\u05df \u05d9\u05e9\u05e8 \u05de\u05d4\u05d0\u05ea\u05e8 \ud83d\uded2\n\u05de\u05d5\u05d6\u05de\u05e0\u05d9\u05dd \u05dc\u05d1\u05e7\u05e8:\n${displayUrl}`;
+  const shareText = `${t("oc.share_text")}\n${displayUrl}`;
 
   const handleViewStore = () => {
     window.open(displayUrl, '_blank', 'noopener,noreferrer');
@@ -134,15 +136,15 @@ const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
 
         {/* Title */}
         <h1 className="text-3xl font-bold text-foreground mb-3">
-          האתר שלך באוויר! 🎉
+          {t("oc.title")}
         </h1>
         <p className="text-muted-foreground mb-8">
-          מזל טוב! האתר של <span className="font-semibold text-foreground">{businessName}</span> מוכן לקבל לקוחות
+          {t("oc.congrats_pre")} <span className="font-semibold text-foreground">{businessName}</span> {t("oc.congrats_post")}
         </p>
 
         {/* URL Card */}
         <div className="p-6 rounded-2xl bg-surface-1 border border-border mb-8">
-          <p className="text-sm text-muted-foreground mb-2">כתובת האתר שלך</p>
+          <p className="text-sm text-muted-foreground mb-2">{t("oc.url_label")}</p>
           <button 
             onClick={handleViewStore}
             className="text-primary font-medium hover:underline break-all"
@@ -161,9 +163,9 @@ const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
             onClick={handleViewStore}
           >
             <ExternalLink className="w-4 h-4" />
-            צפה באתר שלך
+            {t("oc.view")}
           </Button>
-          
+
           <Button
             variant="outline"
             size="lg"
@@ -171,32 +173,32 @@ const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
             onClick={handleManageSite}
           >
             <Settings className="w-4 h-4" />
-            ניהול האתר
+            {t("oc.manage")}
           </Button>
         </div>
 
         {/* Share row — right after the CTA buttons, while excitement is peak */}
         <div className="mt-5 p-4 rounded-2xl border border-border bg-card">
-          <p className="text-sm font-medium text-foreground mb-3">שתפו את החנות עם הלקוחות הראשונים</p>
+          <p className="text-sm font-medium text-foreground mb-3">{t("oc.share_prompt")}</p>
           <div className="flex items-center gap-2">
             <button
               onClick={handleShareWhatsApp}
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#25d366] text-white font-semibold py-3 px-3 text-sm hover:opacity-90 transition-opacity"
             >
-              <MessageCircle className="w-4 h-4" /> וואטסאפ
+              <MessageCircle className="w-4 h-4" /> {t("oc.whatsapp")}
             </button>
             <button
               onClick={handleShareFacebook}
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1877f2] text-white font-semibold py-3 px-3 text-sm hover:opacity-90 transition-opacity"
             >
-              <Facebook className="w-4 h-4" /> פייסבוק
+              <Facebook className="w-4 h-4" /> {t("oc.facebook")}
             </button>
             <button
               onClick={handleCopyLink}
-              aria-label="העתקת קישור"
+              aria-label={t("oc.copy_aria")}
               className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-xl border border-border py-3 px-4 text-sm font-medium hover:bg-muted transition-colors"
             >
-              <Link2 className="w-4 h-4" /> העתק
+              <Link2 className="w-4 h-4" /> {t("oc.copy")}
             </button>
           </div>
         </div>
