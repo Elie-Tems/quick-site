@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, Upload, Facebook, Instagram, Clock } from "lucid
 import { motion } from "framer-motion";
 import { StepNavigation } from "./StepNavigation";
 import BusinessHoursPicker from "./BusinessHoursPicker";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StepBusinessDetailsProps {
   data: OnboardingData;
@@ -16,6 +17,7 @@ interface StepBusinessDetailsProps {
 }
 
 const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessDetailsProps) => {
+  const { t } = useLanguage();
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,13 +52,13 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
       {/* Header */}
       <div className="text-center">
         <span className="inline-block text-sm font-semibold text-primary mb-3 px-3 py-1 rounded-full bg-primary/10">
-          שלב 5
+          {t("ob.det.step5")}
         </span>
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-          פרטי העסק
+          {t("ob.det.title")}
         </h1>
         <p className="text-muted-foreground">
-          המידע הבסיסי שיופיע באתר שלך
+          {t("ob.det.subtitle")}
         </p>
       </div>
 
@@ -64,13 +66,13 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
       <div className="space-y-6">
         {/* Business Name - High-tech input with dramatic glow */}
         <div className="space-y-3">
-          <Label htmlFor="businessName" className="text-foreground font-semibold text-lg">שם העסק <span className="text-red-500">*</span></Label>
+          <Label htmlFor="businessName" className="text-foreground font-semibold text-lg">{t("ob.det.name")} <span className="text-red-500">*</span></Label>
           <div className="relative group">
             <Input
               id="businessName"
               name="businessName"
               type="text"
-              placeholder="העסק שלי"
+              placeholder={t("ob.det.name_ph")}
               value={data.businessName}
               onChange={handleChange}
               className="h-16 text-xl font-medium bg-[#1a1a1a] border-2 border-[#333] focus:border-primary focus:ring-0 rounded-2xl placeholder:text-muted-foreground/40 transition-all duration-300"
@@ -106,7 +108,7 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
           transition={{ delay: 0.2 }}
           className="space-y-3"
         >
-          <Label className="text-foreground font-semibold text-lg block text-center">לוגו העסק</Label>
+          <Label className="text-foreground font-semibold text-lg block text-center">{t("ob.det.logo")}</Label>
           
           <motion.label 
             className="block cursor-pointer group mx-auto max-w-[200px]"
@@ -156,7 +158,7 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
                   >
                     <Upload className="w-10 h-10 text-primary/70 mb-3" />
                   </motion.div>
-                  <span className="text-sm font-semibold text-muted-foreground">העלו לוגו</span>
+                  <span className="text-sm font-semibold text-muted-foreground">{t("ob.id.logo_upload")}</span>
                   <span className="text-xs text-muted-foreground/50 mt-1">PNG, JPG, SVG</span>
                 </>
               )}
@@ -177,13 +179,13 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
             />
           </motion.label>
           <p className="text-xs text-muted-foreground text-center">
-            הלוגו יופיע בכותרת האתר ובאזורים נוספים
+            {t("ob.det.logo_hint")}
           </p>
         </motion.div>
 
         {/* Phone */}
         <div className="space-y-2">
-          <Label htmlFor="phone" className="text-foreground font-medium">טלפון</Label>
+          <Label htmlFor="phone" className="text-foreground font-medium">{t("ob.contact.phone")}</Label>
           <Input
             id="phone"
             name="phone"
@@ -201,12 +203,12 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
 
         {/* Address */}
         <div className="space-y-2">
-          <Label htmlFor="address" className="text-foreground font-medium">כתובת</Label>
+          <Label htmlFor="address" className="text-foreground font-medium">{t("ob.contact.address")}</Label>
           <Input
             id="address"
             name="address"
             type="text"
-            placeholder="רחוב הראשי 1, תל אביב"
+            placeholder={t("ob.contact.address_placeholder")}
             value={data.address}
             onChange={handleChange}
             className="h-12 bg-[#1a1a1a] border-[#333] focus:border-primary focus:ring-primary/20 rounded-xl"
@@ -219,7 +221,7 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
         {/* Email */}
         <div className="space-y-2">
           <Label htmlFor="orderEmail" className="text-foreground font-medium">
-            אימייל לקבלת הזמנות ותגובות <span className="text-red-500">*</span>
+            {t("ob.det.email")} <span className="text-red-500">*</span>
           </Label>
           <Input
             id="orderEmail"
@@ -236,7 +238,7 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
             required
           />
           <p className="text-xs text-muted-foreground">
-            לכאן ישלחו ההזמנות והודעות מלקוחות
+            {t("ob.det.email_hint")}
           </p>
         </div>
 
@@ -244,7 +246,7 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
         <div className="space-y-2">
           <Label htmlFor="businessHours" className="text-foreground font-medium flex items-center gap-2">
             <Clock className="w-4 h-4 text-muted-foreground" />
-            שעות פעילות
+            {t("ob.det.hours")}
           </Label>
           <BusinessHoursPicker
             value={data.businessHours}
@@ -254,9 +256,9 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
 
         {/* Religious Audience Question */}
         <div className="space-y-3">
-          <Label className="text-foreground font-medium text-lg">קהל יעד</Label>
+          <Label className="text-foreground font-medium text-lg">{t("ob.det.audience")}</Label>
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">האם האתר מיועד לקהל שומרי מסורת?</p>
+            <p className="text-sm text-muted-foreground">{t("ob.det.religious_q")}</p>
             <div className="flex gap-3">
               <Button
                 type="button"
@@ -264,7 +266,7 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
                 onClick={() => updateData({ isReligiousAudience: true })}
                 className="flex-1 h-12"
               >
-                כן
+                {t("ob.det.yes")}
               </Button>
               <Button
                 type="button"
@@ -272,18 +274,18 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
                 onClick={() => updateData({ isReligiousAudience: false })}
                 className="flex-1 h-12"
               >
-                לא
+                {t("ob.det.no")}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              מידע זה יעזור לנו להתאים את האתר לקהל היעד שלך
+              {t("ob.det.religious_hint")}
             </p>
           </div>
         </div>
 
         {/* Social Links */}
         <div className="space-y-3">
-          <Label className="text-foreground font-medium">רשתות חברתיות</Label>
+          <Label className="text-foreground font-medium">{t("ob.det.social")}</Label>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Facebook */}
@@ -293,7 +295,7 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
               </div>
               <Input
                 type="url"
-                placeholder="קישור לפייסבוק"
+                placeholder={t("ob.det.fb_ph")}
                 value={data.socialLinks?.facebook || ""}
                 onChange={(e) => handleSocialLinkChange('facebook', e.target.value)}
                 className="h-12 pr-11 bg-[#1a1a1a] border-[#333] focus:border-primary focus:ring-primary/20 rounded-xl"
@@ -311,7 +313,7 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
               </div>
               <Input
                 type="url"
-                placeholder="קישור לאינסטגרם"
+                placeholder={t("ob.det.ig_ph")}
                 value={data.socialLinks?.instagram || ""}
                 onChange={(e) => handleSocialLinkChange('instagram', e.target.value)}
                 className="h-12 pr-11 bg-[#1a1a1a] border-[#333] focus:border-primary focus:ring-primary/20 rounded-xl"
@@ -323,7 +325,7 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            הקישורים יופיעו בפוטר של האתר
+            {t("ob.det.social_hint")}
           </p>
         </div>
       </div>
@@ -333,8 +335,8 @@ const StepBusinessDetails = ({ data, updateData, onNext, onBack }: StepBusinessD
         onNext={onNext}
         onSaveAndContinue={onNext}
         onBack={onBack}
-        nextLabel="הבא"
-        saveLabel="שמרו והמשיכו"
+        nextLabel={t("ob.common.next")}
+        saveLabel={t("ob.common.save")}
         nextDisabled={!isValid}
         saveDisabled={!isValid}
         showPreview={true}
