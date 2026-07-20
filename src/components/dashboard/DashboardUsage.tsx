@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Gauge, Image as ImageIcon, AlertTriangle, CreditCard, Zap } from "lucide-react";
 import { AI_CREDIT_PACKAGES } from "@/lib/pricingConfig";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
  * Usage & AI — lets the merchant see how much of the paid AI (image generation)
@@ -17,6 +18,7 @@ interface Props {
 }
 
 const DashboardUsage = ({ businessId }: Props) => {
+  const { t } = useLanguage();
   const { data: credits } = useQuery({
     queryKey: ["ai-credits", businessId],
     enabled: !!businessId,
@@ -63,9 +65,9 @@ const DashboardUsage = ({ businessId }: Props) => {
     <div className="container max-w-4xl mx-auto px-4 py-6 space-y-6" dir="rtl">
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Gauge className="w-6 h-6 text-primary" /> שימוש ו-AI
+          <Gauge className="w-6 h-6 text-primary" /> {t("dash.usage.page_title")}
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">מעקב אחר השימוש שלך בכלי ה-AI בתשלום.</p>
+        <p className="text-muted-foreground text-sm mt-1">{t("dash.usage.page_subtitle")}</p>
       </div>
 
       {/* Low credits alert */}
@@ -74,10 +76,12 @@ const DashboardUsage = ({ businessId }: Props) => {
           <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
           <div className="flex-1">
             <p className="font-semibold text-amber-700 dark:text-amber-400">
-              {remaining <= 0 ? "נגמרו הקרדיטים ליצירת תמונות AI" : `נשארו רק ${remaining} קרדיטים`}
+              {remaining <= 0
+                ? t("dash.usage.credits_depleted")
+                : `${t("dash.usage.low_credits_prefix")} ${remaining} ${t("dash.usage.low_credits_suffix")}`}
             </p>
             <p className="text-sm text-amber-700/80 dark:text-amber-400/80 mt-0.5">
-              טענו קרדיטים נוספים כדי להמשיך ליצור ולשדרג תמונות מוצר.
+              {t("dash.usage.low_alert_desc")}
             </p>
           </div>
         </div>
@@ -87,21 +91,21 @@ const DashboardUsage = ({ businessId }: Props) => {
       <div className="rounded-2xl border border-border bg-card p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-foreground font-semibold">
-            <Zap className="w-5 h-5 text-primary" /> קרדיטים ליצירת תמונות AI
+            <Zap className="w-5 h-5 text-primary" /> {t("dash.usage.credits_card_title")}
           </div>
           {creditsLink ? (
             <Link
               to={creditsLink}
               className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-white text-sm font-medium px-3.5 py-2 hover:brightness-105"
             >
-              <CreditCard className="w-4 h-4" /> טען קרדיטים
+              <CreditCard className="w-4 h-4" /> {t("dash.usage.load_credits_button")}
             </Link>
           ) : null}
         </div>
 
         <div className="flex items-end gap-2 mb-3">
           <span className="text-4xl font-extrabold text-foreground">{remaining}</span>
-          <span className="text-muted-foreground mb-1">קרדיטים נותרו</span>
+          <span className="text-muted-foreground mb-1">{t("dash.usage.credits_remaining_label")}</span>
         </div>
 
         <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden">
@@ -111,21 +115,21 @@ const DashboardUsage = ({ businessId }: Props) => {
           />
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          השתמשת ב-{used} מתוך {total} קרדיטים ({FREE_CREDITS} חינם{purchased > 0 ? ` + ${purchased} שנרכשו` : ""}).
+          {t("dash.usage.summary_used_prefix")}{used} {t("dash.usage.summary_out_of")} {total} {t("dash.usage.summary_credits_word")} ({FREE_CREDITS} {t("dash.usage.summary_free_word")}{purchased > 0 ? ` + ${purchased} ${t("dash.usage.summary_purchased_word")}` : ""}).
         </p>
       </div>
 
       {/* Stats */}
       <div className="rounded-2xl border border-border bg-card p-5">
         <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-          <ImageIcon className="w-4 h-4" /> תמונות AI שנוצרו
+          <ImageIcon className="w-4 h-4" /> {t("dash.usage.images_generated_label")}
         </div>
         <div className="text-2xl font-bold text-foreground">{imagesCount ?? 0}</div>
-        <p className="text-xs text-muted-foreground mt-1">כל יצירה/שדרוג תמונה מנכה קרדיט אחד.</p>
+        <p className="text-xs text-muted-foreground mt-1">{t("dash.usage.credit_per_image_note")}</p>
       </div>
 
       <p className="text-xs text-muted-foreground text-center">
-        אם תהיה בעיה בתשלום או בחשבון - תקפוץ לך התראה בראש הדשבורד, ונעדכן אותך גם במייל.
+        {t("dash.usage.footer_note")}
       </p>
     </div>
   );

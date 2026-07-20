@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AboutEditorProps {
   businessId: string;
@@ -45,6 +46,12 @@ interface SpeechRecognitionInstance extends EventTarget {
   onstart: (() => void) | null;
 }
 
+const getWritingStyles = (t: (key: string) => string) => ({
+  friendly: { label: t("dash.about.style_friendly_label"), description: t("dash.about.style_friendly_desc") },
+  professional: { label: t("dash.about.style_professional_label"), description: t("dash.about.style_professional_desc") },
+  formal: { label: t("dash.about.style_formal_label"), description: t("dash.about.style_formal_desc") },
+});
+
 const AboutEditor = ({
   businessId,
   businessName,
@@ -53,6 +60,7 @@ const AboutEditor = ({
   onSave,
   disableInternalSave,
 }: AboutEditorProps) => {
+  const { t } = useLanguage();
   const [rawText, setRawText] = useState("");
   const [generatedText, setGeneratedText] = useState(currentAboutText || "");
   const [isRecording, setIsRecording] = useState(false);
@@ -65,12 +73,8 @@ const AboutEditor = ({
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [writingStyle, setWritingStyle] = useState<"friendly" | "professional" | "formal">("friendly");
 
-  const writingStyles = {
-    friendly: { label: "ידידותי 😊", description: "טון חם ונגיש, כמו שיחה עם חבר" },
-    professional: { label: "מקצועי 💼", description: "מאוזן ומכובד, מדגיש מומחיות" },
-    formal: { label: "רשמי 🎩", description: "פורמלי ויוקרתי, לעסקים בכירים" },
-  };
-  
+  const writingStyles = getWritingStyles(t);
+
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const recordingTimerRef = useRef<number | null>(null);
 
@@ -100,8 +104,8 @@ const AboutEditor = ({
     
     if (!SpeechRecognition) {
       toast({
-        title: "תמלול קולי לא נתמך",
-        description: "הדפדפן שלך לא תומך בתמלול קולי. נסה Chrome או Edge",
+        title: t("dash.about.speech_not_supported_title"),
+        description: t("dash.about.speech_not_supported_desc"),
         variant: "destructive",
       });
       return;
@@ -124,8 +128,8 @@ const AboutEditor = ({
         }, 1000);
 
         toast({
-          title: "מקשיב... 🎙️",
-          description: "דבר על העסק שלך - הטקסט יופיע בזמן אמת",
+          title: t("dash.about.listening_title"),
+          description: t("dash.about.listening_desc"),
         });
       };
 
@@ -162,14 +166,14 @@ const AboutEditor = ({
         
         if (event.error === "not-allowed") {
           toast({
-            title: "אין גישה למיקרופון",
-            description: "אנא אשר גישה למיקרופון בדפדפן",
+            title: t("dash.about.mic_access_denied_title"),
+            description: t("dash.about.mic_access_denied_desc"),
             variant: "destructive",
           });
         } else if (event.error !== "aborted") {
           toast({
-            title: "שגיאה בתמלול",
-            description: "נסה שוב או כתוב ידנית",
+            title: t("dash.about.transcription_error_title"),
+            description: t("dash.about.retry_or_write_manually"),
             variant: "destructive",
           });
         }
@@ -193,8 +197,8 @@ const AboutEditor = ({
     } catch (error) {
       console.error("Failed to start speech recognition:", error);
       toast({
-        title: "לא ניתן להתחיל הקלטה",
-        description: "נסה שוב או כתוב ידנית",
+        title: t("dash.about.cannot_start_recording_title"),
+        description: t("dash.about.retry_or_write_manually"),
         variant: "destructive",
       });
     }
@@ -218,8 +222,8 @@ const AboutEditor = ({
 
     if (rawText.trim()) {
       toast({
-        title: "תמלול הושלם! ✨",
-        description: "תוכלו לערוך את הטקסט וללחוץ על יצירת טקסט מקצועי",
+        title: t("dash.about.transcription_complete_title"),
+        description: t("dash.about.transcription_complete_desc"),
       });
     }
   }, [rawText]);
@@ -237,8 +241,8 @@ const AboutEditor = ({
     
     if (!textToImprove.trim() || textToImprove.trim().length < 10) {
       toast({
-        title: "טקסט קצר מדי",
-        description: "כתבו לפחות כמה מילים לשיפור",
+        title: t("dash.about.text_too_short_title"),
+        description: t("dash.about.text_too_short_improve_desc"),
         variant: "destructive",
       });
       return;
@@ -264,15 +268,15 @@ const AboutEditor = ({
           onSave(data.improvedText);
         }
         toast({
-          title: "הטקסט שופר בהצלחה! ✨",
-          description: "תוכלו לערוך אותו לפני השמירה",
+          title: t("dash.about.improve_success_title"),
+          description: t("dash.about.edit_before_save_desc"),
         });
       }
     } catch (error: any) {
       console.error("Failed to improve about text:", error);
       toast({
-        title: "שגיאה בשיפור הטקסט",
-        description: error.message || "נסה שוב מאוחר יותר",
+        title: t("dash.about.improve_error_title"),
+        description: error.message || t("dash.about.error_retry_later"),
         variant: "destructive",
       });
     } finally {
@@ -284,8 +288,8 @@ const AboutEditor = ({
   const generateAboutText = async () => {
     if (!rawText.trim() || rawText.trim().length < 10) {
       toast({
-        title: "טקסט קצר מדי",
-        description: "כתבו לפחות כמה מילים על העסק שלך",
+        title: t("dash.about.text_too_short_title"),
+        description: t("dash.about.text_too_short_generate_desc"),
         variant: "destructive",
       });
       return;
@@ -311,15 +315,15 @@ const AboutEditor = ({
           onSave(data.aboutText);
         }
         toast({
-          title: "הטקסט נוצר בהצלחה! ✨",
-          description: "תוכלו לערוך אותו לפני השמירה",
+          title: t("dash.about.generate_success_title"),
+          description: t("dash.about.edit_before_save_desc"),
         });
       }
     } catch (error: any) {
       console.error("Failed to generate about text:", error);
       toast({
-        title: "שגיאה ביצירת הטקסט",
-        description: error.message || "נסה שוב מאוחר יותר",
+        title: t("dash.about.generate_error_title"),
+        description: error.message || t("dash.about.error_retry_later"),
         variant: "destructive",
       });
     } finally {
@@ -331,8 +335,8 @@ const AboutEditor = ({
   const handleSave = async () => {
     if (!generatedText.trim()) {
       toast({
-        title: "אין טקסט לשמירה",
-        description: "צרו טקסט אודות קודם",
+        title: t("dash.about.no_text_to_save_title"),
+        description: t("dash.about.no_text_to_save_desc"),
         variant: "destructive",
       });
       return;
@@ -352,16 +356,16 @@ const AboutEditor = ({
 
       onSave(generatedText.trim());
       setIsEditing(false);
-      
+
       toast({
-        title: "נשמר בהצלחה! 🎉",
-        description: "טקסט האודות עודכן" + (disableInternalSave ? "" : " בחנות"),
+        title: t("dash.about.save_success_title"),
+        description: disableInternalSave ? t("dash.about.save_success_desc") : t("dash.about.save_success_desc_store"),
       });
     } catch (error: any) {
       console.error("Failed to save about text:", error);
       toast({
-        title: "שגיאה בשמירה",
-        description: error.message || "נסה שוב",
+        title: t("dash.about.save_error_title"),
+        description: error.message || t("dash.about.error_retry"),
         variant: "destructive",
       });
     } finally {
@@ -374,7 +378,7 @@ const AboutEditor = ({
       {/* Step 1: tell us about the business (type or dictate) + style + generate */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label>ספר לנו על העסק שלך</Label>
+          <Label>{t("dash.about.tell_us_label")}</Label>
           {isSpeechRecognitionSupported && (
             <Button
               type="button"
@@ -383,7 +387,7 @@ const AboutEditor = ({
               onClick={isRecording ? stopRecording : startRecording}
               className="gap-2"
             >
-              {isRecording ? <><MicOff className="h-4 w-4" /> עצור ({formatDuration(recordingDuration)})</> : <><Mic className="h-4 w-4" /> דבר</>}
+              {isRecording ? <><MicOff className="h-4 w-4" /> {t("dash.about.stop_button")} ({formatDuration(recordingDuration)})</> : <><Mic className="h-4 w-4" /> {t("dash.about.record_button")}</>}
             </Button>
           )}
         </div>
@@ -395,7 +399,7 @@ const AboutEditor = ({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive" />
               </span>
-              מקליט ומתמלל בזמן אמת...
+              {t("dash.about.recording_live")}
             </div>
             <Progress value={(recordingDuration % 60) * 1.67} className="h-1" />
           </div>
@@ -404,7 +408,7 @@ const AboutEditor = ({
         <Textarea
           value={rawText + (interimTranscript ? ` ${interimTranscript}` : "")}
           onChange={(e) => { if (!isRecording) setRawText(e.target.value); }}
-          placeholder="כתבו בקצרה - מה אתם עושים, מה מייחד אתכם, למה לקוחות בוחרים בכם... או לחץ על המיקרופון ודבר 🎙️"
+          placeholder={t("dash.about.raw_text_placeholder")}
           rows={4}
           className={isRecording ? "border-destructive ring-1 ring-destructive/50" : ""}
           readOnly={isRecording}
@@ -427,14 +431,14 @@ const AboutEditor = ({
         </div>
 
         <Button type="button" onClick={generateAboutText} disabled={isGenerating || !rawText.trim()} className="w-full gap-2">
-          {isGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> יוצר טקסט...</> : <><Wand2 className="h-4 w-4" /> צור טקסט עם AI</>}
+          {isGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("dash.about.generating")}</> : <><Wand2 className="h-4 w-4" /> {t("dash.about.generate_button")}</>}
         </Button>
       </div>
 
       {/* Step 2: the generated text - editable, with "improve again" */}
       {generatedText && (
         <div className="space-y-2 pt-4 border-t border-border">
-          <Label>הטקסט שנוצר (אפשר לערוך)</Label>
+          <Label>{t("dash.about.generated_label")}</Label>
           <Textarea
             value={generatedText}
             onChange={(e) => {
@@ -445,7 +449,7 @@ const AboutEditor = ({
             rows={5}
           />
           <Button type="button" variant="outline" size="sm" onClick={improveAboutText} disabled={isImproving} className="gap-2">
-            {isImproving ? <><Loader2 className="h-4 w-4 animate-spin" /> משפר...</> : <><Wand2 className="h-4 w-4" /> שפר שוב</>}
+            {isImproving ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("dash.about.improving")}</> : <><Wand2 className="h-4 w-4" /> {t("dash.about.improve_again_button")}</>}
           </Button>
         </div>
       )}

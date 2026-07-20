@@ -2,6 +2,7 @@ import { CalendarDays, Check, X, Palmtree } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Appointment } from "@/hooks/useBooking";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TodayAppointmentsCardProps {
   appointments: Appointment[];
@@ -11,13 +12,15 @@ interface TodayAppointmentsCardProps {
   onNavigateToCalendar: () => void;
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  confirmed: "מאושר",
-  pending: "ממתין",
-  completed: "הסתיים",
-  cancelled: "בוטל",
-  no_show: "לא הגיע",
-};
+function getStatusLabels(t: (key: string) => string): Record<string, string> {
+  return {
+    confirmed: t("dash.todayappts.status_confirmed"),
+    pending: t("dash.todayappts.status_pending"),
+    completed: t("dash.todayappts.status_completed"),
+    cancelled: t("dash.todayappts.status_cancelled"),
+    no_show: t("dash.todayappts.status_no_show"),
+  };
+}
 
 function initials(name: string) {
   return name
@@ -51,6 +54,8 @@ export function TodayAppointmentsCard({
   onCancel,
   onNavigateToCalendar,
 }: TodayAppointmentsCardProps) {
+  const { t } = useLanguage();
+  const STATUS_LABELS = getStatusLabels(t);
   const active = appointments.filter((a) => a.status !== "cancelled");
   const pendingCount = active.filter((a) => a.status === "pending").length;
 
@@ -60,13 +65,17 @@ export function TodayAppointmentsCard({
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
         <div className="flex items-center gap-2">
           <CalendarDays className="w-4 h-4 text-primary" />
-          <span className="font-semibold text-foreground text-sm">היום, {todayDayName()}</span>
+          <span className="font-semibold text-foreground text-sm">
+            {t("dash.todayappts.today_prefix")} {todayDayName()}
+          </span>
         </div>
         {!isLoading && active.length > 0 && (
           <span className="text-xs font-medium bg-primary/10 text-primary rounded-full px-2.5 py-0.5">
-            {active.length} תורים
+            {active.length} {t("dash.todayappts.appts_count_suffix")}
             {pendingCount > 0 && (
-              <span className="mr-1 text-amber-600">· {pendingCount} ממתין</span>
+              <span className="mr-1 text-amber-600">
+                · {pendingCount} {t("dash.todayappts.pending_suffix")}
+              </span>
             )}
           </span>
         )}
@@ -90,7 +99,7 @@ export function TodayAppointmentsCard({
       ) : active.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 text-center gap-2">
           <Palmtree className="w-8 h-8 text-muted-foreground/50" />
-          <p className="text-sm text-muted-foreground">אין תורים היום — יום פנוי</p>
+          <p className="text-sm text-muted-foreground">{t("dash.todayappts.empty_state")}</p>
         </div>
       ) : (
         <div className="divide-y divide-border">
@@ -118,7 +127,7 @@ export function TodayAppointmentsCard({
                       (new Date(appt.ends_at).getTime() - new Date(appt.starts_at).getTime()) /
                         60000
                     )}{" "}
-                    דק'
+                    {t("dash.todayappts.minutes_suffix")}
                   </p>
                 </div>
                 {isPending ? (
@@ -129,7 +138,7 @@ export function TodayAppointmentsCard({
                       className="h-7 px-2.5 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400"
                       onClick={() => onConfirm(appt.id)}
                     >
-                      <Check className="w-3 h-3 ml-1" /> אשר
+                      <Check className="w-3 h-3 ml-1" /> {t("dash.todayappts.confirm_button")}
                     </Button>
                     <Button
                       size="sm"
@@ -166,7 +175,7 @@ export function TodayAppointmentsCard({
           className="text-xs text-primary hover:underline flex items-center gap-1"
         >
           <CalendarDays className="w-3.5 h-3.5" />
-          לכל היומן
+          {t("dash.todayappts.footer_calendar_link")}
         </button>
       </div>
     </div>

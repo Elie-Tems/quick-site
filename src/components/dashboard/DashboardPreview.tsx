@@ -9,6 +9,7 @@ import StoreFooter from "@/components/storefront/StoreFooter";
 import type { BusinessSettings } from "./DashboardSettings";
 import { Product } from "./DashboardProducts";
 import { Banner } from "./DashboardBanners";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DashboardPreviewProps {
   settings: BusinessSettings;
@@ -21,11 +22,13 @@ interface DashboardPreviewProps {
 
 type DeviceType = "desktop" | "tablet" | "mobile";
 
-const deviceSizes: Record<DeviceType, { width: string; maxWidth: string; label: string }> = {
-  desktop: { width: "100%", maxWidth: "1400px", label: "מחשב" },
-  tablet: { width: "768px", maxWidth: "100%", label: "טאבלט" },
-  mobile: { width: "375px", maxWidth: "100%", label: "נייד" },
-};
+const getDeviceSizes = (
+  t: (key: string) => string
+): Record<DeviceType, { width: string; maxWidth: string; label: string }> => ({
+  desktop: { width: "100%", maxWidth: "1400px", label: t("dash.preview.device_desktop") },
+  tablet: { width: "768px", maxWidth: "100%", label: t("dash.preview.device_tablet") },
+  mobile: { width: "375px", maxWidth: "100%", label: t("dash.preview.device_mobile") },
+});
 
 // Helper to convert hex to HSL for CSS variables
 function hexToHSL(hex: string): { h: number; s: number; l: number } {
@@ -54,8 +57,10 @@ function hexToHSL(hex: string): { h: number; s: number; l: number } {
 }
 
 const DashboardPreview = ({ settings, products, banners, categories, storeSlug }: DashboardPreviewProps) => {
+  const { t } = useLanguage();
   const [device, setDevice] = useState<DeviceType>("tablet");
   const [refreshKey, setRefreshKey] = useState(0);
+  const deviceSizes = useMemo(() => getDeviceSizes(t), [t]);
 
   const useIframe = (device === "mobile" || device === "tablet") && Boolean(storeSlug);
   const iframeSrc = typeof window !== "undefined" && storeSlug ? `${window.location.origin}/store/${storeSlug}?preview=true` : "";
@@ -107,9 +112,9 @@ const DashboardPreview = ({ settings, products, banners, categories, storeSlug }
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">תצוגה מקדימה</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("dash.preview.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            צפה בחנות שלך כפי שהלקוחות יראו אותה
+            {t("dash.preview.subtitle")}
           </p>
         </div>
         
@@ -124,7 +129,7 @@ const DashboardPreview = ({ settings, products, banners, categories, storeSlug }
                   ? "bg-background shadow-sm text-foreground" 
                   : "text-muted-foreground hover:text-foreground"
               )}
-              title="מחשב"
+              title={t("dash.preview.device_desktop")}
             >
               <Monitor className="h-4 w-4" />
             </button>
@@ -132,11 +137,11 @@ const DashboardPreview = ({ settings, products, banners, categories, storeSlug }
               onClick={() => setDevice("tablet")}
               className={cn(
                 "p-2 rounded-md transition-colors",
-                device === "tablet" 
-                  ? "bg-background shadow-sm text-foreground" 
+                device === "tablet"
+                  ? "bg-background shadow-sm text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               )}
-              title="טאבלט"
+              title={t("dash.preview.device_tablet")}
             >
               <Tablet className="h-4 w-4" />
             </button>
@@ -144,11 +149,11 @@ const DashboardPreview = ({ settings, products, banners, categories, storeSlug }
               onClick={() => setDevice("mobile")}
               className={cn(
                 "p-2 rounded-md transition-colors",
-                device === "mobile" 
-                  ? "bg-background shadow-sm text-foreground" 
+                device === "mobile"
+                  ? "bg-background shadow-sm text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               )}
-              title="נייד"
+              title={t("dash.preview.device_mobile")}
             >
               <Smartphone className="h-4 w-4" />
             </button>
@@ -161,7 +166,7 @@ const DashboardPreview = ({ settings, products, banners, categories, storeSlug }
             className="gap-2"
           >
             <RefreshCw className="h-4 w-4" />
-            רענן
+            {t("dash.preview.refresh_button")}
           </Button>
           
           <Button
@@ -176,7 +181,7 @@ const DashboardPreview = ({ settings, products, banners, categories, storeSlug }
               rel="noopener noreferrer"
             >
               <ExternalLink className="h-4 w-4" />
-              פתח בחלון חדש
+              {t("dash.preview.open_new_window")}
             </a>
           </Button>
         </div>
@@ -201,7 +206,7 @@ const DashboardPreview = ({ settings, products, banners, categories, storeSlug }
               }}
             >
               <iframe
-                title={`תצוגה מקדימה - ${deviceSizes[device].label}`}
+                title={`${t("dash.preview.iframe_title")} - ${deviceSizes[device].label}`}
                 src={iframeSrc}
                 className="w-full h-full border-0 block"
                 style={{ minHeight: "600px" }}
@@ -266,7 +271,7 @@ const DashboardPreview = ({ settings, products, banners, categories, storeSlug }
       {/* Info Banner */}
       <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 text-center">
         <p className="text-sm text-muted-foreground">
-          💡 <strong>טיפ:</strong> שינויים שתבצע בהגדרות, מוצרים ובאנרים יופיעו כאן באופן מיידי
+          💡 <strong>{t("dash.preview.tip_label")}</strong> {t("dash.preview.tip_text")}
         </p>
       </div>
     </div>
