@@ -41,6 +41,7 @@ import { AIImageGenerator } from './AIImageGenerator';
 import { useBusinessUsage } from "@/hooks/useBusinessUsage";
 import { ImageUploadBlocker, ImageUploadWarning, ImageUsageMeter } from "./ImageUploadBlocker";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type { Product, ProductCustomField };
 
@@ -56,24 +57,24 @@ interface DashboardProductsProps {
   businessType?: import("@/lib/businessModules").BusinessType;
 }
 
-const SECTION_CONFIG: Record<string, { emoji: string; title: string; description: string; addLabel: string }> = {
-  products:   { emoji: "🛍️", title: "המוצרים שלך",       description: "כל מה שהחנות שלך מוכרת",          addLabel: "הוסף מוצר" },
-  services:   { emoji: "⚡",  title: "השירותים שלך",       description: "מה אתה מציע ללקוחות",              addLabel: "הוסף שירות" },
-  realestate: { emoji: "🏘️", title: "הנכסים שלך",         description: "נכסים לקנייה, שכירות, ייזום",     addLabel: "הוסף נכס" },
-  vacation:   { emoji: "🛏️", title: "החדרים והיחידות",    description: "מה האורחים יכולים לבחור",          addLabel: "הוסף חדר / יחידה" },
-  nonprofit:  { emoji: "💙",  title: "הפעילויות שלך",      description: "פעילויות, מיזמים ויעדי גיוס",      addLabel: "הוסף פעילות" },
-  synagogue:  { emoji: "✡️",  title: "הפעילויות שלך",      description: "פעילויות ויעדי גיוס",               addLabel: "הוסף פעילות" },
-};
+const getSectionConfig = (t: (key: string) => string): Record<string, { emoji: string; title: string; description: string; addLabel: string }> => ({
+  products:   { emoji: "🛍️", title: t("dash.products.section_products_title"), description: t("dash.products.section_products_desc"), addLabel: "הוסף מוצר" },
+  services:   { emoji: "⚡",  title: t("dash.products.section_services_title"), description: t("dash.products.section_services_desc"), addLabel: "הוסף שירות" },
+  realestate: { emoji: "🏘️", title: t("dash.products.section_realestate_title"), description: t("dash.products.section_realestate_desc"), addLabel: "הוסף נכס" },
+  vacation:   { emoji: "🛏️", title: t("dash.products.section_vacation_title"), description: t("dash.products.section_vacation_desc"), addLabel: "הוסף חדר / יחידה" },
+  nonprofit:  { emoji: "💙",  title: t("dash.products.section_nonprofit_title"), description: t("dash.products.section_nonprofit_desc"), addLabel: "הוסף פעילות" },
+  synagogue:  { emoji: "✡️",  title: t("dash.products.section_synagogue_title"), description: t("dash.products.section_synagogue_desc"), addLabel: "הוסף פעילות" },
+});
 
 // Per-type label overrides for DashboardProducts
-const PRODUCT_LABELS: Record<import("@/lib/businessModules").BusinessType, { title: string; addBtn: string; addForm: string; editForm: string; emptyFirst: string }> = {
-  products:   { title: 'מוצרים',    addBtn: 'הוסיפו מוצר',    addForm: 'הוספת מוצר',    editForm: 'עריכת מוצר',    emptyFirst: 'הוסיפו מוצר ראשון' },
-  services:   { title: 'שירותים',   addBtn: 'הוסיפו שירות',   addForm: 'הוספת שירות',   editForm: 'עריכת שירות',   emptyFirst: 'הוסיפו שירות ראשון' },
-  vacation:   { title: 'יחידות',    addBtn: 'הוסיפו יחידה',   addForm: 'הוספת יחידה',   editForm: 'עריכת יחידה',   emptyFirst: 'הוסיפו יחידה ראשונה' },
-  nonprofit:  { title: 'פעילויות', addBtn: 'הוסיפו פעילות', addForm: 'הוספת פעילות', editForm: 'עריכת פעילות', emptyFirst: 'הוסיפו פעילות ראשונה' },
-  synagogue:  { title: 'פעילויות', addBtn: 'הוסיפו פעילות', addForm: 'הוספת פעילות', editForm: 'עריכת פעילות', emptyFirst: 'הוסיפו פעילות ראשונה' },
-  realestate: { title: 'נכסים',     addBtn: 'הוסיפו נכס',     addForm: 'הוספת נכס',     editForm: 'עריכת נכס',     emptyFirst: 'הוסיפו נכס ראשון' },
-};
+const getProductLabels = (t: (key: string) => string): Record<import("@/lib/businessModules").BusinessType, { title: string; addBtn: string; addForm: string; editForm: string; emptyFirst: string }> => ({
+  products:   { title: t("dash.products.label_products_title"),   addBtn: t("dash.products.label_products_addbtn"),   addForm: t("dash.products.label_products_addform"),   editForm: t("dash.products.label_products_editform"),   emptyFirst: t("dash.products.label_products_emptyfirst") },
+  services:   { title: t("dash.products.label_services_title"),   addBtn: t("dash.products.label_services_addbtn"),   addForm: t("dash.products.label_services_addform"),   editForm: t("dash.products.label_services_editform"),   emptyFirst: t("dash.products.label_services_emptyfirst") },
+  vacation:   { title: t("dash.products.label_vacation_title"),   addBtn: t("dash.products.label_vacation_addbtn"),   addForm: t("dash.products.label_vacation_addform"),   editForm: t("dash.products.label_vacation_editform"),   emptyFirst: t("dash.products.label_vacation_emptyfirst") },
+  nonprofit:  { title: t("dash.products.label_nonprofit_title"),  addBtn: t("dash.products.label_nonprofit_addbtn"),  addForm: t("dash.products.label_nonprofit_addform"),  editForm: t("dash.products.label_nonprofit_editform"),  emptyFirst: t("dash.products.label_nonprofit_emptyfirst") },
+  synagogue:  { title: t("dash.products.label_synagogue_title"),  addBtn: t("dash.products.label_synagogue_addbtn"),  addForm: t("dash.products.label_synagogue_addform"),  editForm: t("dash.products.label_synagogue_editform"),  emptyFirst: t("dash.products.label_synagogue_emptyfirst") },
+  realestate: { title: t("dash.products.label_realestate_title"), addBtn: t("dash.products.label_realestate_addbtn"), addForm: t("dash.products.label_realestate_addform"), editForm: t("dash.products.label_realestate_editform"), emptyFirst: t("dash.products.label_realestate_emptyfirst") },
+});
 
 const DashboardProducts = ({
   products,
@@ -86,6 +87,9 @@ const DashboardProducts = ({
   onNavigateToCategories,
   businessType = 'products',
 }: DashboardProductsProps) => {
+  const { t } = useLanguage();
+  const PRODUCT_LABELS = getProductLabels(t);
+  const SECTION_CONFIG = getSectionConfig(t);
   const pl = PRODUCT_LABELS[businessType];
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -164,11 +168,11 @@ const DashboardProducts = ({
     const file = e.target.files?.[0];
     if (!file || !businessId) return;
     if (!file.type.startsWith('video/')) {
-      toast.error('נא לבחור קובץ וידאו');
+      toast.error(t("dash.products.toast_select_video_file"));
       return;
     }
     if (file.size > 100 * 1024 * 1024) {
-      toast.error('הוידאו גדול מדי — מקסימום 100MB');
+      toast.error(t("dash.products.toast_video_too_large"));
       return;
     }
     setIsUploadingVideo(true);
@@ -181,9 +185,9 @@ const DashboardProducts = ({
       if (error) throw error;
       const { data } = supabase.storage.from('business-assets').getPublicUrl(filePath);
       setFormData(prev => ({ ...prev, videoUrl: data.publicUrl }));
-      toast.success('הוידאו הועלה בהצלחה');
+      toast.success(t("dash.products.toast_video_uploaded"));
     } catch (err) {
-      toast.error('שגיאה בהעלאת הוידאו');
+      toast.error(t("dash.products.toast_video_upload_error"));
     } finally {
       setIsUploadingVideo(false);
       if (videoInputRef.current) videoInputRef.current.value = '';
@@ -194,7 +198,7 @@ const DashboardProducts = ({
     const file = e.target.files?.[0];
     if (!file || !businessId) return;
     if (!file.type.startsWith('image/')) {
-      toast.error('נא לבחור קובץ תמונה');
+      toast.error(t("dash.products.toast_select_image_file"));
       return;
     }
     if (usageStatus?.imageUploadBlocked) {
@@ -212,11 +216,11 @@ const DashboardProducts = ({
       if (error) throw error;
       const { data } = supabase.storage.from('business-assets').getPublicUrl(filePath);
       setFormData(prev => ({ ...prev, imageUrl: data.publicUrl }));
-      toast.success('התמונה הועלתה');
+      toast.success(t("dash.products.toast_image_uploaded"));
       if (!showAIUpsell) setShowAIUpsell(true);
     } catch (err) {
       console.error(err);
-      toast.error('שגיאה בהעלאת התמונה');
+      toast.error(t("dash.products.toast_image_upload_error"));
     } finally {
       setIsUploadingImage(false);
       if (imageInputRef.current) imageInputRef.current.value = '';
@@ -254,9 +258,9 @@ const DashboardProducts = ({
         uploaded.push(data.publicUrl);
       }
       setAdditionalImages(prev => [...prev, ...uploaded]);
-      toast.success(`${uploaded.length} תמונות נוספו`);
+      toast.success(`${uploaded.length} ${t("dash.products.toast_images_added_suffix")}`);
     } catch {
-      toast.error('שגיאה בהעלאת תמונות');
+      toast.error(t("dash.products.toast_additional_images_error"));
     } finally {
       setIsUploadingAdditional(false);
       if (additionalImagesInputRef.current) additionalImagesInputRef.current.value = '';
@@ -363,7 +367,7 @@ const DashboardProducts = ({
       }));
 
       onProductsChange(updatedProducts);
-      toast.success('סדר המוצרים עודכן');
+      toast.success(t("dash.products.toast_order_updated"));
     }
   };
 
@@ -409,13 +413,13 @@ const DashboardProducts = ({
     const remainingProducts = products.filter(p => !selectedProducts.has(p.id));
     onProductsChange(remainingProducts);
     setSelectedProducts(new Set());
-    toast.success(`נמחקו ${selectedProducts.size} מוצרים`);
+    toast.success(`${t("dash.products.toast_bulk_deleted_prefix")} ${selectedProducts.size} ${t("dash.products.toast_bulk_deleted_suffix")}`);
   };
 
   const confirmDelete = () => {
     if (deleteProductId) {
       onProductsChange(products.filter(p => p.id !== deleteProductId));
-      toast.success('המוצר נמחק בהצלחה');
+      toast.success(t("dash.products.toast_product_deleted"));
       setDeleteProductId(null);
     }
   };
@@ -510,16 +514,16 @@ const DashboardProducts = ({
         }).filter(p => p.name && p.name.trim() !== '');
 
         if (importedProducts.length === 0) {
-          toast.error('לא נמצאו מוצרים בקובץ');
+          toast.error(t("dash.products.toast_no_products_in_file"));
           return;
         }
 
         setImportPreview(importedProducts);
         setShowImportModal(true);
-        toast.success(`נמצאו ${importedProducts.length} מוצרים לייבוא`);
+        toast.success(`${t("dash.products.toast_import_found_prefix")} ${importedProducts.length} ${t("dash.products.toast_import_found_suffix")}`);
       } catch (error) {
         console.error('Error parsing Excel:', error);
-        toast.error('שגיאה בקריאת הקובץ');
+        toast.error(t("dash.products.toast_file_read_error"));
       } finally {
         setIsLoadingExcel(false);
       }
@@ -534,7 +538,7 @@ const DashboardProducts = ({
     onProductsChange([...products, ...importPreview]);
     setImportPreview([]);
     setShowImportModal(false);
-    toast.success(`${importPreview.length} מוצרים יובאו בהצלחה`);
+    toast.success(`${importPreview.length} ${t("dash.products.toast_import_success_suffix")}`);
   };
 
   const cancelImport = () => {
@@ -572,7 +576,7 @@ const DashboardProducts = ({
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'מוצרים');
     XLSX.writeFile(wb, 'תבנית_מוצרים.xlsx');
-    toast.success('התבנית הורדה בהצלחה');
+    toast.success(t("dash.products.toast_template_downloaded"));
   };
 
   // סטטיסטיקות קטגוריות
@@ -618,60 +622,60 @@ const DashboardProducts = ({
             <X className="h-5 w-5" />
           </button>
           <h1 className="text-xl font-bold text-foreground">
-            ייבוא מוצרים מאקסל
+            {t("dash.products.import_title")}
           </h1>
         </div>
 
         <div className="space-y-6">
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-            <h3 className="font-semibold text-foreground mb-3">📋 עמודות נדרשות בקובץ Excel:</h3>
+            <h3 className="font-semibold text-foreground mb-3">{t("dash.products.import_columns_heading")}</h3>
             <div className="space-y-2 text-sm">
               <div className="flex items-start gap-2">
-                <span className="font-medium text-foreground min-w-[120px]">שם ✅</span>
-                <span className="text-muted-foreground">שם המוצר (חובה) - ניתן להשתמש גם ב: name, Name, שם המוצר</span>
+                <span className="font-medium text-foreground min-w-[120px]">{t("dash.products.import_col_name_label")}</span>
+                <span className="text-muted-foreground">{t("dash.products.import_col_name_desc")}</span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="font-medium text-foreground min-w-[120px]">מחיר ✅</span>
-                <span className="text-muted-foreground">מחיר בשקלים (חובה) - ניתן להשתמש גם ב: price, Price</span>
+                <span className="font-medium text-foreground min-w-[120px]">{t("dash.products.import_col_price_label")}</span>
+                <span className="text-muted-foreground">{t("dash.products.import_col_price_desc")}</span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="font-medium text-foreground min-w-[120px]">תיאור</span>
-                <span className="text-muted-foreground">תיאור המוצר (אופציונלי) - ניתן להשתמש גם ב: description, Description</span>
+                <span className="font-medium text-foreground min-w-[120px]">{t("dash.products.import_col_desc_label")}</span>
+                <span className="text-muted-foreground">{t("dash.products.import_col_desc_desc")}</span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="font-medium text-foreground min-w-[120px]">מק״ט</span>
-                <span className="text-muted-foreground">מספר קטלוגי (אופציונלי) - ניתן להשתמש גם ב: sku, SKU, מקט</span>
+                <span className="font-medium text-foreground min-w-[120px]">{t("dash.products.import_col_sku_label")}</span>
+                <span className="text-muted-foreground">{t("dash.products.import_col_sku_desc")}</span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="font-medium text-foreground min-w-[120px]">תמונה</span>
-                <span className="text-muted-foreground">קישור לתמונה (אופציונלי) - ניתן להשתמש גם ב: image, imageUrl, קישור לתמונה</span>
+                <span className="font-medium text-foreground min-w-[120px]">{t("dash.products.import_col_image_label")}</span>
+                <span className="text-muted-foreground">{t("dash.products.import_col_image_desc")}</span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="font-medium text-foreground min-w-[120px]">מספר סידורי</span>
-                <span className="text-muted-foreground">סדר התצוגה (אופציונלי) - ניתן להשתמש גם ב: sort, order, סדר</span>
+                <span className="font-medium text-foreground min-w-[120px]">{t("dash.products.import_col_sort_label")}</span>
+                <span className="text-muted-foreground">{t("dash.products.import_col_sort_desc")}</span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="font-medium text-foreground min-w-[120px]">קטגוריה</span>
-                <span className="text-muted-foreground">שם הקטגוריה (אופציונלי) - ניתן להשתמש גם ב: category, קטגוריה</span>
+                <span className="font-medium text-foreground min-w-[120px]">{t("dash.products.category_label")}</span>
+                <span className="text-muted-foreground">{t("dash.products.import_col_category_desc")}</span>
               </div>
             </div>
           </div>
 
           <div className="bg-muted/30 border border-border rounded-lg p-4">
-            <h3 className="font-semibold text-foreground mb-2">💡 טיפים:</h3>
+            <h3 className="font-semibold text-foreground mb-2">{t("dash.products.import_tips_heading")}</h3>
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-              <li>ניתן להשתמש בשמות עמודות בעברית או באנגלית</li>
-              <li>רק עמודות "שם" ו"מחיר" הן חובה</li>
-              <li>המוצרים שייובאו יתווספו לרשימת המוצרים הקיימת</li>
-              <li>מומלץ להוריד את התבנית לדוגמה כדי לראות את המבנה המדויק</li>
-              <li className="font-semibold text-primary">✨ כל עמודה נוספת (כמו "צבע", "מידה", "חומר") תיובא אוטומטית כשדה מותאם אישית!</li>
+              <li>{t("dash.products.import_tip1")}</li>
+              <li>{t("dash.products.import_tip2")}</li>
+              <li>{t("dash.products.import_tip3")}</li>
+              <li>{t("dash.products.import_tip4")}</li>
+              <li className="font-semibold text-primary">{t("dash.products.import_tip5")}</li>
             </ul>
           </div>
 
           <div className="flex gap-3">
             <Button onClick={downloadTemplate} variant="outline" className="flex-1 gap-2">
               <Download className="h-4 w-4" />
-              הורד תבנית לדוגמה
+              {t("dash.products.download_template_btn")}
             </Button>
             <Button onClick={() => {
               setShowImportInstructions(false);
@@ -680,12 +684,12 @@ const DashboardProducts = ({
               {isLoadingExcel ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  מעלה קובץ...
+                  {t("dash.products.uploading_file")}
                 </>
               ) : (
                 <>
                   <Upload className="h-4 w-4" />
-                  העלה קובץ Excel
+                  {t("dash.products.upload_excel_btn")}
                 </>
               )}
             </Button>
@@ -704,15 +708,15 @@ const DashboardProducts = ({
             <X className="h-5 w-5" />
           </button>
           <h1 className="text-xl font-bold text-foreground">
-            תצוגה מקדימה - ייבוא מאקסל
+            {t("dash.products.import_preview_title")}
           </h1>
         </div>
 
         <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-foreground">נמצאו {importPreview.length} מוצרים</p>
-            <p className="text-sm text-muted-foreground">בדוק את הנתונים לפני האישור. המוצרים יתווספו לרשימה הקיימת.</p>
+            <p className="font-medium text-foreground">{t("dash.products.import_preview_found_prefix")} {importPreview.length} {t("dash.products.import_preview_found_suffix")}</p>
+            <p className="text-sm text-muted-foreground">{t("dash.products.import_preview_desc")}</p>
           </div>
         </div>
 
@@ -727,7 +731,7 @@ const DashboardProducts = ({
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-foreground line-clamp-1">{product.name}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-1">{product.description || 'ללא תיאור'}</p>
+                <p className="text-sm text-muted-foreground line-clamp-1">{product.description || t("dash.products.no_description_fallback")}</p>
               </div>
               <div className="text-primary font-semibold">
                 {formatPrice(product.price)}
@@ -739,10 +743,10 @@ const DashboardProducts = ({
         <div className="flex gap-3">
           <Button onClick={confirmImport} className="flex-1 gap-2">
             <FileSpreadsheet className="h-4 w-4" />
-            ייבא {importPreview.length} מוצרים
+            {t("dash.products.import_confirm_prefix")} {importPreview.length} {t("dash.products.import_confirm_suffix")}
           </Button>
           <Button variant="outline" onClick={cancelImport}>
-            ביטול
+            {t("dash.products.cancel_btn")}
           </Button>
         </div>
       </div>
@@ -779,23 +783,23 @@ const DashboardProducts = ({
             {/* Left side - text fields */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="!text-foreground">שם המוצר *</Label>
+                <Label htmlFor="name" className="!text-foreground">{t("dash.products.field_name_label")}</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="הזן שם מוצר"
+                  placeholder={t("dash.products.field_name_placeholder")}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description" className="!text-foreground">תיאור קצר</Label>
+                <Label htmlFor="description" className="!text-foreground">{t("dash.products.field_description_label")}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="תיאור המוצר"
+                  placeholder={t("dash.products.field_description_placeholder")}
                   rows={3}
                 />
               </div>
@@ -806,7 +810,7 @@ const DashboardProducts = ({
                       field - a room saved without price_per_night silently falls
                       through into the commerce cart/quantity flow instead of the
                       check-in/out booking flow on the storefront. */}
-                  <Label htmlFor="price" className="!text-foreground">מחיר (₪){businessType !== "vacation" && " *"}</Label>
+                  <Label htmlFor="price" className="!text-foreground">{t("dash.products.field_price_label")}{businessType !== "vacation" && " *"}</Label>
                   <Input
                     id="price"
                     type="number"
@@ -821,29 +825,29 @@ const DashboardProducts = ({
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="sku" className="!text-foreground">מק"ט <span className="text-muted-foreground font-normal">(לא חובה)</span></Label>
+                  <Label htmlFor="sku" className="!text-foreground">{t("dash.products.field_sku_label")} <span className="text-muted-foreground font-normal">{t("dash.products.optional_hint_parens")}</span></Label>
                   <Input
                     id="sku"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    placeholder="לדוגמה: 1001"
+                    placeholder={t("dash.products.field_sku_placeholder")}
                     dir="ltr"
                   />
-                  <p className="text-xs text-muted-foreground">מספר קטלוגי לזיהוי המוצר במלאי - אפשר להשאיר ריק.</p>
+                  <p className="text-xs text-muted-foreground">{t("dash.products.field_sku_hint")}</p>
                 </div>
 
                 {categories.length > 0 && (
                   <div className="space-y-2 col-span-2">
-                    <Label className="!text-foreground">קטגוריה</Label>
+                    <Label className="!text-foreground">{t("dash.products.category_label")}</Label>
                     <Select
                       value={formData.categoryId || "none"}
                       onValueChange={(v) => setFormData({ ...formData, categoryId: v === "none" ? "" : v })}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="ללא קטגוריה" />
+                        <SelectValue placeholder={t("dash.products.none_category_label")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">ללא קטגוריה</SelectItem>
+                        <SelectItem value="none">{t("dash.products.none_category_label")}</SelectItem>
                         {categories.map((c) => (
                           <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                         ))}
@@ -856,10 +860,10 @@ const DashboardProducts = ({
               {/* Vacation fields */}
               {businessType === "vacation" && (
                 <div className="space-y-3 rounded-xl border border-border p-4 bg-muted/30">
-                  <p className="text-sm font-medium">פרטי לינה</p>
+                  <p className="text-sm font-medium">{t("dash.products.vacation_details_heading")}</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground">מחיר ללילה (₪) *</label>
+                      <label className="text-xs text-muted-foreground">{t("dash.products.vacation_price_per_night_label")}</label>
                       <Input
                         type="number"
                         value={vacationForm.price_per_night}
@@ -868,7 +872,7 @@ const DashboardProducts = ({
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground">מחיר ל-weekend (₪)</label>
+                      <label className="text-xs text-muted-foreground">{t("dash.products.vacation_price_weekend_label")}</label>
                       <Input
                         type="number"
                         value={vacationForm.price_weekend}
@@ -876,7 +880,7 @@ const DashboardProducts = ({
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground">תפוסה מקסימלית</label>
+                      <label className="text-xs text-muted-foreground">{t("dash.products.vacation_max_guests_label")}</label>
                       <Input
                         type="number"
                         value={vacationForm.max_guests}
@@ -884,7 +888,7 @@ const DashboardProducts = ({
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground">מינימום לילות</label>
+                      <label className="text-xs text-muted-foreground">{t("dash.products.vacation_min_nights_label")}</label>
                       <Input
                         type="number"
                         value={vacationForm.min_nights}
@@ -898,25 +902,25 @@ const DashboardProducts = ({
               {/* Custom Fields Section */}
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
-                  <Label className="!text-foreground">שדות מותאמים אישית</Label>
+                  <Label className="!text-foreground">{t("dash.products.custom_fields_label")}</Label>
                   <Button type="button" variant="ghost" size="sm" onClick={addCustomField} className="gap-1.5">
                     <Plus className="h-4 w-4" />
-                    הוסיפו שדה
+                    {t("dash.products.add_field_btn")}
                   </Button>
                 </div>
-                
+
                 {customFields.length > 0 && (
                   <div className="space-y-2">
                     {customFields.map((field) => (
                       <div key={field.id} className="flex items-center gap-2">
                         <Input
-                          placeholder="שם השדה"
+                          placeholder={t("dash.products.custom_field_name_placeholder")}
                           value={field.fieldName}
                           onChange={(e) => updateCustomField(field.id, 'fieldName', e.target.value)}
                           className="flex-1"
                         />
                         <Input
-                          placeholder="ערך"
+                          placeholder={t("dash.products.custom_field_value_placeholder")}
                           value={field.fieldValue}
                           onChange={(e) => updateCustomField(field.id, 'fieldValue', e.target.value)}
                           className="flex-1"
@@ -937,7 +941,7 @@ const DashboardProducts = ({
                 
                 {customFields.length === 0 && (
                   <p className="text-sm text-muted-foreground">
-                    הוסיפו שדות מותאמים כמו צבע, מידה, חומר וכו'
+                    {t("dash.products.custom_fields_empty_hint")}
                   </p>
                 )}
               </div>
@@ -945,7 +949,7 @@ const DashboardProducts = ({
 
             {/* Right side - image upload */}
             <div className="space-y-2">
-              <Label htmlFor="imageUrl" className="!text-foreground">תמונה</Label>
+              <Label htmlFor="imageUrl" className="!text-foreground">{t("dash.products.image_label")}</Label>
               
               {/* AI Image Generator - Prominent placement */}
               {businessId && (
@@ -957,7 +961,7 @@ const DashboardProducts = ({
                     className="w-full gap-2 border-primary/30 hover:bg-primary/10"
                   >
                     <Wand2 className="h-4 w-4" />
-                    {showAIGenerator ? 'הסתר יצירת תמונה AI' : 'צרו תמונה באמצעות AI'}
+                    {showAIGenerator ? t("dash.products.hide_ai_image_gen_btn") : t("dash.products.create_ai_image_btn")}
                   </Button>
                   
                   {showAIGenerator && (
@@ -966,7 +970,7 @@ const DashboardProducts = ({
                       onImageGenerated={(imageUrl) => {
                         setFormData({ ...formData, imageUrl });
                         setShowAIGenerator(false);
-                        toast.success('התמונה נוספה למוצר');
+                        toast.success(t("dash.products.toast_image_added_to_product"));
                       }}
                       productName={formData.name}
                       productDescription={formData.description}
@@ -996,7 +1000,7 @@ const DashboardProducts = ({
                 accept="image/*"
                 onChange={handleImageFileSelect}
                 className="hidden"
-                aria-label="העלאת תמונה"
+                aria-label={t("dash.products.upload_image_aria")}
               />
               
               <div 
@@ -1035,7 +1039,7 @@ const DashboardProducts = ({
                   <Upload className={`h-8 w-8 mx-auto mb-2 ${usageStatus?.imageUploadBlocked ? 'text-destructive/50' : 'text-muted-foreground'}`} />
                 )}
                 <p className={`text-sm ${usageStatus?.imageUploadBlocked ? 'text-destructive' : 'text-muted-foreground'}`}>
-                  {isUploadingImage ? 'מעלה תמונה...' : usageStatus?.imageUploadBlocked ? 'מכסת התמונות מלאה - לחצו לשדרוג' : 'גרור תמונה או לחצו להעלאה'}
+                  {isUploadingImage ? t("dash.products.uploading_image_text") : usageStatus?.imageUploadBlocked ? t("dash.products.quota_full_text") : t("dash.products.drag_drop_image_text")}
                 </p>
                 <Input
                   id="imageUrl"
@@ -1052,7 +1056,7 @@ const DashboardProducts = ({
                       setShowAIUpsell(true);
                     }
                   }}
-                  placeholder="או הזן URL לתמונה"
+                  placeholder={t("dash.products.image_url_placeholder")}
                   className="mt-3"
                   dir="ltr"
                   disabled={usageStatus?.imageUploadBlocked}
@@ -1076,7 +1080,7 @@ const DashboardProducts = ({
               <div className="pt-2 border-t border-border space-y-2">
                 <Label className="!text-foreground flex items-center gap-1.5">
                   <Images className="h-4 w-4 text-muted-foreground" />
-                  תמונות נוספות <span className="text-muted-foreground font-normal text-xs">(גלריה במוצר)</span>
+                  {t("dash.products.additional_images_label")} <span className="text-muted-foreground font-normal text-xs">{t("dash.products.additional_images_hint")}</span>
                 </Label>
                 <input
                   ref={additionalImagesInputRef}
@@ -1085,7 +1089,7 @@ const DashboardProducts = ({
                   multiple
                   onChange={handleAdditionalImageUpload}
                   className="hidden"
-                  aria-label="העלאת תמונות נוספות"
+                  aria-label={t("dash.products.upload_additional_images_aria")}
                 />
                 {additionalImages.length > 0 && (
                   <div className="flex flex-wrap gap-2">
@@ -1112,7 +1116,7 @@ const DashboardProducts = ({
                   disabled={isUploadingAdditional || usageStatus?.imageUploadBlocked}
                 >
                   {isUploadingAdditional ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                  {isUploadingAdditional ? 'מעלה...' : 'הוסף תמונות לגלריה'}
+                  {isUploadingAdditional ? t("dash.products.uploading_generic_text") : t("dash.products.add_gallery_images_btn")}
                 </Button>
               </div>
 
@@ -1120,7 +1124,7 @@ const DashboardProducts = ({
               <div className="pt-2 border-t border-border space-y-2">
                 <Label className="!text-foreground flex items-center gap-1.5">
                   <Video className="h-4 w-4 text-muted-foreground" />
-                  וידאו מוצר <span className="text-muted-foreground font-normal text-xs">(אופציונלי)</span>
+                  {t("dash.products.product_video_label")} <span className="text-muted-foreground font-normal text-xs">{t("dash.products.optional_hint_simple")}</span>
                 </Label>
 
                 <input
@@ -1129,7 +1133,7 @@ const DashboardProducts = ({
                   accept="video/mp4,video/webm,video/quicktime"
                   onChange={handleVideoFileSelect}
                   className="hidden"
-                  aria-label="העלאת וידאו"
+                  aria-label={t("dash.products.upload_video_aria")}
                 />
 
                 {formData.videoUrl ? (
@@ -1143,7 +1147,7 @@ const DashboardProducts = ({
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, videoUrl: '' }))}
                       className="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
-                      aria-label="הסר וידאו"
+                      aria-label={t("dash.products.remove_video_aria")}
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -1159,7 +1163,7 @@ const DashboardProducts = ({
                       <Play className="h-7 w-7 mx-auto mb-1.5 text-muted-foreground" />
                     )}
                     <p className="text-sm text-muted-foreground">
-                      {isUploadingVideo ? 'מעלה וידאו...' : 'לחצו להעלאת וידאו (MP4, WebM, MOV — עד 100MB)'}
+                      {isUploadingVideo ? t("dash.products.uploading_video_text") : t("dash.products.click_upload_video_text")}
                     </p>
                   </div>
                 )}
@@ -1171,22 +1175,22 @@ const DashboardProducts = ({
               product, since variants attach to a product_id. */}
           {editingProduct?.id && businessId ? (
             <div className="border-t border-border pt-4 mt-2">
-              <h3 className="font-bold text-foreground mb-3 flex items-center gap-2"><Shirt className="w-4 h-4 text-primary" /> וריאציות: צבעים, מידות ומלאי</h3>
+              <h3 className="font-bold text-foreground mb-3 flex items-center gap-2"><Shirt className="w-4 h-4 text-primary" /> {t("dash.products.variants_heading")}</h3>
               <ProductVariantsEditor productId={editingProduct.id} businessId={businessId} />
             </div>
           ) : (
             <div className="border-t border-border pt-4 mt-2 text-sm text-muted-foreground flex items-start gap-2">
               <Shirt className="w-4 h-4 mt-0.5 shrink-0 text-muted-foreground" />
-              צבעים, מידות ומלאי (לבגדים): שמרו את המוצר קודם, ואז ערכו אותו כדי להוסיף וריאציות.
+              {t("dash.products.variants_save_first_hint")}
             </div>
           )}
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" className="flex-1">
-              {editingProduct ? 'שמרו שינויים' : pl.addBtn}
+              {editingProduct ? t("dash.products.save_changes_btn") : pl.addBtn}
             </Button>
             <Button type="button" variant="outline" onClick={resetForm}>
-              ביטול
+              {t("dash.products.cancel_btn")}
             </Button>
           </div>
         </form>
@@ -1208,7 +1212,7 @@ const DashboardProducts = ({
 
       {/* Colorful section header */}
       {(() => {
-        const cfg = SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG.products;
+        const cfg = SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG["products"];
         return (
           <div className="rounded-2xl bg-gradient-to-l from-violet-500/15 to-violet-500/5 border border-violet-500/20 p-5 flex items-center gap-4">
             <div className="text-4xl">{cfg.emoji}</div>
@@ -1221,7 +1225,7 @@ const DashboardProducts = ({
       })()}
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">{products.length} פריטים</p>
+        <p className="text-sm text-muted-foreground">{products.length} {t("dash.products.items_count_suffix")}</p>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Button 
             variant="outline" 
@@ -1232,12 +1236,12 @@ const DashboardProducts = ({
             {isLoadingExcel ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                טוען קובץ...
+                {t("dash.products.loading_file_text")}
               </>
             ) : (
               <>
                 <FileSpreadsheet className="h-4 w-4" />
-                ייבוא מאקסל
+                {t("dash.products.import_excel_btn")}
               </>
             )}
           </Button>
@@ -1254,14 +1258,14 @@ const DashboardProducts = ({
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {categories.length > 0 && (
               <>
-                <span>סינון לפי קטגוריה:</span>
+                <span>{t("dash.products.filter_by_category_label")}</span>
                 <Button
                   type="button"
                   variant={categoryFilter === 'all' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setCategoryFilter('all')}
                 >
-                  הכל ({products.length})
+                  {t("dash.products.all_categories_label")} ({products.length})
                 </Button>
                 {categories.map((c) => {
                   const count = products.filter(p => p.categoryId === c.id).length;
@@ -1282,14 +1286,14 @@ const DashboardProducts = ({
           </div>
           {uncategorizedCount > 0 && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>מוצרים ללא קטגוריה: {uncategorizedCount}</span>
+              <span>{t("dash.products.uncategorized_products_label")}: {uncategorizedCount}</span>
               <Button
                 type="button"
                 size="sm"
                 variant={categoryFilter === 'uncategorized' ? 'default' : 'outline'}
                 onClick={() => setCategoryFilter('uncategorized')}
               >
-                הצג אותם
+                {t("dash.products.show_them_btn")}
               </Button>
               {onNavigateToCategories && (
                 <Button
@@ -1298,7 +1302,7 @@ const DashboardProducts = ({
                   variant="ghost"
                   onClick={onNavigateToCategories}
                 >
-                  עבור לניהול קטגוריות
+                  {t("dash.products.go_to_categories_btn")}
                 </Button>
               )}
             </div>
@@ -1317,7 +1321,7 @@ const DashboardProducts = ({
               className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
             />
             <span className="text-sm font-medium text-foreground">
-              נבחרו {selectedProducts.size} מוצרים
+              {t("dash.products.selected_count_prefix")} {selectedProducts.size} {t("dash.products.selected_count_suffix")}
             </span>
           </div>
           <Button
@@ -1327,7 +1331,7 @@ const DashboardProducts = ({
             className="gap-2"
           >
             <Trash2 className="h-4 w-4" />
-            מחק נבחרים
+            {t("dash.products.delete_selected_btn")}
           </Button>
         </div>
       )}
@@ -1339,7 +1343,7 @@ const DashboardProducts = ({
             <div className="relative flex-1">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="חיפוש לפי שם או מק״ט..."
+                placeholder={t("dash.products.search_placeholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pr-10"
@@ -1353,7 +1357,7 @@ const DashboardProducts = ({
                     ? 'bg-background shadow-sm text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                title="תצוגת גלריה"
+                title={t("dash.products.gallery_view_title")}
               >
                 <LayoutGrid className="h-4 w-4" />
               </button>
@@ -1364,7 +1368,7 @@ const DashboardProducts = ({
                     ? 'bg-background shadow-sm text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                title="תצוגת רשימה"
+                title={t("dash.products.list_view_title")}
               >
                 <List className="h-4 w-4" />
               </button>
@@ -1372,7 +1376,7 @@ const DashboardProducts = ({
           </div>
           {!searchQuery && selectedProducts.size === 0 && viewMode === 'grid' && (
             <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-              💡 גרור את המוצרים כדי לשנות את סדר התצוגה
+              {t("dash.products.drag_reorder_hint")}
             </p>
           )}
         </div>
@@ -1380,26 +1384,26 @@ const DashboardProducts = ({
 
       {products.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-          <div className="text-6xl mb-4">{(SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG.products).emoji}</div>
+          <div className="text-6xl mb-4">{(SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG["products"]).emoji}</div>
           <h3 className="text-lg font-semibold text-foreground mb-2">
-            עדיין לא הוספת {(SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG.products).title.replace(/^ה/, "")}
+            {t("dash.products.empty_state_heading_prefix")} {(SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG["products"]).title.replace(/^ה/, "")}
           </h3>
           <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-            הוסיפו את הפריט הראשון שלכם ותתחילו להופיע ללקוחות.
+            {t("dash.products.empty_state_desc")}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button onClick={openAddForm} variant="outline" className="gap-2">
               <Plus className="h-4 w-4" />
               {pl.emptyFirst}
             </Button>
-            <span className="text-muted-foreground text-sm">או</span>
+            <span className="text-muted-foreground text-sm">{t("dash.products.or_text")}</span>
             <Button
               variant="ghost"
               onClick={() => setShowImportInstructions(true)}
               className="gap-2 text-primary"
             >
               <FileSpreadsheet className="h-4 w-4" />
-              ייבוא מאקסל
+              {t("dash.products.import_excel_btn")}
             </Button>
           </div>
           <button
@@ -1407,13 +1411,13 @@ const DashboardProducts = ({
             className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1.5"
           >
             <Download className="h-3.5 w-3.5" />
-            הורד תבנית לדוגמה
+            {t("dash.products.download_template_btn")}
           </button>
         </div>
       ) : filteredProducts.length === 0 ? (
         <div className="text-center py-8 bg-muted/30 rounded-xl">
           <Search className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
-          <p className="text-muted-foreground">לא נמצאו מוצרים בקטגוריה זו</p>
+          <p className="text-muted-foreground">{t("dash.products.no_products_in_category")}</p>
         </div>
       ) : viewMode === 'list' ? (
         // List View
@@ -1473,7 +1477,7 @@ const DashboardProducts = ({
                   <button 
                     onClick={() => handleToggleActive(product.id)}
                     className="p-2 hover:bg-muted rounded-md transition-colors"
-                    title={product.active ? 'השבת' : 'הפעל'}
+                    title={product.active ? t("dash.products.disable_btn_title") : t("dash.products.enable_btn_title")}
                   >
                     {product.active ? (
                       <ToggleRight className="h-5 w-5 text-green-600" />
@@ -1552,7 +1556,7 @@ const DashboardProducts = ({
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
           >
-            הקודם
+            {t("dash.products.prev_page_btn")}
           </Button>
           
           <div className="flex items-center gap-1">
@@ -1595,7 +1599,7 @@ const DashboardProducts = ({
             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={currentPage === totalPages}
           >
-            הבא
+            {t("dash.products.next_page_btn")}
           </Button>
         </div>
       )}
@@ -1606,7 +1610,7 @@ const DashboardProducts = ({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-destructive">
               <Trash2 className="h-5 w-5" />
-              מחיקת מוצר
+              {t("dash.products.delete_product_title")}
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3 pt-2">
               {deleteProductId && (() => {
@@ -1614,7 +1618,7 @@ const DashboardProducts = ({
                 return product ? (
                   <div className="space-y-3">
                     <p className="text-foreground font-medium">
-                      האם אתה בטוח שברצונך למחוק את המוצר הבא?
+                      {t("dash.products.delete_confirm_question")}
                     </p>
                     
                     {/* Product Preview */}
@@ -1636,7 +1640,7 @@ const DashboardProducts = ({
                           </p>
                           {product.sku && (
                             <p className="text-xs text-muted-foreground mt-1">
-                              מק"ט: {product.sku}
+                              {t("dash.products.field_sku_label")}: {product.sku}
                             </p>
                           )}
                         </div>
@@ -1646,10 +1650,10 @@ const DashboardProducts = ({
                     <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
                       <p className="text-sm text-destructive font-medium flex items-center gap-2">
                         <AlertCircle className="h-4 w-4" />
-                        פעולה זו אינה ניתנת לביטול
+                        {t("dash.products.action_cannot_be_undone")}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        המוצר יימחק לצמיתות מהמערכת
+                        {t("dash.products.product_permanently_deleted_hint")}
                       </p>
                     </div>
                   </div>
@@ -1658,13 +1662,13 @@ const DashboardProducts = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-2">
-            <AlertDialogCancel className="mt-0">ביטול</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogCancel className="mt-0">{t("dash.products.cancel_btn")}</AlertDialogCancel>
+            <AlertDialogAction
               onClick={confirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               <Trash2 className="h-4 w-4 ml-2" />
-              מחק מוצר
+              {t("dash.products.delete_product_btn")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

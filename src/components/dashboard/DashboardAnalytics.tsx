@@ -8,6 +8,7 @@ import { Eye, Users, CalendarIcon, TrendingUp } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import { he } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DashboardAnalyticsProps {
   businessId: string | undefined;
@@ -16,6 +17,7 @@ interface DashboardAnalyticsProps {
 type DateRange = "7days" | "30days" | "thisMonth" | "custom";
 
 const DashboardAnalytics = ({ businessId }: DashboardAnalyticsProps) => {
+  const { t } = useLanguage();
   const [dateRange, setDateRange] = useState<DateRange>("7days");
   const [customStartDate, setCustomStartDate] = useState<Date | undefined>();
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>();
@@ -40,9 +42,9 @@ const DashboardAnalytics = ({ businessId }: DashboardAnalyticsProps) => {
   const { data: analytics, isLoading } = useAnalytics(businessId, start, end);
 
   const dateRangeButtons = [
-    { key: "7days" as DateRange, label: "7 ימים" },
-    { key: "30days" as DateRange, label: "30 ימים" },
-    { key: "thisMonth" as DateRange, label: "החודש" },
+    { key: "7days" as DateRange, label: t("dash.analytics.range_7days") },
+    { key: "30days" as DateRange, label: t("dash.analytics.range_30days") },
+    { key: "thisMonth" as DateRange, label: t("dash.analytics.range_this_month") },
   ];
 
   return (
@@ -50,7 +52,7 @@ const DashboardAnalytics = ({ businessId }: DashboardAnalyticsProps) => {
       <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-4">
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-primary" />
-          סטטיסטיקות אתר
+          {t("dash.analytics.title")}
         </CardTitle>
         
         <div className="flex items-center gap-2 flex-wrap">
@@ -75,13 +77,13 @@ const DashboardAnalytics = ({ businessId }: DashboardAnalyticsProps) => {
                 <CalendarIcon className="w-4 h-4" />
                 {dateRange === "custom" && customStartDate && customEndDate
                   ? `${format(customStartDate, "dd/MM")} - ${format(customEndDate, "dd/MM")}`
-                  : "בחר תאריכים"}
+                  : t("dash.analytics.custom_range_placeholder")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
               <div className="p-4 space-y-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-2">מתאריך:</p>
+                  <p className="text-sm text-muted-foreground mb-2">{t("dash.analytics.from_date_label")}</p>
                   <Calendar
                     mode="single"
                     selected={customStartDate}
@@ -94,7 +96,7 @@ const DashboardAnalytics = ({ businessId }: DashboardAnalyticsProps) => {
                   />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-2">עד תאריך:</p>
+                  <p className="text-sm text-muted-foreground mb-2">{t("dash.analytics.to_date_label")}</p>
                   <Calendar
                     mode="single"
                     selected={customEndDate}
@@ -121,7 +123,7 @@ const DashboardAnalytics = ({ businessId }: DashboardAnalyticsProps) => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">צפיות באתר</p>
+                  <p className="text-sm text-muted-foreground">{t("dash.analytics.views_label")}</p>
                   <p className="text-3xl font-bold">
                     {isLoading ? "..." : analytics?.totalViews || 0}
                   </p>
@@ -137,7 +139,7 @@ const DashboardAnalytics = ({ businessId }: DashboardAnalyticsProps) => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">מבקרים ייחודיים</p>
+                  <p className="text-sm text-muted-foreground">{t("dash.analytics.unique_visitors_label")}</p>
                   <p className="text-3xl font-bold">
                     {isLoading ? "..." : analytics?.uniqueVisitors || 0}
                   </p>
@@ -152,12 +154,12 @@ const DashboardAnalytics = ({ businessId }: DashboardAnalyticsProps) => {
         
         {analytics?.viewsByDate && analytics.viewsByDate.length > 0 && (
           <div className="mt-6">
-            <h4 className="text-sm font-medium text-muted-foreground mb-4">צפיות לפי תאריך</h4>
+            <h4 className="text-sm font-medium text-muted-foreground mb-4">{t("dash.analytics.views_by_date_title")}</h4>
             <div className="space-y-2">
               {analytics.viewsByDate.slice(-7).map((item) => (
                 <div key={item.date} className="flex items-center justify-between p-2 bg-muted/50 rounded">
                   <span className="text-sm">{item.date}</span>
-                  <span className="font-medium">{item.views} צפיות</span>
+                  <span className="font-medium">{item.views} {t("dash.analytics.views_suffix")}</span>
                 </div>
               ))}
             </div>
@@ -167,8 +169,8 @@ const DashboardAnalytics = ({ businessId }: DashboardAnalyticsProps) => {
         {(!analytics?.viewsByDate || analytics.viewsByDate.length === 0) && !isLoading && (
           <div className="mt-6 text-center text-muted-foreground py-8">
             <Eye className="w-12 h-12 mx-auto mb-2 opacity-30" />
-            <p>אין נתונים לתקופה זו</p>
-            <p className="text-sm">הנתונים יתחילו להופיע כשלקוחות יבקרו באתר שלך</p>
+            <p>{t("dash.analytics.empty_title")}</p>
+            <p className="text-sm">{t("dash.analytics.empty_desc")}</p>
           </div>
         )}
       </CardContent>

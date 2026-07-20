@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { FileText, Download, Loader2, ReceiptText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
  * The merchant's Siango invoices/receipts. Source of truth = billing_charges
@@ -26,6 +27,7 @@ const fmtDate = (s: string) => {
 };
 
 const DashboardInvoices = () => {
+  const { t } = useLanguage();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["billing-invoices"],
     queryFn: async () => {
@@ -47,9 +49,9 @@ const DashboardInvoices = () => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <ReceiptText className="w-5 h-5 text-primary" /> חשבוניות וקבלות
+          <ReceiptText className="w-5 h-5 text-primary" /> {t("dash.invoices.title")}
         </CardTitle>
-        <CardDescription>חשבונית המס הרשמית נשלחת אליכם במייל מחברת הסליקה (Cardcom) עם כל חיוב. כאן מרוכזים כל החיובים - עם קישור להורדה כשקיים.</CardDescription>
+        <CardDescription>{t("dash.invoices.description")}</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -58,12 +60,12 @@ const DashboardInvoices = () => {
           </div>
         ) : isError ? (
           <p className="text-sm text-muted-foreground py-6 text-center">
-            החשבוניות יופיעו כאן לאחר החיוב הראשון. אם יש בעיה, פנו לתמיכה.
+            {t("dash.invoices.error_state")}
           </p>
         ) : !charges.length ? (
           <div className="py-10 text-center text-muted-foreground">
             <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">אין עדיין חיובים. אחרי החיוב הראשון, החשבונית תישלח למייל שלכם מ-Cardcom ותופיע גם כאן.</p>
+            <p className="text-sm">{t("dash.invoices.empty_state")}</p>
           </div>
         ) : (
           <div className="divide-y divide-border">
@@ -71,7 +73,7 @@ const DashboardInvoices = () => {
               <div key={c.id} className="flex items-center justify-between py-3 gap-3">
                 <div className="min-w-0">
                   <div className="font-medium text-foreground truncate">
-                    {c.payment_description || "חשבונית / קבלה"}
+                    {c.payment_description || t("dash.invoices.default_description")}
                   </div>
                   <div className="text-xs text-muted-foreground">{fmtDate(c.created_at)}</div>
                 </div>
@@ -88,11 +90,11 @@ const DashboardInvoices = () => {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
                     >
-                      <Download className="w-4 h-4" /> הורדה
+                      <Download className="w-4 h-4" /> {t("dash.invoices.download")}
                     </a>
                   ) : (
-                    <span className="text-xs text-muted-foreground" title="החשבונית נשלחה ישירות מחברת הסליקה לכתובת המייל שלך">
-                      נשלחה למייל שלך
+                    <span className="text-xs text-muted-foreground" title={t("dash.invoices.sent_to_email_tooltip")}>
+                      {t("dash.invoices.sent_to_email")}
                     </span>
                   )}
                 </div>

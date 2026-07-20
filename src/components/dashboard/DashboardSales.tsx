@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type DiscountType = "fixed" | "percentage";
 export interface Product {
@@ -40,6 +41,7 @@ interface DashboardSalesProps {
 }
 
 const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, businessType }: DashboardSalesProps) => {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [salePrice, setSalePrice] = useState('');
@@ -69,7 +71,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
     if (product.is_on_sale) {
       // Turn off sale
       onProductUpdate(product.id, { sale_price: null, is_on_sale: false });
-      toast.success(`המבצע על "${product.name}" הוסר`);
+      toast.success(`${t("dash.sales.toast_sale_removed_prefix")}${product.name}${t("dash.sales.toast_sale_removed_suffix")}`);
     } else {
       // Open dialog to set sale price
       setEditingProduct(product);
@@ -82,9 +84,9 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
   const handleToggleHot = (product: Product) => {
     const newHotStatus = !product.is_hot;
     onProductUpdate(product.id, { is_hot: newHotStatus });
-    toast.success(newHotStatus 
-      ? `"${product.name}" סומן כמוצר חם` 
-      : `"${product.name}" הוסר מהמוצרים החמים`
+    toast.success(newHotStatus
+      ? `${t("dash.sales.toast_hot_prefix")}${product.name}${t("dash.sales.toast_hot_on_suffix")}`
+      : `${t("dash.sales.toast_hot_prefix")}${product.name}${t("dash.sales.toast_hot_off_suffix")}`
     );
   };
 
@@ -96,25 +98,25 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
     if (discountType === 'percentage') {
       const percent = parseFloat(discountPercent);
       if (isNaN(percent) || percent <= 0 || percent >= 100) {
-        toast.error('יש להזין אחוז הנחה תקין (1-99)');
+        toast.error(t("dash.sales.toast_invalid_percent"));
         return;
       }
       finalSalePrice = Math.round(editingProduct.price * (1 - percent / 100));
     } else {
       const price = parseFloat(salePrice);
       if (isNaN(price) || price <= 0) {
-        toast.error('יש להזין מחיר מבצע תקין');
+        toast.error(t("dash.sales.toast_invalid_price"));
         return;
       }
       if (price >= editingProduct.price) {
-        toast.error('מחיר המבצע חייב להיות נמוך מהמחיר הרגיל');
+        toast.error(t("dash.sales.toast_price_too_high"));
         return;
       }
       finalSalePrice = price;
     }
-    
+
     onProductUpdate(editingProduct.id, { sale_price: finalSalePrice, is_on_sale: true });
-    toast.success(`מבצע על "${editingProduct.name}" הופעל`);
+    toast.success(`${t("dash.sales.toast_sale_activated_prefix")}${editingProduct.name}${t("dash.sales.toast_sale_activated_suffix")}`);
     setEditingProduct(null);
     setSalePrice('');
     setDiscountPercent('');
@@ -141,7 +143,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
   const handleApplySitewideSale = () => {
     const percent = parseFloat(sitewidePercent);
     if (isNaN(percent) || percent <= 0 || percent >= 100) {
-      toast.error('יש להזין אחוז הנחה תקין (1-99)');
+      toast.error(t("dash.sales.toast_invalid_percent"));
       return;
     }
     
@@ -169,8 +171,8 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
       });
     }
     
-    const endDateMsg = sitewideEndDate ? ` (עד ${format(sitewideEndDate, 'dd/MM/yyyy', { locale: he })})` : '';
-    toast.success(`מבצע ${percent}% הופעל על כל ${products.length} המוצרים${endDateMsg}`);
+    const endDateMsg = sitewideEndDate ? `${t("dash.sales.toast_sitewide_until_prefix")}${format(sitewideEndDate, 'dd/MM/yyyy', { locale: he })})` : '';
+    toast.success(`${t("dash.sales.toast_sitewide_percent_prefix")}${percent}${t("dash.sales.toast_sitewide_percent_mid")}${products.length}${t("dash.sales.toast_sitewide_percent_suffix")}${endDateMsg}`);
     setShowSitewideSale(false);
     setSitewidePercent('');
     setSitewideEndDate(undefined);
@@ -181,7 +183,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
     onSaleProducts.forEach(product => {
       onProductUpdate(product.id, { sale_price: null, is_on_sale: false, sale_end_date: null });
     });
-    toast.success(`המבצע הוסר מ-${onSaleProducts.length} מוצרים`);
+    toast.success(`${t("dash.sales.toast_sitewide_removed_prefix")}${onSaleProducts.length}${t("dash.sales.toast_sitewide_removed_suffix")}`);
   };
 
   if (isLoading) {
@@ -201,7 +203,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
       {filteredProducts.length === 0 ? (
         <div className="text-center py-8 bg-muted/30 rounded-xl">
           <Search className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
-          <p className="text-muted-foreground">לא נמצאו מוצרים עבור "{searchQuery}"</p>
+          <p className="text-muted-foreground">{t("dash.sales.no_products_found_prefix")}{searchQuery}"</p>
         </div>
       ) : (
         filteredProducts.map((product) => (
@@ -274,7 +276,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                         onClick={() => openEditDialog(product)}
                         className="text-primary"
                       >
-                        ערוך
+                        {t("dash.sales.edit_button")}
                       </Button>
                       <Button
                         variant="ghost"
@@ -293,7 +295,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                       className="gap-1.5 border-primary/50 text-primary hover:bg-primary/10"
                     >
                       <Percent className="h-3.5 w-3.5" />
-                      הוסף מבצע
+                      {t("dash.sales.add_sale_button")}
                     </Button>
                   )}
                 </>
@@ -312,10 +314,10 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
         <div className="text-4xl">{businessType === "vacation" ? "🌅" : "🔥"}</div>
         <div>
           <h1 className="text-lg font-bold text-foreground">
-            {businessType === "vacation" ? "הנחות עונתיות" : "מבצעים"}
+            {businessType === "vacation" ? t("dash.sales.header_title_vacation") : t("dash.sales.header_title_default")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {businessType === "vacation" ? "הנחות לסוף עונה, ימי חול, הזמנות מוקדמות" : "מוצרים במבצע ועסקאות מיוחדות"}
+            {businessType === "vacation" ? t("dash.sales.header_subtitle_vacation") : t("dash.sales.header_subtitle_default")}
           </p>
         </div>
       </div>
@@ -324,15 +326,15 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-primary/10 rounded-xl p-4">
           <p className="text-2xl font-bold text-primary">{productsOnSale.length}</p>
-          <p className="text-xs text-muted-foreground">במבצע</p>
+          <p className="text-xs text-muted-foreground">{t("dash.sales.stat_on_sale")}</p>
         </div>
         <div className="bg-orange-500/10 rounded-xl p-4">
           <p className="text-2xl font-bold text-orange-500">{hotProducts.length}</p>
-          <p className="text-xs text-muted-foreground">מוצרים חמים</p>
+          <p className="text-xs text-muted-foreground">{t("dash.sales.stat_hot_products")}</p>
         </div>
         <div className="bg-muted rounded-xl p-4">
           <p className="text-2xl font-bold text-foreground">{products.length}</p>
-          <p className="text-xs text-muted-foreground">סה"כ</p>
+          <p className="text-xs text-muted-foreground">{t("dash.sales.stat_total")}</p>
         </div>
       </div>
 
@@ -341,11 +343,11 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="sales" className="gap-2">
             <Percent className="h-4 w-4" />
-            מבצעים
+            {t("dash.sales.tab_sales")}
           </TabsTrigger>
           <TabsTrigger value="hot" className="gap-2">
             <Flame className="h-4 w-4" />
-            מוצרים מובילים
+            {t("dash.sales.tab_hot")}
           </TabsTrigger>
         </TabsList>
 
@@ -353,7 +355,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
         <div className="relative max-w-sm">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="חיפוש מוצר..."
+            placeholder={t("dash.sales.search_placeholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pr-10"
@@ -364,8 +366,8 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
           {products.length === 0 ? (
             <div className="text-center py-12 bg-muted/30 rounded-xl">
               <Package className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-              <p className="text-muted-foreground mb-2">אין מוצרים עדיין</p>
-              <p className="text-sm text-muted-foreground">הוסף מוצרים כדי להגדיר מבצעים</p>
+              <p className="text-muted-foreground mb-2">{t("dash.sales.empty_no_products")}</p>
+              <p className="text-sm text-muted-foreground">{t("dash.sales.empty_add_products_sales")}</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -385,14 +387,14 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                       <Tag className="h-6 w-6 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-foreground mb-1">מבצע לכל המוצרים</h3>
+                      <h3 className="text-lg font-bold text-foreground mb-1">{t("dash.sales.sitewide_card_title")}</h3>
                       <p className="text-sm text-muted-foreground">
-                        החל הנחה אחידה על כל {products.length} המוצרים בחנות
+                        {t("dash.sales.sitewide_card_desc_prefix")}{products.length}{t("dash.sales.sitewide_card_desc_suffix")}
                       </p>
                       {productsOnSale.length > 0 && productsOnSale.length === products.length && (
                         <div className="flex items-center gap-2 mt-2 text-green-600">
                           <Check className="h-4 w-4" />
-                          <span className="text-sm font-medium">מבצע פעיל</span>
+                          <span className="text-sm font-medium">{t("dash.sales.sale_active_badge")}</span>
                         </div>
                       )}
                     </div>
@@ -413,14 +415,14 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                       <Package className="h-6 w-6 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-foreground mb-1">מבצע לפי פריט</h3>
+                      <h3 className="text-lg font-bold text-foreground mb-1">{t("dash.sales.per_item_card_title")}</h3>
                       <p className="text-sm text-muted-foreground">
-                        הגדר הנחות שונות למוצרים ספציפיים
+                        {t("dash.sales.per_item_card_desc")}
                       </p>
                       {productsOnSale.length > 0 && productsOnSale.length < products.length && (
                         <div className="flex items-center gap-2 mt-2 text-green-600">
                           <Check className="h-4 w-4" />
-                          <span className="text-sm font-medium">{productsOnSale.length} מוצרים במבצע</span>
+                          <span className="text-sm font-medium">{productsOnSale.length}{t("dash.sales.products_on_sale_count_suffix")}</span>
                         </div>
                       )}
                     </div>
@@ -434,7 +436,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
                       <Percent className="h-5 w-5 text-primary" />
-                      הגדרת מבצע כללי
+                      {t("dash.sales.sitewide_form_title")}
                     </h3>
                     {productsOnSale.length > 0 && (
                       <Button
@@ -444,14 +446,14 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                         className="text-destructive border-destructive/30 hover:bg-destructive/10 gap-1.5"
                       >
                         <X className="h-4 w-4" />
-                        הסר מבצעים
+                        {t("dash.sales.remove_sales_button")}
                       </Button>
                     )}
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="sitewidePercent">אחוז הנחה (%)</Label>
+                      <Label htmlFor="sitewidePercent">{t("dash.sales.discount_percent_label")}</Label>
                       <Input
                         id="sitewidePercent"
                         type="number"
@@ -459,13 +461,13 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                         max="99"
                         value={sitewidePercent}
                         onChange={(e) => setSitewidePercent(e.target.value)}
-                        placeholder="לדוגמה: 20"
+                        placeholder={t("dash.sales.percent_example_placeholder")}
                         dir="ltr"
                         className="text-lg"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>תאריך סיום (אופציונלי)</Label>
+                      <Label>{t("dash.sales.end_date_label")}</Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
@@ -476,7 +478,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                             )}
                           >
                             <CalendarIcon className="ml-2 h-4 w-4" />
-                            {sitewideEndDate ? format(sitewideEndDate, "dd/MM/yyyy", { locale: he }) : "ללא הגבלה"}
+                            {sitewideEndDate ? format(sitewideEndDate, "dd/MM/yyyy", { locale: he }) : t("dash.sales.no_limit")}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
@@ -490,13 +492,13 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                           />
                           {sitewideEndDate && (
                             <div className="p-2 border-t">
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
+                              <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => setSitewideEndDate(undefined)}
                                 className="w-full text-destructive"
                               >
-                                הסר תאריך סיום
+                                {t("dash.sales.remove_end_date_button")}
                               </Button>
                             </div>
                           )}
@@ -508,20 +510,20 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                   {sitewidePercent && parseFloat(sitewidePercent) > 0 && parseFloat(sitewidePercent) < 100 && (
                     <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
                       <p className="text-sm text-green-600 font-medium">
-                        ✓ דוגמה: מוצר ב-{formatPrice(100)} יעלה {formatPrice(Math.round(100 * (1 - parseFloat(sitewidePercent) / 100)))}
+                        {t("dash.sales.example_prefix")}{formatPrice(100)}{t("dash.sales.example_mid")}{formatPrice(Math.round(100 * (1 - parseFloat(sitewidePercent) / 100)))}
                       </p>
                     </div>
                   )}
 
                   <Button onClick={handleApplySitewideSale} className="w-full gap-2 h-12 text-base">
                     <Check className="h-5 w-5" />
-                    החל מבצע על {products.length} מוצרים
+                    {t("dash.sales.apply_sale_button_prefix")}{products.length}{t("dash.sales.apply_sale_button_suffix")}
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-foreground">בחר מוצרים למבצע</h3>
+                    <h3 className="text-lg font-semibold text-foreground">{t("dash.sales.choose_products_title")}</h3>
                     {productsOnSale.length > 0 && (
                       <Button
                         variant="outline"
@@ -530,7 +532,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                         className="text-destructive border-destructive/30 hover:bg-destructive/10 gap-1.5"
                       >
                         <X className="h-4 w-4" />
-                        הסר הכל
+                        {t("dash.sales.remove_all_button")}
                       </Button>
                     )}
                   </div>
@@ -545,8 +547,8 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
           {products.length === 0 ? (
             <div className="text-center py-12 bg-muted/30 rounded-xl">
               <Package className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-              <p className="text-muted-foreground mb-2">אין מוצרים עדיין</p>
-              <p className="text-sm text-muted-foreground">הוסף מוצרים כדי לסמן מוצרים מובילים</p>
+              <p className="text-muted-foreground mb-2">{t("dash.sales.empty_no_products")}</p>
+              <p className="text-sm text-muted-foreground">{t("dash.sales.empty_add_products_hot")}</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -557,16 +559,16 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                     <Flame className="h-6 w-6 text-orange-500" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-foreground mb-1">מוצרים בעדיפות עליונה</h3>
+                    <h3 className="text-lg font-bold text-foreground mb-1">{t("dash.sales.hot_card_title")}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      מוצרים אלו יוצגו בולטים יותר בראש רשימת המוצרים בחנות שלך.
+                      {t("dash.sales.hot_card_desc_line1")}
                       <br />
-                      השתמש בזה כדי לקדם מוצרים חדשים או פופולריים.
+                      {t("dash.sales.hot_card_desc_line2")}
                     </p>
                     {hotProducts.length > 0 && (
                       <div className="flex items-center gap-2 mt-3 text-orange-500">
                         <Check className="h-4 w-4" />
-                        <span className="text-sm font-medium">{hotProducts.length} מוצרים מובילים נבחרו</span>
+                        <span className="text-sm font-medium">{hotProducts.length}{t("dash.sales.hot_products_selected_suffix")}</span>
                       </div>
                     )}
                   </div>
@@ -575,7 +577,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
 
               {/* Products List with better visual */}
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-foreground">בחר מוצרים להצגה בולטת</h3>
+                <h3 className="text-lg font-semibold text-foreground">{t("dash.sales.choose_hot_products_title")}</h3>
                 <ProductList showHotToggle={true} />
               </div>
             </div>
@@ -589,7 +591,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Percent className="h-5 w-5 text-primary" />
-              הגדרת מחיר מבצע
+              {t("dash.sales.dialog_title")}
             </DialogTitle>
           </DialogHeader>
           
@@ -605,13 +607,13 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                 </div>
                 <div>
                   <p className="font-medium">{editingProduct.name}</p>
-                  <p className="text-sm text-muted-foreground">מחיר רגיל: {formatPrice(editingProduct.price)}</p>
+                  <p className="text-sm text-muted-foreground">{t("dash.sales.regular_price_prefix")}{formatPrice(editingProduct.price)}</p>
                 </div>
               </div>
 
               {/* Discount Type Selection */}
               <div className="space-y-3">
-                <Label>סוג הנחה</Label>
+                <Label>{t("dash.sales.discount_type_label")}</Label>
                 <RadioGroup
                   value={discountType}
                   onValueChange={(value) => setDiscountType(value as DiscountType)}
@@ -623,7 +625,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                     <RadioGroupItem value="percentage" id="percentage" />
                     <Label htmlFor="percentage" className="flex items-center gap-2 cursor-pointer flex-1">
                       <Percent className="h-4 w-4 text-primary" />
-                      אחוז הנחה
+                      {t("dash.sales.discount_percent_radio")}
                     </Label>
                   </div>
                   <div className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
@@ -632,7 +634,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                     <RadioGroupItem value="fixed" id="fixed" />
                     <Label htmlFor="fixed" className="flex items-center gap-2 cursor-pointer flex-1">
                       <DollarSign className="h-4 w-4 text-primary" />
-                      מחיר קבוע
+                      {t("dash.sales.fixed_price_radio")}
                     </Label>
                   </div>
                 </RadioGroup>
@@ -641,7 +643,7 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
               {/* Input based on discount type */}
               {discountType === 'percentage' ? (
                 <div className="space-y-2">
-                  <Label htmlFor="discountPercent">אחוז הנחה (%)</Label>
+                  <Label htmlFor="discountPercent">{t("dash.sales.discount_percent_label")}</Label>
                   <Input
                     id="discountPercent"
                     type="number"
@@ -649,18 +651,18 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                     max="99"
                     value={discountPercent}
                     onChange={(e) => setDiscountPercent(e.target.value)}
-                    placeholder="לדוגמה: 20"
+                    placeholder={t("dash.sales.percent_example_placeholder")}
                     dir="ltr"
                   />
                   {discountPercent && parseFloat(discountPercent) > 0 && parseFloat(discountPercent) < 100 && (
                     <p className="text-sm text-green-600">
-                      מחיר סופי: {formatPrice(Math.round(editingProduct.price * (1 - parseFloat(discountPercent) / 100)))}
+                      {t("dash.sales.final_price_prefix")}{formatPrice(Math.round(editingProduct.price * (1 - parseFloat(discountPercent) / 100)))}
                     </p>
                   )}
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Label htmlFor="salePrice">מחיר מבצע (₪)</Label>
+                  <Label htmlFor="salePrice">{t("dash.sales.sale_price_label")}</Label>
                   <Input
                     id="salePrice"
                     type="number"
@@ -668,12 +670,12 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
                     step="0.01"
                     value={salePrice}
                     onChange={(e) => setSalePrice(e.target.value)}
-                    placeholder="הזן מחיר מבצע"
+                    placeholder={t("dash.sales.sale_price_placeholder")}
                     dir="ltr"
                   />
                   {salePrice && parseFloat(salePrice) > 0 && parseFloat(salePrice) < editingProduct.price && (
                     <p className="text-sm text-green-600">
-                      הנחה של {calculateDiscount(editingProduct.price, parseFloat(salePrice))}%
+                      {t("dash.sales.discount_of_prefix")}{calculateDiscount(editingProduct.price, parseFloat(salePrice))}%
                     </p>
                   )}
                 </div>
@@ -682,10 +684,10 @@ const DashboardSales = ({ products, onProductUpdate, onBulkUpdate, isLoading, bu
               <div className="flex gap-3 pt-2">
                 <Button onClick={handleSaveSale} className="flex-1 gap-2">
                   <Check className="h-4 w-4" />
-                  הפעל מבצע
+                  {t("dash.sales.activate_sale_button")}
                 </Button>
                 <Button variant="outline" onClick={() => setEditingProduct(null)}>
-                  ביטול
+                  {t("dash.sales.cancel_button")}
                 </Button>
               </div>
             </div>

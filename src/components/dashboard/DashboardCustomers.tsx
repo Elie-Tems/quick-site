@@ -3,6 +3,7 @@ import { Users, Search, ArrowRight, Phone, Mail, ShoppingBag, Calendar, Crown, R
 import type { Order } from "@/components/dashboard/DashboardOrders";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // CRM (phase 1 free + phase 2 segments/opportunities). Derived entirely from
 // existing orders - no new tables. Phase 2 adds segments (VIP / dormant / repeat
@@ -32,12 +33,12 @@ const NEW_DAYS = 30;
 // value tier (a customer can be "VIP + at-risk" - the most important to act on).
 type LifecycleStatus = "new" | "active" | "at_risk" | "dormant";
 
-const STATUS_META: Record<LifecycleStatus, { label: string; dot: string; text: string }> = {
-  new: { label: "חדש", dot: "bg-sky-500", text: "text-sky-600" },
-  active: { label: "פעיל", dot: "bg-emerald-500", text: "text-emerald-600" },
-  at_risk: { label: "בסיכון", dot: "bg-amber-500", text: "text-amber-600" },
-  dormant: { label: "רדום", dot: "bg-rose-500", text: "text-rose-600" },
-};
+const getStatusMeta = (t: (key: string) => string): Record<LifecycleStatus, { label: string; dot: string; text: string }> => ({
+  new: { label: t("dash.customers.status_new"), dot: "bg-sky-500", text: "text-sky-600" },
+  active: { label: t("dash.customers.status_active"), dot: "bg-emerald-500", text: "text-emerald-600" },
+  at_risk: { label: t("dash.customers.status_at_risk"), dot: "bg-amber-500", text: "text-amber-600" },
+  dormant: { label: t("dash.customers.status_dormant"), dot: "bg-rose-500", text: "text-rose-600" },
+});
 
 interface CustomerRow {
   key: string;
@@ -71,7 +72,7 @@ const isoAgo = (days: number) => new Date(Date.now() - days * 86400000).toISOStr
 
 // Sample customers shown ONLY when the store has no real customers yet, so the
 // merchant sees what the CRM looks like populated. Clearly labelled as a demo.
-const buildDemoCustomers = (): CustomerRow[] => {
+const buildDemoCustomers = (t: (key: string) => string): CustomerRow[] => {
   const ord = (id: string, daysBack: number, total: number): Order =>
     ({ id, date: isoAgo(daysBack), total, customerName: "", customerPhone: "", customerEmail: "" } as unknown as Order);
   const mk = (key: string, name: string, phone: string, email: string, status: LifecycleStatus,
@@ -97,23 +98,25 @@ const buildDemoCustomers = (): CustomerRow[] => {
     };
   };
   return [
-    mk("demo-1", "ישראל ישראלי", "050-1234567", "israel@example.com", "active", true,
+    mk("demo-1", t("dash.customers.demo_name_1"), "050-1234567", "israel@example.com", "active", true,
       [ord("d1a", 240, 690), ord("d1b", 150, 540), ord("d1c", 70, 1190), ord("d1d", 30, 820), ord("d1e", 6, 1010)]),
-    mk("demo-2", "דנה כהן", "052-7654321", "dana@example.com", "active", false,
+    mk("demo-2", t("dash.customers.demo_name_2"), "052-7654321", "dana@example.com", "active", false,
       [ord("d2a", 120, 320), ord("d2b", 60, 410), ord("d2c", 18, 450)]),
-    mk("demo-3", "מיכאל לוי", "054-3216549", "michael@example.com", "at_risk", false,
+    mk("demo-3", t("dash.customers.demo_name_3"), "054-3216549", "michael@example.com", "at_risk", false,
       [ord("d3a", 90, 280), ord("d3b", 44, 360)]),
-    mk("demo-4", "נועה אברהם", "053-9876543", "noa@example.com", "new", false,
+    mk("demo-4", t("dash.customers.demo_name_4"), "053-9876543", "noa@example.com", "new", false,
       [ord("d4a", 4, 220)]),
-    mk("demo-5", "יוסי מזרחי", "058-1112233", "yossi@example.com", "dormant", false,
+    mk("demo-5", t("dash.customers.demo_name_5"), "058-1112233", "yossi@example.com", "dormant", false,
       [ord("d5a", 96, 380)]),
     // Steady ~26-day cadence, last bought 28 days ago -> due for reorder.
-    mk("demo-6", "רונית בר", "050-7778899", "ronit@example.com", "active", false,
+    mk("demo-6", t("dash.customers.demo_name_6"), "050-7778899", "ronit@example.com", "active", false,
       [ord("d6a", 80, 240), ord("d6b", 50, 300), ord("d6c", 28, 260)]),
   ];
 };
 
 const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomersProps) => {
+  const { t } = useLanguage();
+  const STATUS_META = getStatusMeta(t);
   const [query, setQuery] = useState("");
   const [segment, setSegment] = useState<SegmentFilter>("all");
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -137,11 +140,15 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
     const { error } = await supabase.from("customer_crm").upsert({
       business_id: businessId, customer_key: key, tags: next.tags, notes: next.notes, updated_at: new Date().toISOString(),
     }, { onConflict: "business_id,customer_key" });
-    if (error) toast.error("שמירה נכשלה");
+    if (error) toast.error(t("dash.customers.save_failed"));
   };
 
   const exportCsv = (rows: CustomerRow[]) => {
-    const head = ["שם", "טלפון", "מייל", "הזמנות", "סך רכישות", "סטטוס", "תגיות"];
+    const head = [
+      t("dash.customers.csv_header_name"), t("dash.customers.csv_header_phone"), t("dash.customers.csv_header_email"),
+      t("dash.customers.csv_header_orders"), t("dash.customers.csv_header_total_spent"), t("dash.customers.csv_header_status"),
+      t("dash.customers.csv_header_tags"),
+    ];
     const lines = [head, ...rows.map((c) => [
       c.name, c.phone, c.email, String(c.orderCount), String(Math.round(c.totalSpent)),
       STATUS_META[c.status].label, (crm[c.key]?.tags || []).join("; "),
@@ -149,9 +156,9 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
     const csv = "﻿" + lines.map((r) => r.map((f) => `"${(f || "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    a.download = "לקוחות-siango.csv";
+    a.download = `${t("dash.customers.csv_filename")}.csv`;
     a.click();
-    toast.success("הקובץ יוצא");
+    toast.success(t("dash.customers.csv_exported"));
   };
 
   const realCustomers = useMemo<CustomerRow[]>(() => {
@@ -170,7 +177,7 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
         if (!ex.email && o.customerEmail) ex.email = o.customerEmail;
       } else {
         map.set(key, {
-          key, name: o.customerName || "לקוח", phone: o.customerPhone || "", email: o.customerEmail || "",
+          key, name: o.customerName || t("dash.customers.default_customer_name"), phone: o.customerPhone || "", email: o.customerEmail || "",
           orderCount: 1, totalSpent: o.total || 0, firstOrder: o.date, lastOrder: o.date, orders: [o],
           isVip: false, isDormant: false, isRepeat: false, isNew: false, status: "active",
         });
@@ -200,11 +207,11 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
       }
     }
     return rows.sort((a, b) => b.totalSpent - a.totalSpent);
-  }, [orders]);
+  }, [orders, t]);
 
   // No real customers yet (or premium not activated) -> labelled demo view.
   const isDemo = demoMode || realCustomers.length === 0;
-  const customers = useMemo(() => (isDemo ? buildDemoCustomers() : realCustomers), [isDemo, realCustomers]);
+  const customers = useMemo(() => (isDemo ? buildDemoCustomers(t) : realCustomers), [isDemo, realCustomers, t]);
 
   const avgLtv = customers.length ? Math.round(customers.reduce((s, c) => s + c.totalSpent, 0) / customers.length) : 0;
   const repeatPct = customers.length ? Math.round((customers.filter((c) => c.orderCount > 1).length / customers.length) * 100) : 0;
@@ -238,22 +245,22 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
   if (selected) {
     const tags = [
       selected.isVip && { label: "VIP", icon: Crown },
-      selected.dueForReorder && { label: "מוכן לקנייה חוזרת", icon: Repeat },
-      selected.isRepeat && !selected.dueForReorder && { label: "לקוח חוזר", icon: Repeat },
+      selected.dueForReorder && { label: t("dash.customers.tag_ready_reorder"), icon: Repeat },
+      selected.isRepeat && !selected.dueForReorder && { label: t("dash.customers.tag_repeat_customer"), icon: Repeat },
     ].filter(Boolean) as { label: string; icon: typeof Crown }[];
     const st = STATUS_META[selected.status];
     const recencyDays = daysAgo(selected.lastOrder);
     const cc = crm[selected.key] || { tags: [], notes: "" };
-    const offerText = `היי ${selected.name}! יש לנו הטבה מיוחדת בשבילך 🎁`;
+    const offerText = `${t("dash.customers.offer_greeting_prefix")} ${selected.name}${t("dash.customers.offer_greeting_suffix")}`;
     const addTag = () => {
-      const t = tagDraft.trim();
-      if (!t || cc.tags.includes(t)) { setTagDraft(""); return; }
-      saveCrm(selected.key, { tags: [...cc.tags, t] }); setTagDraft("");
+      const val = tagDraft.trim();
+      if (!val || cc.tags.includes(val)) { setTagDraft(""); return; }
+      saveCrm(selected.key, { tags: [...cc.tags, val] }); setTagDraft("");
     };
     return (
       <div className="space-y-4" dir="rtl">
         <button onClick={() => setSelectedKey(null)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowRight className="w-4 h-4" /> חזרה לרשימת הלקוחות
+          <ArrowRight className="w-4 h-4" /> {t("dash.customers.back_to_list")}
         </button>
         <div className="rounded-xl border border-border bg-card p-5">
           <div className="flex items-center gap-3 mb-4">
@@ -264,8 +271,8 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
                 <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-muted ${st.text}`}>
                   <span className={`inline-block w-1.5 h-1.5 rounded-full ${st.dot}`} />{st.label}
                 </span>
-                {tags.map((t) => (
-                  <span key={t.label} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary"><t.icon className="w-3 h-3" />{t.label}</span>
+                {tags.map((tg) => (
+                  <span key={tg.label} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary"><tg.icon className="w-3 h-3" />{tg.label}</span>
                 ))}
               </div>
               <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mt-0.5">
@@ -275,60 +282,60 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{selected.orderCount}</div><div className="text-xs text-muted-foreground">הזמנות</div></div>
-            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{fmtPrice(selected.totalSpent)}</div><div className="text-xs text-muted-foreground">סך רכישות (LTV)</div></div>
-            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{fmtPrice(Math.round(selected.totalSpent / selected.orderCount))}</div><div className="text-xs text-muted-foreground">ממוצע להזמנה</div></div>
-            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{recencyDays === 0 ? "היום" : `${recencyDays} ימ׳`}</div><div className="text-xs text-muted-foreground">מההזמנה האחרונה</div></div>
+            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{selected.orderCount}</div><div className="text-xs text-muted-foreground">{t("dash.customers.stat_orders")}</div></div>
+            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{fmtPrice(selected.totalSpent)}</div><div className="text-xs text-muted-foreground">{t("dash.customers.stat_total_spent")}</div></div>
+            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{fmtPrice(Math.round(selected.totalSpent / selected.orderCount))}</div><div className="text-xs text-muted-foreground">{t("dash.customers.stat_avg_order")}</div></div>
+            <div className="rounded-lg bg-muted/40 p-3 text-center"><div className="text-xl font-semibold">{recencyDays === 0 ? t("dash.customers.today_label") : `${recencyDays} ${t("dash.customers.days_short_suffix")}`}</div><div className="text-xs text-muted-foreground">{t("dash.customers.stat_last_order")}</div></div>
           </div>
           {/* Quick actions */}
           <div className="flex flex-wrap gap-2 mb-5">
             {selected.phone && (
               <>
                 <a href={waLink(selected.phone, offerText)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm rounded-lg bg-primary text-primary-foreground px-3 py-2 hover:bg-primary/90 transition-colors">
-                  <Gift className="w-4 h-4" /> שלח הטבה בוואטסאפ
+                  <Gift className="w-4 h-4" /> {t("dash.customers.action_send_offer_whatsapp")}
                 </a>
                 <a href={waLink(selected.phone)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-2 hover:bg-muted transition-colors">
-                  <MessageCircle className="w-4 h-4" /> וואטסאפ
+                  <MessageCircle className="w-4 h-4" /> {t("dash.customers.action_whatsapp")}
                 </a>
                 <a href={telLink(selected.phone)} className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-2 hover:bg-muted transition-colors">
-                  <Phone className="w-4 h-4" /> התקשר
+                  <Phone className="w-4 h-4" /> {t("dash.customers.action_call")}
                 </a>
               </>
             )}
             {selected.email && (
               <a href={`mailto:${selected.email}`} className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-2 hover:bg-muted transition-colors">
-                <Mail className="w-4 h-4" /> מייל
+                <Mail className="w-4 h-4" /> {t("dash.customers.action_email")}
               </a>
             )}
-            <button onClick={() => { navigator.clipboard?.writeText(`${selected.name} · ${selected.phone} · ${selected.email}`); toast.success("הפרטים הועתקו"); }}
+            <button onClick={() => { navigator.clipboard?.writeText(`${selected.name} · ${selected.phone} · ${selected.email}`); toast.success(t("dash.customers.details_copied")); }}
               className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-2 hover:bg-muted transition-colors">
-              <Copy className="w-4 h-4" /> העתק פרטים
+              <Copy className="w-4 h-4" /> {t("dash.customers.action_copy_details")}
             </button>
           </div>
 
           {/* Tags */}
-          <h3 className="text-sm font-medium mb-2">תגיות</h3>
+          <h3 className="text-sm font-medium mb-2">{t("dash.customers.tags_heading")}</h3>
           <div className="flex flex-wrap items-center gap-2 mb-5">
-            {cc.tags.map((t) => (
-              <span key={t} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary">
-                {t}
-                <button onClick={() => saveCrm(selected.key, { tags: cc.tags.filter((x) => x !== t) })} aria-label="הסר תגית"><X className="w-3 h-3" /></button>
+            {cc.tags.map((tg) => (
+              <span key={tg} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+                {tg}
+                <button onClick={() => saveCrm(selected.key, { tags: cc.tags.filter((x) => x !== tg) })} aria-label={t("dash.customers.remove_tag_aria")}><X className="w-3 h-3" /></button>
               </span>
             ))}
             <div className="inline-flex items-center gap-1">
               <input value={tagDraft} onChange={(e) => setTagDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTag()}
-                placeholder="הוסף תגית (סיטונאי, נאמן...)" className="h-8 w-44 rounded-lg border border-border bg-background px-2.5 text-xs" />
+                placeholder={t("dash.customers.tag_input_placeholder")} className="h-8 w-44 rounded-lg border border-border bg-background px-2.5 text-xs" />
               <button onClick={addTag} className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-border text-primary hover:bg-muted"><Plus className="w-4 h-4" /></button>
             </div>
           </div>
 
           {/* Notes */}
-          <h3 className="text-sm font-medium mb-2">הערות פנימיות</h3>
+          <h3 className="text-sm font-medium mb-2">{t("dash.customers.notes_heading")}</h3>
           <textarea key={selected.key} defaultValue={cc.notes} onBlur={(e) => { if (e.target.value !== cc.notes) saveCrm(selected.key, { notes: e.target.value }); }}
-            placeholder="הערות על הלקוח - העדפות, שיחות, כל מה שחשוב לזכור. נשמר אוטומטית." rows={3}
+            placeholder={t("dash.customers.notes_placeholder")} rows={3}
             className="w-full rounded-lg border border-border bg-background p-3 text-sm mb-5 resize-y" />
 
-          <h3 className="text-sm font-medium mb-3">ציר זמן רכישות</h3>
+          <h3 className="text-sm font-medium mb-3">{t("dash.customers.timeline_heading")}</h3>
           <div className="relative pr-4">
             <div className="absolute right-[5px] top-1 bottom-1 w-px bg-border" />
             <div className="flex flex-col gap-3">
@@ -339,7 +346,7 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
                     <span className={`absolute -right-4 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-background ${i === 0 ? "bg-primary" : "bg-muted-foreground/40"}`} />
                     <span className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="w-3.5 h-3.5" />{fmtDate(o.date)}
-                      <span className="text-xs">· {d === 0 ? "היום" : `לפני ${d} ימים`}</span>
+                      <span className="text-xs">· {d === 0 ? t("dash.customers.today_label") : `${t("dash.customers.days_ago_prefix")}${d}${t("dash.customers.days_ago_suffix")}`}</span>
                     </span>
                     <span className="text-sm font-medium">{fmtPrice(o.total)}</span>
                   </div>
@@ -353,13 +360,13 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
   }
 
   const segChips: { id: SegmentFilter; label: string }[] = [
-    { id: "all", label: `הכל (${counts.all})` },
+    { id: "all", label: `${t("dash.customers.seg_all")} (${counts.all})` },
     { id: "vip", label: `VIP (${counts.vip})` },
-    { id: "reorder", label: `מוכנים לקנייה חוזרת (${counts.reorder})` },
-    { id: "at_risk", label: `בסיכון (${counts.at_risk})` },
-    { id: "dormant", label: `רדומים (${counts.dormant})` },
-    { id: "repeat", label: `חוזרים (${counts.repeat})` },
-    { id: "new", label: `חדשים (${counts.new})` },
+    { id: "reorder", label: `${t("dash.customers.seg_reorder")} (${counts.reorder})` },
+    { id: "at_risk", label: `${t("dash.customers.status_at_risk")} (${counts.at_risk})` },
+    { id: "dormant", label: `${t("dash.customers.seg_dormant")} (${counts.dormant})` },
+    { id: "repeat", label: `${t("dash.customers.seg_repeat")} (${counts.repeat})` },
+    { id: "new", label: `${t("dash.customers.seg_new")} (${counts.new})` },
   ];
 
   return (
@@ -367,10 +374,10 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
       {/* Top bar: demo badge + export */}
       <div className="flex items-center justify-between">
         <span>
-          {isDemo && <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">תצוגת דמו</span>}
+          {isDemo && <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">{t("dash.customers.demo_badge")}</span>}
         </span>
         <button onClick={() => exportCsv(filtered)} className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-1.5 hover:bg-muted transition-colors">
-          <Download className="w-4 h-4" /> ייצוא לאקסל
+          <Download className="w-4 h-4" /> {t("dash.customers.export_button")}
         </button>
       </div>
 
@@ -379,10 +386,10 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
         <div className="rounded-xl bg-card border border-border p-4 relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-0.5 bg-emerald-500" />
           <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
-            <Repeat className="w-3.5 h-3.5 text-emerald-500" /> חוזרים
+            <Repeat className="w-3.5 h-3.5 text-emerald-500" /> {t("dash.customers.seg_repeat")}
           </div>
           <div className="text-3xl font-bold tabular-nums">{repeatPct}%</div>
-          <div className="text-[11px] text-muted-foreground mt-0.5">לקוחות חוזרים</div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">{t("dash.customers.kpi_repeat_customers")}</div>
         </div>
         <div className="rounded-xl bg-card border border-border p-4 relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-0.5 bg-primary" />
@@ -390,23 +397,23 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
             <Crown className="w-3.5 h-3.5 text-primary" /> LTV
           </div>
           <div className="text-3xl font-bold tabular-nums">{fmtPrice(avgLtv)}</div>
-          <div className="text-[11px] text-muted-foreground mt-0.5">ערך ממוצע ללקוח</div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">{t("dash.customers.kpi_avg_value_per_customer")}</div>
         </div>
         <div className="rounded-xl bg-card border border-border p-4 relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-0.5 bg-amber-500" />
           <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 rounded-full bg-amber-500 shrink-0" /> סיכון
+            <span className="inline-block w-2 h-2 rounded-full bg-amber-500 shrink-0" /> {t("dash.customers.kpi_risk_label")}
           </div>
           <div className="text-3xl font-bold tabular-nums">{counts.at_risk + counts.dormant}</div>
-          <div className="text-[11px] text-muted-foreground mt-0.5">בסיכון / רדומים</div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">{t("dash.customers.kpi_risk_desc")}</div>
         </div>
         <div className="rounded-xl bg-card border border-border p-4 relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-0.5 bg-sky-500" />
           <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
-            <Repeat className="w-3.5 h-3.5 text-sky-500" /> קנייה חוזרת
+            <Repeat className="w-3.5 h-3.5 text-sky-500" /> {t("dash.customers.kpi_reorder_label")}
           </div>
           <div className="text-3xl font-bold tabular-nums">{counts.reorder}</div>
-          <div className="text-[11px] text-muted-foreground mt-0.5">מוכנים להזמין שוב</div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">{t("dash.customers.kpi_reorder_desc")}</div>
         </div>
       </div>
 
@@ -416,19 +423,19 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
           {counts.reorder > 0 && (
             <button onClick={() => setSegment("reorder")}
               className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 transition-colors">
-              <Repeat className="w-3.5 h-3.5" /> {counts.reorder} מוכנים לקנייה חוזרת
+              <Repeat className="w-3.5 h-3.5" /> {counts.reorder} {t("dash.customers.seg_reorder")}
             </button>
           )}
           {counts.at_risk > 0 && (
             <button onClick={() => setSegment("at_risk")}
               className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/5 text-amber-600 hover:bg-amber-500/10 transition-colors">
-              <Bell className="w-3.5 h-3.5" /> {counts.at_risk} מתחילים להתרחק
+              <Bell className="w-3.5 h-3.5" /> {counts.at_risk} {t("dash.customers.opp_at_risk_suffix")}
             </button>
           )}
           {counts.dormant > 0 && (
             <button onClick={() => setSegment("dormant")}
               className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-rose-500/30 bg-rose-500/5 text-rose-600 hover:bg-rose-500/10 transition-colors">
-              <Bell className="w-3.5 h-3.5" /> {counts.dormant} רדומים
+              <Bell className="w-3.5 h-3.5" /> {counts.dormant} {t("dash.customers.seg_dormant")}
             </button>
           )}
         </div>
@@ -446,13 +453,13 @@ const DashboardCustomers = ({ orders, businessId, demoMode }: DashboardCustomers
 
       <div className="relative">
         <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="חיפוש לפי שם, טלפון או מייל" className="w-full h-10 rounded-xl border border-border bg-background pr-9 pl-3 text-sm" />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("dash.customers.search_placeholder")} className="w-full h-10 rounded-xl border border-border bg-background pr-9 pl-3 text-sm" />
       </div>
 
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <Users className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">{customers.length === 0 ? "עדיין אין לקוחות - הם יופיעו כאן עם ההזמנה הראשונה" : "לא נמצאו לקוחות תואמים"}</p>
+          <p className="text-sm">{customers.length === 0 ? t("dash.customers.empty_no_customers") : t("dash.customers.empty_no_matches")}</p>
         </div>
       ) : (
         <div className="rounded-2xl border border-border overflow-hidden divide-y divide-border">
