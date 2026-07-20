@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { StepNavigation } from "./StepNavigation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StepBannerUploadProps {
   data: OnboardingData;
@@ -47,6 +48,7 @@ const compressImage = (file: File): Promise<string> =>
   });
 
 const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUploadProps) => {
+  const { t } = useLanguage();
   const [heroPreview, setHeroPreview] = useState<string | null>(data.extractedBranding?.heroImageUrl || null);
   const [isGeneratingHero, setIsGeneratingHero] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<UploadMethod>(
@@ -121,16 +123,16 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
       });
 
       if (error || !heroData?.imageUrl) {
-        toast({ title: "שגיאה ביצירת תמונה", description: "נסו שוב או העלו תמונה משלכם", variant: "destructive" });
+        toast({ title: t("ob.ban.err_gen"), description: t("ob.ban.err_gen_retry"), variant: "destructive" });
         setSelectedMethod(null);
         return;
       }
 
       lastGeneratedCategory.current = cacheKey;
       saveHeroImage(heroData.imageUrl, 'ai');
-      toast({ title: forceRegenerate ? "תמונה חדשה נוצרה! ✨" : "תמונה נוצרה בהצלחה! ✨" });
+      toast({ title: forceRegenerate ? t("ob.ban.created_new") : t("ob.ban.created") });
     } catch {
-      toast({ title: "שגיאה ביצירת תמונה", description: "נסו שוב מאוחר יותר", variant: "destructive" });
+      toast({ title: t("ob.ban.err_gen"), description: t("ob.ban.err_gen_later"), variant: "destructive" });
       setSelectedMethod(null);
     } finally {
       setIsGeneratingHero(false);
@@ -142,11 +144,11 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
   const handleUrlSubmit = () => {
     if (!urlInput.trim()) return;
     try { new URL(urlInput); } catch {
-      toast({ title: "קישור לא תקין", variant: "destructive" });
+      toast({ title: t("ob.ban.bad_url"), variant: "destructive" });
       return;
     }
     saveHeroImage(urlInput, 'url');
-    toast({ title: "תמונה נטענה בהצלחה! ✨" });
+    toast({ title: t("ob.ban.loaded") });
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,7 +156,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
     if (!file) return;
     const dataUrl = await compressImage(file);
     saveHeroImage(dataUrl, 'upload');
-    toast({ title: "תמונה הועלתה בהצלחה! ✨" });
+    toast({ title: t("ob.ban.uploaded") });
   };
 
   const handleRemove = () => {
@@ -180,10 +182,10 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
       {/* Header */}
       <div className="text-center">
         <h1 className="text-2xl md:text-3xl font-bold pv-strong mb-2">
-          תמונה ראשית לאתר
+          {t("ob.ban.title")}
         </h1>
         <p className="pv-muted">
-          בחרו איך תרצו להוסיף תמונה לראש האתר שלכם
+          {t("ob.ban.subtitle")}
         </p>
       </div>
 
@@ -198,7 +200,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
           className="flex flex-col items-center justify-center gap-4 py-12"
         >
           <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <p className="text-sm pv-muted">יוצר תמונה מותאמת לעסק שלכם...</p>
+          <p className="text-sm pv-muted">{t("ob.ban.generating")}</p>
         </motion.div>
       )}
 
@@ -216,8 +218,8 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
               className="p-6 rounded-2xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-center flex flex-col items-center justify-center min-h-[140px]"
             >
               <Upload className="w-8 h-8 mb-3 pv-muted" />
-              <p className="text-sm font-medium pv-strong">העלאה</p>
-              <p className="text-xs pv-faint mt-1">מהמחשב</p>
+              <p className="text-sm font-medium pv-strong">{t("ob.ban.opt_upload")}</p>
+              <p className="text-xs pv-faint mt-1">{t("ob.ban.opt_upload_sub")}</p>
             </motion.button>
 
             {/* URL */}
@@ -232,8 +234,8 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
               }`}
             >
               <Link className="w-8 h-8 mb-3 pv-muted" />
-              <p className="text-sm font-medium pv-strong">קישור</p>
-              <p className="text-xs pv-faint mt-1">מהאינטרנט</p>
+              <p className="text-sm font-medium pv-strong">{t("ob.ban.opt_url")}</p>
+              <p className="text-xs pv-faint mt-1">{t("ob.ban.opt_url_sub")}</p>
             </motion.button>
 
             {/* AI Generate */}
@@ -247,8 +249,8 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
               className="p-6 rounded-2xl border-2 border-primary/30 bg-primary/5 hover:border-primary/60 hover:bg-primary/10 transition-all text-center flex flex-col items-center justify-center min-h-[140px] disabled:opacity-50"
             >
               <Wand2 className="w-8 h-8 text-primary mb-3" />
-              <p className="text-sm font-medium text-primary">תיצרו לי אתם</p>
-              <p className="text-xs pv-muted mt-1">באמצעות AI ✨</p>
+              <p className="text-sm font-medium text-primary">{t("ob.ban.opt_ai")}</p>
+              <p className="text-xs pv-muted mt-1">{t("ob.ban.opt_ai_sub")}</p>
             </motion.button>
           </div>
 
@@ -257,7 +259,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2">
               <Input
                 type="url"
-                placeholder="הדבק כאן קישור לתמונה..."
+                placeholder={t("ob.ban.url_ph")}
                 value={urlInput}
                 onChange={e => setUrlInput(e.target.value)}
                 className="flex-1"
@@ -268,7 +270,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
                 disabled={!urlInput.trim()}
                 className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium disabled:opacity-50"
               >
-                טען
+                {t("ob.ban.url_load")}
               </button>
             </motion.div>
           )}
@@ -299,9 +301,9 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
             {/* Source badge */}
             <div className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 border border-white/10 backdrop-blur-sm">
               <span className="text-xs font-medium text-white flex items-center gap-1.5">
-                {selectedMethod === 'ai' && <><Wand2 className="w-3.5 h-3.5 text-primary" /> נוצר ע״י AI</>}
-                {selectedMethod === 'upload' && <><Upload className="w-3.5 h-3.5" /> הועלה</>}
-                {selectedMethod === 'url' && <><Link className="w-3.5 h-3.5" /> מקישור</>}
+                {selectedMethod === 'ai' && <><Wand2 className="w-3.5 h-3.5 text-primary" /> {t("ob.ban.badge_ai")}</>}
+                {selectedMethod === 'upload' && <><Upload className="w-3.5 h-3.5" /> {t("ob.ban.badge_upload")}</>}
+                {selectedMethod === 'url' && <><Link className="w-3.5 h-3.5" /> {t("ob.ban.badge_url")}</>}
               </span>
             </div>
 
@@ -311,7 +313,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
                 {showCustomPrompt && (
                   <>
                     <Input
-                      placeholder="תארו את התמונה הרצויה..."
+                      placeholder={t("ob.ban.prompt_ph")}
                       value={customPrompt}
                       onChange={e => setCustomPrompt(e.target.value)}
                       className="h-11 w-64 bg-background/95 backdrop-blur-sm"
@@ -323,7 +325,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
                       className="px-4 py-2 rounded-xl bg-primary/80 hover:bg-primary text-white text-sm font-medium flex items-center gap-2 disabled:opacity-50"
                     >
                       {isGeneratingHero ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-                      צור עכשיו
+                      {t("ob.ban.gen_now")}
                     </button>
                   </>
                 )}
@@ -334,7 +336,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
                     className="px-4 py-2 rounded-xl bg-primary/80 hover:bg-primary text-white text-sm font-medium flex items-center gap-2"
                   >
                     <RefreshCw className="w-4 h-4" />
-                    צור מחדש
+                    {t("ob.ban.regen")}
                   </button>
                 )}
               </div>
@@ -347,8 +349,8 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
         onNext={onNext}
         onSaveAndContinue={onNext}
         onBack={onBack}
-        nextLabel={heroPreview ? "הבא ←" : "דלג"}
-        saveLabel={heroPreview ? 'שמרו והמשיכו' : undefined}
+        nextLabel={heroPreview ? t("ob.common.next") : t("ob.ban.skip")}
+        saveLabel={heroPreview ? t("ob.common.save") : undefined}
         showPreview={!heroPreview}
         showSave={!!heroPreview}
       />
