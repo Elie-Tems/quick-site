@@ -80,10 +80,13 @@ const TYPE_CONFIG: Record<BusinessType, {
   },
   realestate: {
     managementGroupLabelKey: "dash.nav.mgmt.realestate",
-    hiddenItems: ['shipping', 'coupons', 'verticals'] as DashboardView[],
+    // 'orders' (previously relabeled "לידים"/Leads) points at the commerce orders
+    // table, which real-estate leads never write to → permanently empty, hidden.
+    // Real leads already work correctly under the "customers" (CRM) tab via
+    // contacts-capture -> pipeline_cards.
+    hiddenItems: ['orders', 'shipping', 'coupons', 'verticals'] as DashboardView[],
     itemOverrides: {
       products: { labelKey: "dash.nav.ov.realestate_products", shortLabelKey: "dash.nav.ov.realestate_products_short", icon: Building2 },
-      orders: { labelKey: "dash.nav.ov.realestate_orders", shortLabelKey: "dash.nav.ov.realestate_orders_short", icon: Users },
     },
   },
   vacation: {

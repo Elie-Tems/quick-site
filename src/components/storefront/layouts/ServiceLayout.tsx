@@ -148,7 +148,12 @@ const ServiceLayout = ({
         {/* Per-vertical experience (booking / listings) - right after the hero. */}
         {verticalSlot && <section className="py-8 px-4"><div className="max-w-5xl mx-auto">{verticalSlot}</div></section>}
 
-        {/* Service cards grid */}
+        {/* Service cards grid. Gated on hasCommerce (not just the cart/checkout
+            controls further down) - nonprofit/synagogue businesses have
+            hasCommerce=false and their real content is the donation verticalSlot
+            above; showing a priced product grid with no way to buy anything is
+            both confusing and mislabels a donation-based storefront as a shop. */}
+        {hasCommerce && (
         <section id="products" className="py-16 px-4">
           <div className="max-w-5xl mx-auto">
             <h2
@@ -208,6 +213,7 @@ const ServiceLayout = ({
             </div>
           </div>
         </section>
+        )}
 
         {/* Contact strip */}
         {phone && (

@@ -28,7 +28,11 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
     ? banners.slice(1).map(b => b.imageUrl!).filter(Boolean)
     : PORTFOLIO_FALLBACK;
 
-  const services = products.filter(p => !p.imageUrl || p.price > 0).slice(0, 6);
+  // A product with BOTH an image and a price used to match both filters and render
+  // twice - once as an icon-only "service" card (no image, book-appointment CTA),
+  // once as a photographed "shop" item (add-to-cart). Split strictly by whether a
+  // photo exists: no photo -> bookable service, has a photo -> purchasable retail item.
+  const services = products.filter(p => !p.imageUrl).slice(0, 6);
   const shopProducts = products.filter(p => !!p.imageUrl);
 
   const total = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);

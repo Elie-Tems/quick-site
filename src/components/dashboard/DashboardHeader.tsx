@@ -101,7 +101,7 @@ const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }:
               language (he/en/ar/ru/fr). Selecting a language flips document dir
               (rtl/ltr) app-wide via LanguageContext. */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="inline-flex items-center gap-1.5 h-9 px-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors focus:outline-none" aria-label="Language / שפה">
+            <DropdownMenuTrigger className="inline-flex items-center gap-1.5 h-9 px-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors focus:outline-none" aria-label={t("dash.hdr.language_label")}>
               <Globe className="h-4 w-4" />
               <span className="hidden sm:inline font-medium">{currentLanguage.flag} {currentLanguage.nativeName}</span>
             </DropdownMenuTrigger>

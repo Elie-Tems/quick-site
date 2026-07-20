@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import SEOHead from "@/components/SEOHead";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +20,6 @@ import DashboardCoupons from "@/components/dashboard/DashboardCoupons";
 import DashboardSales from "@/components/dashboard/DashboardSales";
 import DashboardCampaigns from "@/components/dashboard/DashboardCampaigns";
 import DashboardSettings, { type BusinessSettings } from "@/components/dashboard/DashboardSettings";
-import DashboardAboutPage from "@/components/dashboard/DashboardAboutPage";
 import DashboardContent from "@/components/dashboard/DashboardContent";
 import DashboardPreview from "@/components/dashboard/DashboardPreview";
 import DashboardCategories from "@/components/dashboard/DashboardCategories";
@@ -71,6 +71,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
   const { user, loading: authLoading } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: business, isLoading: businessLoading, isSuccess: businessSuccess, isError: businessError } = useMyBusiness();
@@ -582,10 +583,10 @@ const Dashboard = () => {
   // enabled; the label follows the primary module.
   const verticalModules = getEnabledModules(business as any).filter((m) => m !== "commerce");
   const verticalsLabel =
-    verticalModules.includes("synagogue") ? "בית הכנסת" :
-    verticalModules.includes("booking") ? "יומן ותורים" :
-    verticalModules.includes("listings") ? "לידים ונכסים" :
-    verticalModules.includes("donations") ? "תרומות וקמפיינים" : undefined;
+    verticalModules.includes("synagogue") ? t("dash.verticals.synagogue") :
+    verticalModules.includes("booking") ? t("dash.verticals.booking") :
+    verticalModules.includes("listings") ? t("dash.verticals.listings") :
+    verticalModules.includes("donations") ? t("dash.verticals.donations") : undefined;
 
   // First-visit guided tour of the dashboard (shown once per merchant).
   const [showTour, setShowTour] = useState(false);

@@ -904,7 +904,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     // its business_type default layout (property/service) so the storefront stays
     // lead/donation-based (no "add to cart"). This is what makes a realestate store show
     // the property/lead experience regardless of the saved template.
-    const COMMERCE_LAYOUTS = new Set(['classic', 'market', 'boutique', 'restaurant']);
+    const COMMERCE_LAYOUTS = new Set(['classic', 'market', 'boutique', 'restaurant', 'beauty-spa']);
     // vacation has DEFAULT_MODULES.commerce (it sells rooms + real add-on merch), unlike
     // the 3 lead/donation verticals below - it must NOT be forced off a commerce layout.
     const NON_COMMERCE_VERTICALS = new Set(['realestate', 'nonprofit', 'synagogue']);
