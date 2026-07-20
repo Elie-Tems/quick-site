@@ -15,11 +15,12 @@ interface DashboardContentProps {
   businessId?: string;
   businessType?: BusinessType;
   businessSubType?: string;
+  onNavigate?: (view: string) => void;
 }
 
 type ContentTab = "hero" | "about" | "labels" | "rabbi" | "hosting" | "donations" | "differentiation" | "gallery" | "leadform";
 
-const DashboardContent = ({ businessId, businessType = "products", businessSubType }: DashboardContentProps) => {
+const DashboardContent = ({ businessId, businessType = "products", businessSubType, onNavigate }: DashboardContentProps) => {
   const { t } = useLanguage();
   const isTorahCenter = businessSubType === "torah-center";
   const isDonationBased = businessType === "nonprofit" || businessType === "synagogue";
@@ -64,6 +65,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
   const [diffSubheading, setDiffSubheading] = useState("");
   const [diffItems, setDiffItems] = useState<{ icon: string; title: string; body: string }[]>([]);
   const [isSavingDiff, setIsSavingDiff] = useState(false);
+  const [isGeneratingDiff, setIsGeneratingDiff] = useState(false);
 
   // Gallery
   const [galleryHeading, setGalleryHeading] = useState("");
@@ -246,6 +248,32 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
       toast.error(t("dash.content.toast.ai_generate_error"));
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleGenerateDiff = async () => {
+    if (!businessId || !business) return;
+    const rawText = aboutBody || (business as any).name || "";
+    if (rawText.trim().length < 5) { toast.error("הוסיפו קודם תיאור בטאב 'אודות' כדי שה-AI ידע מה לכתוב"); return; }
+    setIsGeneratingDiff(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-content", {
+        body: { businessName: business.name, businessCategory: (business as any).business_category, businessType, rawText },
+      });
+      if (error) throw error;
+      const raw: string = data?.heroBenefits || "";
+      const parts = raw.split("✦").map((s: string) => s.trim()).filter(Boolean);
+      if (parts.length > 0) {
+        setDiffItems(parts.map((p: string) => ({ icon: "✦", title: p, body: "" })));
+        if (!diffHeading) setDiffHeading("למה לבחור בנו?");
+        toast.success("יתרונות נוצרו — ערכו ושמרו");
+      } else {
+        toast.error("לא הצלחנו לייצר תוכן — נסו שוב");
+      }
+    } catch {
+      toast.error("שגיאה ביצירת תוכן");
+    } finally {
+      setIsGeneratingDiff(false);
     }
   };
 
@@ -802,9 +830,21 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
       {activeTab === "differentiation" && (businessType === "realestate" || businessType === "services") && (
         <div className="space-y-4 max-w-2xl">
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
+<<<<<<< HEAD
             <div>
               <h2 className="text-base font-semibold">{t("dash.content.diff.title")}</h2>
               <p className="text-sm text-muted-foreground mt-0.5">{t("dash.content.diff.subtitle")}</p>
+=======
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold">מה הבידול שלנו</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">סקשן ייחודי שמסביר ללקוח למה לבחור בכם ולא באחרים</p>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={handleGenerateDiff} disabled={isGeneratingDiff} className="shrink-0 gap-1.5">
+                {isGeneratingDiff ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+                כתוב עם AI
+              </Button>
+>>>>>>> 247b01e (feat(modules): fix gallery tab + AI buttons for gallery & differentiation)
             </div>
             <div className="space-y-3">
               <div className="space-y-1.5">
@@ -855,14 +895,33 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
       )}
 
       {/* Gallery tab */}
-      {activeTab === "gallery" && (businessType === "realestate" || businessType === "services" || businessType === "vacation") && (
+      {activeTab === "gallery" && (
         <div className="space-y-4 max-w-2xl">
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
+<<<<<<< HEAD
             <div>
               <h2 className="text-base font-semibold">{t("dash.content.gallery.title")}</h2>
               <p className="text-sm text-muted-foreground mt-0.5">
                 {businessType === "realestate" ? t("dash.content.gallery.desc_realestate") : businessType === "vacation" ? t("dash.content.gallery.desc_vacation") : t("dash.content.gallery.desc_services")}
               </p>
+=======
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold">גלריית תמונות</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {businessType === "realestate" ? "תמונות אווירה, שכונה ואורח חיים" : businessType === "vacation" ? "תמונות הנכס, הסביבה והאווירה" : "תיק עבודות ודוגמאות מקצועיות"}
+                </p>
+              </div>
+              {onNavigate && (
+                <button
+                  type="button"
+                  onClick={() => onNavigate("ai-images")}
+                  className="shrink-0 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                >
+                  <Wand2 className="h-3.5 w-3.5" /> צור תמונות עם AI
+                </button>
+              )}
+>>>>>>> 247b01e (feat(modules): fix gallery tab + AI buttons for gallery & differentiation)
             </div>
             <div className="space-y-1.5">
               <Label>{t("dash.content.gallery.heading_label")}</Label>
