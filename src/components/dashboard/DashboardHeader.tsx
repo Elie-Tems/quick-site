@@ -21,7 +21,7 @@ interface DashboardHeaderProps {
 const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }: DashboardHeaderProps) => {
   const { signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const { language, setLanguage, currentLanguage } = useLanguage();
+  const { language, setLanguage, currentLanguage, t } = useLanguage();
   const navigate = useNavigate();
 
   const { data: myBusinesses = [] } = useMyBusinesses();
@@ -66,12 +66,12 @@ const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }:
             <DropdownMenuContent align="end" className="w-60">
               {myBusinesses.length > 1 && (
                 <>
-                  <div className="px-2 py-1.5 text-[11px] font-medium text-muted-foreground">האתרים שלי ({myBusinesses.length})</div>
+                  <div className="px-2 py-1.5 text-[11px] font-medium text-muted-foreground">{t("dash.hdr.my_sites")} ({myBusinesses.length})</div>
                   {myBusinesses.map((b) => (
                     <DropdownMenuItem key={b.id} onClick={() => switchSite(b.id)} className="gap-2">
                       <Store className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                       <span className="truncate flex-1">{b.name}</span>
-                      {!b.is_published && <span className="text-[10px] text-muted-foreground">טיוטה</span>}
+                      {!b.is_published && <span className="text-[10px] text-muted-foreground">{t("dash.hdr.draft")}</span>}
                       {b.id === activeBusinessId && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
                     </DropdownMenuItem>
                   ))}
@@ -79,18 +79,18 @@ const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }:
                 </>
               )}
               <DropdownMenuItem onClick={() => navigate("/onboarding?new=1")} className="gap-2 text-primary focus:text-primary">
-                <PlusCircle className="h-4 w-4" /> הקמת אתר חדש
+                <PlusCircle className="h-4 w-4" /> {t("dash.hdr.new_site")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => onNavigate?.("settings")} className="gap-2">
-                <SettingsIcon className="h-4 w-4" /> פרטי העסק
+                <SettingsIcon className="h-4 w-4" /> {t("dash.hdr.business_details")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onNavigate?.("subscription")} className="gap-2">
-                <Crown className="h-4 w-4" /> התוכנית שלי
+                <Crown className="h-4 w-4" /> {t("dash.hdr.my_plan")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="gap-2 text-destructive focus:text-destructive">
-                <LogOut className="h-4 w-4 scale-x-[-1]" /> התנתקות
+                <LogOut className="h-4 w-4 scale-x-[-1]" /> {t("dash.hdr.logout")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -125,11 +125,11 @@ const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }:
             size="sm"
             asChild
             className="gap-1.5 text-muted-foreground hover:text-foreground"
-            title="מרכז ידע ועזרה"
+            title={t("dash.hdr.help_center")}
           >
             <a href="/help" target="_blank" rel="noopener noreferrer">
               <HelpCircle className="h-4 w-4" />
-              <span className="hidden md:inline">מרכז ידע</span>
+              <span className="hidden md:inline">{t("dash.hdr.help_center_short")}</span>
             </a>
           </Button>
           <Button
@@ -137,16 +137,16 @@ const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }:
             size="sm"
             onClick={toggleTheme}
             className="gap-1.5 border-border/50 hover:bg-accent hover:text-accent-foreground"
-            title={theme === 'light' ? 'מעבר למצב כהה' : 'מעבר למצב בהיר'}
+            title={theme === 'light' ? t("dash.hdr.dark_mode") : t("dash.hdr.light_mode")}
           >
             {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-            <span className="hidden sm:inline">{theme === 'light' ? 'מצב כהה' : 'מצב בהיר'}</span>
+            <span className="hidden sm:inline">{theme === 'light' ? t("dash.hdr.dark_mode_short") : t("dash.hdr.light_mode_short")}</span>
           </Button>
           {siteUrl && (
             <Button variant="default" size="sm" asChild className="gap-1.5 font-semibold">
               <a href={siteUrl} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-4 w-4" />
-                <span className="hidden sm:inline">צפה באתר</span>
+                <span className="hidden sm:inline">{t("dash.hdr.view_site")}</span>
               </a>
             </Button>
           )}
@@ -157,7 +157,7 @@ const DashboardHeader = ({ businessName, siteUrl, merchantLogoUrl, onNavigate }:
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4 scale-x-[-1]" />
-            <span className="hidden sm:inline">התנתקות</span>
+            <span className="hidden sm:inline">{t("dash.hdr.logout")}</span>
           </Button>
         </div>
       </div>
