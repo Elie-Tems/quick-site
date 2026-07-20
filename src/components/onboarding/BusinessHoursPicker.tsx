@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
  * Business-hours picker. Most sales sites take orders around the clock, so the
@@ -13,14 +14,15 @@ interface DayHours {
   to: string;
 }
 
-const DAYS: { label: string; letter: string }[] = [
-  { label: "ראשון", letter: "א׳" },
-  { label: "שני", letter: "ב׳" },
-  { label: "שלישי", letter: "ג׳" },
-  { label: "רביעי", letter: "ד׳" },
-  { label: "חמישי", letter: "ה׳" },
-  { label: "שישי", letter: "ו׳" },
-  { label: "שבת", letter: "שבת" },
+// label/letter are i18n keys resolved with t() at render (see ob.hrs.* keys).
+const DAYS: { labelKey: string; letterKey: string }[] = [
+  { labelKey: "ob.hrs.d0l", letterKey: "ob.hrs.d0s" },
+  { labelKey: "ob.hrs.d1l", letterKey: "ob.hrs.d1s" },
+  { labelKey: "ob.hrs.d2l", letterKey: "ob.hrs.d2s" },
+  { labelKey: "ob.hrs.d3l", letterKey: "ob.hrs.d3s" },
+  { labelKey: "ob.hrs.d4l", letterKey: "ob.hrs.d4s" },
+  { labelKey: "ob.hrs.d5l", letterKey: "ob.hrs.d5s" },
+  { labelKey: "ob.hrs.d6l", letterKey: "ob.hrs.d6s" },
 ];
 
 const DEFAULT_HOURS: DayHours[] = [
@@ -33,9 +35,8 @@ const DEFAULT_HOURS: DayHours[] = [
   { open: false, from: "09:00", to: "18:00" },
 ];
 
-const ALWAYS_OPEN_TEXT = "הזמנות מתקבלות בכל שעה (24/7)";
-
-function serialize(hours: DayHours[]): string {
+// letters = the 7 localized day-letters (Sun..Sat) resolved via t().
+function serialize(hours: DayHours[], letters: string[]): string {
   const parts: string[] = [];
   let i = 0;
   while (i < 7) {
@@ -44,7 +45,7 @@ function serialize(hours: DayHours[]): string {
     while (j + 1 < 7 && hours[j + 1].open && hours[j + 1].from === hours[i].from && hours[j + 1].to === hours[i].to) {
       j++;
     }
-    const range = i === j ? DAYS[i].letter : `${DAYS[i].letter}-${DAYS[j].letter}`;
+    const range = i === j ? letters[i] : `${letters[i]}-${letters[j]}`;
     parts.push(`${range} ${hours[i].from}-${hours[i].to}`);
     i = j + 1;
   }
@@ -57,6 +58,12 @@ interface BusinessHoursPickerProps {
 }
 
 const BusinessHoursPicker = ({ value, onChange }: BusinessHoursPickerProps) => {
+  const { t } = useLanguage();
+  const alwaysText = t("ob.hrs.always_text");
+  // The 7 localized day-letters, and a serialize bound to them.
+  const letters = DAYS.map((d) => t(d.letterKey));
+  const ser = (h: DayHours[]) => serialize(h, letters);
+
   const [hours, setHours] = useState<DayHours[]>(DEFAULT_HOURS);
   const [mode, setMode] = useState<"always" | "custom">(
     value && value.trim() && !value.includes("24/7") && !value.includes("בכל שעה") ? "custom" : "always",
@@ -67,13 +74,13 @@ const BusinessHoursPicker = ({ value, onChange }: BusinessHoursPickerProps) => {
   useEffect(() => {
     if (initialised.current) return;
     initialised.current = true;
-    if (!value || !value.trim()) onChange(ALWAYS_OPEN_TEXT);
+    if (!value || !value.trim()) onChange(alwaysText);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const update = (next: DayHours[]) => {
     setHours(next);
-    onChange(serialize(next));
+    onChange(ser(next));
   };
   const toggleDay = (index: number) => update(hours.map((d, i) => (i === index ? { ...d, open: !d.open } : d)));
   const setTime = (index: number, field: "from" | "to", v: string) =>
@@ -83,10 +90,10 @@ const BusinessHoursPicker = ({ value, onChange }: BusinessHoursPickerProps) => {
     update(hours.map((d, i) => (i <= 4 ? { ...base, open: true } : d)));
   };
 
-  const chooseAlways = () => { setMode("always"); onChange(ALWAYS_OPEN_TEXT); };
-  const chooseCustom = () => { setMode("custom"); onChange(serialize(hours)); };
+  const chooseAlways = () => { setMode("always"); onChange(alwaysText); };
+  const chooseCustom = () => { setMode("custom"); onChange(ser(hours)); };
 
-  const preview = serialize(hours);
+  const preview = ser(hours);
 
   return (
     <div className="space-y-3">
@@ -99,8 +106,8 @@ const BusinessHoursPicker = ({ value, onChange }: BusinessHoursPickerProps) => {
             mode === "always" ? "border-primary bg-primary/5" : "border-[#333] bg-[#1a1a1a] hover:border-primary/30"
           }`}
         >
-          <div className="font-semibold text-sm text-foreground">🟢 פתוח להזמנות 24/7</div>
-          <div className="text-xs text-muted-foreground mt-0.5">הלקוחות יכולים להזמין בכל שעה (מומלץ)</div>
+          <div className="font-semibold text-sm text-foreground">{t("ob.hrs.always_title")}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">{t("ob.hrs.always_sub")}</div>
         </button>
         <button
           type="button"
@@ -109,20 +116,20 @@ const BusinessHoursPicker = ({ value, onChange }: BusinessHoursPickerProps) => {
             mode === "custom" ? "border-primary bg-primary/5" : "border-[#333] bg-[#1a1a1a] hover:border-primary/30"
           }`}
         >
-          <div className="font-semibold text-sm text-foreground">🕒 שעות מותאמות</div>
-          <div className="text-xs text-muted-foreground mt-0.5">הגדרת שעות פתיחה לכל יום</div>
+          <div className="font-semibold text-sm text-foreground">{t("ob.hrs.custom_title")}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">{t("ob.hrs.custom_sub")}</div>
         </button>
       </div>
 
       {mode === "always" ? (
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-foreground">
-          ✓ הזמנות מתקבלות בכל שעה, כל ימות השבוע. אפשר תמיד לשנות בלוח הניהול.
+          {t("ob.hrs.always_confirm")}
         </div>
       ) : (
         <div className="space-y-3 rounded-xl border border-[#333] bg-[#1a1a1a] p-3">
           <div className="space-y-1.5">
             {DAYS.map((day, i) => (
-              <div key={day.label} className="flex items-center gap-3">
+              <div key={day.labelKey} className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => toggleDay(i)}
@@ -132,8 +139,8 @@ const BusinessHoursPicker = ({ value, onChange }: BusinessHoursPickerProps) => {
                       : "bg-[#222] text-muted-foreground border border-[#333]"
                   }`}
                 >
-                  <span>{day.label}</span>
-                  <span className="text-xs">{hours[i].open ? "פתוח" : "סגור"}</span>
+                  <span>{t(day.labelKey)}</span>
+                  <span className="text-xs">{hours[i].open ? t("ob.hrs.open") : t("ob.hrs.closed")}</span>
                 </button>
 
                 {hours[i].open ? (
@@ -153,7 +160,7 @@ const BusinessHoursPicker = ({ value, onChange }: BusinessHoursPickerProps) => {
                     />
                   </div>
                 ) : (
-                  <span className="flex-1 text-sm text-muted-foreground pr-1">סגור</span>
+                  <span className="flex-1 text-sm text-muted-foreground pr-1">{t("ob.hrs.closed")}</span>
                 )}
               </div>
             ))}
@@ -161,7 +168,7 @@ const BusinessHoursPicker = ({ value, onChange }: BusinessHoursPickerProps) => {
 
           <div className="flex items-center justify-between gap-2 pt-1">
             <button type="button" onClick={applyToWeekdays} className="text-xs text-primary hover:underline">
-              החל את שעות יום ראשון על א׳-ה׳
+              {t("ob.hrs.apply_weekdays")}
             </button>
             {preview && (
               <span className="text-xs text-muted-foreground truncate" title={preview}>
