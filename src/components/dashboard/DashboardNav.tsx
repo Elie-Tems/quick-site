@@ -2,6 +2,7 @@ import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { BusinessType } from "@/lib/businessModules";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails' | 'modules' | 'availability';
 
@@ -21,16 +22,28 @@ interface DashboardNavProps {
   verticalsLabel?: string;
 }
 
-// Sidebar groups (desktop shows these as section headers). Order here = display order.
+// Sidebar groups (desktop shows these as section headers). Order here = display
+// order. These Hebrew literals are the internal group IDs (TS literal types +
+// React state keys) - kept unchanged. Only the rendered label is translated,
+// via GROUP_LABEL_KEYS below.
 const NAV_GROUPS = ["סקירה", "ניהול", "תוכן ועיצוב", "שיווק", "הגדרות"] as const;
 type NavGroup = (typeof NAV_GROUPS)[number];
 
+const GROUP_LABEL_KEYS: Record<NavGroup, string> = {
+  "סקירה": "dash.nav.grp.overview",
+  "ניהול": "dash.nav.grp.management",
+  "תוכן ועיצוב": "dash.nav.grp.content",
+  "שיווק": "dash.nav.grp.marketing",
+  "הגדרות": "dash.nav.grp.settings",
+};
+
 // Per-business-type overrides: which nav items to hide, and label/icon overrides.
+// label/shortLabel are i18n keys, resolved with t() at render time.
 const TYPE_CONFIG: Record<BusinessType, {
   hiddenItems?: DashboardView[];
-  managementGroupLabel?: string;
+  managementGroupLabelKey?: string;
   extraNavItems?: typeof navItems;
-  itemOverrides?: Partial<Record<DashboardView, { label?: string; shortLabel?: string; icon?: React.ComponentType<{ className?: string }> }>>;
+  itemOverrides?: Partial<Record<DashboardView, { labelKey?: string; shortLabelKey?: string; icon?: React.ComponentType<{ className?: string }> }>>;
 }> = {
   products:  { hiddenItems: ['visualization-studio'] },
   services:  {
@@ -40,93 +53,94 @@ const TYPE_CONFIG: Record<BusinessType, {
       // nav item). This tab edits the commerce products table (retail add-ons like
       // creams/gift cards), so a merchant clicking "שירותים" here would land on the
       // wrong screen looking for their bookable services.
-      products: { label: "מוצרים נלווים", shortLabel: "מוצרים", icon: Package },
+      products: { labelKey: "dash.nav.ov.services_products", shortLabelKey: "dash.nav.ov.services_products_short", icon: Package },
     },
   },
   nonprofit: {
-    managementGroupLabel: "ניהול תרומות",
+    managementGroupLabelKey: "dash.nav.mgmt.nonprofit",
     // 'orders' points at the commerce orders table, which nonprofits never write to
     // (donations live in the "verticals" tab instead) → permanently empty, hidden.
     // 'discounts' (sale price / "hot" badge) is a commerce merchandising concept with
     // no equivalent on the donation-project storefront - also hidden.
     hiddenItems: ['orders', 'shipping', 'coupons', 'visualization-studio', 'discounts'],
     itemOverrides: {
-      products: { label: "פעילויות ומיזמים", shortLabel: "פעילויות", icon: Heart },
+      products: { labelKey: "dash.nav.ov.nonprofit_products", shortLabelKey: "dash.nav.ov.nonprofit_products_short", icon: Heart },
     },
   },
   synagogue: {
-    managementGroupLabel: "ניהול בית הכנסת",
+    managementGroupLabelKey: "dash.nav.mgmt.synagogue",
     // 'orders' (relabeled "תרומות ועליות") points at the commerce orders table, which
     // synagogues never write to → permanently empty. Their real donations/aliyot live
     // in the "verticals" tab, so hide the dead orders tab. 'discounts' is likewise a
     // commerce-only concept (sale price / "hot" badge) with no synagogue equivalent.
     hiddenItems: ['orders', 'shipping', 'coupons', 'visualization-studio', 'discounts'],
     itemOverrides: {
-      products: { label: "פרויקטים / מיזמים", shortLabel: "פרויקטים", icon: Heart },
+      products: { labelKey: "dash.nav.ov.synagogue_products", shortLabelKey: "dash.nav.ov.synagogue_products_short", icon: Heart },
     },
   },
   realestate: {
-    managementGroupLabel: "ניהול לידים",
+    managementGroupLabelKey: "dash.nav.mgmt.realestate",
     hiddenItems: ['shipping', 'coupons', 'verticals'] as DashboardView[],
     itemOverrides: {
-      products: { label: "נכסים", shortLabel: "נכסים", icon: Building2 },
-      orders: { label: "לידים", shortLabel: "לידים", icon: Users },
+      products: { labelKey: "dash.nav.ov.realestate_products", shortLabelKey: "dash.nav.ov.realestate_products_short", icon: Building2 },
+      orders: { labelKey: "dash.nav.ov.realestate_orders", shortLabelKey: "dash.nav.ov.realestate_orders_short", icon: Users },
     },
   },
   vacation: {
-    managementGroupLabel: "ניהול לינה",
+    managementGroupLabelKey: "dash.nav.mgmt.vacation",
     hiddenItems: ['shipping', 'coupons', 'visualization-studio'] as DashboardView[],
     itemOverrides: {
-      products: { label: "חדרים ויחידות", shortLabel: "חדרים", icon: Building2 },
-      orders: { label: "הזמנות לינה", shortLabel: "הזמנות", icon: ShoppingCart },
-      customers: { label: "אורחים", shortLabel: "אורחים", icon: Users },
+      products: { labelKey: "dash.nav.ov.vacation_products", shortLabelKey: "dash.nav.ov.vacation_products_short", icon: Building2 },
+      orders: { labelKey: "dash.nav.ov.vacation_orders", shortLabelKey: "dash.nav.ov.vacation_orders_short", icon: ShoppingCart },
+      customers: { labelKey: "dash.nav.ov.vacation_customers", shortLabelKey: "dash.nav.ov.vacation_customers_short", icon: Users },
     },
     extraNavItems: [
-      { id: "availability" as DashboardView, label: "יומן זמינות", shortLabel: "זמינות", icon: CalendarDays, group: "ניהול" },
+      { id: "availability" as DashboardView, labelKey: "dash.nav.availability", shortLabelKey: "dash.nav.availability_short", icon: CalendarDays, group: "ניהול" },
     ],
   },
 };
 
+// label/shortLabel are i18n keys, resolved with t() at render time (in itemsToRender).
 const navItems: {
   id: DashboardView;
-  label: string;
-  shortLabel?: string;
+  labelKey: string;
+  shortLabelKey?: string;
   icon: React.ComponentType<{ className?: string }>;
   premium?: boolean;
   group: NavGroup;
 }[] = [
   // סקירה
-  { id: "home", label: "סקירה כללית", shortLabel: "סקירה", icon: LayoutDashboard, group: "סקירה" },
+  { id: "home", labelKey: "dash.nav.home", shortLabelKey: "dash.nav.home_short", icon: LayoutDashboard, group: "סקירה" },
 
   // ניהול
-  { id: "orders", label: "הזמנות", icon: ShoppingCart, group: "ניהול" },
-  { id: "products", label: "מוצרים", icon: Package, group: "ניהול" },
-  { id: "customers", label: "לקוחות & CRM", shortLabel: "לקוחות", icon: Users, group: "ניהול" },
+  { id: "orders", labelKey: "dash.nav.orders", icon: ShoppingCart, group: "ניהול" },
+  { id: "products", labelKey: "dash.nav.products", icon: Package, group: "ניהול" },
+  { id: "customers", labelKey: "dash.nav.customers", shortLabelKey: "dash.nav.customers_short", icon: Users, group: "ניהול" },
   // Vertical managers (booking calendar / listings / donation campaigns)
-  { id: "verticals", label: "יומן ולידים", icon: CalendarClock, group: "ניהול" },
-  { id: "shipping", label: "משלוחים", icon: Truck, group: "ניהול" },
+  { id: "verticals", labelKey: "dash.nav.verticals", icon: CalendarClock, group: "ניהול" },
+  { id: "shipping", labelKey: "dash.nav.shipping", icon: Truck, group: "ניהול" },
 
   // תוכן ועיצוב
-  { id: "content", label: "תוכן", icon: PenLine, group: "תוכן ועיצוב" },
-  { id: "design", label: "עיצוב", icon: Palette, group: "תוכן ועיצוב" },
-  { id: "ai-images", label: "תמונות AI", shortLabel: "תמונות AI", icon: ImagePlus, group: "תוכן ועיצוב" },
-  { id: "ai-generated-images", label: "גלריית תמונות", shortLabel: "גלריה", icon: Image, group: "תוכן ועיצוב" },
-  { id: "visualization-studio", label: "סטודיו הדמיות", shortLabel: "הדמיות", icon: Layers, group: "תוכן ועיצוב" },
-  { id: "modules", label: "יכולות ומודולים", shortLabel: "מודולים", icon: Blocks, group: "הגדרות" },
+  { id: "content", labelKey: "dash.nav.content", icon: PenLine, group: "תוכן ועיצוב" },
+  { id: "design", labelKey: "dash.nav.design", icon: Palette, group: "תוכן ועיצוב" },
+  { id: "ai-images", labelKey: "dash.nav.ai_images", shortLabelKey: "dash.nav.ai_images_short", icon: ImagePlus, group: "תוכן ועיצוב" },
+  { id: "ai-generated-images", labelKey: "dash.nav.ai_gallery", shortLabelKey: "dash.nav.ai_gallery_short", icon: Image, group: "תוכן ועיצוב" },
+  { id: "visualization-studio", labelKey: "dash.nav.viz_studio", shortLabelKey: "dash.nav.viz_studio_short", icon: Layers, group: "תוכן ועיצוב" },
+  { id: "modules", labelKey: "dash.nav.modules", shortLabelKey: "dash.nav.modules_short", icon: Blocks, group: "הגדרות" },
 
   // שיווק
-  { id: "coupons", label: "קופונים", icon: Ticket, group: "שיווק" },
-  { id: "campaigns", label: "פרסום באתר", icon: Megaphone, group: "שיווק" },
-  { id: "discounts", label: "מבצעים ומובילים", shortLabel: "מבצעים", icon: Tag, group: "שיווק" },
-  { id: "lifecycle-emails", label: "מיילים ללקוחות", shortLabel: "מיילים", icon: Mail, group: "שיווק" },
-  { id: "whatsapp-button", label: "כפתור וואטסאפ", shortLabel: "וואטסאפ", icon: MessageCircle, group: "שיווק" },
+  { id: "coupons", labelKey: "dash.nav.coupons", icon: Ticket, group: "שיווק" },
+  { id: "campaigns", labelKey: "dash.nav.campaigns", icon: Megaphone, group: "שיווק" },
+  { id: "discounts", labelKey: "dash.nav.discounts", shortLabelKey: "dash.nav.discounts_short", icon: Tag, group: "שיווק" },
+  { id: "lifecycle-emails", labelKey: "dash.nav.lifecycle_emails", shortLabelKey: "dash.nav.lifecycle_emails_short", icon: Mail, group: "שיווק" },
+  { id: "whatsapp-button", labelKey: "dash.nav.whatsapp_button", shortLabelKey: "dash.nav.whatsapp_button_short", icon: MessageCircle, group: "שיווק" },
 
   // הגדרות
-  { id: "domains", label: "דומיינים", icon: Globe, group: "הגדרות" },
-  { id: "settings", label: "פרטי העסק", shortLabel: "הגדרות", icon: Settings, group: "הגדרות" },
-  { id: "legal", label: "מסמכים משפטיים", shortLabel: "משפטי", icon: ScrollText, group: "הגדרות" },
-  { id: "subscription", label: "התוכנית שלי", icon: Crown, group: "הגדרות" },
-  { id: "payments", label: "סליקה", icon: CreditCard, group: "הגדרות" },
+  { id: "domains", labelKey: "dash.nav.domains", icon: Globe, group: "הגדרות" },
+  { id: "settings", labelKey: "dash.nav.settings", shortLabelKey: "dash.nav.settings_short", icon: Settings, group: "הגדרות" },
+  { id: "legal", labelKey: "dash.nav.legal", shortLabelKey: "dash.nav.legal_short", icon: ScrollText, group: "הגדרות" },
+  { id: "subscription", labelKey: "dash.nav.subscription", icon: Crown, group: "הגדרות" },
+  { id: "payments", labelKey: "dash.nav.payments", icon: CreditCard, group: "הגדרות" },
 ];
 
 const DashboardNav = ({
@@ -139,10 +153,11 @@ const DashboardNav = ({
   showVerticals = false,
   verticalsLabel,
 }: DashboardNavProps) => {
+  const { t } = useLanguage();
   const typeConfig = TYPE_CONFIG[businessType] ?? {};
   const hiddenItems = new Set(typeConfig.hiddenItems ?? []);
   const itemOverrides = typeConfig.itemOverrides ?? {};
-  const managementGroupLabel = typeConfig.managementGroupLabel;
+  const managementGroupLabel = typeConfig.managementGroupLabelKey ? t(typeConfig.managementGroupLabelKey) : undefined;
   const extraNavItems = typeConfig.extraNavItems ?? [];
 
   // Merge base items with any type-specific extra items (e.g. vacation's availability)
@@ -151,10 +166,12 @@ const DashboardNav = ({
   const itemsToRender = allNavItems
     .map((item) => {
       const override = itemOverrides[item.id] ?? {};
+      const labelKey = override.labelKey ?? item.labelKey;
+      const shortLabelKey = override.shortLabelKey ?? item.shortLabelKey;
       return {
         ...item,
-        label: item.id === "verticals" && verticalsLabel ? verticalsLabel : (override.label ?? item.label),
-        shortLabel: override.shortLabel ?? item.shortLabel,
+        label: item.id === "verticals" && verticalsLabel ? verticalsLabel : t(labelKey),
+        shortLabel: shortLabelKey ? t(shortLabelKey) : undefined,
         icon: override.icon ?? item.icon,
       };
     })
@@ -176,7 +193,7 @@ const DashboardNav = ({
 
   // Resolve the display label for a group (may be overridden for certain business types)
   const groupLabel = (group: NavGroup) =>
-    group === "ניהול" && managementGroupLabel ? managementGroupLabel : group;
+    group === "ניהול" && managementGroupLabel ? managementGroupLabel : t(GROUP_LABEL_KEYS[group]);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border md:sticky md:top-14 md:border-t-0 md:border-l md:w-56 md:h-[calc(100vh-3.5rem)] md:overflow-y-auto">
@@ -212,14 +229,14 @@ const DashboardNav = ({
             onClick={() => onViewChange("preview")}
             className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg border border-border text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            <Eye className="h-3.5 w-3.5" /> צפה באתר
+            <Eye className="h-3.5 w-3.5" /> {t("dash.nav.view_site")}
           </button>
           <button
             type="button"
             onClick={() => onViewChange("upgrades")}
             className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/8 text-[11px] font-medium text-violet-600 dark:text-violet-400 hover:bg-violet-500/15 transition-colors"
           >
-            ✨ תוספות
+            {t("dash.nav.addons_btn")}
           </button>
         </div>
 
@@ -262,7 +279,7 @@ const DashboardNav = ({
                     <span>{item.label}</span>
                     {item.premium && (
                       <span className="mr-auto px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded">
-                        פרימיום
+                        {t("dash.nav.premium")}
                       </span>
                     )}
                   </button>
@@ -279,9 +296,9 @@ const DashboardNav = ({
             onClick={() => onViewChange("upgrades")}
             className="w-full rounded-2xl border border-violet-500/25 bg-gradient-to-b from-violet-500/10 to-violet-500/5 p-3 text-right hover:from-violet-500/15 transition-all"
           >
-            <p className="text-xs font-semibold text-violet-700 dark:text-violet-300 mb-1">✨ תוספות שוות</p>
-            <p className="text-[10px] text-muted-foreground leading-snug">Google Reviews · דומיין · CRM מלא</p>
-            <p className="text-[10px] font-medium text-violet-600 dark:text-violet-400 mt-1">גלה עוד ←</p>
+            <p className="text-xs font-semibold text-violet-700 dark:text-violet-300 mb-1">{t("dash.nav.upsell_title")}</p>
+            <p className="text-[10px] text-muted-foreground leading-snug">{t("dash.nav.upsell_body")}</p>
+            <p className="text-[10px] font-medium text-violet-600 dark:text-violet-400 mt-1">{t("dash.nav.upsell_cta")}</p>
           </button>
         </div>
       </div>
