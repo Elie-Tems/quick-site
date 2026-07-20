@@ -293,7 +293,7 @@ const Onboarding = () => {
 
   const handleFinish = async (latestData: OnboardingData) => {
     if (!user) {
-      toast({ title: "נדרשת התחברות", variant: "destructive" });
+      toast({ title: t("ob.fin.err_login"), variant: "destructive" });
       navigate("/login");
       return;
     }
@@ -370,7 +370,7 @@ const Onboarding = () => {
       }
       navigate(`/publish-payment?businessId=${encodeURIComponent(result.businessId)}`, { state: { onboardingData: latestData } });
     } catch (error: any) {
-      toast({ title: "שגיאה ביצירת האתר", description: error.message || "משהו השתבש, נסה שוב", variant: "destructive" });
+      toast({ title: t("ob.create.err_title"), description: error.message || t("ob.fin.err_generic"), variant: "destructive" });
       setIsCreating(false);
     } finally {
       clearInterval(iv);
@@ -392,7 +392,7 @@ const Onboarding = () => {
               <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
                 <Rocket className="w-7 h-7 text-primary animate-pulse" />
               </div>
-              <h1 className="text-2xl font-medium pv-strong">בונים את האתר שלך...</h1>
+              <h1 className="text-2xl font-medium pv-strong">{t("ob.fin.building")}</h1>
               <p className="text-sm pv-muted">{t(stage.labelKey)}</p>
             </div>
             <div className="space-y-4">
@@ -425,7 +425,7 @@ const Onboarding = () => {
   if (currentStep === 0) {
     return (
       <>
-        <SEOHead title="בניית אתר לעסק | סיאנגו" />
+        <SEOHead title={t("ob.welcome.seo_title")} />
         <PreviewThemeRoot>
           <AuroraBg />
           <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16" dir="rtl">
@@ -434,20 +434,20 @@ const Onboarding = () => {
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="max-w-lg w-full text-center">
               <h1 className="text-4xl md:text-5xl font-display font-bold pv-strong leading-tight mb-4">
-                האתר שלכם<br />
-                <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">מוכן תוך 5 דקות</span>
+                {t("ob.welcome.title_line1")}<br />
+                <span className="bg-gradient-to-l from-primary via-emerald-400 to-lime-500 bg-clip-text text-transparent">{t("ob.welcome.title_line2")}</span>
               </h1>
-              <p className="text-lg pv-muted mb-10">בלי מפתחים, בלי עלויות גבוהות, בלי כאב ראש.</p>
+              <p className="text-lg pv-muted mb-10">{t("ob.welcome.subtitle")}</p>
 
               <div className="flex flex-col gap-3 mb-10 text-right">
                 {[
-                  { icon: Clock, text: "תהליך הקמה של 5 דקות בלבד" },
-                  { icon: CreditCard, text: '79 ₪ לחודש, ללא התחייבות' },
-                  { icon: Globe, text: "דומיין, סליקה ומייל כלולים" },
-                ].map(({ icon: Icon, text }) => (
-                  <div key={text} className="flex items-center gap-3 px-4 py-3 rounded-xl pv-surface2 border pv-border">
+                  { icon: Clock, key: "ob.welcome.feat1" },
+                  { icon: CreditCard, key: "ob.welcome.feat2" },
+                  { icon: Globe, key: "ob.welcome.feat3" },
+                ].map(({ icon: Icon, key }) => (
+                  <div key={key} className="flex items-center gap-3 px-4 py-3 rounded-xl pv-surface2 border pv-border">
                     <Icon className="w-5 h-5 text-primary shrink-0" />
-                    <span className="pv-text text-sm">{text}</span>
+                    <span className="pv-text text-sm">{t(key)}</span>
                   </div>
                 ))}
               </div>
@@ -455,11 +455,11 @@ const Onboarding = () => {
               <button
                 onClick={() => setCurrentStep(1)}
                 className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow mb-4">
-                בואו נתחיל <ArrowLeft className="w-5 h-5" />
+                {t("ob.welcome.cta")} <ArrowLeft className="w-5 h-5" />
               </button>
               <p className="text-xs pv-faint">
-                כבר יש לכם חשבון?{" "}
-                <Link to="/login" className="text-primary underline underline-offset-2">כניסה</Link>
+                {t("ob.welcome.have_account")}{" "}
+                <Link to="/login" className="text-primary underline underline-offset-2">{t("ob.welcome.login")}</Link>
               </p>
             </motion.div>
           </div>
@@ -503,7 +503,7 @@ const Onboarding = () => {
             {isPreviewMode ? (
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/30 rounded-full text-xs text-primary">
                 <Eye className="w-3.5 h-3.5" />
-                מצב תצוגה
+                {t("ob.welcome.preview_mode")}
               </div>
             ) : <div className="w-20" />}
           </div>
