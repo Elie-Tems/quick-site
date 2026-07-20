@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ShoppingCart, ArrowRight, User, Phone, Mail, Package, Heart, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { BusinessType } from "@/lib/businessModules";
 
 export interface OrderItem {
@@ -29,111 +30,95 @@ interface DashboardOrdersProps {
   businessType?: BusinessType;
 }
 
-const ORDER_SECTION_CONFIG: Record<string, { emoji: string; title: string; emptyMsg: string }> = {
-  products:   { emoji: "📦", title: "הזמנות",           emptyMsg: "כשלקוחות יזמינו, ההזמנות יופיעו כאן. שתפו את האתר!" },
-  services:   { emoji: "📋", title: "לידים",             emptyMsg: "כשאנשים יפנו, הלידים יופיעו כאן." },
-  realestate: { emoji: "🤝", title: "לידים",             emptyMsg: "כשמתעניינים יפנו, הלידים יופיעו כאן." },
-  vacation:   { emoji: "🛎️", title: "הזמנות לינה",      emptyMsg: "כשאורחים יזמינו, ההזמנות יופיעו כאן. שתפו את האתר!" },
-  nonprofit:  { emoji: "💰", title: "תרומות",            emptyMsg: "תרומות שיתקבלו יופיעו כאן." },
-  synagogue:  { emoji: "🙏", title: "תרומות ועליות",     emptyMsg: "תרומות ועליות יופיעו כאן." },
+// Emoji per business type (not user-facing text, no translation needed)
+const SECTION_EMOJI: Record<BusinessType, string> = {
+  products: "📦",
+  services: "📋",
+  realestate: "🤝",
+  vacation: "🛎️",
+  nonprofit: "💰",
+  synagogue: "🙏",
 };
 
-const STATUS_CHIP: Record<string, { bg: string; text: string }> = {
-  "חדשה":           { bg: "bg-blue-500/15",    text: "text-blue-700 dark:text-blue-300" },
-  "בטיפול":         { bg: "bg-amber-500/15",   text: "text-amber-700 dark:text-amber-300" },
-  "הושלמה":         { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
-  "בוטלה":          { bg: "bg-red-500/15",     text: "text-red-700 dark:text-red-300" },
-  "ליד חדש":        { bg: "bg-blue-500/15",    text: "text-blue-700 dark:text-blue-300" },
-  "נסגר":           { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
-  "לא רלוונטי":     { bg: "bg-muted",          text: "text-muted-foreground" },
-  "ממתין לאישור":   { bg: "bg-amber-500/15",   text: "text-amber-700 dark:text-amber-300" },
-  "מאושר":          { bg: "bg-blue-500/15",    text: "text-blue-700 dark:text-blue-300" },
-  "הגיע":           { bg: "bg-violet-500/15",  text: "text-violet-700 dark:text-violet-300" },
-  "עזב":            { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
-  "נקלטה":          { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
-  "בבדיקה":         { bg: "bg-amber-500/15",   text: "text-amber-700 dark:text-amber-300" },
-  "התקבלה":         { bg: "bg-blue-500/15",    text: "text-blue-700 dark:text-blue-300" },
-  "ממתין לתשלום":   { bg: "bg-amber-500/15",   text: "text-amber-700 dark:text-amber-300" },
-};
-
-type StatusCfg = Record<Order['status'], { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }>;
-
-const STATUS_BY_TYPE: Record<BusinessType, StatusCfg> = {
+// Chip visual style per business type + status. Keyed by status id (not label text)
+// so it keeps working no matter which language the label is rendered in.
+const STATUS_STYLE_BY_TYPE: Record<BusinessType, Record<Order['status'], { bg: string; text: string }>> = {
   products: {
-    received: { label: 'התקבלה', variant: 'secondary' },
-    pending_payment: { label: 'ממתין לתשלום', variant: 'outline' },
-    completed: { label: 'הושלמה', variant: 'default' },
-    cancelled: { label: 'בוטלה', variant: 'destructive' },
+    received: { bg: "bg-blue-500/15", text: "text-blue-700 dark:text-blue-300" },
+    pending_payment: { bg: "bg-amber-500/15", text: "text-amber-700 dark:text-amber-300" },
+    completed: { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
+    cancelled: { bg: "bg-red-500/15", text: "text-red-700 dark:text-red-300" },
   },
   services: {
-    received: { label: 'התקבלה', variant: 'secondary' },
-    pending_payment: { label: 'ממתין לתשלום', variant: 'outline' },
-    completed: { label: 'הושלמה', variant: 'default' },
-    cancelled: { label: 'בוטלה', variant: 'destructive' },
+    received: { bg: "bg-blue-500/15", text: "text-blue-700 dark:text-blue-300" },
+    pending_payment: { bg: "bg-amber-500/15", text: "text-amber-700 dark:text-amber-300" },
+    completed: { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
+    cancelled: { bg: "bg-red-500/15", text: "text-red-700 dark:text-red-300" },
   },
   nonprofit: {
-    received: { label: 'התקבלה', variant: 'secondary' },
-    pending_payment: { label: 'בבדיקה', variant: 'outline' },
-    completed: { label: 'נקלטה', variant: 'default' },
-    cancelled: { label: 'בוטלה', variant: 'destructive' },
+    received: { bg: "bg-blue-500/15", text: "text-blue-700 dark:text-blue-300" },
+    pending_payment: { bg: "bg-amber-500/15", text: "text-amber-700 dark:text-amber-300" },
+    completed: { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
+    cancelled: { bg: "bg-red-500/15", text: "text-red-700 dark:text-red-300" },
   },
   synagogue: {
-    received: { label: 'התקבלה', variant: 'secondary' },
-    pending_payment: { label: 'בבדיקה', variant: 'outline' },
-    completed: { label: 'נקלטה', variant: 'default' },
-    cancelled: { label: 'בוטלה', variant: 'destructive' },
+    received: { bg: "bg-blue-500/15", text: "text-blue-700 dark:text-blue-300" },
+    pending_payment: { bg: "bg-amber-500/15", text: "text-amber-700 dark:text-amber-300" },
+    completed: { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
+    cancelled: { bg: "bg-red-500/15", text: "text-red-700 dark:text-red-300" },
   },
   realestate: {
-    received: { label: 'ליד חדש', variant: 'secondary' },
-    pending_payment: { label: 'בטיפול', variant: 'outline' },
-    completed: { label: 'נסגר', variant: 'default' },
-    cancelled: { label: 'לא רלוונטי', variant: 'destructive' },
+    received: { bg: "bg-blue-500/15", text: "text-blue-700 dark:text-blue-300" },
+    pending_payment: { bg: "bg-amber-500/15", text: "text-amber-700 dark:text-amber-300" },
+    completed: { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
+    cancelled: { bg: "bg-muted", text: "text-muted-foreground" },
   },
   vacation: {
-    received: { label: 'ממתין לאישור', variant: 'secondary' },
-    pending_payment: { label: 'מאושר', variant: 'outline' },
-    completed: { label: 'עזב', variant: 'default' },
-    cancelled: { label: 'בוטלה', variant: 'destructive' },
+    received: { bg: "bg-amber-500/15", text: "text-amber-700 dark:text-amber-300" },
+    pending_payment: { bg: "bg-blue-500/15", text: "text-blue-700 dark:text-blue-300" },
+    completed: { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" },
+    cancelled: { bg: "bg-red-500/15", text: "text-red-700 dark:text-red-300" },
   },
 };
 
-// Per-type text labels
-const LABELS: Record<BusinessType, { title: string; single: string; contact: string; items: string; empty: string; emptyDesc: string; listItem: string }> = {
+type StatusVariantCfg = Record<Order['status'], { variant: 'default' | 'secondary' | 'destructive' | 'outline' }>;
+
+const STATUS_VARIANT_BY_TYPE: Record<BusinessType, StatusVariantCfg> = {
   products: {
-    title: 'הזמנות', single: 'הזמנה', contact: 'פרטי לקוח', items: 'מוצרים',
-    empty: 'עדיין אין הזמנות',
-    emptyDesc: 'ברגע שלקוח יזמין מהחנות, ההזמנה תופיע כאן.',
-    listItem: 'פריטים',
+    received: { variant: 'secondary' },
+    pending_payment: { variant: 'outline' },
+    completed: { variant: 'default' },
+    cancelled: { variant: 'destructive' },
   },
   services: {
-    title: 'הזמנות', single: 'הזמנה', contact: 'פרטי לקוח', items: 'שירותים / מוצרים',
-    empty: 'עדיין אין הזמנות',
-    emptyDesc: 'ברגע שלקוח יזמין, ההזמנה תופיע כאן.',
-    listItem: 'פריטים',
+    received: { variant: 'secondary' },
+    pending_payment: { variant: 'outline' },
+    completed: { variant: 'default' },
+    cancelled: { variant: 'destructive' },
   },
   nonprofit: {
-    title: 'תרומות', single: 'תרומה', contact: 'פרטי תורם', items: 'פרויקט / יעד',
-    empty: 'עדיין לא התקבלו תרומות',
-    emptyDesc: 'ברגע שמישהו יתרום דרך האתר, התרומה תופיע כאן.',
-    listItem: 'פריטים',
+    received: { variant: 'secondary' },
+    pending_payment: { variant: 'outline' },
+    completed: { variant: 'default' },
+    cancelled: { variant: 'destructive' },
   },
   synagogue: {
-    title: 'תרומות', single: 'תרומה', contact: 'פרטי תורם', items: 'פרויקט / יעד',
-    empty: 'עדיין לא התקבלו תרומות',
-    emptyDesc: 'ברגע שמישהו יתרום דרך האתר, התרומה תופיע כאן.',
-    listItem: 'פריטים',
+    received: { variant: 'secondary' },
+    pending_payment: { variant: 'outline' },
+    completed: { variant: 'default' },
+    cancelled: { variant: 'destructive' },
   },
   realestate: {
-    title: 'לידים', single: 'ליד', contact: 'פרטי מתעניין', items: 'נכסים שהתעניין',
-    empty: 'עדיין לא הגיעו לידים',
-    emptyDesc: 'ברגע שמישהו ישאיר פרטים על נכס, הליד יופיע כאן.',
-    listItem: 'נכסים',
+    received: { variant: 'secondary' },
+    pending_payment: { variant: 'outline' },
+    completed: { variant: 'default' },
+    cancelled: { variant: 'destructive' },
   },
   vacation: {
-    title: 'הזמנות לינה', single: 'הזמנה', contact: 'פרטי אורח', items: 'יחידות',
-    empty: 'עדיין אין הזמנות לינה',
-    emptyDesc: 'ברגע שאורח יזמין, ההזמנה תופיע כאן.',
-    listItem: 'לילות',
+    received: { variant: 'secondary' },
+    pending_payment: { variant: 'outline' },
+    completed: { variant: 'default' },
+    cancelled: { variant: 'destructive' },
   },
 };
 
@@ -147,10 +132,102 @@ const TYPE_ICON: Record<BusinessType, React.ComponentType<{ className?: string }
 };
 
 const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType = 'products' }: DashboardOrdersProps) => {
-  const statusConfig = STATUS_BY_TYPE[businessType];
+  const { t } = useLanguage();
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  const STATUS_LABEL_BY_TYPE: Record<BusinessType, Record<Order['status'], string>> = {
+    products: {
+      received: t("dash.orders.status.received"),
+      pending_payment: t("dash.orders.status.pending_payment"),
+      completed: t("dash.orders.status.completed"),
+      cancelled: t("dash.orders.status.cancelled"),
+    },
+    services: {
+      received: t("dash.orders.status.received"),
+      pending_payment: t("dash.orders.status.pending_payment"),
+      completed: t("dash.orders.status.completed"),
+      cancelled: t("dash.orders.status.cancelled"),
+    },
+    nonprofit: {
+      received: t("dash.orders.status.received"),
+      pending_payment: t("dash.orders.status.reviewing"),
+      completed: t("dash.orders.status.recorded"),
+      cancelled: t("dash.orders.status.cancelled"),
+    },
+    synagogue: {
+      received: t("dash.orders.status.received"),
+      pending_payment: t("dash.orders.status.reviewing"),
+      completed: t("dash.orders.status.recorded"),
+      cancelled: t("dash.orders.status.cancelled"),
+    },
+    realestate: {
+      received: t("dash.orders.status.new_lead"),
+      pending_payment: t("dash.orders.status.in_progress"),
+      completed: t("dash.orders.status.closed"),
+      cancelled: t("dash.orders.status.not_relevant"),
+    },
+    vacation: {
+      received: t("dash.orders.status.awaiting_approval"),
+      pending_payment: t("dash.orders.status.approved"),
+      completed: t("dash.orders.status.departed"),
+      cancelled: t("dash.orders.status.cancelled"),
+    },
+  };
+
+  const SECTION_CONFIG: Record<BusinessType, { emoji: string; title: string; emptyMsg: string }> = {
+    products: { emoji: SECTION_EMOJI.products, title: t("dash.orders.section.products.title"), emptyMsg: t("dash.orders.section.products.empty") },
+    services: { emoji: SECTION_EMOJI.services, title: t("dash.orders.section.services.title"), emptyMsg: t("dash.orders.section.services.empty") },
+    realestate: { emoji: SECTION_EMOJI.realestate, title: t("dash.orders.section.realestate.title"), emptyMsg: t("dash.orders.section.realestate.empty") },
+    vacation: { emoji: SECTION_EMOJI.vacation, title: t("dash.orders.section.vacation.title"), emptyMsg: t("dash.orders.section.vacation.empty") },
+    nonprofit: { emoji: SECTION_EMOJI.nonprofit, title: t("dash.orders.section.nonprofit.title"), emptyMsg: t("dash.orders.section.nonprofit.empty") },
+    synagogue: { emoji: SECTION_EMOJI.synagogue, title: t("dash.orders.section.synagogue.title"), emptyMsg: t("dash.orders.section.synagogue.empty") },
+  };
+
+  // Per-type text labels
+  const LABELS: Record<BusinessType, { title: string; single: string; contact: string; items: string; empty: string; emptyDesc: string; listItem: string }> = {
+    products: {
+      title: t("dash.orders.labels.products.title"), single: t("dash.orders.labels.products.single"), contact: t("dash.orders.labels.products.contact"), items: t("dash.orders.labels.products.items"),
+      empty: t("dash.orders.labels.products.empty"),
+      emptyDesc: t("dash.orders.labels.products.empty_desc"),
+      listItem: t("dash.orders.labels.products.list_item"),
+    },
+    services: {
+      title: t("dash.orders.labels.services.title"), single: t("dash.orders.labels.services.single"), contact: t("dash.orders.labels.services.contact"), items: t("dash.orders.labels.services.items"),
+      empty: t("dash.orders.labels.services.empty"),
+      emptyDesc: t("dash.orders.labels.services.empty_desc"),
+      listItem: t("dash.orders.labels.services.list_item"),
+    },
+    nonprofit: {
+      title: t("dash.orders.labels.nonprofit.title"), single: t("dash.orders.labels.nonprofit.single"), contact: t("dash.orders.labels.nonprofit.contact"), items: t("dash.orders.labels.nonprofit.items"),
+      empty: t("dash.orders.labels.nonprofit.empty"),
+      emptyDesc: t("dash.orders.labels.nonprofit.empty_desc"),
+      listItem: t("dash.orders.labels.nonprofit.list_item"),
+    },
+    synagogue: {
+      title: t("dash.orders.labels.synagogue.title"), single: t("dash.orders.labels.synagogue.single"), contact: t("dash.orders.labels.synagogue.contact"), items: t("dash.orders.labels.synagogue.items"),
+      empty: t("dash.orders.labels.synagogue.empty"),
+      emptyDesc: t("dash.orders.labels.synagogue.empty_desc"),
+      listItem: t("dash.orders.labels.synagogue.list_item"),
+    },
+    realestate: {
+      title: t("dash.orders.labels.realestate.title"), single: t("dash.orders.labels.realestate.single"), contact: t("dash.orders.labels.realestate.contact"), items: t("dash.orders.labels.realestate.items"),
+      empty: t("dash.orders.labels.realestate.empty"),
+      emptyDesc: t("dash.orders.labels.realestate.empty_desc"),
+      listItem: t("dash.orders.labels.realestate.list_item"),
+    },
+    vacation: {
+      title: t("dash.orders.labels.vacation.title"), single: t("dash.orders.labels.vacation.single"), contact: t("dash.orders.labels.vacation.contact"), items: t("dash.orders.labels.vacation.items"),
+      empty: t("dash.orders.labels.vacation.empty"),
+      emptyDesc: t("dash.orders.labels.vacation.empty_desc"),
+      listItem: t("dash.orders.labels.vacation.list_item"),
+    },
+  };
+
+  const statusVariant = STATUS_VARIANT_BY_TYPE[businessType];
+  const statusLabel = STATUS_LABEL_BY_TYPE[businessType];
+  const statusStyle = STATUS_STYLE_BY_TYPE[businessType];
   const lbl = LABELS[businessType];
   const ListIcon = TYPE_ICON[businessType];
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('he-IL', {
@@ -182,8 +259,9 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
 
   // Order Details View
   if (selectedOrder) {
-    const status = statusConfig[selectedOrder.status];
-    
+    const statusText = statusLabel[selectedOrder.status];
+    const chip = statusStyle[selectedOrder.status];
+
     return (
       <div className="p-4 md:p-6">
         <div className="flex items-center gap-3 mb-6">
@@ -194,14 +272,9 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
             <h1 className="text-xl font-bold text-foreground">{lbl.single} #{selectedOrder.id}</h1>
             <p className="text-sm text-muted-foreground">{formatDate(selectedOrder.date)}</p>
           </div>
-          {(() => {
-            const chip = STATUS_CHIP[status.label] ?? { bg: "bg-muted", text: "text-muted-foreground" };
-            return (
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${chip.bg} ${chip.text}`}>
-                {status.label}
-              </span>
-            );
-          })()}
+          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${chip.bg} ${chip.text}`}>
+            {statusText}
+          </span>
         </div>
 
         <div className="space-y-6 max-w-2xl">
@@ -225,7 +298,7 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
               </a>
               {selectedOrder.notes && (
                 <p className="text-muted-foreground pt-2 border-t border-border mt-3">
-                  <span className="font-medium text-foreground">הערות:</span> {selectedOrder.notes}
+                  <span className="font-medium text-foreground">{t("dash.orders.notes_label")}</span> {selectedOrder.notes}
                 </p>
               )}
             </div>
@@ -235,11 +308,11 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
           {businessType === "vacation" && ((selectedOrder as any).checkin_date || (selectedOrder as any).checkout_date) && (
             <div className="rounded-xl bg-muted/40 p-3 space-y-1 text-sm">
               <div className="flex gap-4 flex-wrap">
-                {(selectedOrder as any).checkin_date && <div><span className="text-muted-foreground">כניסה: </span><b>{(selectedOrder as any).checkin_date}</b></div>}
-                {(selectedOrder as any).checkout_date && <div><span className="text-muted-foreground">יציאה: </span><b>{(selectedOrder as any).checkout_date}</b></div>}
+                {(selectedOrder as any).checkin_date && <div><span className="text-muted-foreground">{t("dash.orders.checkin_label")} </span><b>{(selectedOrder as any).checkin_date}</b></div>}
+                {(selectedOrder as any).checkout_date && <div><span className="text-muted-foreground">{t("dash.orders.checkout_label")} </span><b>{(selectedOrder as any).checkout_date}</b></div>}
               </div>
-              {(selectedOrder as any).num_guests && <div><span className="text-muted-foreground">אורחים: </span><b>{(selectedOrder as any).num_guests}</b></div>}
-              {(selectedOrder as any).unit_name && <div><span className="text-muted-foreground">יחידה: </span><b>{(selectedOrder as any).unit_name}</b></div>}
+              {(selectedOrder as any).num_guests && <div><span className="text-muted-foreground">{t("dash.orders.guests_label")} </span><b>{(selectedOrder as any).num_guests}</b></div>}
+              {(selectedOrder as any).unit_name && <div><span className="text-muted-foreground">{t("dash.orders.unit_label")} </span><b>{(selectedOrder as any).unit_name}</b></div>}
             </div>
           )}
 
@@ -259,7 +332,7 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
                 </div>
               ))}
               <div className="border-t border-border pt-3 flex items-center justify-between">
-                <span className="font-semibold">סה״כ</span>
+                <span className="font-semibold">{t("dash.orders.total_label")}</span>
                 <span className="text-lg font-bold text-primary">{formatPrice(selectedOrder.total)}</span>
               </div>
             </div>
@@ -267,16 +340,16 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
 
           {/* Status Actions */}
           <div className="bg-card rounded-2xl border border-border p-4">
-            <h2 className="font-semibold mb-4">עדכון סטטוס</h2>
+            <h2 className="font-semibold mb-4">{t("dash.orders.update_status_heading")}</h2>
             <div className="flex flex-wrap gap-2">
-              {Object.entries(statusConfig).map(([key, config]) => (
+              {Object.entries(statusVariant).map(([key, config]) => (
                 <Button
                   key={key}
                   variant={selectedOrder.status === key ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handleStatusChange(selectedOrder.id, key as Order['status'])}
                 >
-                  {config.label}
+                  {statusLabel[key as Order['status']]}
                 </Button>
               ))}
             </div>
@@ -291,13 +364,13 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
     <div className="p-4 md:p-6 space-y-4">
       {/* Colorful order header */}
       {(() => {
-        const cfg = ORDER_SECTION_CONFIG[businessType ?? "products"] ?? ORDER_SECTION_CONFIG.products;
+        const cfg = SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG.products;
         return (
           <div className="rounded-2xl bg-gradient-to-l from-blue-500/15 to-blue-500/5 border border-blue-500/20 p-5 flex items-center gap-4">
             <div className="text-4xl">{cfg.emoji}</div>
             <div>
               <h1 className="text-lg font-bold text-foreground">{cfg.title}</h1>
-              <p className="text-sm text-muted-foreground">{(orders ?? []).length} בסה"כ</p>
+              <p className="text-sm text-muted-foreground">{(orders ?? []).length} {t("dash.orders.total_count_suffix")}</p>
             </div>
           </div>
         );
@@ -305,16 +378,16 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
 
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-          <div className="text-5xl mb-4">{(ORDER_SECTION_CONFIG[businessType ?? "products"] ?? ORDER_SECTION_CONFIG.products).emoji}</div>
+          <div className="text-5xl mb-4">{(SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG.products).emoji}</div>
           <p className="text-sm text-muted-foreground max-w-xs">
-            {(ORDER_SECTION_CONFIG[businessType ?? "products"] ?? ORDER_SECTION_CONFIG.products).emptyMsg}
+            {(SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG.products).emptyMsg}
           </p>
         </div>
       ) : (
         <div className="space-y-3">
           {orders.map((order) => {
-            const status = statusConfig[order.status];
-            const chip = STATUS_CHIP[status.label] ?? { bg: "bg-muted", text: "text-muted-foreground" };
+            const statusText = statusLabel[order.status];
+            const chip = statusStyle[order.status];
             return (
               <button
                 key={order.id}
@@ -325,7 +398,7 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium text-foreground">{order.customerName}</span>
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${chip.bg} ${chip.text}`}>
-                      {status.label}
+                      {statusText}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground">{formatDate(order.date)}</p>

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
 import type { BusinessSettings } from "@/components/dashboard/DashboardSettings";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DashboardShippingProps {
   settings: BusinessSettings;
@@ -12,6 +13,7 @@ interface DashboardShippingProps {
 }
 
 const DashboardShipping = ({ settings, onSettingsChange }: DashboardShippingProps) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     deliveryMode: settings.deliveryMode ?? "pickup_only",
     deliveryFee: settings.deliveryFee ?? undefined as number | undefined,
@@ -64,9 +66,9 @@ const DashboardShipping = ({ settings, onSettingsChange }: DashboardShippingProp
       <div className="flex items-center gap-3 mb-6">
         <Truck className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="text-xl font-semibold text-foreground">משלוחים ואיסוף</h1>
+          <h1 className="text-xl font-semibold text-foreground">{t("dash.shipping.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            קבע האם הלקוחות יכולים רק לאסוף מהחנות או גם להזמין משלוח
+            {t("dash.shipping.subtitle")}
           </p>
         </div>
       </div>
@@ -74,8 +76,8 @@ const DashboardShipping = ({ settings, onSettingsChange }: DashboardShippingProp
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
           <div className="space-y-3">
-            <Label>אופן אספקה</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="אופן אספקה">
+            <Label>{t("dash.shipping.mode_label")}</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label={t("dash.shipping.mode_label")}>
               <button
                 type="button"
                 onClick={() => handleChange({ deliveryMode: "pickup_only" })}
@@ -86,9 +88,9 @@ const DashboardShipping = ({ settings, onSettingsChange }: DashboardShippingProp
                 }`}
                 aria-pressed={formData.deliveryMode === "pickup_only"}
               >
-                <span className="font-medium text-foreground">איסוף עצמי בלבד</span>
+                <span className="font-medium text-foreground">{t("dash.shipping.pickup_only_title")}</span>
                 <span className="text-xs text-muted-foreground">
-                  הלקוח יבחר רק איסוף עצמי, ללא אפשרות משלוח.
+                  {t("dash.shipping.pickup_only_desc")}
                 </span>
               </button>
               <button
@@ -101,9 +103,9 @@ const DashboardShipping = ({ settings, onSettingsChange }: DashboardShippingProp
                 }`}
                 aria-pressed={formData.deliveryMode === "pickup_and_delivery"}
               >
-                <span className="font-medium text-foreground">איסוף עצמי + משלוחים</span>
+                <span className="font-medium text-foreground">{t("dash.shipping.pickup_and_delivery_title")}</span>
                 <span className="text-xs text-muted-foreground">
-                  בצ׳קאווט הלקוח יוכל לבחור בין איסוף עצמי למשלוח.
+                  {t("dash.shipping.pickup_and_delivery_desc")}
                 </span>
               </button>
             </div>
@@ -111,7 +113,7 @@ const DashboardShipping = ({ settings, onSettingsChange }: DashboardShippingProp
 
           {formData.deliveryMode === "pickup_and_delivery" && (
             <div className="space-y-2">
-              <Label htmlFor="deliveryFee">עלות משלוח (₪)</Label>
+              <Label htmlFor="deliveryFee">{t("dash.shipping.fee_label")}</Label>
               <Input
                 id="deliveryFee"
                 type="number"
@@ -123,10 +125,10 @@ const DashboardShipping = ({ settings, onSettingsChange }: DashboardShippingProp
                     deliveryFee: e.target.value === "" ? undefined : Number(e.target.value),
                   })
                 }
-                placeholder="לדוגמה: 25"
+                placeholder={t("dash.shipping.fee_placeholder")}
               />
               <p className="text-xs text-muted-foreground">
-                עלות המשלוח שתתווסף לסכום ההזמנה כאשר הלקוח בוחר משלוח.
+                {t("dash.shipping.fee_help")}
               </p>
             </div>
           )}
@@ -134,7 +136,7 @@ const DashboardShipping = ({ settings, onSettingsChange }: DashboardShippingProp
 
         <Button type="submit" size="lg" className="w-full gap-2" disabled={isSaving}>
           {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-          שמרו הגדרות משלוחים
+          {t("dash.shipping.save_button")}
         </Button>
       </form>
     </div>

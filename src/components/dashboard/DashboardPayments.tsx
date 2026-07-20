@@ -8,6 +8,7 @@ import { PARTNER_LINKS } from "@/lib/partnerLinks";
 import { ProviderLogo } from "@/components/payments/ProviderLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaymentCredentials } from "@/hooks/usePayplus";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DashboardPaymentsProps {
   settings: BusinessSettings;
@@ -28,6 +29,7 @@ const PROVIDERS = [
 const CONNECTABLE = ["payplus", "icount"];
 
 const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
+  const { t } = useLanguage();
   const { data: payplusCreds } = usePaymentCredentials(settings.id);
   const isConnected = !!(settings as any).payment_enabled || !!payplusCreds?.verified_at;
   const connectedProvider = (settings as any).payment_provider as string | undefined;
@@ -41,7 +43,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
   const goToPartner = (id: string, url: string | null) => {
     if (settings.id) void supabase.from("partner_referrals").insert({ business_id: settings.id, provider: id } as any);
     if (url) window.open(url, "_blank", "noopener,noreferrer");
-    else window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`בקשה לפתיחת חשבון ${id}`)}`;
+    else window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`${t("dash.payments.mailto_subject_prefix")} ${id}`)}`;
   };
 
   const providerName = (id: string | null) => PROVIDERS.find((x) => x.id === id)?.name || "";
@@ -56,12 +58,12 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
             <CreditCard className="w-5 h-5 text-[#3b6d11]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-foreground">סליקת אשראי</h1>
-            <p className="text-sm text-muted-foreground">קבלו תשלומים בכרטיס ישירות לחשבון הבנק שלכם</p>
+            <h1 className="text-xl font-semibold text-foreground">{t("dash.payments.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("dash.payments.subtitle")}</p>
           </div>
         </div>
         <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-[#085041] bg-[#e1f5ee] rounded-full px-3 py-1.5">
-          <ShieldCheck className="w-3.5 h-3.5" /> מאובטח
+          <ShieldCheck className="w-3.5 h-3.5" /> {t("dash.payments.secure_badge")}
         </span>
       </div>
 
@@ -71,7 +73,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           <CheckCircle2 className="w-5 h-5 text-[#3b6d11] shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-[#27500a]">
-              הסליקה מחוברת ופעילה
+              {t("dash.payments.connected_title")}
               {connectedProvider && (
                 <span className="mr-1.5 text-xs font-normal bg-[#dcebc7] text-[#27500a] rounded-full px-2 py-0.5 capitalize">{connectedProvider}</span>
               )}
@@ -79,14 +81,14 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
                 <span className="mr-1.5 text-xs font-bold bg-amber-100 text-amber-700 rounded-full px-2 py-0.5">TEST MODE</span>
               )}
             </p>
-            <p className="text-sm text-[#3b6d11] mt-0.5">לקוחות יכולים לשלם בכרטיס אשראי ישירות באתר שלך.</p>
+            <p className="text-sm text-[#3b6d11] mt-0.5">{t("dash.payments.connected_desc")}</p>
           </div>
           <button
             type="button"
             onClick={() => { setEditMode(true); setHasAccount(true); setProvider(connectedProvider ?? null); }}
             className="shrink-0 inline-flex items-center gap-1.5 text-xs text-[#3b6d11] hover:underline"
           >
-            <Pencil className="w-3.5 h-3.5" /> עריכה
+            <Pencil className="w-3.5 h-3.5" /> {t("dash.payments.edit")}
           </button>
         </div>
       )}
@@ -95,7 +97,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
         <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-3 flex items-start gap-2 mb-2">
           <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <p className="text-xs text-amber-700 dark:text-amber-400">
-            <span className="font-bold">Test mode פעיל</span> — תשלומים לא נגבים בפועל. לאחר קבלת אישור מ-PayPlus, עברו לעריכה והחליפו ל-Live.
+            <span className="font-bold">{t("dash.payments.test_mode_active")}</span> — {t("dash.payments.test_mode_desc")}
           </p>
         </div>
       )}
@@ -106,7 +108,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
       {/* Step 0 - the only thing on screen at entry: one simple question. */}
       {!isConnected && hasAccount === null && (
         <div className="space-y-4">
-          <p className="text-base font-medium text-foreground text-center">האם כבר פתחת חשבון אצל ספק סליקה?</p>
+          <p className="text-base font-medium text-foreground text-center">{t("dash.payments.step0_question")}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               type="button"
@@ -114,8 +116,8 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
               className="group text-right rounded-2xl border-2 border-[#639922] bg-[#eaf3de]/60 p-4 hover:bg-[#eaf3de] transition-colors"
             >
               <CircleCheck className="w-6 h-6 text-[#3b6d11] mb-2" />
-              <p className="font-semibold text-foreground">כן, יש לי חשבון</p>
-              <p className="text-xs text-muted-foreground mt-0.5">נחבר אותו לאתר תוך 2 דקות</p>
+              <p className="font-semibold text-foreground">{t("dash.payments.has_account_yes")}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("dash.payments.has_account_yes_desc")}</p>
             </button>
             <button
               type="button"
@@ -123,11 +125,11 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
               className="group text-right rounded-2xl border border-border bg-card p-4 hover:border-[#639922]/50 transition-colors"
             >
               <Sparkles className="w-6 h-6 text-muted-foreground mb-2" />
-              <p className="font-semibold text-foreground">לא, אני מתחיל</p>
-              <p className="text-xs text-muted-foreground mt-0.5">נעזור לפתוח חשבון סליקה</p>
+              <p className="font-semibold text-foreground">{t("dash.payments.has_account_no")}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("dash.payments.has_account_no_desc")}</p>
             </button>
           </div>
-          <p className="text-xs text-muted-foreground text-center">אפשר גם לקבל הזמנות בלי סליקה ולגבות תשלום ישירות מול הלקוח.</p>
+          <p className="text-xs text-muted-foreground text-center">{t("dash.payments.no_processing_note")}</p>
         </div>
       )}
 
@@ -135,12 +137,12 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
       {!isConnected && hasAccount === false && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-foreground">בחרו ספק ופתחו חשבון</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t("dash.payments.choose_provider_title")}</h2>
             <button type="button" onClick={() => setHasAccount(true)} className="inline-flex items-center gap-1 text-xs text-[#3b6d11] hover:underline">
-              כבר יש לי חשבון <ArrowRight className="w-3 h-3" />
+              {t("dash.payments.already_have_account")} <ArrowRight className="w-3 h-3" />
             </button>
           </div>
-          <p className="text-xs text-muted-foreground">כל הספקים שאנחנו עובדים איתם. פתיחת חשבון דרכנו לרוב מזכה בתנאים מועדפים. בוחרים מי שנוח לכם.</p>
+          <p className="text-xs text-muted-foreground">{t("dash.payments.providers_intro")}</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {PARTNER_LINKS.map((p) => (
               <div key={p.id} className="rounded-2xl border border-border bg-card p-4 flex flex-col hover:border-[#639922]/40 transition-colors">
@@ -155,12 +157,12 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
                   onClick={() => goToPartner(p.id, p.url)}
                   className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#eaf3de] text-[#3b6d11] text-sm font-medium px-3 py-2 hover:bg-[#dcebc7] transition-colors"
                 >
-                  {p.url ? (<>פתח חשבון <ExternalLink className="h-3.5 w-3.5" /></>) : (<>קבל הצעה <Mail className="h-3.5 w-3.5" /></>)}
+                  {p.url ? (<>{t("dash.payments.open_account")} <ExternalLink className="h-3.5 w-3.5" /></>) : (<>{t("dash.payments.get_offer")} <Mail className="h-3.5 w-3.5" /></>)}
                 </button>
               </div>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground text-center pt-2">לאחר שתקבלו אישור - חזרו לכאן ולחצו "כבר יש לי חשבון".</p>
+          <p className="text-xs text-muted-foreground text-center pt-2">{t("dash.payments.after_approval_note")}</p>
         </div>
       )}
 
@@ -168,9 +170,9 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
       {(hasAccount === true || editMode) && (
         <div className="space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-foreground">באיזה ספק החשבון שלך?</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t("dash.payments.which_provider")}</h2>
             <button type="button" onClick={() => { setHasAccount(null); setProvider(null); }} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-              חזרה <ArrowRight className="w-3 h-3" />
+              {t("dash.payments.back")} <ArrowRight className="w-3 h-3" />
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -182,7 +184,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
                   type="button"
                   onClick={() => canConnect && setProvider(p.id)}
                   disabled={!canConnect}
-                  title={!canConnect ? "חיבור ישיר בקרוב" : undefined}
+                  title={!canConnect ? t("dash.payments.direct_connect_soon") : undefined}
                   className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
                     !canConnect
                       ? "border-border text-muted-foreground/50 opacity-50 cursor-not-allowed"
@@ -193,7 +195,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
                 >
                   <ProviderLogo domain={p.domain} name={p.name} className="h-4 w-4" />
                   {p.name}
-                  {!canConnect && <span className="text-[9px] font-bold bg-muted rounded-full px-1.5 py-0.5">בקרוב</span>}
+                  {!canConnect && <span className="text-[9px] font-bold bg-muted rounded-full px-1.5 py-0.5">{t("dash.payments.coming_soon")}</span>}
                 </button>
               );
             })}
@@ -207,12 +209,12 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
                 {/* Only surfaced here (after the merchant chose to connect) - never a
                     scary checklist on the entry screen. */}
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground mb-2">השלב הבא: אישור לסליקת אשראי</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-2">{t("dash.payments.next_step_approval")}</h3>
                   <PaymentApprovalKit />
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">יש לשמור את פרטי העסק לפני חיבור סליקה.</p>
+              <p className="text-sm text-muted-foreground">{t("dash.payments.save_business_first")}</p>
             )
           )}
 
@@ -220,7 +222,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           {provider === "icount" && (
             settings.id
               ? <IcountConnectForm businessId={settings.id} />
-              : <p className="text-sm text-muted-foreground">יש לשמור את פרטי העסק לפני חיבור סליקה.</p>
+              : <p className="text-sm text-muted-foreground">{t("dash.payments.save_business_first")}</p>
           )}
 
         </div>

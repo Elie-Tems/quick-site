@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FolderOpen, Plus, Pencil, Trash2, Loader2, Download, Package } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +42,7 @@ interface DashboardCategoriesProps {
 }
 
 export default function DashboardCategories({ businessId, businessCategory, onViewCategoryProducts, products = [], onProductUpdate }: DashboardCategoriesProps) {
+  const { t } = useLanguage();
   const {
     categories,
     isLoading,
@@ -151,44 +153,44 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">קטגוריות ({categories.length})</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("dash.categories.title")} ({categories.length})</h1>
           <p className="text-muted-foreground mt-1">
-            נהל קטגוריות למוצרים. שייך מוצרים לקטגוריות בטאב מוצרים, והן יופיעו בחנות.
+            {t("dash.categories.subtitle")}
           </p>
         </div>
         <Button onClick={handleStartAdd} className="gap-2">
           <Plus className="h-4 w-4" />
-          הוסף קטגוריה
+          {t("dash.categories.add_button")}
         </Button>
       </div>
 
       {/* Add form */}
       {isAdding && (
         <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-          <h3 className="font-medium text-foreground">קטגוריה חדשה</h3>
+          <h3 className="font-medium text-foreground">{t("dash.categories.new_category_title")}</h3>
           <div className="space-y-2">
-            <Label>שם הקטגוריה</Label>
+            <Label>{t("dash.categories.name_label")}</Label>
             <Input
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              placeholder="למשל: משקאות קרים"
+              placeholder={t("dash.categories.name_placeholder")}
             />
           </div>
           <div className="space-y-2">
-            <Label>תיאור (אופציונלי)</Label>
+            <Label>{t("dash.categories.description_label")}</Label>
             <Textarea
               value={formDescription}
               onChange={(e) => setFormDescription(e.target.value)}
-              placeholder="תיאור קצר"
+              placeholder={t("dash.categories.description_placeholder")}
               rows={2}
             />
           </div>
           <div className="flex gap-2">
             <Button onClick={handleSaveNew} disabled={!formName.trim()}>
-              שמור
+              {t("dash.categories.save")}
             </Button>
             <Button variant="outline" onClick={() => setIsAdding(false)}>
-              ביטול
+              {t("dash.categories.cancel")}
             </Button>
           </div>
         </div>
@@ -197,17 +199,17 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
       {/* Edit form */}
       {editing && (
         <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-          <h3 className="font-medium text-foreground">עריכת קטגוריה</h3>
+          <h3 className="font-medium text-foreground">{t("dash.categories.edit_title")}</h3>
           <div className="space-y-2">
-            <Label>שם הקטגוריה</Label>
+            <Label>{t("dash.categories.name_label")}</Label>
             <Input
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              placeholder="שם"
+              placeholder={t("dash.categories.name_placeholder_edit")}
             />
           </div>
           <div className="space-y-2">
-            <Label>תיאור (אופציונלי)</Label>
+            <Label>{t("dash.categories.description_label")}</Label>
             <Textarea
               value={formDescription}
               onChange={(e) => setFormDescription(e.target.value)}
@@ -216,10 +218,10 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
           </div>
           <div className="flex gap-2">
             <Button onClick={handleSaveEdit} disabled={!formName.trim()}>
-              עדכן
+              {t("dash.categories.update")}
             </Button>
             <Button variant="outline" onClick={() => setEditing(null)}>
-              ביטול
+              {t("dash.categories.cancel")}
             </Button>
           </div>
         </div>
@@ -232,9 +234,9 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <FolderOpen className="h-8 w-8 text-primary" />
             </div>
-            <p className="text-lg font-semibold text-foreground mb-1">סדרו את המוצרים בקטגוריות</p>
+            <p className="text-lg font-semibold text-foreground mb-1">{t("dash.categories.empty_title")}</p>
             <p className="text-sm text-muted-foreground mt-1 mb-4">
-              הקטגוריות שמופיעות באתר (לפי סוג העסק) לא נשמרות כאן - ייבא אותן כדי לערוך, למחוק או לשייך מוצרים.
+              {t("dash.categories.empty_desc")}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               {businessId && businessCategory && businessCategory !== "other" && (
@@ -254,12 +256,12 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
                   ) : (
                     <Download className="h-4 w-4" />
                   )}
-                  ייבא קטגוריות מסוג העסק שלי
+                  {t("dash.categories.import_button")}
                 </Button>
               )}
               <Button onClick={handleStartAdd} variant="outline" className="gap-2">
                 <Plus className="h-4 w-4" />
-                הוסף קטגוריה ראשונה ידנית
+                {t("dash.categories.add_first_button")}
               </Button>
             </div>
           </div>
@@ -289,7 +291,7 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
                       className="flex-1"
                       onClick={() => onViewCategoryProducts(cat.id, cat.name)}
                     >
-                      מוצרים בקטגוריה
+                      {t("dash.categories.view_products")}
                     </Button>
                   )}
                   <div className="flex items-center gap-1">
@@ -297,7 +299,7 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
                       variant="outline"
                       size="icon"
                       onClick={() => handleStartEdit(cat)}
-                      aria-label="ערוך"
+                      aria-label={t("dash.categories.edit_aria")}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -306,7 +308,7 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
                       size="icon"
                       className="text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => handleDelete(cat.id)}
-                      aria-label="מחק"
+                      aria-label={t("dash.categories.delete_aria")}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -325,14 +327,14 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
             <div className="flex items-center gap-2">
               <Package className="h-5 w-5 text-muted-foreground" />
               <h3 className="font-medium text-foreground">
-                מוצרים ללא קטגוריה ({uncategorizedProducts.length})
+                {t("dash.categories.uncategorized_title")} ({uncategorizedProducts.length})
               </h3>
             </div>
             {selectedProducts.size > 0 && (
               <div className="flex items-center gap-2">
                 <Select value={bulkCategoryId} onValueChange={setBulkCategoryId}>
                   <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="בחר קטגוריה" />
+                    <SelectValue placeholder={t("dash.categories.select_category_placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((cat) => (
@@ -342,20 +344,20 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
                     ))}
                   </SelectContent>
                 </Select>
-                <Button 
-                  onClick={handleBulkAssign} 
+                <Button
+                  onClick={handleBulkAssign}
                   disabled={!bulkCategoryId}
                   size="sm"
                 >
-                  שייך {selectedProducts.size} מוצרים
+                  {t("dash.categories.assign_label")} {selectedProducts.size} {t("dash.categories.products_word")}
                 </Button>
               </div>
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            בחר מוצרים ושייך אותם לקטגוריה במקבץ, או שייך כל מוצר בנפרד
+            {t("dash.categories.select_bulk_desc")}
           </p>
-          
+
           {uncategorizedProducts.length > 1 && (
             <div className="flex items-center gap-2">
               <input
@@ -365,7 +367,7 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
                 className="h-4 w-4 rounded border-gray-300"
               />
               <span className="text-sm text-muted-foreground">
-                בחר הכל ({uncategorizedProducts.length} מוצרים)
+                {t("dash.categories.select_all_label")} ({uncategorizedProducts.length} {t("dash.categories.products_word")})
               </span>
             </div>
           )}
@@ -382,7 +384,7 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-foreground truncate">{product.name}</p>
                   {product.sku && (
-                    <p className="text-sm text-muted-foreground">מק"ט: {product.sku}</p>
+                    <p className="text-sm text-muted-foreground">{t("dash.categories.sku_label")} {product.sku}</p>
                   )}
                 </div>
                 <Select
@@ -390,7 +392,7 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
                   onValueChange={(categoryId) => handleAssignCategory(product.id, categoryId)}
                 >
                   <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="בחר קטגוריה" />
+                    <SelectValue placeholder={t("dash.categories.select_category_placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((cat) => (
@@ -409,15 +411,15 @@ export default function DashboardCategories({ businessId, businessCategory, onVi
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>מחיקת קטגוריה</AlertDialogTitle>
+            <AlertDialogTitle>{t("dash.categories.delete_dialog_title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              מוצרים בשיוך לקטגוריה זו יישארו ללא קטגוריה. להמשיך?
+              {t("dash.categories.delete_dialog_desc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>ביטול</AlertDialogCancel>
+            <AlertDialogCancel>{t("dash.categories.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              מחק
+              {t("dash.categories.delete_confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -8,6 +8,7 @@ import DashboardLeadsPipeline from "./DashboardLeadsPipeline";
 import type { Order } from "./DashboardOrders";
 import type { BusinessType } from "@/lib/businessModules";
 import { useContacts } from "@/hooks/useCrm";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type CrmTab = "customers" | "pipeline" | "suppliers" | "profitability";
 
@@ -32,6 +33,7 @@ const isContactsVertical = (t?: BusinessType): boolean => !!t && CONTACTS_VERTIC
 
 // Free tier: customer name + what they bought + total. All segments/analytics are CRM+.
 function FreeCustomerView({ orders }: { orders: Order[] }) {
+  const { t } = useLanguage();
   const customers = useMemo(() => {
     const map = new Map<string, { name: string; total: number; items: string[] }>();
     for (const o of orders) {
@@ -43,18 +45,18 @@ function FreeCustomerView({ orders }: { orders: Order[] }) {
         ex.total += o.total || 0;
         itemNames.forEach((n: string) => { if (!ex.items.includes(n)) ex.items.push(n); });
       } else {
-        map.set(key, { name: o.customerName || "לקוח", total: o.total || 0, items: itemNames });
+        map.set(key, { name: o.customerName || t("dash.crm.default_customer_name"), total: o.total || 0, items: itemNames });
       }
     }
     return Array.from(map.values()).sort((a, b) => b.total - a.total);
-  }, [orders]);
+  }, [orders, t]);
 
   return (
     <div className="space-y-5">
       {customers.length === 0 ? (
         <div className="text-center py-14 rounded-2xl border border-dashed border-border">
           <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm text-muted-foreground">עדיין אין לקוחות - יופיעו כאן עם ההזמנה הראשונה</p>
+          <p className="text-sm text-muted-foreground">{t("dash.crm.no_customers")}</p>
         </div>
       ) : (
         <div className="rounded-2xl border border-border overflow-hidden divide-y divide-border">
@@ -83,7 +85,7 @@ function FreeCustomerView({ orders }: { orders: Order[] }) {
       <div className="relative rounded-2xl border border-border overflow-hidden">
         <div className="blur-sm pointer-events-none select-none p-4 space-y-3" aria-hidden="true">
           <div className="grid grid-cols-2 gap-2">
-            {[["67%", "לקוחות חוזרים"], ["₪1,245", "LTV ממוצע"]].map(([v, l]) => (
+            {[["67%", t("dash.crm.repeat_customers")], ["₪1,245", t("dash.crm.avg_ltv")]].map(([v, l]) => (
               <div key={l} className="rounded-xl bg-muted/50 p-3">
                 <div className="text-2xl font-bold">{v}</div>
                 <div className="text-xs text-muted-foreground">{l}</div>
@@ -91,12 +93,12 @@ function FreeCustomerView({ orders }: { orders: Order[] }) {
             ))}
           </div>
           <div className="flex gap-1.5 flex-wrap">
-            {["VIP (1)", "בסיכון (2)", "רדומים (3)"].map((s) => (
+            {[`${t("dash.crm.segment_vip")} (1)`, `${t("dash.crm.segment_at_risk")} (2)`, `${t("dash.crm.segment_dormant")} (3)`].map((s) => (
               <span key={s} className="text-xs px-3 py-1 rounded-full bg-primary/10 border border-primary/20">{s}</span>
             ))}
           </div>
           <div className="space-y-2 pt-1">
-            {["ישראל ישראלי", "דנה כהן"].map((n) => (
+            {[t("dash.crm.demo_name_1"), t("dash.crm.demo_name_2")].map((n) => (
               <div key={n} className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-full bg-muted shrink-0" />
                 <div className="flex-1 h-2.5 rounded-full bg-muted/60" />
@@ -109,16 +111,16 @@ function FreeCustomerView({ orders }: { orders: Order[] }) {
           <div className="w-10 h-10 rounded-2xl bg-violet-500/15 flex items-center justify-center mb-3">
             <Lock className="w-5 h-5 text-violet-600" />
           </div>
-          <p className="text-sm font-semibold text-foreground mb-1">CRM+ - ניהול מתקדם</p>
+          <p className="text-sm font-semibold text-foreground mb-1">{t("dash.crm.upsell_title")}</p>
           <p className="text-xs text-muted-foreground text-center mb-4 max-w-[220px] leading-relaxed">
-            פילוחים, LTV, התראות, וואטסאפ, ספקים ורווחיות
+            {t("dash.crm.upsell_desc")}
           </p>
           <button
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent("open-upgrades"))}
             className="rounded-xl bg-violet-600 text-white px-5 py-2 text-sm font-semibold hover:bg-violet-700 transition-colors"
           >
-            שדרג ל-CRM+ - 49 ₪/חודש ←
+            {t("dash.crm.upgrade_cta")}
           </button>
         </div>
       </div>
@@ -130,18 +132,19 @@ function FreeCustomerView({ orders }: { orders: Order[] }) {
 // (via useContacts) instead of orders. ltv_cached / txn_count come from the CRM
 // aggregation so donors/leads show their total given and count.
 function ContactsCustomerView({ businessId, kind, hasCrmAddon }: { businessId?: string; kind: "lead" | "donation"; hasCrmAddon: boolean }) {
+  const { t } = useLanguage();
   const { data: contacts = [], isLoading } = useContacts(businessId);
   const sorted = useMemo(
     () => [...contacts].sort((a, b) => (b.ltv_cached ?? 0) - (a.ltv_cached ?? 0)),
     [contacts],
   );
   const emptyLabel = kind === "donation"
-    ? "עדיין אין תורמים - יופיעו כאן עם התרומה הראשונה"
-    : "עדיין אין לידים - יופיעו כאן עם הפנייה הראשונה";
-  const txnLabel = kind === "donation" ? "תרומות" : "פניות";
+    ? t("dash.crm.no_donors")
+    : t("dash.crm.no_leads");
+  const txnLabel = kind === "donation" ? t("dash.crm.donations_label") : t("dash.crm.inquiries_label");
 
   if (isLoading) {
-    return <div className="text-center py-14 text-sm text-muted-foreground">טוען...</div>;
+    return <div className="text-center py-14 text-sm text-muted-foreground">{t("dash.crm.loading")}</div>;
   }
   return (
     <div className="space-y-5">
@@ -158,7 +161,7 @@ function ContactsCustomerView({ businessId, kind, hasCrmAddon }: { businessId?: 
                 {(c.name || "?").charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{c.name || "ללא שם"}</p>
+                <p className="text-sm font-medium truncate">{c.name || t("dash.crm.no_name")}</p>
                 {(c.phone || c.email) && (
                   <p className="text-xs text-muted-foreground truncate" dir="ltr">{c.phone || c.email}</p>
                 )}
@@ -181,7 +184,7 @@ function ContactsCustomerView({ businessId, kind, hasCrmAddon }: { businessId?: 
         <div className="relative rounded-2xl border border-border overflow-hidden">
           <div className="blur-sm pointer-events-none select-none p-4 space-y-3" aria-hidden="true">
             <div className="grid grid-cols-2 gap-2">
-              {[["67%", "חוזרים"], ["₪1,245", "LTV ממוצע"]].map(([v, l]) => (
+              {[["67%", t("dash.crm.repeat_short")], ["₪1,245", t("dash.crm.avg_ltv")]].map(([v, l]) => (
                 <div key={l} className="rounded-xl bg-muted/50 p-3">
                   <div className="text-2xl font-bold">{v}</div>
                   <div className="text-xs text-muted-foreground">{l}</div>
@@ -189,12 +192,12 @@ function ContactsCustomerView({ businessId, kind, hasCrmAddon }: { businessId?: 
               ))}
             </div>
             <div className="flex gap-1.5 flex-wrap">
-              {["VIP (1)", "בסיכון (2)", "רדומים (3)"].map((s) => (
+              {[`${t("dash.crm.segment_vip")} (1)`, `${t("dash.crm.segment_at_risk")} (2)`, `${t("dash.crm.segment_dormant")} (3)`].map((s) => (
                 <span key={s} className="text-xs px-3 py-1 rounded-full bg-primary/10 border border-primary/20">{s}</span>
               ))}
             </div>
             <div className="space-y-2 pt-1">
-              {["ישראל ישראלי", "דנה כהן"].map((n) => (
+              {[t("dash.crm.demo_name_1"), t("dash.crm.demo_name_2")].map((n) => (
                 <div key={n} className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-full bg-muted shrink-0" />
                   <div className="flex-1 h-2.5 rounded-full bg-muted/60" />
@@ -207,16 +210,16 @@ function ContactsCustomerView({ businessId, kind, hasCrmAddon }: { businessId?: 
             <div className="w-10 h-10 rounded-2xl bg-violet-500/15 flex items-center justify-center mb-3">
               <Lock className="w-5 h-5 text-violet-600" />
             </div>
-            <p className="text-sm font-semibold text-foreground mb-1">CRM+ - ניהול מתקדם</p>
+            <p className="text-sm font-semibold text-foreground mb-1">{t("dash.crm.upsell_title")}</p>
             <p className="text-xs text-muted-foreground text-center mb-4 max-w-[220px] leading-relaxed">
-              פילוחים, LTV, התראות, וואטסאפ, ספקים ורווחיות
+              {t("dash.crm.upsell_desc")}
             </p>
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent("open-upgrades"))}
               className="rounded-xl bg-violet-600 text-white px-5 py-2 text-sm font-semibold hover:bg-violet-700 transition-colors"
             >
-              שדרג ל-CRM+ - 49 ₪/חודש ←
+              {t("dash.crm.upgrade_cta")}
             </button>
           </div>
         </div>
@@ -226,9 +229,18 @@ function ContactsCustomerView({ businessId, kind, hasCrmAddon }: { businessId?: 
 }
 
 function LockedTabView({ tab }: { tab: "suppliers" | "profitability" }) {
+  const { t } = useLanguage();
   const meta = tab === "suppliers"
-    ? { title: "ניהול ספקים", desc: "עקוב אחרי עלויות, ספקים, ורווח נקי לכל מוצר", features: ["📦 ספקים ועלות רכישה", "📊 גיליון עלויות", "📈 מרג'ין לפי מוצר"] }
-    : { title: "דוח רווחיות", desc: "ראה את ההכנסות, ההוצאות, והרווח האמיתי של העסק", features: ["💰 הכנסות מול הוצאות", "📉 גרף רווח לאורך זמן", "🎯 מוצרים הכי רווחיים"] };
+    ? {
+        title: t("dash.crm.suppliers_title"),
+        desc: t("dash.crm.suppliers_desc"),
+        features: [t("dash.crm.suppliers_feature_cost"), t("dash.crm.suppliers_feature_sheet"), t("dash.crm.suppliers_feature_margin")],
+      }
+    : {
+        title: t("dash.crm.profitability_title"),
+        desc: t("dash.crm.profitability_desc"),
+        features: [t("dash.crm.profitability_feature_income"), t("dash.crm.profitability_feature_chart"), t("dash.crm.profitability_feature_top")],
+      };
 
   return (
     <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
@@ -247,34 +259,37 @@ function LockedTabView({ tab }: { tab: "suppliers" | "profitability" }) {
         className="rounded-xl bg-violet-600 text-white px-6 py-2.5 text-sm font-semibold hover:bg-violet-700 transition-colors"
         onClick={() => window.dispatchEvent(new CustomEvent("open-upgrades"))}
       >
-        שדרג ל-CRM+ - 49 ₪/חודש ←
+        {t("dash.crm.upgrade_cta")}
       </button>
     </div>
   );
 }
 
-const BASE_TABS: { id: CrmTab; label: string; icon: typeof Users }[] = [
-  { id: "customers",     label: "לקוחות",  icon: Users },
-  { id: "suppliers",     label: "ספקים",   icon: Truck },
-  { id: "profitability", label: "רווחיות", icon: TrendingUp },
+type TabDef = { id: CrmTab; label: string; icon: typeof Users };
+
+const getBaseTabs = (t: (key: string) => string): TabDef[] => [
+  { id: "customers",     label: t("dash.crm.tab_customers"),     icon: Users },
+  { id: "suppliers",     label: t("dash.crm.tab_suppliers"),     icon: Truck },
+  { id: "profitability", label: t("dash.crm.tab_profitability"), icon: TrendingUp },
 ];
 
-const REALESTATE_TABS: { id: CrmTab; label: string; icon: typeof Users }[] = [
-  { id: "pipeline",      label: "לוח לידים", icon: Kanban },
-  { id: "customers",     label: "אנשי קשר",  icon: Users },
-  { id: "suppliers",     label: "ספקים",     icon: Truck },
-  { id: "profitability", label: "רווחיות",   icon: TrendingUp },
+const getRealestateTabs = (t: (key: string) => string): TabDef[] => [
+  { id: "pipeline",      label: t("dash.crm.tab_pipeline"),      icon: Kanban },
+  { id: "customers",     label: t("dash.crm.tab_contacts"),      icon: Users },
+  { id: "suppliers",     label: t("dash.crm.tab_suppliers"),     icon: Truck },
+  { id: "profitability", label: t("dash.crm.tab_profitability"), icon: TrendingUp },
 ];
 
 // nonprofit/synagogue "products" are donation projects, not purchased inventory - the
 // profitability tab reads products/orders/order_items, which are permanently empty/
 // meaningless for these verticals (no "commerce" module), so it's dropped entirely.
-const DONATION_TABS: { id: CrmTab; label: string; icon: typeof Users }[] = [
-  { id: "customers", label: "תורמים", icon: Users },
-  { id: "suppliers", label: "ספקים",  icon: Truck },
+const getDonationTabs = (t: (key: string) => string): TabDef[] => [
+  { id: "customers", label: t("dash.crm.tab_donors"),    icon: Users },
+  { id: "suppliers", label: t("dash.crm.tab_suppliers"), icon: Truck },
 ];
 
 const DashboardCRM = ({ orders, businessId, demoMode, initialTab = "customers", hasCrmAddon = false, businessType }: DashboardCRMProps) => {
+  const { t } = useLanguage();
   const isRealEstate = businessType === "realestate";
   const isDonationVertical = businessType === "nonprofit" || businessType === "synagogue";
   const defaultTab: CrmTab = isRealEstate ? "pipeline" : "customers";
@@ -282,7 +297,7 @@ const DashboardCRM = ({ orders, businessId, demoMode, initialTab = "customers", 
 
   const contactsVertical = isContactsVertical(businessType);
   const contactKind: "lead" | "donation" = isRealEstate ? "lead" : "donation";
-  const TABS = isRealEstate ? REALESTATE_TABS : isDonationVertical ? DONATION_TABS : BASE_TABS;
+  const TABS = isRealEstate ? getRealestateTabs(t) : isDonationVertical ? getDonationTabs(t) : getBaseTabs(t);
 
   const customersView = contactsVertical
     ? <ContactsCustomerView businessId={businessId} kind={contactKind} hasCrmAddon={hasCrmAddon} />
@@ -292,7 +307,7 @@ const DashboardCRM = ({ orders, businessId, demoMode, initialTab = "customers", 
 
   return (
     <div className="space-y-4" dir="rtl">
-      <h1 className="text-xl font-bold text-foreground">ניהול לקוחות & CRM</h1>
+      <h1 className="text-xl font-bold text-foreground">{t("dash.crm.title")}</h1>
 
       {/* Tab bar - always visible; ספקים/רווחיות show lock icon for free tier */}
       <div className="inline-flex items-center gap-1 rounded-xl bg-muted p-1 flex-wrap">

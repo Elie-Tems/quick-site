@@ -3,6 +3,7 @@ import { Plus, Phone, MessageCircle, Calendar, ChevronLeft, X, AlertCircle, Cloc
 import { usePipeline, useContacts, useMoveCard, useSetFollowUp, useCreateLead, type PipelineCard } from "@/hooks/useCrm";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const sb = supabase as any;
 
@@ -36,6 +37,7 @@ interface AddLeadFormProps {
 }
 
 function AddLeadForm({ pipelineId, businessId, stageKey, onClose }: AddLeadFormProps) {
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -55,10 +57,10 @@ function AddLeadForm({ pipelineId, businessId, stageKey, onClose }: AddLeadFormP
         title: title.trim() || undefined,
         value: value ? Number(value) : undefined,
       });
-      toast.success("ליד נוסף בהצלחה");
+      toast.success(t("dash.crm.pipeline.lead_added_success"));
       onClose();
     } catch {
-      toast.error("שגיאה בהוספת ליד");
+      toast.error(t("dash.crm.pipeline.lead_added_error"));
     }
   };
 
@@ -66,21 +68,21 @@ function AddLeadForm({ pipelineId, businessId, stageKey, onClose }: AddLeadFormP
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div className="w-full max-w-sm rounded-2xl bg-card border border-border shadow-xl p-5" dir="rtl" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-foreground">הוסף ליד חדש</h3>
+          <h3 className="font-semibold text-foreground">{t("dash.crm.pipeline.add_lead_title")}</h3>
           <button onClick={onClose} className="w-7 h-7 rounded-full hover:bg-muted flex items-center justify-center"><X className="w-4 h-4" /></button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <input required value={name} onChange={e => setName(e.target.value)} placeholder="שם *" className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm" />
-          <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="טלפון" type="tel" className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm" />
-          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="מייל" type="email" className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm" />
-          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="תיאור (נכס, איזור...)" className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm" />
-          <input value={value} onChange={e => setValue(e.target.value)} placeholder="ערך עסקה (₪)" type="number" className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm" />
+          <input required value={name} onChange={e => setName(e.target.value)} placeholder={t("dash.crm.pipeline.name_placeholder")} className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm" />
+          <input value={phone} onChange={e => setPhone(e.target.value)} placeholder={t("dash.crm.pipeline.phone_placeholder")} type="tel" className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm" />
+          <input value={email} onChange={e => setEmail(e.target.value)} placeholder={t("dash.crm.pipeline.email_placeholder")} type="email" className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm" />
+          <input value={title} onChange={e => setTitle(e.target.value)} placeholder={t("dash.crm.pipeline.description_placeholder")} className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm" />
+          <input value={value} onChange={e => setValue(e.target.value)} placeholder={t("dash.crm.pipeline.deal_value_placeholder")} type="number" className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm" />
           <div className="flex gap-2 pt-1">
             <button type="submit" disabled={createLead.isPending}
               className="flex-1 h-9 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2">
-              {createLead.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "הוסף ליד"}
+              {createLead.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("dash.crm.pipeline.add_lead_button")}
             </button>
-            <button type="button" onClick={onClose} className="h-9 px-4 rounded-lg border border-border text-sm">ביטול</button>
+            <button type="button" onClick={onClose} className="h-9 px-4 rounded-lg border border-border text-sm">{t("dash.crm.pipeline.cancel_button")}</button>
           </div>
         </form>
       </div>
@@ -100,6 +102,7 @@ interface CardDetailProps {
 }
 
 function CardDetail({ card, contactName, contactPhone, contactEmail, stageName, onClose, onMoveToStage, stages }: CardDetailProps) {
+  const { t } = useLanguage();
   const setFollowUp = useSetFollowUp();
   const [notes, setNotes] = useState("");
 
@@ -112,7 +115,7 @@ function CardDetail({ card, contactName, contactPhone, contactEmail, stageName, 
   const saveNotes = async () => {
     if (!card.contact_id) return;
     await sb.from("contacts").update({ notes }).eq("id", card.contact_id);
-    toast.success("הערות נשמרו");
+    toast.success(t("dash.crm.pipeline.notes_saved"));
   };
 
   const followUpDate = card.follow_up_at ? new Date(card.follow_up_at) : null;
@@ -136,7 +139,7 @@ function CardDetail({ card, contactName, contactPhone, contactEmail, stageName, 
           {/* Stats */}
           {card.value && (
             <div className="rounded-xl bg-muted/40 px-4 py-3">
-              <p className="text-xs text-muted-foreground mb-0.5">ערך עסקה</p>
+              <p className="text-xs text-muted-foreground mb-0.5">{t("dash.crm.pipeline.deal_value_label")}</p>
               <p className="text-2xl font-bold text-foreground">{fmtPrice(card.value)}</p>
             </div>
           )}
@@ -148,7 +151,7 @@ function CardDetail({ card, contactName, contactPhone, contactEmail, stageName, 
                 <>
                   <a href={waLink(contactPhone)} target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-sm rounded-lg bg-primary text-primary-foreground px-3 py-2 hover:opacity-90">
-                    <MessageCircle className="w-4 h-4" /> וואטסאפ
+                    <MessageCircle className="w-4 h-4" /> {t("dash.crm.pipeline.whatsapp_label")}
                   </a>
                   <a href={telLink(contactPhone)}
                     className="inline-flex items-center gap-1.5 text-sm rounded-lg border border-border px-3 py-2 hover:bg-muted">
@@ -168,15 +171,15 @@ function CardDetail({ card, contactName, contactPhone, contactEmail, stageName, 
           {/* Follow-up */}
           <div>
             <p className="text-sm font-medium mb-2 flex items-center gap-1.5">
-              <Clock className="w-4 h-4" /> תזכורת מעקב
-              {isOverdue && <span className="text-xs text-rose-500 font-medium">· באיחור</span>}
+              <Clock className="w-4 h-4" /> {t("dash.crm.pipeline.followup_reminder_label")}
+              {isOverdue && <span className="text-xs text-rose-500 font-medium">{t("dash.crm.pipeline.overdue_marker")}</span>}
             </p>
             <input
               type="date"
               defaultValue={card.follow_up_at ? card.follow_up_at.slice(0, 10) : ""}
               onChange={async (e) => {
                 await setFollowUp.mutateAsync({ cardId: card.id, at: e.target.value || null });
-                toast.success(e.target.value ? "תזכורת נקבעה" : "תזכורת בוטלה");
+                toast.success(e.target.value ? t("dash.crm.pipeline.followup_set") : t("dash.crm.pipeline.followup_cancelled"));
               }}
               className="h-9 rounded-lg border border-border bg-background px-3 text-sm"
             />
@@ -184,7 +187,7 @@ function CardDetail({ card, contactName, contactPhone, contactEmail, stageName, 
 
           {/* Move stage */}
           <div>
-            <p className="text-sm font-medium mb-2">העבר לשלב</p>
+            <p className="text-sm font-medium mb-2">{t("dash.crm.pipeline.move_to_stage_label")}</p>
             <div className="flex flex-wrap gap-2">
               {stages.filter(s => s.key !== card.stage_key).map(s => (
                 <button key={s.key} onClick={() => { onMoveToStage(s.key, s.is_won ? "won" : s.is_lost ? "lost" : "open"); onClose(); }}
@@ -198,12 +201,12 @@ function CardDetail({ card, contactName, contactPhone, contactEmail, stageName, 
 
           {/* Notes */}
           <div>
-            <p className="text-sm font-medium mb-2">הערות</p>
+            <p className="text-sm font-medium mb-2">{t("dash.crm.pipeline.notes_label")}</p>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
               onBlur={saveNotes}
-              placeholder="הערות על הליד - העדפות, שיחות, פרטים חשובים..."
+              placeholder={t("dash.crm.pipeline.notes_placeholder")}
               rows={4}
               className="w-full rounded-lg border border-border bg-background p-3 text-sm resize-y"
             />
@@ -215,6 +218,7 @@ function CardDetail({ card, contactName, contactPhone, contactEmail, stageName, 
 }
 
 const DashboardLeadsPipeline = ({ businessId }: { businessId?: string }) => {
+  const { t } = useLanguage();
   const { data, isLoading } = usePipeline(businessId);
   const { data: contacts = [] } = useContacts(businessId);
   const moveCard = useMoveCard();
@@ -264,9 +268,9 @@ const DashboardLeadsPipeline = ({ businessId }: { businessId?: string }) => {
         is_default: true,
       }).select("id").single();
       if (error) throw error;
-      toast.success("Pipeline נוצר בהצלחה");
+      toast.success(t("dash.crm.pipeline.pipeline_created_success"));
     } catch {
-      toast.error("שגיאה ביצירת pipeline");
+      toast.error(t("dash.crm.pipeline.pipeline_created_error"));
     } finally {
       setCreatingPipeline(false);
     }
@@ -286,9 +290,9 @@ const DashboardLeadsPipeline = ({ businessId }: { businessId?: string }) => {
         <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
           <ArrowRight className="w-7 h-7 text-primary" />
         </div>
-        <h2 className="text-lg font-semibold mb-2">טרם הוגדר לוח לידים</h2>
+        <h2 className="text-lg font-semibold mb-2">{t("dash.crm.pipeline.no_pipeline_title")}</h2>
         <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-          לוח הלידים עוקב אחרי כל פנייה - מהפנייה הראשונה ועד חתימה על העסקה
+          {t("dash.crm.pipeline.no_pipeline_desc")}
         </p>
         <button
           onClick={createDefaultPipeline}
@@ -296,7 +300,7 @@ const DashboardLeadsPipeline = ({ businessId }: { businessId?: string }) => {
           className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-xl px-5 py-2.5 text-sm font-semibold hover:opacity-90"
         >
           {creatingPipeline ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-          צור לוח לידים
+          {t("dash.crm.pipeline.create_pipeline_button")}
         </button>
       </div>
     );
@@ -308,12 +312,12 @@ const DashboardLeadsPipeline = ({ businessId }: { businessId?: string }) => {
     <div className="space-y-4" dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">לוח לידים</h1>
+        <h1 className="text-xl font-bold text-foreground">{t("dash.crm.pipeline.title")}</h1>
         <button
           onClick={() => setAddingToStage(stages[0]?.key ?? "new")}
           className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground rounded-xl px-4 py-2 text-sm font-medium hover:opacity-90"
         >
-          <Plus className="w-4 h-4" /> ליד חדש
+          <Plus className="w-4 h-4" /> {t("dash.crm.pipeline.new_lead_button")}
         </button>
       </div>
 
@@ -321,22 +325,22 @@ const DashboardLeadsPipeline = ({ businessId }: { businessId?: string }) => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="rounded-xl bg-card border border-border p-4 relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-0.5 bg-primary" />
-          <p className="text-xs text-muted-foreground mb-1">לידים פעילים</p>
+          <p className="text-xs text-muted-foreground mb-1">{t("dash.crm.pipeline.kpi_active_leads")}</p>
           <p className="text-2xl font-bold">{cards.filter(c => c.status === "open").length}</p>
         </div>
         <div className="rounded-xl bg-card border border-border p-4 relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-0.5 bg-emerald-500" />
-          <p className="text-xs text-muted-foreground mb-1">עסקאות שנסגרו</p>
+          <p className="text-xs text-muted-foreground mb-1">{t("dash.crm.pipeline.kpi_closed_deals")}</p>
           <p className="text-2xl font-bold">{cards.filter(c => c.status === "won").length}</p>
         </div>
         <div className="rounded-xl bg-card border border-border p-4 relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-0.5 bg-amber-500" />
-          <p className="text-xs text-muted-foreground mb-1">שווי צבר</p>
+          <p className="text-xs text-muted-foreground mb-1">{t("dash.crm.pipeline.kpi_pipeline_value")}</p>
           <p className="text-xl font-bold">{totalValue > 0 ? fmtPrice(totalValue) : "—"}</p>
         </div>
         <div className="rounded-xl bg-card border border-border p-4 relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-0.5 bg-emerald-500" />
-          <p className="text-xs text-muted-foreground mb-1">שווי עסקאות שנסגרו</p>
+          <p className="text-xs text-muted-foreground mb-1">{t("dash.crm.pipeline.kpi_closed_value")}</p>
           <p className="text-xl font-bold">{wonValue > 0 ? fmtPrice(wonValue) : "—"}</p>
         </div>
       </div>
@@ -346,8 +350,8 @@ const DashboardLeadsPipeline = ({ businessId }: { businessId?: string }) => {
         <div className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/20 p-3 flex items-center gap-3">
           <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
           <p className="text-sm text-rose-700 dark:text-rose-400">
-            {overdueCards.length} {overdueCards.length === 1 ? "ליד" : "לידים"} עם תזכורת שעברה -{" "}
-            {overdueCards.map(c => contactMap.get(c.contact_id)?.name ?? "ללא שם").join(", ")}
+            {overdueCards.length} {overdueCards.length === 1 ? t("dash.crm.pipeline.lead_singular") : t("dash.crm.pipeline.lead_plural")} {t("dash.crm.pipeline.overdue_suffix")} -{" "}
+            {overdueCards.map(c => contactMap.get(c.contact_id)?.name ?? t("dash.crm.pipeline.no_name")).join(", ")}
           </p>
         </div>
       )}
@@ -390,7 +394,7 @@ const DashboardLeadsPipeline = ({ businessId }: { businessId?: string }) => {
                         className="w-full rounded-xl border border-border bg-card p-3 text-right hover:border-primary/40 hover:shadow-sm transition-all group"
                       >
                         <p className="text-sm font-medium text-foreground mb-1 truncate">
-                          {contact?.name ?? card.title ?? "ליד"}
+                          {contact?.name ?? card.title ?? t("dash.crm.pipeline.default_lead_name")}
                         </p>
                         {card.title && contact?.name && (
                           <p className="text-xs text-muted-foreground truncate mb-1">{card.title}</p>
@@ -420,7 +424,7 @@ const DashboardLeadsPipeline = ({ businessId }: { businessId?: string }) => {
                       onClick={() => setAddingToStage(stage.key)}
                       className="w-full rounded-xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
                     >
-                      + הוסף ליד
+                      + {t("dash.crm.pipeline.add_lead_button")}
                     </button>
                   )}
                 </div>
@@ -433,7 +437,7 @@ const DashboardLeadsPipeline = ({ businessId }: { businessId?: string }) => {
       {/* Won/Lost summary */}
       {cards.filter(c => c.status !== "open").length > 0 && (
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-sm font-medium mb-3">עסקאות שנסגרו</p>
+          <p className="text-sm font-medium mb-3">{t("dash.crm.pipeline.kpi_closed_deals")}</p>
           <div className="space-y-2">
             {cards.filter(c => c.status !== "open").map(card => {
               const contact = contactMap.get(card.contact_id);
@@ -443,10 +447,10 @@ const DashboardLeadsPipeline = ({ businessId }: { businessId?: string }) => {
                     ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                     : <X className="w-4 h-4 text-muted-foreground shrink-0" />
                   }
-                  <span className="flex-1 truncate">{contact?.name ?? "ליד"}</span>
+                  <span className="flex-1 truncate">{contact?.name ?? t("dash.crm.pipeline.default_lead_name")}</span>
                   {card.value && <span className="tabular-nums text-muted-foreground">{fmtPrice(card.value)}</span>}
                   <span className={`text-xs px-2 py-0.5 rounded-full ${card.status === "won" ? "bg-emerald-500/10 text-emerald-600" : "bg-muted text-muted-foreground"}`}>
-                    {card.status === "won" ? "נסגר" : "לא רלוונטי"}
+                    {card.status === "won" ? t("dash.crm.pipeline.status_won") : t("dash.crm.pipeline.status_lost")}
                   </span>
                 </div>
               );
@@ -471,7 +475,7 @@ const DashboardLeadsPipeline = ({ businessId }: { businessId?: string }) => {
         return (
           <CardDetail
             card={selectedCard}
-            contactName={contact?.name ?? "ליד"}
+            contactName={contact?.name ?? t("dash.crm.pipeline.default_lead_name")}
             contactPhone={contact?.phone ?? ""}
             contactEmail={contact?.email ?? ""}
             stageName={stageName}
