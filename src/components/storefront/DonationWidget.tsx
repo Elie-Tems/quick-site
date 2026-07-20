@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useDonationCampaigns, useSection46Enabled } from "@/hooks/useDonations";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
  * Storefront donation widget. One-time gift with amount presets (the merchant's
@@ -17,6 +18,7 @@ import { useDonationCampaigns, useSection46Enabled } from "@/hooks/useDonations"
 const DEFAULT_AMOUNTS = [50, 100, 250, 500];
 
 const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; donationAmounts?: number[] }) => {
+  const { t } = useLanguage();
   const { data: campaigns = [] } = useDonationCampaigns(businessId);
   const { data: s46 } = useSection46Enabled(businessId);
   const AMOUNTS = (donationAmounts && donationAmounts.length > 0) ? donationAmounts : DEFAULT_AMOUNTS;
@@ -31,13 +33,13 @@ const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; d
 
   const donate = async () => {
     if (!donor.name || (!donor.email && !donor.phone) || finalAmount <= 0) {
-      toast.error("מלאו סכום, שם ואימייל/טלפון");
+      toast.error(t("store.donation.toast_fill_required"));
       return;
     }
     // For a Section-46 credit the donation is reported to תרומות ישראל, which
     // requires the donor's ID - unless they chose to give anonymously (no credit).
     if (s46 && !anonymous && donor.idNumber.trim().length < 5) {
-      toast.error("לזיכוי מס נדרשת תעודת זהות, או סמנו \"תרומה אנונימית\"");
+      toast.error(t("store.donation.toast_id_required"));
       return;
     }
     setLoading(true);
@@ -45,9 +47,9 @@ const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; d
       body: { businessId, amount: finalAmount, campaignId, donor: { ...donor, anonymous } },
     });
     setLoading(false);
-    if (error || (data as { error?: string })?.error) { toast.error("שגיאה בתרומה, נסו שוב"); return; }
+    if (error || (data as { error?: string })?.error) { toast.error(t("store.donation.toast_error")); return; }
     if ((data as { paymentUrl?: string })?.paymentUrl) { window.location.href = (data as { paymentUrl: string }).paymentUrl; return; }
-    toast.success("תודה על תרומתך! 💚");
+    toast.success(t("store.donation.toast_thank_you"));
   };
 
   return (
@@ -55,8 +57,8 @@ const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; d
       {/* Donation form */}
       <div className="lg:col-span-2">
         <div className="rounded-2xl border border-border bg-card p-6 lg:sticky lg:top-24">
-          <h2 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2"><Heart className="w-6 h-6 text-primary" /> תרומה</h2>
-          {s46 && <p className="text-xs text-muted-foreground mb-4">כולל קבלה מוכרת לצורכי מס (סעיף 46)</p>}
+          <h2 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2"><Heart className="w-6 h-6 text-primary" /> {t("store.donation.heading")}</h2>
+          {s46 && <p className="text-xs text-muted-foreground mb-4">{t("store.donation.receipt_note")}</p>}
 
           <div className="grid grid-cols-4 gap-2 mb-2">
             {AMOUNTS.map((a) => (
@@ -64,27 +66,27 @@ const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; d
                 className={`py-3 rounded-xl border font-bold ${!custom && amount === a ? "bg-primary text-white border-primary" : "border-border text-foreground"}`}>₪{a}</button>
             ))}
           </div>
-          <Input placeholder="סכום אחר" value={custom} onChange={(e) => setCustom(e.target.value)} className="mb-3" />
+          <Input placeholder={t("store.donation.custom_amount_placeholder")} value={custom} onChange={(e) => setCustom(e.target.value)} className="mb-3" />
 
           <div className="space-y-2 mb-4">
-            <Input placeholder="שם מלא" value={donor.name} onChange={(e) => setDonor({ ...donor, name: e.target.value })} />
-            <Input placeholder="אימייל" value={donor.email} onChange={(e) => setDonor({ ...donor, email: e.target.value })} />
-            <Input placeholder="טלפון" value={donor.phone} onChange={(e) => setDonor({ ...donor, phone: e.target.value })} />
+            <Input placeholder={t("store.donation.name_placeholder")} value={donor.name} onChange={(e) => setDonor({ ...donor, name: e.target.value })} />
+            <Input placeholder={t("store.donation.email_placeholder")} value={donor.email} onChange={(e) => setDonor({ ...donor, email: e.target.value })} />
+            <Input placeholder={t("store.donation.phone_placeholder")} value={donor.phone} onChange={(e) => setDonor({ ...donor, phone: e.target.value })} />
 
             {/* Section 46 -> reported to תרומות ישראל, which needs the donor's ID. */}
             {s46 && !anonymous && (
-              <Input placeholder="תעודת זהות (לזיכוי מס)" inputMode="numeric" value={donor.idNumber}
+              <Input placeholder={t("store.donation.id_number_placeholder")} inputMode="numeric" value={donor.idNumber}
                 onChange={(e) => setDonor({ ...donor, idNumber: e.target.value.replace(/\D/g, "").slice(0, 9) })} />
             )}
             {s46 && (
               <>
                 <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer pt-0.5">
                   <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} className="accent-primary" />
-                  תרומה אנונימית (ללא זיכוי מס)
+                  {t("store.donation.anonymous_label")}
                 </label>
                 {!anonymous && (
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    התרומה תדווח ל"תרומות ישראל" של רשות המסים, והזיכוי (סעיף 46) יופיע אוטומטית באזור האישי שלך באתר הרשות. לא צריך לשמור קבלה.
+                    {t("store.donation.s46_report_note")}
                   </p>
                 )}
               </>
@@ -92,19 +94,19 @@ const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; d
           </div>
 
           <Button className="w-full" onClick={donate} disabled={loading}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Heart className="w-4 h-4 ml-1" /> תרמו ₪{finalAmount || 0}</>}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Heart className="w-4 h-4 ml-1" /> {t("store.donation.donate_button").replace("{amount}", String(finalAmount || 0))}</>}
           </Button>
           <div className="flex items-center gap-2 justify-center mt-3 text-xs text-muted-foreground">
-            <ShieldCheck className="w-3.5 h-3.5 text-primary" /> תשלום מאובטח{s46 ? " · קבלה לסעיף 46" : ""}
+            <ShieldCheck className="w-3.5 h-3.5 text-primary" /> {t("store.donation.secure_payment")}{s46 ? ` · ${t("store.donation.s46_receipt_suffix")}` : ""}
           </div>
         </div>
       </div>
 
       {/* Campaigns */}
       <div className="lg:col-span-3">
-        <h2 className="text-2xl font-bold text-foreground mb-4">קמפיינים</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-4">{t("store.donation.campaigns_heading")}</h2>
         <div className="space-y-3">
-          {campaigns.length === 0 && <p className="text-sm text-muted-foreground">תרומה כללית תסייע בכל הפעילות.</p>}
+          {campaigns.length === 0 && <p className="text-sm text-muted-foreground">{t("store.donation.general_donation_note")}</p>}
           {campaigns.map((c) => {
             const pct = c.goal_amount ? Math.min(100, Math.round((c.raised_cached / c.goal_amount) * 100)) : 0;
             return (

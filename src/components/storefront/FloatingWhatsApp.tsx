@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
@@ -13,6 +14,7 @@ interface FloatingWhatsAppProps {
 }
 
 const FloatingWhatsApp = ({ phone, message, businessName }: FloatingWhatsAppProps) => {
+  const { t } = useLanguage();
   // Clean phone number - remove dashes, spaces, and ensure proper format
   const cleanPhone = phone.replace(/[\s-]/g, '');
   
@@ -37,7 +39,7 @@ const FloatingWhatsApp = ({ phone, message, businessName }: FloatingWhatsAppProp
   const whatsappPhone = formatPhoneForWhatsApp(cleanPhone);
   
   // Default message if not provided
-  const defaultMessage = message || 'שלום, הגעתי מהאתר שלכם ואשמח לקבל פרטים נוספים';
+  const defaultMessage = message || t("store.whatsapp.defaultMessage");
   
   // Encode message for URL
   const encodedMessage = encodeURIComponent(defaultMessage);
@@ -55,7 +57,7 @@ const FloatingWhatsApp = ({ phone, message, businessName }: FloatingWhatsAppProp
         onClick={handleClick}
         size="lg"
         className="h-12 w-12 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white shadow-lg transition-colors"
-        aria-label={`שלח הודעת וואטסאפ ל${businessName || 'העסק'}`}
+        aria-label={t("store.whatsapp.ariaLabel").replace("{business}", businessName || t("store.whatsapp.defaultBusinessName"))}
       >
         <WhatsAppIcon className="h-6 w-6" />
       </Button>

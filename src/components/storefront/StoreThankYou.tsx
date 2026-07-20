@@ -1,5 +1,6 @@
 import { CheckCircle, Phone, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StoreThankYouProps {
   hasPayment: boolean;
@@ -15,6 +16,8 @@ const StoreThankYou = ({
   onContinueShopping,
   orderId,
 }: StoreThankYouProps) => {
+  const { t } = useLanguage();
+
   return (
     <div className="fixed inset-0 z-50 bg-background flex items-center justify-center">
       <div className="container max-w-md text-center px-6">
@@ -25,34 +28,34 @@ const StoreThankYou = ({
 
         {/* Message */}
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-          תודה על ההזמנה!
+          {t("store.thankyou.heading")}
         </h1>
 
         <p className="text-lg text-muted-foreground mb-8">
           {hasPayment && paymentSuccess
-            ? 'התשלום התקבל בהצלחה. נשלח אליך אישור במייל.'
-            : 'ההזמנה התקבלה בהצלחה. ניצור איתך קשר לתיאום תשלום ומשלוח.'
+            ? t("store.thankyou.message_paid")
+            : t("store.thankyou.message_unpaid")
           }
         </p>
 
         {/* Actions */}
         <div className="space-y-3">
-          <Button 
-            size="lg" 
-            variant="hero" 
+          <Button
+            size="lg"
+            variant="hero"
             className="w-full gap-2"
             onClick={onContinueShopping}
           >
             <ArrowRight className="h-5 w-5" />
-            חזור לחנות
+            {t("store.thankyou.continue_shopping")}
           </Button>
 
-         
+
         </div>
 
         {orderId && (
           <p className="text-sm text-muted-foreground mt-8 font-mono">
-            מספר הזמנה: <span className="font-semibold text-foreground">{orderId.slice(0, 8).toUpperCase()}</span>
+            {t("store.thankyou.order_number_label")} <span className="font-semibold text-foreground">{orderId.slice(0, 8).toUpperCase()}</span>
           </p>
         )}
       </div>

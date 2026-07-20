@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BedDouble, Users, X, Loader2, CalendarDays, Send, Home } from "lucide-react";
 import { toast } from "sonner";
 import { useCreateLodgingOrder } from "@/hooks/useOrders";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
  * A bookable lodging unit = a `products` row that has `price_per_night` set.
@@ -84,6 +85,7 @@ function BookingModal({ unit, businessId, onClose }: {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const createOrder = useCreateLodgingOrder();
+  const { t, dir } = useLanguage();
 
   const minNights = num(unit.min_nights) ?? 1;
   const maxGuests = num(unit.max_guests);
@@ -92,10 +94,10 @@ function BookingModal({ unit, businessId, onClose }: {
   // Validation - drives both the inline message and the disabled submit.
   let error: string | null = null;
   if (checkin && checkout) {
-    if (!stay) error = "תאריך היציאה חייב להיות אחרי תאריך הכניסה";
-    else if (stay.nights < minNights) error = `מינימום ${minNights} לילות להזמנה ביחידה זו`;
+    if (!stay) error = t("store.lodging.error_checkout_after_checkin");
+    else if (stay.nights < minNights) error = t("store.lodging.error_min_nights").replace("{min}", String(minNights));
   }
-  if (!error && maxGuests != null && guests > maxGuests) error = `עד ${maxGuests} אורחים ביחידה זו`;
+  if (!error && maxGuests != null && guests > maxGuests) error = t("store.lodging.error_max_guests").replace("{max}", String(maxGuests));
 
   const customerOk = name.trim() && phone.trim() && email.trim();
   const canSubmit = !!stay && !error && !!customerOk && !createOrder.isPending;
@@ -112,7 +114,7 @@ function BookingModal({ unit, businessId, onClose }: {
         numGuests: guests,
         customer: { name: name.trim(), phone: phone.trim(), email: email.trim() },
       });
-      toast.success("בקשת ההזמנה נשלחה! בעל הנכס יחזור אליך לתיאום ותשלום.");
+      toast.success(t("store.lodging.toast_request_sent"));
       onClose();
     } catch {
       /* useCreateLodgingOrder already surfaces a toast on error */
@@ -137,17 +139,17 @@ function BookingModal({ unit, businessId, onClose }: {
           <div className="absolute bottom-3 right-3 text-white font-display font-bold text-xl drop-shadow">{unit.name}</div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4" dir="rtl">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4" dir={dir}>
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
-              <span className="text-xs text-muted-foreground mb-1 block">תאריך כניסה</span>
+              <span className="text-xs text-muted-foreground mb-1 block">{t("store.lodging.checkin_label")}</span>
               <input type="date" value={checkin} min={todayStr()}
                 onChange={(e) => { setCheckin(e.target.value); if (checkout && checkout <= e.target.value) setCheckout(""); }}
                 required
                 className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </label>
             <label className="block">
-              <span className="text-xs text-muted-foreground mb-1 block">תאריך יציאה</span>
+              <span className="text-xs text-muted-foreground mb-1 block">{t("store.lodging.checkout_label")}</span>
               <input type="date" value={checkout} min={checkin || todayStr()}
                 onChange={(e) => setCheckout(e.target.value)} required
                 className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
@@ -156,7 +158,7 @@ function BookingModal({ unit, businessId, onClose }: {
 
           <label className="block">
             <span className="text-xs text-muted-foreground mb-1 block">
-              מספר אורחים{maxGuests != null ? ` (עד ${maxGuests})` : ""}
+              {t("store.lodging.guests_label")}{maxGuests != null ? ` ${t("store.lodging.guests_max_suffix").replace("{max}", String(maxGuests))}` : ""}
             </span>
             <input type="number" min={1} max={maxGuests ?? undefined} value={guests}
               onChange={(e) => setGuests(Math.max(1, Math.floor(Number(e.target.value) || 1)))}
@@ -168,36 +170,36 @@ function BookingModal({ unit, businessId, onClose }: {
             <div className="rounded-xl bg-muted/60 border border-border p-3 text-sm space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">
-                  {stay.nights} לילות
-                  {stay.weekendNights > 0 && stay.weekend !== stay.nightly ? ` (${stay.weekendNights} סופ״ש)` : ""}
+                  {t("store.lodging.nights_count").replace("{count}", String(stay.nights))}
+                  {stay.weekendNights > 0 && stay.weekend !== stay.nightly ? ` ${t("store.lodging.weekend_nights_suffix").replace("{count}", String(stay.weekendNights))}` : ""}
                 </span>
                 <span className="text-foreground">
-                  ₪{stay.nightly.toLocaleString()} / לילה
-                  {stay.weekend !== stay.nightly ? ` · ₪${stay.weekend.toLocaleString()} סופ״ש` : ""}
+                  {t("store.lodging.price_per_night").replace("{price}", `₪${stay.nightly.toLocaleString()}`)}
+                  {stay.weekend !== stay.nightly ? ` · ${t("store.lodging.weekend_price_suffix").replace("{price}", `₪${stay.weekend.toLocaleString()}`)}` : ""}
                 </span>
               </div>
               <div className="flex items-center justify-between font-bold pt-1.5 border-t border-border">
-                <span className="text-foreground">סה״כ</span>
+                <span className="text-foreground">{t("store.lodging.total_label")}</span>
                 <span className="text-primary text-lg">₪{stay.total.toLocaleString()}</span>
               </div>
-              <p className="text-[11px] text-muted-foreground pt-1">התשלום נגבה ישירות מול בעל הנכס - זו בקשת הזמנה בלבד.</p>
+              <p className="text-[11px] text-muted-foreground pt-1">{t("store.lodging.payment_note")}</p>
             </div>
           )}
           {error && <p className="text-sm text-rose-500 font-medium">{error}</p>}
 
           <div className="space-y-3 pt-1">
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="שם מלא" required
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("store.lodging.name_placeholder")} required
               className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="טלפון" type="tel" required
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("store.lodging.phone_placeholder")} type="tel" required
               className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="אימייל" type="email" required
+            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("store.lodging.email_placeholder")} type="email" required
               className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>
 
           <button type="submit" disabled={!canSubmit}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50">
             {createOrder.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            שליחת בקשת הזמנה
+            {t("store.lodging.submit_button")}
           </button>
         </form>
       </motion.div>
@@ -207,13 +209,14 @@ function BookingModal({ unit, businessId, onClose }: {
 
 const LodgingWidget = ({ businessId, units }: { businessId: string; units: LodgingUnit[] }) => {
   const [open, setOpen] = useState<LodgingUnit | null>(null);
+  const { t, dir } = useLanguage();
   if (!units?.length) return null;
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-10" dir="rtl">
+    <section className="max-w-6xl mx-auto px-4 py-10" dir={dir}>
       <div className="text-center mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground">יחידות האירוח שלנו</h2>
-        <p className="text-muted-foreground mt-1.5">בחרו יחידה, תאריכים ומספר אורחים</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground">{t("store.lodging.section_heading")}</h2>
+        <p className="text-muted-foreground mt-1.5">{t("store.lodging.section_subheading")}</p>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -230,14 +233,14 @@ const LodgingWidget = ({ businessId, units }: { businessId: string; units: Lodgi
                     : <div className="w-full h-full flex items-center justify-center"><Home className="w-12 h-12 text-muted-foreground/30" /></div>}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-3 right-3 text-white font-display font-bold text-lg drop-shadow">
-                    ₪{nightly.toLocaleString()} <span className="text-sm font-normal">/ לילה</span>
+                    ₪{nightly.toLocaleString()} <span className="text-sm font-normal">{t("store.lodging.per_night_suffix")}</span>
                   </div>
                 </div>
                 <div className="p-4">
                   <div className="font-display font-bold text-foreground mb-2 leading-snug">{u.name}</div>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
-                    {maxGuests != null && <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> עד {maxGuests} אורחים</span>}
-                    <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" /> הזמנה מהירה</span>
+                    {maxGuests != null && <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {t("store.lodging.max_guests_badge").replace("{max}", String(maxGuests))}</span>}
+                    <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" /> {t("store.lodging.quick_booking_badge")}</span>
                   </div>
                 </div>
               </div>

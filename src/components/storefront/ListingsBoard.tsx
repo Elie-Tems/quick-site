@@ -3,19 +3,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Flame, X, Loader2, BedDouble, Maximize, Building2, Phone, Send } from "lucide-react";
 import { toast } from "sonner";
 import { useListings, useSubmitLead, type Listing } from "@/hooks/useListings";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const CATS = [
-  { key: "all", label: "הכל" },
-  { key: "sale", label: "מכירה" },
-  { key: "rent", label: "השכרה" },
-  { key: "commercial", label: "מסחרי" },
+const getCats = (t: (key: string) => string) => [
+  { key: "all", label: t("store.listings.catAll") },
+  { key: "sale", label: t("store.listings.catSale") },
+  { key: "rent", label: t("store.listings.catRent") },
+  { key: "commercial", label: t("store.listings.catCommercial") },
 ];
 
-const CAT_LABELS: Record<string, string> = { sale: "מכירה", rent: "השכרה", commercial: "מסחרי" };
+const getCatLabels = (t: (key: string) => string): Record<string, string> => ({
+  sale: t("store.listings.catSale"),
+  rent: t("store.listings.catRent"),
+  commercial: t("store.listings.catCommercial"),
+});
 
-function fmtPrice(l: Listing) {
+function fmtPrice(l: Listing, t: (key: string) => string) {
   if (l.price == null) return null;
-  return `₪${l.price.toLocaleString()}${l.price_period === "month" ? " / חודש" : ""}`;
+  return `₪${l.price.toLocaleString()}${l.price_period === "month" ? ` / ${t("store.listings.perMonth")}` : ""}`;
 }
 
 function isValidPhone(raw: string): boolean {
@@ -37,6 +42,7 @@ function LeadForm({ listing, businessId, businessPhone, onClose }: {
   businessPhone?: string;
   onClose: () => void;
 }) {
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const submitLead = useSubmitLead();
@@ -44,7 +50,7 @@ function LeadForm({ listing, businessId, businessPhone, onClose }: {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim()) return;
-    if (!isValidPhone(phone)) { toast.error("מספר טלפון לא תקין"); return; }
+    if (!isValidPhone(phone)) { toast.error(t("store.listings.invalidPhone")); return; }
     try {
       await submitLead.mutateAsync({
         businessId,
@@ -54,25 +60,25 @@ function LeadForm({ listing, businessId, businessPhone, onClose }: {
         value: listing.price ?? undefined,
         details: { listingId: listing.id, city: listing.city, category: listing.category },
       });
-      toast.success("הפרטים נשלחו - ניצור איתך קשר בקרוב!");
+      toast.success(t("store.listings.leadSuccess"));
       onClose();
     } catch (err) {
-      toast.error("שליחה נכשלה - נסה שוב");
+      toast.error(t("store.listings.leadError"));
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3" dir="rtl">
-      <p className="text-sm font-semibold text-foreground">השאר פרטים ונחזור אליך</p>
+      <p className="text-sm font-semibold text-foreground">{t("store.listings.leadFormTitle")}</p>
       <input
         value={name} onChange={(e) => setName(e.target.value)}
-        placeholder="שם מלא"
+        placeholder={t("store.listings.fullNamePlaceholder")}
         required
         className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
       />
       <input
         value={phone} onChange={(e) => setPhone(e.target.value)}
-        placeholder="טלפון"
+        placeholder={t("store.listings.phonePlaceholder")}
         type="tel"
         required
         className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -83,12 +89,12 @@ function LeadForm({ listing, businessId, businessPhone, onClose }: {
         className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
       >
         {submitLead.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-        שלח פרטים
+        {t("store.listings.sendDetails")}
       </button>
       {businessPhone && (
         <a href={`tel:${businessPhone}`}
           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-sm text-foreground hover:bg-muted transition-colors">
-          <Phone className="w-4 h-4" /> התקשר עכשיו
+          <Phone className="w-4 h-4" /> {t("store.listings.callNow")}
         </a>
       )}
     </form>
@@ -99,6 +105,9 @@ const ListingsBoard = ({ businessId, businessPhone }: {
   businessId: string;
   businessPhone?: string;
 }) => {
+  const { t } = useLanguage();
+  const CATS = getCats(t);
+  const CAT_LABELS = getCatLabels(t);
   const [cat, setCat] = useState("all");
   const { data: listings = [], isLoading } = useListings(businessId, { category: cat });
   const [open, setOpen] = useState<Listing | null>(null);
@@ -125,7 +134,7 @@ const ListingsBoard = ({ businessId, businessPhone }: {
       {!isLoading && listings.length === 0 && (
         <div className="text-center py-16">
           <Building2 className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">אין נכסים זמינים כרגע.</p>
+          <p className="text-muted-foreground">{t("store.listings.noListings")}</p>
         </div>
       )}
 
@@ -134,7 +143,7 @@ const ListingsBoard = ({ businessId, businessPhone }: {
           const img = l.media?.images?.[0]?.trim() || undefined;
           const rooms = (l.attrs as any)?.rooms;
           const size  = (l.attrs as any)?.size;
-          const price = fmtPrice(l);
+          const price = fmtPrice(l, t);
 
           return (
             <motion.button key={l.id} onClick={() => { setOpen(l); setGalleryIdx(0); }} className="text-right"
@@ -148,7 +157,7 @@ const ListingsBoard = ({ businessId, businessPhone }: {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   {l.is_hot && (
                     <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500 text-white text-xs font-bold shadow-lg">
-                      <Flame className="w-3.5 h-3.5" /> מציאה
+                      <Flame className="w-3.5 h-3.5" /> {t("store.listings.hotDeal")}
                     </span>
                   )}
                   {l.category && CAT_LABELS[l.category] && (
@@ -167,7 +176,7 @@ const ListingsBoard = ({ businessId, businessPhone }: {
                   <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
                     {l.city && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {l.city}</span>}
                     {rooms != null && rooms > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> {rooms}</span>}
-                    {size != null && <span className="flex items-center gap-1"><Maximize className="w-3.5 h-3.5" /> {size} מ״ר</span>}
+                    {size != null && <span className="flex items-center gap-1"><Maximize className="w-3.5 h-3.5" /> {size} {t("store.listings.sqmAbbrev")}</span>}
                   </div>
                 </div>
               </div>
@@ -224,18 +233,18 @@ const ListingsBoard = ({ businessId, businessPhone }: {
                       </div>
                     )}
                   </div>
-                  {fmtPrice(open) && (
-                    <div className="text-xl font-display font-bold text-primary whitespace-nowrap">{fmtPrice(open)}</div>
+                  {fmtPrice(open, t) && (
+                    <div className="text-xl font-display font-bold text-primary whitespace-nowrap">{fmtPrice(open, t)}</div>
                   )}
                 </div>
 
                 <div className="flex gap-2 mb-4 flex-wrap">
-                  {(open.attrs as any)?.rooms > 0 && <Pill><BedDouble className="w-3.5 h-3.5" /> {(open.attrs as any).rooms} חד'</Pill>}
-                  {(open.attrs as any)?.size && <Pill><Maximize className="w-3.5 h-3.5" /> {(open.attrs as any).size} מ״ר</Pill>}
+                  {(open.attrs as any)?.rooms > 0 && <Pill><BedDouble className="w-3.5 h-3.5" /> {(open.attrs as any).rooms} {t("store.listings.roomsAbbrev")}</Pill>}
+                  {(open.attrs as any)?.size && <Pill><Maximize className="w-3.5 h-3.5" /> {(open.attrs as any).size} {t("store.listings.sqmAbbrev")}</Pill>}
                   {open.category && CAT_LABELS[open.category] && <Pill><Building2 className="w-3.5 h-3.5" /> {CAT_LABELS[open.category]}</Pill>}
                   {open.is_hot && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs">
-                      <Flame className="w-3.5 h-3.5" /> מציאה
+                      <Flame className="w-3.5 h-3.5" /> {t("store.listings.hotDeal")}
                     </span>
                   )}
                 </div>
