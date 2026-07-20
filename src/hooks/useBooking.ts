@@ -293,3 +293,16 @@ export const useCreateAppointment = () =>
       return data as { appointmentId: string; status: string; needsDeposit: boolean; depositAmount: number; cancelToken: string; paymentUrl?: string; orderId?: string };
     },
   });
+
+/** Appointments for today (Israel time). */
+export function useTodayBookings(businessId?: string) {
+  const todayISO = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Jerusalem" });
+  return useAppointments(businessId, { from: todayISO, to: todayISO });
+}
+
+/** Count of appointments with status='pending' from today onwards. */
+export function usePendingBookingsCount(businessId?: string) {
+  const todayISO = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Jerusalem" });
+  const { data: appointments = [] } = useAppointments(businessId, { from: todayISO });
+  return appointments.filter((a) => a.status === "pending").length;
+}
