@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 /**
  * Booking module data hooks. The booking_* tables are new (migration
@@ -113,6 +114,7 @@ export const useAddBlackout = () => {
       if (error) throw error;
     },
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["booking-blackouts", v.business_id] }),
+    onError: () => toast.error("שמירת החסימה נכשלה"),
   });
 };
 
@@ -124,6 +126,7 @@ export const useDeleteBlackout = () => {
       if (error) throw error;
     },
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["booking-blackouts", v.business_id] }),
+    onError: () => toast.error("מחיקת החסימה נכשלה"),
   });
 };
 
@@ -160,6 +163,7 @@ export const useUpsertService = () => {
       qc.invalidateQueries({ queryKey: ["booking-services", v.business_id] });
       qc.invalidateQueries({ queryKey: ["booking-staff", v.business_id] });
     },
+    onError: () => toast.error("שמירת השירות נכשלה"),
   });
 };
 
@@ -173,6 +177,7 @@ export const useDeleteService = () => {
       if (error) throw error;
     },
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["booking-services", v.business_id] }),
+    onError: () => toast.error("מחיקת השירות נכשלה"),
   });
 };
 
@@ -182,15 +187,20 @@ export const useSetWorkingHours = () => {
     mutationFn: async ({ staffId, businessId, rows }: {
       staffId: string; businessId: string; rows: { weekday: number; start_minute: number; end_minute: number }[];
     }) => {
-      // replace-all: delete existing for this staff, insert the new set
-      await sb.from("booking_working_hours").delete().eq("staff_id", staffId);
+      // replace-all, but insert-then-delete-old (not delete-then-insert): if the
+      // insert fails, the staff member's existing hours stay intact instead of
+      // being wiped with no working hours at all.
+      const { data: oldRows } = await sb.from("booking_working_hours").select("id").eq("staff_id", staffId);
       if (rows.length) {
         const { error } = await sb.from("booking_working_hours")
           .insert(rows.map((r) => ({ ...r, staff_id: staffId, business_id: businessId })));
         if (error) throw error;
       }
+      const oldIds = (oldRows ?? []).map((r: { id: string }) => r.id);
+      if (oldIds.length) await sb.from("booking_working_hours").delete().in("id", oldIds);
     },
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["booking-hours", v.staffId] }),
+    onError: () => toast.error("שמירת שעות הפעילות נכשלה"),
   });
 };
 
@@ -202,6 +212,7 @@ export const useUpdateAppointmentStatus = () => {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["booking-appointments"] }),
+    onError: () => toast.error("עדכון סטטוס התור נכשל"),
   });
 };
 

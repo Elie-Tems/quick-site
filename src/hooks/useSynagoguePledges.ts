@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 /**
  * Synagogue aliyot & nedarim (pledges). New table (migration 20260712140000) not
@@ -47,6 +48,7 @@ export const useCreatePledge = () => {
       if (error) throw error;
     },
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["synagogue-pledges", v.businessId] }),
+    onError: () => toast.error("יצירת ההתחייבות נכשלה"),
   });
 };
 
@@ -61,5 +63,6 @@ export const useUpdatePledgeStatus = () => {
       if (error) throw error;
     },
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["synagogue-pledges", v.businessId] }),
+    onError: () => toast.error("עדכון הסטטוס נכשל"),
   });
 };

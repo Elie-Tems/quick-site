@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 /**
  * CRM hooks (contacts / transactions / pipeline). New tables (migration
@@ -59,6 +60,7 @@ export const useMoveCard = () => {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["pipeline"] }),
+    onError: () => toast.error("העברת הליד נכשלה"),
   });
 };
 
@@ -72,6 +74,7 @@ export const useSetFollowUp = () => {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["pipeline"] }),
+    onError: () => toast.error("קביעת התזכורת נכשלה"),
   });
 };
 
@@ -96,5 +99,6 @@ export const useCreateLead = () => {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["pipeline"] }),
+    onError: () => toast.error("יצירת הליד נכשלה"),
   });
 };

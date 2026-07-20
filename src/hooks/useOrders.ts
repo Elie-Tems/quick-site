@@ -196,6 +196,10 @@ export const useUpdateOrder = () => {
     },
     onError: (error) => {
       toast.error('שגיאה בעדכון ההזמנה: ' + error.message);
+      // The dashboard applies the new status to its local order list before this
+      // mutation resolves - refetch so a failed update reverts to the true DB
+      // status instead of showing a status change that never actually persisted.
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 };

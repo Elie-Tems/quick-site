@@ -150,6 +150,10 @@ export const useCreateProduct = () => {
     },
     onError: (error) => {
       toast.error('שגיאה בהוספת המוצר: ' + error.message);
+      // The dashboard's local product list was already updated optimistically
+      // before this mutation resolved - refetch so it reverts to the true DB
+      // state instead of showing a product that was never actually created.
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 };
@@ -235,6 +239,8 @@ export const useUpdateProduct = () => {
     },
     onError: (error) => {
       toast.error('שגיאה בעדכון המוצר: ' + error.message);
+      // Revert the dashboard's optimistic local edit back to the true DB state.
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 };
@@ -259,6 +265,9 @@ export const useDeleteProduct = () => {
     },
     onError: (error) => {
       toast.error('שגיאה במחיקת המוצר: ' + error.message);
+      // Bring back a product that the dashboard optimistically removed but
+      // which was never actually deleted from the DB.
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 };

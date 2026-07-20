@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 /**
  * Listings hooks (real estate / vehicles). New table (migration 20260708140000)
@@ -69,6 +70,7 @@ export const useUpsertListing = () => {
       return data;
     },
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["listings", v.business_id] }),
+    onError: () => toast.error("שמירת הנכס נכשלה"),
   });
 };
 
