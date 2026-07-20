@@ -3,6 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Megaphone, Puzzle, Settings,
   ArrowLeft, ArrowRight, X, Check, Star,
 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // First-visit guided tour of the management dashboard. A clean series of cards
 // (one feature each) with Next/Back, progress, and skip. Shown once per merchant
@@ -17,19 +18,21 @@ const markSeen = () => { try { localStorage.setItem(TOUR_KEY, "done"); } catch {
 
 interface Card { icon: typeof Package; title: string; body: string; }
 
-const CARDS: Card[] = [
-  { icon: Star, title: "ברוכים הבאים ללוח הניהול 👋", body: "זה המקום שבו מנהלים את כל החנות. ניקח אתכם בסיור קצר של 30 שניות - אפשר לדלג בכל רגע." },
-  { icon: LayoutDashboard, title: "בית - מבט-על", body: "המסך הראשי: מכירות, הזמנות אחרונות והנתונים החשובים במבט אחד. כאן מתחילים את היום." },
-  { icon: Package, title: "החנות שלי", body: "מוצרים, קטגוריות, עיצוב ותבנית - הכל כאן. מוסיפים, עורכים ומסדרים מתי שרוצים, בלי הגבלה." },
-  { icon: ShoppingCart, title: "ניהול מכירות", body: "כל ההזמנות שנכנסות, וכרטיס לקוח לכל קונה (CRM) - היסטוריית רכישות, סטטוס, והזדמנויות להחזיר לקוחות." },
-  { icon: Megaphone, title: "שיווק", body: "דיוור במייל, קופונים, ביקורות Google ותגי-מעקב. הכלים שמביאים עוד לקוחות וגורמים להם לחזור." },
-  { icon: Puzzle, title: "הרחבות", body: "דומיין אישי, וואטסאפ עסקי ועוד - תוספות שמשדרגות את החנות כשתרצו." },
-  { icon: Settings, title: "הגדרות", body: "פרטי העסק, שעות פתיחה, חיבור סליקה ומסמכים משפטיים. כל מה שמגדירים פעם אחת ושוכחים." },
-  { icon: Check, title: "זהו, אתם מוכנים! 🎉", body: "אפשר תמיד לחזור לכל אזור מהתפריט. בהצלחה - ושיהיו המון הזמנות!" },
+const getCards = (t: (key: string) => string): Card[] => [
+  { icon: Star, title: t("dash.tour.welcome_title"), body: t("dash.tour.welcome_body") },
+  { icon: LayoutDashboard, title: t("dash.tour.home_title"), body: t("dash.tour.home_body") },
+  { icon: Package, title: t("dash.tour.store_title"), body: t("dash.tour.store_body") },
+  { icon: ShoppingCart, title: t("dash.tour.sales_title"), body: t("dash.tour.sales_body") },
+  { icon: Megaphone, title: t("dash.tour.marketing_title"), body: t("dash.tour.marketing_body") },
+  { icon: Puzzle, title: t("dash.tour.extensions_title"), body: t("dash.tour.extensions_body") },
+  { icon: Settings, title: t("dash.tour.settings_title"), body: t("dash.tour.settings_body") },
+  { icon: Check, title: t("dash.tour.done_title"), body: t("dash.tour.done_body") },
 ];
 
 const DashboardTour = ({ onClose }: { onClose: () => void }) => {
+  const { t } = useLanguage();
   const [i, setI] = useState(0);
+  const CARDS = getCards(t);
   const card = CARDS[i];
   const isFirst = i === 0;
   const isLast = i === CARDS.length - 1;
@@ -41,7 +44,7 @@ const DashboardTour = ({ onClose }: { onClose: () => void }) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" dir="rtl">
       <div className="relative w-full max-w-md rounded-2xl bg-card border border-border shadow-2xl p-6 animate-in zoom-in-95 fade-in duration-200">
-        <button onClick={finish} aria-label="דלגו" className="absolute top-4 left-4 text-muted-foreground hover:text-foreground transition-colors">
+        <button onClick={finish} aria-label={t("dash.tour.skip_aria")} className="absolute top-4 left-4 text-muted-foreground hover:text-foreground transition-colors">
           <X className="w-5 h-5" />
         </button>
 
@@ -62,14 +65,14 @@ const DashboardTour = ({ onClose }: { onClose: () => void }) => {
         <div className="flex items-center justify-between gap-3">
           {!isFirst ? (
             <button onClick={() => setI((v) => v - 1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowRight className="w-4 h-4" /> הקודם
+              <ArrowRight className="w-4 h-4" /> {t("dash.tour.back")}
             </button>
           ) : (
-            <button onClick={finish} className="text-sm text-muted-foreground hover:text-foreground transition-colors">דלג על הסיור</button>
+            <button onClick={finish} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("dash.tour.skip")}</button>
           )}
 
           <button onClick={next} className="flex items-center gap-1.5 bg-primary text-primary-foreground rounded-xl px-5 h-11 text-sm font-medium hover:bg-primary/90 transition-colors">
-            {isLast ? <>בואו נתחיל <Check className="w-4 h-4" /></> : <>הבא <ArrowLeft className="w-4 h-4" /></>}
+            {isLast ? <>{t("dash.tour.finish")} <Check className="w-4 h-4" /></> : <>{t("dash.tour.next")} <ArrowLeft className="w-4 h-4" /></>}
           </button>
         </div>
       </div>

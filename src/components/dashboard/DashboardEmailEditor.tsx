@@ -5,6 +5,7 @@ import {
   Video, Share2, GripVertical,
 } from "lucide-react";
 import type { TemplateBlock } from "@/lib/emailTemplates";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Block-based email/newsletter editor (build-only v1). Self-contained: blocks live
 // in local state, render to a live email canvas, and can be added / selected /
@@ -15,17 +16,17 @@ import type { TemplateBlock } from "@/lib/emailTemplates";
 type BlockType = "text" | "button" | "image" | "banner" | "divider" | "spacer" | "columns" | "products" | "video" | "social";
 interface Block { id: string; type: BlockType; props: Record<string, any>; }
 
-const PALETTE: { type: BlockType; label: string; icon: typeof Type }[] = [
-  { type: "text", label: "טקסט", icon: Type },
-  { type: "image", label: "תמונה", icon: ImageIcon },
-  { type: "button", label: "כפתור", icon: SquareIcon },
-  { type: "products", label: "מוצרים", icon: ShoppingBag },
-  { type: "banner", label: "באנר", icon: LayoutPanelTop },
-  { type: "columns", label: "עמודות", icon: Columns2 },
-  { type: "video", label: "וידאו", icon: Video },
-  { type: "social", label: "רשתות", icon: Share2 },
-  { type: "divider", label: "קו מפריד", icon: Minus },
-  { type: "spacer", label: "רווח", icon: MoveVertical },
+const getPalette = (t: (key: string) => string): { type: BlockType; label: string; icon: typeof Type }[] => [
+  { type: "text", label: t("dash.emaileditor.block_text"), icon: Type },
+  { type: "image", label: t("dash.emaileditor.block_image"), icon: ImageIcon },
+  { type: "button", label: t("dash.emaileditor.block_button"), icon: SquareIcon },
+  { type: "products", label: t("dash.emaileditor.block_products"), icon: ShoppingBag },
+  { type: "banner", label: t("dash.emaileditor.block_banner"), icon: LayoutPanelTop },
+  { type: "columns", label: t("dash.emaileditor.block_columns"), icon: Columns2 },
+  { type: "video", label: t("dash.emaileditor.block_video"), icon: Video },
+  { type: "social", label: t("dash.emaileditor.block_social"), icon: Share2 },
+  { type: "divider", label: t("dash.emaileditor.block_divider"), icon: Minus },
+  { type: "spacer", label: t("dash.emaileditor.block_spacer"), icon: MoveVertical },
 ];
 
 const DEFAULTS: Record<BlockType, Record<string, any>> = {
@@ -53,6 +54,8 @@ const DEFAULT_SEED: TemplateBlock[] = [
 ];
 
 const DashboardEmailEditor = ({ onBack, onContinue, initialBlocks }: Props) => {
+  const { t } = useLanguage();
+  const PALETTE = getPalette(t);
   const [blocks, setBlocks] = useState<Block[]>(() =>
     // undefined seed -> default starter; an explicit [] -> truly blank canvas.
     (initialBlocks !== undefined ? initialBlocks : DEFAULT_SEED).map((b) => ({
@@ -133,7 +136,7 @@ const DashboardEmailEditor = ({ onBack, onContinue, initialBlocks }: Props) => {
       case "columns":
         return <div style={{ display: "flex", gap: 10, padding: "10px 16px" }}>{Array.from({ length: p.count }).map((_, i) => <div key={i} style={{ flex: 1, background: "#f1f3f5", height: 70, borderRadius: 6 }} />)}</div>;
       case "products":
-        return <div style={{ display: "flex", gap: 10, padding: "10px 16px" }}>{Array.from({ length: p.count }).map((_, i) => <div key={i} style={{ flex: 1 }}><div style={{ background: "#f1f3f5", height: 70, borderRadius: 6 }} /><div style={{ fontSize: 11, color: "#111", marginTop: 4 }}>מוצר · ₪{(i + 1) * 49}</div></div>)}</div>;
+        return <div style={{ display: "flex", gap: 10, padding: "10px 16px" }}>{Array.from({ length: p.count }).map((_, i) => <div key={i} style={{ flex: 1 }}><div style={{ background: "#f1f3f5", height: 70, borderRadius: 6 }} /><div style={{ fontSize: 11, color: "#111", marginTop: 4 }}>{t("dash.emaileditor.product_label")} · ₪{(i + 1) * 49}</div></div>)}</div>;
       case "video":
         return <div style={{ padding: "10px 16px" }}><div style={{ background: "#111827", borderRadius: 8, aspectRatio: "16/9", display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(255,255,255,.9)", display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: "13px solid #111827", marginRight: -2 }} /></div></div></div>;
       case "social":
@@ -146,19 +149,19 @@ const DashboardEmailEditor = ({ onBack, onContinue, initialBlocks }: Props) => {
     <div dir="rtl" className="space-y-3">
       <div className="flex items-center justify-between">
         <button onClick={onBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowRight className="w-4 h-4" /> חזרה
+          <ArrowRight className="w-4 h-4" /> {t("dash.emaileditor.back")}
         </button>
         <div className="flex gap-2">
-          <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5"><Eye className="w-4 h-4" /> תצוגה</button>
-          <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5"><Save className="w-4 h-4" /> שמירה</button>
-          <button onClick={() => onContinue?.(blocks)} className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground rounded-lg px-3 py-1.5">המשך לשליחה</button>
+          <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5"><Eye className="w-4 h-4" /> {t("dash.emaileditor.preview")}</button>
+          <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5"><Save className="w-4 h-4" /> {t("dash.emaileditor.save")}</button>
+          <button onClick={() => onContinue?.(blocks)} className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground rounded-lg px-3 py-1.5">{t("dash.emaileditor.continue_to_send")}</button>
         </div>
       </div>
 
       <div className="flex gap-3 min-h-[460px]">
         {/* Palette */}
         <div className="w-[120px] shrink-0 rounded-xl border border-border bg-card p-2.5">
-          <div className="text-[11px] text-muted-foreground mb-2">גררו לקנבס · או הקליקו</div>
+          <div className="text-[11px] text-muted-foreground mb-2">{t("dash.emaileditor.palette_hint")}</div>
           <div className="grid grid-cols-2 gap-1.5">
             {PALETTE.map((it) => (
               <button
@@ -194,10 +197,10 @@ const DashboardEmailEditor = ({ onBack, onContinue, initialBlocks }: Props) => {
                   {selected === b.id && (
                     <div className="absolute -top-3 left-1 flex items-center gap-0.5 bg-[#0E9F6E] rounded px-1 py-0.5" onClick={(e) => e.stopPropagation()}>
                       <GripVertical className="w-3 h-3 text-white/70 cursor-grab" />
-                      <button onClick={() => move(b.id, -1)} title="מעלה"><ArrowUp className="w-3 h-3 text-white" /></button>
-                      <button onClick={() => move(b.id, 1)} title="מטה"><ArrowDown className="w-3 h-3 text-white" /></button>
-                      <button onClick={() => duplicate(b.id)} title="שכפול"><Copy className="w-3 h-3 text-white" /></button>
-                      <button onClick={() => remove(b.id)} title="מחיקה"><Trash2 className="w-3 h-3 text-white" /></button>
+                      <button onClick={() => move(b.id, -1)} title={t("dash.emaileditor.move_up")}><ArrowUp className="w-3 h-3 text-white" /></button>
+                      <button onClick={() => move(b.id, 1)} title={t("dash.emaileditor.move_down")}><ArrowDown className="w-3 h-3 text-white" /></button>
+                      <button onClick={() => duplicate(b.id)} title={t("dash.emaileditor.duplicate")}><Copy className="w-3 h-3 text-white" /></button>
+                      <button onClick={() => remove(b.id)} title={t("dash.emaileditor.delete")}><Trash2 className="w-3 h-3 text-white" /></button>
                     </div>
                   )}
                 </div>
@@ -205,7 +208,7 @@ const DashboardEmailEditor = ({ onBack, onContinue, initialBlocks }: Props) => {
             ))}
             {blocks.length === 0 && (
               <div style={{ padding: "44px 16px", textAlign: "center", color: "#9ca3af", fontSize: 13 }}>
-                גררו בלוקים מהסרגל לכאן כדי להתחיל לבנות
+                {t("dash.emaileditor.empty_canvas")}
               </div>
             )}
             <DropZone idx={blocks.length} />
@@ -220,29 +223,29 @@ const DashboardEmailEditor = ({ onBack, onContinue, initialBlocks }: Props) => {
         {/* Properties */}
         <div className="w-[150px] shrink-0 rounded-xl border border-border bg-card p-3">
           {!sel ? (
-            <div className="text-[11px] text-muted-foreground">בחרו בלוק כדי לערוך</div>
+            <div className="text-[11px] text-muted-foreground">{t("dash.emaileditor.select_block_hint")}</div>
           ) : (
             <div className="space-y-3">
-              <div className="text-[11px] text-muted-foreground">מאפיינים · {PALETTE.find((x) => x.type === sel.type)?.label}</div>
+              <div className="text-[11px] text-muted-foreground">{t("dash.emaileditor.properties_title")} · {PALETTE.find((x) => x.type === sel.type)?.label}</div>
               {(sel.type === "text" || sel.type === "button" || sel.type === "banner") && (
-                <Field label={sel.type === "banner" ? "כותרת" : "כיתוב"}>
+                <Field label={sel.type === "banner" ? t("dash.emaileditor.field_title") : t("dash.emaileditor.field_caption")}>
                   <input value={sel.props.text ?? sel.props.title ?? ""} onChange={(e) => update(sel.id, sel.type === "banner" ? { title: e.target.value } : { text: e.target.value })} className="w-full h-8 rounded-md border border-border bg-background px-2 text-xs" />
                 </Field>
               )}
               {sel.type === "button" && (
-                <Field label="קישור"><input value={sel.props.url} onChange={(e) => update(sel.id, { url: e.target.value })} placeholder="https://..." className="w-full h-8 rounded-md border border-border bg-background px-2 text-xs" dir="ltr" /></Field>
+                <Field label={t("dash.emaileditor.field_link")}><input value={sel.props.url} onChange={(e) => update(sel.id, { url: e.target.value })} placeholder="https://..." className="w-full h-8 rounded-md border border-border bg-background px-2 text-xs" dir="ltr" /></Field>
               )}
               {sel.type === "image" && (
-                <Field label="כתובת תמונה"><input value={sel.props.url} onChange={(e) => update(sel.id, { url: e.target.value })} placeholder="העלאה / AI / קישור" className="w-full h-8 rounded-md border border-border bg-background px-2 text-xs" dir="ltr" /></Field>
+                <Field label={t("dash.emaileditor.field_image_url")}><input value={sel.props.url} onChange={(e) => update(sel.id, { url: e.target.value })} placeholder={t("dash.emaileditor.image_url_placeholder")} className="w-full h-8 rounded-md border border-border bg-background px-2 text-xs" dir="ltr" /></Field>
               )}
               {sel.type === "video" && (
-                <Field label="קישור וידאו (YouTube)"><input value={sel.props.url} onChange={(e) => update(sel.id, { url: e.target.value })} placeholder="https://youtu.be/..." className="w-full h-8 rounded-md border border-border bg-background px-2 text-xs" dir="ltr" /></Field>
+                <Field label={t("dash.emaileditor.field_video_url")}><input value={sel.props.url} onChange={(e) => update(sel.id, { url: e.target.value })} placeholder="https://youtu.be/..." className="w-full h-8 rounded-md border border-border bg-background px-2 text-xs" dir="ltr" /></Field>
               )}
               {sel.type === "social" && (
-                <div className="text-[11px] text-muted-foreground">אייקוני הרשתות מתחברים אוטומטית לקישורים של החנות.</div>
+                <div className="text-[11px] text-muted-foreground">{t("dash.emaileditor.social_hint")}</div>
               )}
               {(sel.type === "button" || sel.type === "banner") && (
-                <Field label="צבע">
+                <Field label={t("dash.emaileditor.field_color")}>
                   <div className="flex gap-1.5">
                     {["#0E9F6E", "#7C3AED", "#111827", "#E24B4A"].map((c) => (
                       <button key={c} onClick={() => update(sel.id, sel.type === "banner" ? { bg: c } : { color: c })} style={{ background: c }} className={`w-5 h-5 rounded ${(sel.props.color === c || sel.props.bg === c) ? "ring-2 ring-foreground" : ""}`} />
@@ -251,19 +254,19 @@ const DashboardEmailEditor = ({ onBack, onContinue, initialBlocks }: Props) => {
                 </Field>
               )}
               {(sel.type === "text" || sel.type === "button") && (
-                <Field label="יישור">
+                <Field label={t("dash.emaileditor.field_align")}>
                   <div className="flex gap-1">
                     {["right", "center", "left"].map((a) => (
-                      <button key={a} onClick={() => update(sel.id, { align: a })} className={`flex-1 h-7 rounded text-[10px] border ${sel.props.align === a ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>{a === "right" ? "ימין" : a === "center" ? "מרכז" : "שמאל"}</button>
+                      <button key={a} onClick={() => update(sel.id, { align: a })} className={`flex-1 h-7 rounded text-[10px] border ${sel.props.align === a ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>{a === "right" ? t("dash.emaileditor.align_right") : a === "center" ? t("dash.emaileditor.align_center") : t("dash.emaileditor.align_left")}</button>
                     ))}
                   </div>
                 </Field>
               )}
               {(sel.type === "spacer") && (
-                <Field label={`גובה (${sel.props.height}px)`}><input type="range" min={8} max={80} value={sel.props.height} onChange={(e) => update(sel.id, { height: Number(e.target.value) })} className="w-full" /></Field>
+                <Field label={`${t("dash.emaileditor.field_height")} (${sel.props.height}px)`}><input type="range" min={8} max={80} value={sel.props.height} onChange={(e) => update(sel.id, { height: Number(e.target.value) })} className="w-full" /></Field>
               )}
               {(sel.type === "columns" || sel.type === "products") && (
-                <Field label="מספר טורים">
+                <Field label={t("dash.emaileditor.field_column_count")}>
                   <div className="flex gap-1">{[1, 2, 3].map((n) => <button key={n} onClick={() => update(sel.id, { count: n })} className={`flex-1 h-7 rounded text-xs border ${sel.props.count === n ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>{n}</button>)}</div>
                 </Field>
               )}
@@ -271,7 +274,7 @@ const DashboardEmailEditor = ({ onBack, onContinue, initialBlocks }: Props) => {
           )}
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">הפוטר (פרסומת + פרטי שולח + הסרה) נעול בכל מייל - ציות חוק הספאם.</p>
+      <p className="text-xs text-muted-foreground">{t("dash.emaileditor.footer_note")}</p>
     </div>
   );
 };
