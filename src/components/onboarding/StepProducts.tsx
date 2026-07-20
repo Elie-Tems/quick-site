@@ -13,6 +13,7 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import ProductCategoryManager from "./ProductCategoryManager";
 import { StepNavigation } from "./StepNavigation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StepProductsProps {
   data: OnboardingData;
@@ -238,6 +239,7 @@ function getDemoProducts(category: BusinessCategory, businessType?: string): Dem
 }
 
 const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) => {
+  const { t } = useLanguage();
   const [activeMethod, setActiveMethod] = useState<Method>("quick");
 
   // Quick add
@@ -362,12 +364,12 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     if (!file) return;
     if (quickImageRef.current) quickImageRef.current.value = "";
     if (file.size > 5 * 1024 * 1024) {
-      toast.info("מכווץ תמונה...");
+      toast.info(t("ob.prod.t_compressing"));
       try {
         const compressed = await compressImage(file);
         setQuickImageUrl(compressed);
       } catch {
-        toast.error("שגיאה בכיווץ התמונה");
+        toast.error(t("ob.prod.t_compress_err"));
       }
     } else {
       setQuickImageUrl(URL.createObjectURL(file));
@@ -382,8 +384,8 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         body: { productName: quickName.trim(), productDescription: quickDesc.trim(), businessCategory: data.businessCategory },
       });
       if (!error && result?.imageUrl) setQuickImageUrl(result.imageUrl);
-      else toast.error("שגיאה ביצירת תמונה");
-    } catch { toast.error("שגיאה ביצירת תמונה"); }
+      else toast.error(t("ob.prod.t_gen_img_err"));
+    } catch { toast.error(t("ob.prod.t_gen_img_err")); }
     finally { setGeneratingQuickImage(false); }
   };
 
@@ -408,7 +410,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
 
-      if (jsonData.length < 2) { setParseError("הקובץ ריק או לא מכיל נתונים"); return; }
+      if (jsonData.length < 2) { setParseError(t("ob.prod.err_file_empty")); return; }
 
       const headers = jsonData[0].map((h: any) => String(h || "").toLowerCase().trim());
       const idx = (terms: string[]) => headers.findIndex((h: string) => terms.some(t => h.includes(t)));
@@ -422,7 +424,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       const catIdx = idx(["קטגוריה", "category", "google_product_category"]);
 
       if (nameIdx === -1) {
-        setParseError("הקובץ חייב להכיל עמודת שם מוצר");
+        setParseError(t("ob.prod.err_need_name_col"));
         return;
       }
 
@@ -445,11 +447,11 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         });
       }
 
-      if (products.length === 0) { setParseError("לא נמצאו מוצרים בקובץ"); return; }
+      if (products.length === 0) { setParseError(t("ob.prod.err_no_products_file")); return; }
       setParsedProducts(products);
-      toast.success(`נמצאו ${products.length} מוצרים בקובץ`);
+      toast.success(`${t("ob.prod.t_found_products_pre")} ${products.length} ${t("ob.prod.t_found_products_post")}`);
     } catch {
-      setParseError("שגיאה בקריאת הקובץ. אנא ודא שזהו קובץ אקסל תקין");
+      setParseError(t("ob.prod.err_file_read"));
     }
   };
 
@@ -473,7 +475,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       return { id: `${Date.now()}-${i}`, name: p.name, description: p.description || "", price: p.price, sku: p.sku, imageUrl: p.imageUrl, categoryId };
     });
     updateData({ products: [...data.products, ...newProducts] });
-    toast.success(`יובאו ${newProducts.length} מוצרים בהצלחה`);
+    toast.success(`${t("ob.prod.t_imported_excel_pre")} ${newProducts.length} ${t("ob.prod.t_imported_excel_post")}`);
     setExcelFile(null); setParsedProducts([]); setDefaultCategoryForExcel(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -488,7 +490,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "מוצרים");
     XLSX.writeFile(wb, 'תבנית_מוצרים.xlsx');
-    toast.success("התבנית הורדה בהצלחה");
+    toast.success(t("ob.prod.t_template_downloaded"));
   };
 
   // ── Voice ──────────────────────────────────────────────────────────────────
@@ -506,7 +508,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       if (perm.state === "denied") { setMicHelp("denied"); return; }
     } catch { /* permissions API not supported — proceed */ }
 
-    toast.info("מבקש גישה למיקרופון...", { duration: 2000 });
+    toast.info(t("ob.prod.t_mic_requesting"), { duration: 2000 });
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -526,12 +528,12 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       toast.dismiss();
       const name = (err as Error)?.name;
       if (name === "NotFoundError" || name === "DevicesNotFoundError") {
-        toast.error("לא נמצא מיקרופון במכשיר");
+        toast.error(t("ob.prod.err_no_mic"));
       } else if (name === "NotAllowedError" || name === "PermissionDeniedError" || name === "SecurityError") {
         setMicHelp("denied");
       } else {
         // Unknown error — show it so user can report
-        toast.error(`שגיאת מיקרופון: ${name || "לא ידוע"}`);
+        toast.error(`${t("ob.prod.err_mic_unknown_pre")} ${name || t("ob.prod.err_mic_unknown_fallback")}`);
         setMicHelp("blocked");
       }
     }
@@ -556,9 +558,9 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       });
       if (error) throw error;
       if (result?.products?.length) importParsed(result.products, true);
-      else toast.error("לא זוהו מוצרים בהקלטה — נסו שוב");
+      else toast.error(t("ob.prod.err_no_products_voice"));
     } catch {
-      toast.error("שגיאה בתמלול — נסו שוב");
+      toast.error(t("ob.prod.err_transcribe"));
     } finally {
       setIsTranscribing(false);
     }
@@ -576,7 +578,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       categoryId: data.productOrganization === "categories" ? selectedCategoryId || undefined : undefined,
     }));
     updateData({ products: [...data.products, ...newProducts] });
-    toast.success(`יובאו ${newProducts.length} מוצרים`);
+    toast.success(`${t("ob.prod.t_imported_pre")} ${newProducts.length} ${t("ob.prod.t_imported_post")}`);
     setVoiceTranscript(""); setVoiceParsed([]);
     if (fromVoice) setVoiceJustImported(newProducts.length);
   };
@@ -590,7 +592,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     reader.onload = () => {
       const dataUrl = reader.result as string;
       updateData({ products: data.products.map(p => p.id === uploadingForProductId ? { ...p, imageUrl: dataUrl } : p) });
-      toast.success("תמונה הועלתה בהצלחה");
+      toast.success(t("ob.prod.t_photo_uploaded"));
       setUploadingForProductId(null);
     };
     reader.readAsDataURL(file);
@@ -609,15 +611,15 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       if (error) throw error;
       if (result?.imageUrl) {
         updateData({ products: data.products.map(p => p.id === productId ? { ...p, imageUrl: result.imageUrl } : p) });
-        toast.success(`תמונה נוצרה עבור "${product.name}"`);
+        toast.success(`${t("ob.prod.t_img_generated_for_pre")} "${product.name}"`);
       }
-    } catch { toast.error("שגיאה ביצירת התמונה"); }
+    } catch { toast.error(t("ob.prod.err_img_gen")); }
     finally { setGeneratingProductId(null); }
   };
 
   const handleGenerateAllImages = async () => {
     const withoutImages = data.products.filter(p => !p.imageUrl);
-    if (!withoutImages.length) { toast.info("לכל המוצרים כבר יש תמונות"); return; }
+    if (!withoutImages.length) { toast.info(t("ob.prod.t_all_have_images")); return; }
     setIsGeneratingAllImages(true);
     setGeneratingProgress({ current: 0, total: withoutImages.length });
     // Track generated images as a map {id → imageUrl} so we can merge them
@@ -650,7 +652,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     setIsGeneratingAllImages(false);
     setGeneratingProductId(null);
     setGeneratingProgress({ current: 0, total: 0 });
-    toast.success(`נוצרו ${successCount} תמונות`);
+    toast.success(`${t("ob.prod.t_images_generated_pre")} ${successCount} ${t("ob.prod.t_images_generated_post")}`);
   };
 
   // Edit an existing AI image in place (img2img): user describes the change.
@@ -668,13 +670,13 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       if (error) throw error;
       if (result?.imageUrl) {
         updateData({ products: data.products.map(p => p.id === productId ? { ...p, imageUrl: result.imageUrl } : p) });
-        toast.success("התמונה עודכנה");
+        toast.success(t("ob.prod.t_image_updated"));
         setEditingProductId(null);
         setEditPrompt("");
       } else {
-        toast.error("עריכת התמונה נכשלה");
+        toast.error(t("ob.prod.err_img_edit_failed"));
       }
-    } catch { toast.error("שגיאה בעריכת התמונה"); }
+    } catch { toast.error(t("ob.prod.err_img_edit")); }
     finally { setGeneratingProductId(null); }
   };
 
@@ -709,7 +711,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
         categoryId: undefined,
       }));
       updateData({ products: demo });
-      toast.success("יצרנו 5 מוצרי דמו להתחלה - אפשר להחליף, לערוך או למחוק אותם בכל רגע במסך המוצרים בלוח הניהול.", { duration: 6000 });
+      toast.success(t("ob.prod.t_demo_seeded"), { duration: 6000 });
     }
     onNext();
   };
@@ -718,23 +720,23 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
 
   const PreviewTable = ({ products, onImport }: { products: ParsedProduct[]; onImport: () => void }) => (
     <div className="space-y-3">
-      <p className="text-sm font-medium">תצוגה מקדימה — {products.length} מוצרים</p>
+      <p className="text-sm font-medium">{t("ob.prod.preview_table_label_pre")} {products.length} {t("ob.prod.preview_table_label_post")}</p>
       <div className="max-h-44 overflow-y-auto rounded-xl border border-border divide-y divide-border">
         {products.slice(0, 15).map((p, i) => (
           <div key={i} className="flex items-center justify-between px-3 py-2 text-sm">
             <span className="font-medium truncate flex-1">{p.name}</span>
-            <span className="text-muted-foreground shrink-0 mr-3">{p.price != null ? `₪${p.price}` : "ללא מחיר"}</span>
+            <span className="text-muted-foreground shrink-0 mr-3">{p.price != null ? `₪${p.price}` : t("ob.prod.pi_no_price")}</span>
           </div>
         ))}
         {products.length > 15 && (
-          <div className="px-3 py-2 text-xs text-muted-foreground text-center">+ {products.length - 15} נוספים</div>
+          <div className="px-3 py-2 text-xs text-muted-foreground text-center">{t("ob.prod.preview_more_pre")} {products.length - 15} {t("ob.prod.preview_more_post")}</div>
         )}
       </div>
       <button
         onClick={onImport}
         className="w-full h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
       >
-        <Plus className="w-4 h-4" /> ייבא {products.length} מוצרים
+        <Plus className="w-4 h-4" /> {t("ob.prod.preview_import_pre")} {products.length} {t("ob.prod.preview_import_post")}
       </button>
     </div>
   );
@@ -760,14 +762,14 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 <button
                   onClick={e => { e.stopPropagation(); setUploadingForProductId(product.id); productImageUploadRef.current?.click(); }}
                   className="p-1.5 bg-white/20 hover:bg-white/40 rounded-md"
-                  title="החלף תמונה"
+                  title={t("ob.prod.pi_replace_image_title")}
                 >
                   <ImagePlus className="w-3.5 h-3.5 text-white" />
                 </button>
                 <button
                   onClick={e => { e.stopPropagation(); setEditingProductId(editingProductId === product.id ? null : product.id); setEditPrompt(""); }}
                   className="p-1.5 bg-white/20 hover:bg-white/40 rounded-md"
-                  title="ערוך עם AI"
+                  title={t("ob.prod.pi_edit_ai_title")}
                 >
                   <Pencil className="w-3.5 h-3.5 text-white" />
                 </button>
@@ -781,14 +783,14 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 <button
                   onClick={e => { e.stopPropagation(); setUploadingForProductId(product.id); productImageUploadRef.current?.click(); }}
                   className="p-1.5 bg-white/20 hover:bg-white/40 rounded-md"
-                  title="העלה תמונה"
+                  title={t("ob.prod.pi_upload_title")}
                 >
                   <ImagePlus className="w-3.5 h-3.5 text-white" />
                 </button>
                 <button
                   onClick={e => { e.stopPropagation(); handleGenerateImageForProduct(product.id); }}
                   className="p-1.5 bg-primary/80 hover:bg-primary rounded-md"
-                  title="צור עם AI"
+                  title={t("ob.prod.pi_create_ai_title")}
                 >
                   <Wand2 className="w-3.5 h-3.5 text-white" />
                 </button>
@@ -818,7 +820,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 defaultValue={product.price != null ? product.price : ""}
                 type="number"
                 min="0"
-                placeholder="ללא מחיר"
+                placeholder={t("ob.prod.pi_no_price")}
                 onBlur={e => { handleUpdateProduct(product.id, { price: e.target.value.trim() ? Number(e.target.value) : null }); setEditingFieldProductId(null); }}
                 onKeyDown={e => {
                   if (e.key === "Enter" || e.key === "Escape") {
@@ -833,11 +835,11 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
           ) : (
             <div className="flex items-center gap-1.5">
               <p className="text-sm font-medium truncate">{product.name}</p>
-              <span className="text-sm text-muted-foreground shrink-0">{product.price != null ? `· ₪${product.price}` : "· ללא מחיר"}</span>
+              <span className="text-sm text-muted-foreground shrink-0">{product.price != null ? `· ₪${product.price}` : `· ${t("ob.prod.pi_no_price")}`}</span>
               <button
                 onClick={e => { e.stopPropagation(); setEditingFieldProductId(product.id); }}
                 className="p-0.5 opacity-40 hover:opacity-100 hover:text-primary transition-all shrink-0"
-                title="ערוך שם ומחיר"
+                title={t("ob.prod.pi_edit_name_price_title")}
               >
                 <Pencil className="w-3 h-3" />
               </button>
@@ -856,7 +858,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             value={editPrompt}
             onChange={e => setEditPrompt(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") handleEditImage(product.id, editPrompt); }}
-            placeholder="מה לשנות? לדוגמה: רקע לבן, תאורה חמה יותר"
+            placeholder={t("ob.prod.pi_edit_change_ph")}
             className="flex-1 h-9 rounded-lg border border-border bg-background px-3 text-xs"
             dir="rtl"
           />
@@ -866,7 +868,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             className="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium disabled:opacity-50 flex items-center gap-1 shrink-0"
           >
             {generatingProductId === product.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
-            החל
+            {t("ob.prod.pi_apply")}
           </button>
         </div>
       )}
@@ -900,44 +902,44 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center">
                   <Mic className="w-4 h-4 text-primary" />
                 </div>
-                <h3 className="text-base font-semibold">גישה למיקרופון</h3>
+                <h3 className="text-base font-semibold">{t("ob.prod.mic_title")}</h3>
               </div>
-              <button onClick={() => setMicHelp(null)} className="p-1 hover:bg-muted rounded-lg" aria-label="סגור">
+              <button onClick={() => setMicHelp(null)} className="p-1 hover:bg-muted rounded-lg" aria-label={t("ob.prod.mic_close_aria")}>
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {micHelp === "unsupported" ? (
               <p className="text-sm text-muted-foreground leading-relaxed">
-                הדפדפן הנוכחי לא מאפשר הקלטה (למשל דפדפן מוטמע בתוך אפליקציה). פתחו את הקישור בכרטיסיית דפדפן רגילה (Chrome / Safari) ונסו שוב.
+                {t("ob.prod.mic_unsupported")}
               </p>
             ) : micHelp === "denied" ? (
               <>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  הגישה למיקרופון נחסמה בהגדרות הדפדפן. צריך לאפשר ידנית:
+                  {t("ob.prod.mic_denied_intro")}
                 </p>
                 <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground leading-relaxed space-y-1">
-                  <p>1. לחצו על סמל 🔒 משמאל לכתובת האתר בדפדפן</p>
-                  <p>2. מצאו <span className="font-medium text-foreground">מיקרופון</span> ושנו ל-<span className="font-medium text-foreground">אפשר</span></p>
-                  <p>3. רעננו את הדף (F5)</p>
+                  <p>1. {t("ob.prod.mic_denied_step1")}</p>
+                  <p>2. {t("ob.prod.mic_denied_step2")} <span className="font-medium text-foreground">{t("ob.prod.mic_denied_mic_word")}</span> {t("ob.prod.mic_denied_step2b")}<span className="font-medium text-foreground">{t("ob.prod.mic_denied_step2c")}</span></p>
+                  <p>3. {t("ob.prod.mic_denied_step3")}</p>
                 </div>
                 <button
                   onClick={() => setMicHelp(null)}
                   className="w-full h-10 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors"
                 >
-                  סגור
+                  {t("ob.prod.mic_close_btn")}
                 </button>
               </>
             ) : (
               <>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  כדי להקליט מוצרים בקול צריך לאשר גישה למיקרופון. לחצו "אפשר מיקרופון" ואשרו את הבקשה שתופיע בדפדפן.
+                  {t("ob.prod.mic_allow_intro")}
                 </p>
                 <button
                   onClick={() => { setMicHelp(null); startRecording(); }}
                   className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
                 >
-                  <Mic className="w-4 h-4" /> אפשרו מיקרופון ונסה שוב
+                  <Mic className="w-4 h-4" /> {t("ob.prod.mic_allow_btn")}
                 </button>
               </>
             )}
@@ -970,17 +972,17 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       {(() => {
         const bt = data.businessType;
         const title =
-          bt === 'services'   ? 'השירותים שלך' :
-          bt === 'nonprofit'  ? 'הפעילויות שלך' :
-          bt === 'realestate' ? 'הנכסים שלך' :
-          bt === 'vacation'   ? 'החדרים שלך' :
-                                'המוצרים שלך';
+          bt === 'services'   ? t("ob.prod.h_title_services") :
+          bt === 'nonprofit'  ? t("ob.prod.h_title_nonprofit") :
+          bt === 'realestate' ? t("ob.prod.h_title_realestate") :
+          bt === 'vacation'   ? t("ob.prod.h_title_vacation") :
+                                t("ob.prod.h_title_default");
         const sub =
-          bt === 'services'   ? 'הוסיפו שירותים — ייעוץ, טיפול, כל מה שאתם מציעים' :
-          bt === 'nonprofit'  ? 'הוסיפו פעילויות, תרומות ומיזמים — אפשר לשלב כמה שיטות' :
-          bt === 'realestate' ? 'הוסיפו נכסים — אפשר לשלב כמה שיטות' :
-          bt === 'vacation'   ? 'הוסיפו חדרים, קוטג\'ים וסוויטות — אפשר לשלב כמה שיטות' :
-                                'הוסיפו מוצרים — אפשר לשלב כמה שיטות';
+          bt === 'services'   ? t("ob.prod.h_sub_services") :
+          bt === 'nonprofit'  ? t("ob.prod.h_sub_nonprofit") :
+          bt === 'realestate' ? t("ob.prod.h_sub_realestate") :
+          bt === 'vacation'   ? t("ob.prod.h_sub_vacation") :
+                                t("ob.prod.h_sub_default");
         return (
           <div className="text-center">
             <h1 className="text-2xl font-medium text-foreground mb-1">{title}</h1>
@@ -998,17 +1000,21 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground leading-snug mb-1">
-                כרגע — העלו רק כמה {data.businessType === 'services' ? 'שירותים' : data.businessType === 'nonprofit' ? 'פעילויות' : data.businessType === 'realestate' ? 'נכסים' : data.businessType === 'vacation' ? 'חדרים' : 'מוצרים'} בודדים
+                {data.businessType === 'services' ? t("ob.prod.rec_title_services")
+                  : data.businessType === 'nonprofit' ? t("ob.prod.rec_title_nonprofit")
+                  : data.businessType === 'realestate' ? t("ob.prod.rec_title_realestate")
+                  : data.businessType === 'vacation' ? t("ob.prod.rec_title_vacation")
+                  : t("ob.prod.rec_title_default")}
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                אפשר גם לייצר מוצרי דמו בלחיצה אחת ולהמשיך. את כל הפרטים — תמונות, תיאורים, מחירים — ממשיכים בנחת מהדשבורד אחרי שהאתר עולה.
+                {t("ob.prod.rec_body")}
               </p>
               <button
                 onClick={() => setShowDashboardFeatures(v => !v)}
                 className="mt-2 flex items-center gap-1 text-xs text-primary hover:underline transition-colors"
               >
                 {showDashboardFeatures ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                למה יותר נוח להמשיך בדשבורד?
+                {t("ob.prod.rec_why_toggle")}
               </button>
             </div>
           </div>
@@ -1016,19 +1022,19 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
 
         {showDashboardFeatures && (
           <div className="px-5 pb-5 border-t" style={{ borderColor: "var(--pv-border, var(--border))" }}>
-            <p className="text-xs font-medium text-muted-foreground pt-3 pb-2.5">כי בדשבורד הניהול אפשר לעשות דברים שלא מתאים לעשות כאן:</p>
+            <p className="text-xs font-medium text-muted-foreground pt-3 pb-2.5">{t("ob.prod.rec_why_intro")}</p>
             <div className="space-y-2.5">
               {[
-                { Icon: Images,   text: "להעלות כמה תמונות לכל מוצר — מכל מכשיר, בכל זמן" },
-                { Icon: Video,    text: "לצרף סרטון הדגמה ישירות לדף המוצר" },
-                { Icon: Tag,      text: "להוסיף תגיות כמו 'חם', 'חדש' ומחירי מבצע" },
-                { Icon: Folder,   text: "לסדר לפי קטגוריות ולגרור בסדר ידני" },
-                { Icon: FileText, text: "להוסיף שדות מותאמים: מידות, חומרים, אחריות" },
-                { Icon: EyeOff,   text: "להסתיר מוצרים לפי עונה או מצב מלאי" },
-              ].map(({ Icon, text }) => (
-                <div key={text} className="flex items-center gap-2.5">
+                { Icon: Images,   key: "ob.prod.rec_feat1" },
+                { Icon: Video,    key: "ob.prod.rec_feat2" },
+                { Icon: Tag,      key: "ob.prod.rec_feat3" },
+                { Icon: Folder,   key: "ob.prod.rec_feat4" },
+                { Icon: FileText, key: "ob.prod.rec_feat5" },
+                { Icon: EyeOff,   key: "ob.prod.rec_feat6" },
+              ].map(({ Icon, key }) => (
+                <div key={key} className="flex items-center gap-2.5">
                   <Icon className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span className="text-xs text-muted-foreground">{text}</span>
+                  <span className="text-xs text-muted-foreground">{t(key)}</span>
                 </div>
               ))}
             </div>
@@ -1039,9 +1045,9 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       {/* Method selector */}
       <div className="grid grid-cols-3 gap-3">
         {([
-          { id: "quick" as Method, icon: Plus, title: "הוספה מהירה", desc: `שורה אחת לכל ${data.businessType === 'nonprofit' ? 'פרויקט' : data.businessType === 'realestate' ? 'נכס' : 'מוצר'}`, gradient: "linear-gradient(135deg, #10b981, #059669)" },
-          { id: "catalog" as Method, icon: FileSpreadsheet, title: "ייבוא אקסל", desc: "העלו קובץ או הורידו תבנית", gradient: "linear-gradient(135deg, #0ea5e9, #2563eb)" },
-          { id: "voice" as Method, icon: Mic, title: "הכתבה קולית", desc: "דברו, אנחנו נרשום", gradient: "linear-gradient(135deg, #f59e0b, #ea580c)" },
+          { id: "quick" as Method, icon: Plus, title: t("ob.prod.m_quick_title"), desc: data.businessType === 'nonprofit' ? t("ob.prod.m_quick_desc_nonprofit") : data.businessType === 'realestate' ? t("ob.prod.m_quick_desc_realestate") : t("ob.prod.m_quick_desc_default"), gradient: "linear-gradient(135deg, #10b981, #059669)" },
+          { id: "catalog" as Method, icon: FileSpreadsheet, title: t("ob.prod.m_catalog_title"), desc: t("ob.prod.m_catalog_desc"), gradient: "linear-gradient(135deg, #0ea5e9, #2563eb)" },
+          { id: "voice" as Method, icon: Mic, title: t("ob.prod.m_voice_title"), desc: t("ob.prod.m_voice_desc"), gradient: "linear-gradient(135deg, #f59e0b, #ea580c)" },
         ] as const).map(({ id, icon: Icon, title, desc, gradient }) => {
           const isActive = activeMethod === id;
           return (
@@ -1094,7 +1100,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-muted-foreground">
                       <ImagePlus className="w-5 h-5" />
-                      <span className="text-[10px]">תמונה</span>
+                      <span className="text-[10px]">{t("ob.prod.q_image_label")}</span>
                     </div>
                   )}
                 </div>
@@ -1104,14 +1110,14 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
               <div className="flex-1 space-y-2">
                 <div className="grid grid-cols-[1fr_90px] gap-2">
                   <Input
-                    placeholder="שם המוצר *"
+                    placeholder={t("ob.prod.q_name_ph")}
                     value={quickName}
                     onChange={e => setQuickName(e.target.value)}
                     onKeyDown={handleQuickKeyDown}
                     className="h-10 rounded-xl"
                   />
                   <Input
-                    placeholder="₪ מחיר (אופציונלי)"
+                    placeholder={t("ob.prod.q_price_ph")}
                     type="number"
                     value={quickPrice}
                     onChange={e => setQuickPrice(e.target.value)}
@@ -1121,7 +1127,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                   />
                 </div>
                 <Input
-                  placeholder="תיאור קצר — גודל, חומר, צבע..."
+                  placeholder={t("ob.prod.q_desc_ph")}
                   value={quickDesc}
                   onChange={e => setQuickDesc(e.target.value)}
                   onKeyDown={handleQuickKeyDown}
@@ -1137,7 +1143,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
                 <Upload className="w-3.5 h-3.5" />
-                העלה תמונה
+                {t("ob.prod.q_upload_photo")}
               </button>
               <button
                 onClick={handleGenerateQuickImage}
@@ -1145,7 +1151,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-primary/30 text-xs text-primary hover:bg-primary/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {generatingQuickImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
-                {generatingQuickImage ? "יוצר..." : "צרו עם AI"}
+                {generatingQuickImage ? t("ob.prod.q_generating") : t("ob.prod.q_create_ai")}
               </button>
               <div className="flex-1" />
               <button
@@ -1153,7 +1159,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 disabled={!quickName.trim()}
                 className="flex items-center gap-1.5 px-4 h-8 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
               >
-                <Plus className="w-4 h-4" /> {data.businessType === 'nonprofit' ? 'הוסיפו פרויקט' : data.businessType === 'realestate' ? 'הוסיפו נכס' : 'הוסיפו מוצר'}
+                <Plus className="w-4 h-4" /> {data.businessType === 'nonprofit' ? t("ob.prod.q_add_nonprofit") : data.businessType === 'realestate' ? t("ob.prod.q_add_realestate") : t("ob.prod.q_add_default")}
               </button>
             </div>
           </div>
@@ -1167,7 +1173,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
 
           {/* Template download — always visible at top */}
           <button onClick={handleDownloadTemplate} className="flex items-center gap-1.5 text-xs text-primary hover:underline">
-            <Download className="w-3.5 h-3.5" /> הורד תבנית אקסל מוכנה
+            <Download className="w-3.5 h-3.5" /> {t("ob.prod.c_download_template")}
           </button>
 
           {!excelFile ? (
@@ -1176,8 +1182,8 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
               className="w-full p-6 rounded-xl border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-center"
             >
               <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm font-medium">גררו קובץ אקסל לכאן או לחצו לבחירה</p>
-              <p className="text-xs text-muted-foreground mt-1">.xlsx · .csv · עד 500 {data.businessType === 'nonprofit' ? 'פרויקטים' : data.businessType === 'realestate' ? 'נכסים' : 'מוצרים'}</p>
+              <p className="text-sm font-medium">{t("ob.prod.c_drop_title")}</p>
+              <p className="text-xs text-muted-foreground mt-1">{data.businessType === 'nonprofit' ? t("ob.prod.c_drop_sub_nonprofit") : data.businessType === 'realestate' ? t("ob.prod.c_drop_sub_realestate") : t("ob.prod.c_drop_sub_default")}</p>
             </button>
           ) : (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border">
@@ -1203,13 +1209,13 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             <>
               {data.productOrganization === "categories" && data.productCategories.length > 0 && (
                 <div className="space-y-1.5">
-                  <p className="text-xs text-muted-foreground">קטגוריה ברירת מחדל (אופציונלי)</p>
+                  <p className="text-xs text-muted-foreground">{t("ob.prod.c_default_category_label")}</p>
                   <select
                     value={defaultCategoryForExcel || ""}
                     onChange={e => setDefaultCategoryForExcel(e.target.value || null)}
                     className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm text-foreground"
                   >
-                    <option value="">ללא קטגוריה</option>
+                    <option value="">{t("ob.prod.c_no_category")}</option>
                     {data.productCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
@@ -1222,7 +1228,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
           )}
 
           <div className="text-xs text-muted-foreground">
-            עמודות: שם מוצר (חובה) · תיאור · מחיר
+            {t("ob.prod.c_columns_hint")}
           </div>
         </div>
       )}
@@ -1251,10 +1257,10 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
               )}
             </div>
             <p className="text-sm font-medium">
-              {isTranscribing ? "מתמלל עם AI..." : isRecording ? "מקליט — לחצו לעצירה" : "לחצו להתחיל הקלטה"}
+              {isTranscribing ? t("ob.prod.v_transcribing") : isRecording ? t("ob.prod.v_recording_stop") : t("ob.prod.v_start")}
             </p>
             <p className="text-xs text-muted-foreground italic leading-relaxed">
-              "חולצה לבנה מאה שקל, מכנסיים שחורים מאתיים וחמישים, כובע בייסבול שישים"
+              {t("ob.prod.v_example")}
             </p>
           </div>
 
@@ -1270,7 +1276,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
           {voiceJustImported > 0 && voiceParsed.length === 0 && (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/8 border border-primary/20">
               <span className="text-sm font-medium text-primary flex-1">
-                נוספו {voiceJustImported} מוצרים! יש עוד מוצרים להקליט?
+                {t("ob.prod.v_more_added_pre")} {voiceJustImported} {t("ob.prod.v_more_added_post")}
               </span>
               <button
                 onClick={() => { setVoiceJustImported(0); startRecording(); }}
@@ -1278,7 +1284,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0"
               >
                 <Mic className="w-3.5 h-3.5" />
-                הקלט עוד
+                {t("ob.prod.v_record_more")}
               </button>
             </div>
           )}
@@ -1292,8 +1298,8 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
             <p className="text-sm font-medium">
               {displayProducts.length}{" "}
               {(() => {
-                const one = data.businessType === 'nonprofit' ? 'פרויקט' : data.businessType === 'realestate' ? 'נכס' : 'מוצר';
-                const many = data.businessType === 'nonprofit' ? 'פרויקטים' : data.businessType === 'realestate' ? 'נכסים' : 'מוצרים';
+                const one = data.businessType === 'nonprofit' ? t("ob.prod.pl_one_nonprofit") : data.businessType === 'realestate' ? t("ob.prod.pl_one_realestate") : t("ob.prod.pl_one_default");
+                const many = data.businessType === 'nonprofit' ? t("ob.prod.pl_many_nonprofit") : data.businessType === 'realestate' ? t("ob.prod.pl_many_realestate") : t("ob.prod.pl_many_default");
                 return displayProducts.length === 1 ? one : many;
               })()}
             </p>
@@ -1305,7 +1311,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
               >
                 {isGeneratingAllImages
                   ? <><Loader2 className="w-3 h-3 animate-spin" /> {generatingProgress.current}/{generatingProgress.total}</>
-                  : <><Wand2 className="w-3 h-3" /> צור תמונות לכולם</>
+                  : <><Wand2 className="w-3 h-3" /> {t("ob.prod.pl_generate_all")}</>
                 }
               </button>
             )}
@@ -1323,13 +1329,13 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
           className="flex items-center gap-2 px-5 h-11 rounded-xl border border-border text-sm hover:bg-muted transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          חזרה
+          {t("ob.prod.nav_back")}
         </button>
         <button
           onClick={handleContinue}
           className="flex items-center gap-2 px-6 h-11 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
         >
-          {data.products.length > 0 ? "המשיכו" : "דלגו עם מוצרי דמו"}
+          {data.products.length > 0 ? t("ob.prod.nav_continue") : t("ob.prod.nav_continue_demo")}
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
       </div>
