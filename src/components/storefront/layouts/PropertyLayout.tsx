@@ -18,7 +18,7 @@ import type { StorefrontLayoutProps } from './StorefrontLayout.types';
  */
 const PropertyLayout = ({
   businessName, businessSlug, logoUrl, phone, tagline, ctaText, heroTitle,
-  heroImageUrl, primaryColor, promoText, aboutText, whatsappEnabled,
+  heroImageUrl, primaryColor, promoText, aboutText, heroBenefits, whatsappEnabled,
   whatsappMessage, showMarqueeBar, businessCategory, reviewsCache,
   categories, selectedCategoryId, onSelectCategory, banners,
   favoritesCount, onScrollToProducts,
@@ -66,9 +66,16 @@ const PropertyLayout = ({
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative z-10 max-w-xl">
             <p className="text-white/70 text-xs uppercase tracking-widest mb-2">{businessName}</p>
-            <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight mb-4">
+            <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight mb-3">
               {heroTitle || tagline || businessName}
             </h1>
+            {heroBenefits && heroBenefits.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {heroBenefits.slice(0, 4).map((b, i) => (
+                  <span key={i} className="px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm text-white text-xs border border-white/25">{b}</span>
+                ))}
+              </div>
+            )}
             <button
               onClick={onScrollToProducts}
               className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white border border-white/40 hover:bg-white/10 transition-colors backdrop-blur-sm"

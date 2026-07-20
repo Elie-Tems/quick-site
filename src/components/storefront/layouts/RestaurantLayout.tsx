@@ -8,7 +8,7 @@ const FALLBACK_ITEM_IMG = "https://images.unsplash.com/photo-1565299624946-b28f4
 
 export default function RestaurantLayout(props: StorefrontLayoutProps) {
   const {
-    businessName, tagline, heroTitle, aboutText, heroImageUrl,
+    businessName, tagline, heroTitle, aboutText, heroImageUrl, heroBenefits, promoText,
     logoUrl, phone, products, categories, banners,
     cartItems, onAddToCart, onUpdateQuantity, onRemoveFromCart,
     onCheckout, whatsappEnabled, customLabels, verticalSlot,
@@ -84,6 +84,12 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
         </div>
       </header>
 
+      {promoText && (
+        <div className="bg-primary text-primary-foreground text-center py-2.5 px-4 text-sm font-semibold">
+          {promoText}
+        </div>
+      )}
+
       <main>
         {/* HERO */}
         <section className="relative h-[55vh] min-h-[340px] overflow-hidden">
@@ -94,7 +100,14 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
               <h1 className="text-3xl md:text-5xl font-display font-bold text-white leading-tight mb-2">
                 {heroTitle || businessName}
               </h1>
-              {tagline && <p className="text-white/80 text-lg mb-5">{tagline}</p>}
+              {tagline && <p className="text-white/80 text-lg mb-3">{tagline}</p>}
+              {heroBenefits && heroBenefits.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {heroBenefits.slice(0, 4).map((b, i) => (
+                    <span key={i} className="px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm text-white text-xs border border-white/25">{b}</span>
+                  ))}
+                </div>
+              )}
               <a href="#menu"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
                 לתפריט <ArrowLeft className="w-4 h-4" />
@@ -126,7 +139,12 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
 
         {/* MENU SECTIONS */}
         <div id="menu" className="max-w-4xl mx-auto px-4 py-10 space-y-12">
-          {menuSections.map((section, si) => (
+          {products.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground">
+              <UtensilsCrossed className="w-10 h-10 mx-auto mb-3 opacity-40" aria-hidden="true" />
+              <p>התפריט יתעדכן בקרוב</p>
+            </div>
+          ) : menuSections.map((section, si) => (
             <section key={String(section.id)} id={`cat-${section.id}`}>
               <h2 className="text-2xl font-display font-bold mb-6 pb-2 border-b border-border">{section.name}</h2>
               <div className="space-y-3">

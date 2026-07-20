@@ -548,7 +548,12 @@ const Dashboard = () => {
         deliveryFee: (business as any).delivery_fee ?? undefined,
         heroTitle: business.hero_title || undefined,
         heroBadge: business.hero_badge || undefined,
-        heroBenefits: Array.isArray((business as any).hero_benefits) ? (business as any).hero_benefits : undefined,
+        heroBenefits: (() => {
+          const raw = (business as any).hero_benefits;
+          if (!raw) return undefined;
+          if (Array.isArray(raw)) return raw as string[];
+          return String(raw).split("✦").map((s: string) => s.trim()).filter(Boolean);
+        })(),
         promoText: business.promo_text || "",
         ctaText: business.cta_text || "לקולקציה",
         // ברירת מחדל: מכובה (false) - המשתמש צריך להפעיל באופן ידני

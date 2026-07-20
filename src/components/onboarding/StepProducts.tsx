@@ -620,21 +620,23 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
     if (!withoutImages.length) { toast.info("לכל המוצרים כבר יש תמונות"); return; }
     setIsGeneratingAllImages(true);
     setGeneratingProgress({ current: 0, total: withoutImages.length });
-    const updatedProducts = [...data.products];
+    // Track generated images as a map {id → imageUrl} so we can merge them
+    // into the CURRENT state at the end — not into a stale snapshot captured
+    // at start time (which would drop products added while generation runs).
+    const generatedMap = new Map<string, string>();
     let done = 0, successCount = 0;
-    // Generate several at once instead of one-by-one (was N x ~slow sequentially).
     const CONCURRENCY = 4;
     const queue = [...withoutImages];
+    const businessCat = data.businessCategory;
     const worker = async () => {
       while (queue.length) {
         const product = queue.shift()!;
         try {
           const { data: result, error } = await supabase.functions.invoke("generate-product-image", {
-            body: { productName: product.name, productDescription: product.description, businessCategory: data.businessCategory },
+            body: { productName: product.name, productDescription: product.description, businessCategory: businessCat },
           });
           if (!error && result?.imageUrl) {
-            const idx = updatedProducts.findIndex(p => p.id === product.id);
-            if (idx !== -1) updatedProducts[idx] = { ...updatedProducts[idx], imageUrl: result.imageUrl };
+            generatedMap.set(product.id, result.imageUrl);
             successCount++;
           }
         } catch { /* continue */ }
@@ -643,7 +645,8 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
       }
     };
     await Promise.all(Array.from({ length: Math.min(CONCURRENCY, withoutImages.length) }, worker));
-    updateData({ products: updatedProducts });
+    // Merge into CURRENT products state (not the start-of-run snapshot).
+    updateData({ products: data.products.map(p => generatedMap.has(p.id) ? { ...p, imageUrl: generatedMap.get(p.id) } : p) });
     setIsGeneratingAllImages(false);
     setGeneratingProductId(null);
     setGeneratingProgress({ current: 0, total: 0 });
@@ -1147,7 +1150,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
               <div className="flex-1" />
               <button
                 onClick={handleQuickAdd}
-                disabled={!quickName.trim() || !quickPrice.trim()}
+                disabled={!quickName.trim()}
                 className="flex items-center gap-1.5 px-4 h-8 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
               >
                 <Plus className="w-4 h-4" /> {data.businessType === 'nonprofit' ? 'הוסיפו פרויקט' : data.businessType === 'realestate' ? 'הוסיפו נכס' : 'הוסיפו מוצר'}

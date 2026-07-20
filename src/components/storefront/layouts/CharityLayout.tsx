@@ -6,7 +6,7 @@ const FALLBACK_HERO = "https://images.unsplash.com/photo-1559027615-cd4628902d4a
 
 export default function CharityLayout(props: StorefrontLayoutProps) {
   const {
-    businessName, tagline, heroTitle, aboutText, heroImageUrl,
+    businessName, tagline, heroTitle, aboutText, heroImageUrl, promoText,
     logoUrl, phone, products, banners, heroBenefits,
     whatsappEnabled, reviewsCache, customLabels,
   } = props;
@@ -50,6 +50,12 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
       </header>
 
     <main>
+
+      {promoText && (
+        <div className="bg-primary text-primary-foreground text-center py-2.5 px-4 text-sm font-semibold">
+          {promoText}
+        </div>
+      )}
 
       {/* HERO */}
       <section className="relative h-[85vh] min-h-[560px] overflow-hidden">

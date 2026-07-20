@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { OnboardingData } from "@/pages/Onboarding";
 import { Loader2, Wand2, Globe, FileText, Mic, MicOff, Check, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,6 +33,14 @@ const METHODS = [
 ];
 
 const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
+  const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Cancel the auto-advance timer when the user navigates away manually.
+  const safeOnNext = useCallback(() => {
+    if (autoAdvanceRef.current) { clearTimeout(autoAdvanceRef.current); autoAdvanceRef.current = null; }
+    onNext();
+  }, [onNext]);
+  useEffect(() => () => { if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current); }, []);
+
   const [method, setMethod] = useState<Method>("text");
   const [textInput, setTextInput] = useState("");
   const [urlInput, setUrlInput] = useState("");
@@ -97,7 +105,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       setGenerated(content);
       updateData(content);
       setShowSuccess(true);
-      setTimeout(() => onNext(), 2000);
+      autoAdvanceRef.current = setTimeout(() => { autoAdvanceRef.current = null; onNext(); }, 2000);
     } catch {
       toast({ title: "שגיאה ביצירת תכנים", description: "נסו שוב", variant: "destructive" });
     } finally {
@@ -304,7 +312,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       )}
 
       <StepNavigation
-        onNext={onNext}
+        onNext={safeOnNext}
         onBack={onBack}
         nextLabel="הבא ←"
         showPreview={false}

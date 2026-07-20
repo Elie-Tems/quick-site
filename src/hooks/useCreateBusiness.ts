@@ -18,8 +18,13 @@ export interface CreateBusinessData {
   isReligiousAudience?: boolean;
   // Vertical chosen in StepBusinessType. Drives per-vertical modules
   // (src/lib/businessModules.ts) and the auto-selected storefront layout.
-  businessType?: "products" | "services" | "realestate" | "nonprofit" | null;
+  businessType?: "products" | "services" | "realestate" | "nonprofit" | "synagogue" | "vacation" | null;
   businessSubType?: string | null;
+
+  // Contact / social (collected in StepContact but previously not passed to DB)
+  address?: string;
+  socialLinks?: { facebook?: string; instagram?: string };
+  businessHours?: string;
 
   // AI-generated content from StepContentAI
   heroTitle?: string;
@@ -227,6 +232,11 @@ export function useCreateBusiness() {
             about_text: data.aboutText || null,
             hero_benefits: data.heroBenefits || null,
             promo_text: data.promoText || null,
+            // Contact / social — collected in StepContact but previously never written to DB
+            delivery_address: data.address || null,
+            facebook_url: data.socialLinks?.facebook || null,
+            instagram_url: data.socialLinks?.instagram || null,
+            business_hours: data.businessHours || null,
             // ברירות מחדל מפורשות לחלקים אופציונליים - כולם מכובים
             marquee_bar_enabled: false,
             hero_badge: null,
@@ -445,6 +455,7 @@ export function useCreateBusiness() {
         
         if (productError) {
           console.error('Failed to create product:', productError);
+          throw new Error(`יצירת מוצר "${product.name}" נכשלה: ${productError.message}`);
         } else if (insertedProduct?.id && productImageUrl) {
           // Create AI image job entry so product images from onboarding (including generate-product-image)
           // will appear in the dashboard "generated images" gallery
