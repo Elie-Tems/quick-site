@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, X, Plus, Minus, ArrowLeft, Flame, Tag, Heart, Phone, MessageCircle } from "lucide-react";
 import type { StorefrontLayoutProps } from "./StorefrontLayout.types";
 import { STOREFRONT_IMAGE_PLACEHOLDER } from "@/lib/storefrontPlaceholders";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const FALLBACK_HERO = STOREFRONT_IMAGE_PLACEHOLDER;
 const FALLBACK_PRODUCT_IMG = STOREFRONT_IMAGE_PLACEHOLDER;
@@ -15,13 +16,14 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
     onCheckout, favoriteIds, onToggleFavorite,
     selectedCategoryId, onSelectCategory, customLabels,
   } = props;
+  const { t } = useLanguage();
 
   const [cartOpen, setCartOpen] = useState(false);
   const closeCartBtnRef = useRef<HTMLButtonElement>(null);
   const openCartBtnRef = useRef<HTMLButtonElement>(null);
 
   const heroImg = heroImageUrl || banners?.[0]?.imageUrl || FALLBACK_HERO;
-  const cats = [{ id: null, name: "הכל" }, ...categories.map(c => ({ id: c.id, name: c.name }))];
+  const cats = [{ id: null, name: t("store.boutiquelayout.category_all") }, ...categories.map(c => ({ id: c.id, name: c.name }))];
   const visible = selectedCategoryId
     ? products.filter(p => p.categoryId === selectedCategoryId)
     : products;
@@ -61,11 +63,11 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
         <button
           ref={openCartBtnRef}
           onClick={() => setCartOpen(true)}
-          aria-label={`סל קניות${itemCount > 0 ? `, ${itemCount} פריטים` : ""}`}
+          aria-label={`${t("store.boutiquelayout.cart_label")}${itemCount > 0 ? `, ${itemCount} ${t("store.boutiquelayout.items_suffix")}` : ""}`}
           className="relative inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium"
         >
           <ShoppingBag className="w-4 h-4" aria-hidden="true" />
-          סל קניות
+          {t("store.boutiquelayout.cart_label")}
           {itemCount > 0 && (
             <span aria-hidden="true" className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-rose-500 text-white text-[11px] font-bold flex items-center justify-center">
               {itemCount}
@@ -99,7 +101,7 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
                   onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })}
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow"
                 >
-                  לקולקציה <ArrowLeft className="w-5 h-5" aria-hidden="true" />
+                  {t("store.boutiquelayout.browse_collection_cta")} <ArrowLeft className="w-5 h-5" aria-hidden="true" />
                 </button>
               </motion.div>
             </div>
@@ -121,11 +123,11 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7">
               <div>
-                <h2 className="text-2xl md:text-3xl font-display font-bold">{customLabels?.productsTitle || "הקולקציה שלנו"}</h2>
-                <p className="text-muted-foreground text-sm mt-0.5">{visible.length} פריטים</p>
+                <h2 className="text-2xl md:text-3xl font-display font-bold">{customLabels?.productsTitle || t("store.boutiquelayout.default_products_title")}</h2>
+                <p className="text-muted-foreground text-sm mt-0.5">{visible.length} {t("store.boutiquelayout.items_suffix")}</p>
               </div>
               {cats.length > 1 && (
-                <div className="flex flex-wrap gap-2" role="group" aria-label="סינון לפי קטגוריה">
+                <div className="flex flex-wrap gap-2" role="group" aria-label={t("store.boutiquelayout.category_filter_aria_label")}>
                   {cats.map((c) => (
                     <button
                       key={c.id ?? "all"}
@@ -167,12 +169,12 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
                         {p.isHot && (
                           <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500 text-white text-xs font-bold shadow-lg">
-                            <Flame className="w-3.5 h-3.5" aria-hidden="true" /> חם
+                            <Flame className="w-3.5 h-3.5" aria-hidden="true" /> {t("store.boutiquelayout.badge_hot")}
                           </span>
                         )}
                         <button
                           onClick={() => onToggleFavorite(p.id)}
-                          aria-label={favoriteIds.has(p.id) ? `הסר מהמועדפים: ${p.name}` : `הוסף למועדפים: ${p.name}`}
+                          aria-label={favoriteIds.has(p.id) ? `${t("store.boutiquelayout.remove_from_favorites_aria")}: ${p.name}` : `${t("store.boutiquelayout.add_to_favorites_aria")}: ${p.name}`}
                           aria-pressed={favoriteIds.has(p.id)}
                           className={`absolute top-3 left-3 w-8 h-8 rounded-full backdrop-blur border flex items-center justify-center transition-colors ${
                             favoriteIds.has(p.id)
@@ -190,10 +192,10 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
                           <span className="font-display font-bold text-primary text-lg">₪{p.price}</span>
                           <button
                             onClick={() => handleAdd(p)}
-                            aria-label={`הוסף לסל: ${p.name}`}
+                            aria-label={`${t("store.boutiquelayout.add_to_cart")}: ${p.name}`}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-medium hover:brightness-110 transition-all active:scale-95"
                           >
-                            <ShoppingBag className="w-3.5 h-3.5" aria-hidden="true" /> הוסף לסל
+                            <ShoppingBag className="w-3.5 h-3.5" aria-hidden="true" /> {t("store.boutiquelayout.add_to_cart")}
                           </button>
                         </div>
                       </div>
@@ -203,7 +205,7 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
               </AnimatePresence>
             </div>
             {visible.length === 0 && (
-              <div className="text-center py-20 text-muted-foreground">אין מוצרים להצגה</div>
+              <div className="text-center py-20 text-muted-foreground">{t("store.boutiquelayout.no_products")}</div>
             )}
           </div>
         </section>
@@ -219,7 +221,7 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
           <div className="flex items-center gap-3">
             {props.whatsappEnabled && phone && (
               <a href={`https://wa.me/972${phone.replace(/^0/, "")}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border text-sm">
-                <MessageCircle className="w-4 h-4" aria-hidden="true" /> וואטסאפ
+                <MessageCircle className="w-4 h-4" aria-hidden="true" /> {t("store.boutiquelayout.whatsapp")}
               </a>
             )}
             {phone && (
@@ -253,13 +255,13 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
                 <button
                   ref={closeCartBtnRef}
                   onClick={() => setCartOpen(false)}
-                  aria-label="סגור סל קניות"
+                  aria-label={t("store.boutiquelayout.close_cart_aria")}
                   className="w-9 h-9 rounded-xl bg-muted border border-border flex items-center justify-center hover:border-primary/40 transition-colors"
                 >
                   <X className="w-5 h-5" aria-hidden="true" />
                 </button>
                 <div className="flex items-center gap-2">
-                  <span id="cart-title" className="font-display font-bold text-lg">הסל שלי</span>
+                  <span id="cart-title" className="font-display font-bold text-lg">{t("store.boutiquelayout.cart_title")}</span>
                   <ShoppingBag className="w-5 h-5 text-primary" aria-hidden="true" />
                 </div>
               </div>
@@ -268,7 +270,7 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
                 {cartItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
                     <ShoppingBag className="w-12 h-12 opacity-30" aria-hidden="true" />
-                    <p className="text-sm">הסל ריק</p>
+                    <p className="text-sm">{t("store.boutiquelayout.cart_empty")}</p>
                   </div>
                 ) : (
                   cartItems.map((item) => (
@@ -281,15 +283,15 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
                           <div className="flex items-center gap-2 mt-1.5 justify-end">
                             <button
                               onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity + 1)}
-                              aria-label={`הוסף יחידה: ${item.name}`}
+                              aria-label={`${t("store.boutiquelayout.add_unit_aria")}: ${item.name}`}
                               className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center hover:bg-primary/25 transition-colors"
                             >
                               <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                             </button>
-                            <span className="text-sm font-bold w-4 text-center" aria-label={`כמות: ${item.quantity}`}>{item.quantity}</span>
+                            <span className="text-sm font-bold w-4 text-center" aria-label={`${t("store.boutiquelayout.quantity_aria")}: ${item.quantity}`}>{item.quantity}</span>
                             <button
                               onClick={() => item.quantity > 1 ? onUpdateQuantity(item.cartLineId ?? item.id, item.quantity - 1) : onRemoveFromCart(item.cartLineId ?? item.id)}
-                              aria-label={item.quantity > 1 ? `הפחת יחידה: ${item.name}` : `הסר מהסל: ${item.name}`}
+                              aria-label={item.quantity > 1 ? `${t("store.boutiquelayout.reduce_unit_aria")}: ${item.name}` : `${t("store.boutiquelayout.remove_from_cart_aria")}: ${item.name}`}
                               className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center hover:bg-primary/25 transition-colors"
                             >
                               <Minus className="w-3.5 h-3.5" aria-hidden="true" />
@@ -306,10 +308,10 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
                 <div className="px-5 pb-6 pt-3 border-t border-border space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="font-display font-bold text-lg">₪{total.toLocaleString()}</span>
-                    <span className="text-muted-foreground text-sm">סה"כ</span>
+                    <span className="text-muted-foreground text-sm">{t("store.boutiquelayout.total_label")}</span>
                   </div>
                   <button onClick={() => { setCartOpen(false); onCheckout(); }} className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow inline-flex items-center justify-center gap-2">
-                    לתשלום <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+                    {t("store.boutiquelayout.checkout_button")} <ArrowLeft className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </div>
               )}

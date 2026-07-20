@@ -3,11 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Star, Phone, MessageCircle, ArrowLeft, CalendarDays, ShoppingBag, Plus, Minus, X, ChevronLeft, ChevronRight } from "lucide-react";
 import type { StorefrontLayoutProps } from "./StorefrontLayout.types";
 import { STOREFRONT_IMAGE_PLACEHOLDER } from "@/lib/storefrontPlaceholders";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const FALLBACK_HERO = STOREFRONT_IMAGE_PLACEHOLDER;
 const FALLBACK_PRODUCT = STOREFRONT_IMAGE_PLACEHOLDER;
 
 export default function BeautySpaLayout(props: StorefrontLayoutProps) {
+  const { t } = useLanguage();
   const {
     businessName, tagline, heroTitle, aboutText, heroImageUrl, promoText,
     logoUrl, phone, products, categories, banners, heroBenefits,
@@ -40,7 +42,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
   const handleAdd = (p: typeof products[0]) => { onAddToCart(p); setCartOpen(true); };
 
   const whatsappUrl = phone
-    ? `https://wa.me/972${phone.replace(/^0/, "")}?text=${encodeURIComponent("שלום, אשמח לקבוע תור")}`
+    ? `https://wa.me/972${phone.replace(/^0/, "")}?text=${encodeURIComponent(t("store.beautyspalayout.whatsappMessage"))}`
     : "#";
 
   return (
@@ -55,7 +57,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
         <div className="flex items-center gap-2">
           {whatsappEnabled && phone && (
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-700 text-white text-sm font-medium">
-              <MessageCircle className="w-4 h-4" aria-hidden="true" /> קביעת תור
+              <MessageCircle className="w-4 h-4" aria-hidden="true" /> {t("store.beautyspalayout.bookAppointment")}
             </a>
           )}
           {!whatsappEnabled && phone && (
@@ -65,7 +67,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
           )}
           <button
             onClick={() => setCartOpen(true)}
-            aria-label={`סל קניות${itemCount > 0 ? `, ${itemCount} פריטים` : ""}`}
+            aria-label={`${t("store.beautyspalayout.cart")}${itemCount > 0 ? `, ${itemCount} ${t("store.beautyspalayout.itemsCount")}` : ""}`}
             className="relative inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card text-sm"
           >
             <ShoppingBag className="w-4 h-4" aria-hidden="true" />
@@ -104,12 +106,12 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
               <div className="flex flex-wrap gap-3">
                 <a href={whatsappEnabled && phone ? whatsappUrl : `tel:${phone}`} target={whatsappEnabled ? "_blank" : undefined} rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
-                  <CalendarDays className="w-5 h-5" /> קביעת תור <ArrowLeft className="w-4 h-4" />
+                  <CalendarDays className="w-5 h-5" /> {t("store.beautyspalayout.bookAppointment")} <ArrowLeft className="w-4 h-4" />
                 </a>
                 {shopProducts.length > 0 && (
                   <button onClick={() => document.getElementById("shop")?.scrollIntoView({ behavior: "smooth" })}
                     className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl border border-white/30 bg-white/10 text-white font-medium backdrop-blur-sm hover:bg-white/20 transition-colors">
-                    <ShoppingBag className="w-5 h-5" /> החנות שלנו
+                    <ShoppingBag className="w-5 h-5" /> {t("store.beautyspalayout.ourShop")}
                   </button>
                 )}
               </div>
@@ -125,8 +127,8 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
       {services.length > 0 && (
         <section className="py-14 px-4 bg-muted/20">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">{customLabels?.productsTitle || "השירותים שלנו"}</h2>
-            <p className="text-muted-foreground mb-8 text-sm">כל הטיפולים מבוצעים עם חומרים מקצועיים</p>
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">{customLabels?.productsTitle || t("store.beautyspalayout.servicesTitle")}</h2>
+            <p className="text-muted-foreground mb-8 text-sm">{t("store.beautyspalayout.servicesSubtitle")}</p>
             <div className="grid md:grid-cols-2 gap-4">
               {services.map((s) => (
                 <div key={s.id} className="flex items-center gap-4 p-4 rounded-2xl border border-border bg-card hover:border-primary/30 transition-colors">
@@ -151,7 +153,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
             <div className="mt-6 text-center">
               <a href={whatsappEnabled && phone ? whatsappUrl : `tel:${phone}`} target={whatsappEnabled ? "_blank" : undefined} rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/30">
-                <CalendarDays className="w-5 h-5" /> קבעו תור עכשיו
+                <CalendarDays className="w-5 h-5" /> {t("store.beautyspalayout.bookNow")}
               </a>
             </div>
           </div>
@@ -164,7 +166,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
           <div className="max-w-5xl mx-auto">
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div>
-                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">{customLabels?.aboutTitle || "קצת עלינו"}</h2>
+                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">{customLabels?.aboutTitle || t("store.beautyspalayout.aboutTitle")}</h2>
                 <p className="text-muted-foreground leading-relaxed">{aboutText}</p>
               </div>
               {galleryImgs.length > 0 && (
@@ -173,12 +175,12 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
                   {galleryImgs.length > 1 && (
                     <>
                       <button onClick={() => setGalleryIdx(i => (i - 1 + galleryImgs.length) % galleryImgs.length)}
-                        aria-label="תמונה קודמת"
+                        aria-label={t("store.beautyspalayout.previousImage")}
                         className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center">
                         <ChevronLeft className="w-4 h-4" aria-hidden="true" />
                       </button>
                       <button onClick={() => setGalleryIdx(i => (i + 1) % galleryImgs.length)}
-                        aria-label="תמונה הבאה"
+                        aria-label={t("store.beautyspalayout.nextImage")}
                         className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center">
                         <ChevronRight className="w-4 h-4" aria-hidden="true" />
                       </button>
@@ -195,7 +197,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
       {!aboutText && galleryImgs.length > 1 && (
         <section className="py-14 px-4">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl font-display font-bold mb-6">{customLabels?.galleryTitle || "גלריית עבודות"}</h2>
+            <h2 className="text-2xl font-display font-bold mb-6">{customLabels?.galleryTitle || t("store.beautyspalayout.galleryTitle")}</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {galleryImgs.slice(0, 8).map((img, i) => (
                 <div key={i} className="aspect-square rounded-xl overflow-hidden">
@@ -211,17 +213,17 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
       {reviewsCache && (reviewsCache.reviews || []).length > 0 && (
         <section className="py-14 px-4 bg-muted/20">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl font-display font-bold mb-6 text-center">מה אומרות הלקוחות</h2>
+            <h2 className="text-2xl font-display font-bold mb-6 text-center">{t("store.beautyspalayout.reviewsTitle")}</h2>
             <div className="grid md:grid-cols-3 gap-4">
               {(reviewsCache.reviews || []).slice(0, 3).map((r, i) => (
                 <div key={i} className="p-5 rounded-2xl border border-border bg-card">
-                  <span aria-label={`דירוג: ${r.rating || 5} מתוך 5 כוכבים`} className="flex gap-0.5 mb-3">
+                  <span aria-label={`${t("store.beautyspalayout.ratingLabel")}: ${r.rating || 5} ${t("store.beautyspalayout.outOf5Stars")}`} className="flex gap-0.5 mb-3">
                     {Array.from({ length: r.rating || 5 }).map((_, j) => (
                       <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden="true" />
                     ))}
                   </span>
                   <p className="text-sm text-muted-foreground leading-relaxed">"{r.text}"</p>
-                  <p className="mt-3 text-sm font-semibold">{r.author || "לקוח/ה"}</p>
+                  <p className="mt-3 text-sm font-semibold">{r.author || t("store.beautyspalayout.defaultCustomer")}</p>
                 </div>
               ))}
             </div>
@@ -233,11 +235,11 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
       {shopProducts.length > 0 && (
         <section id="shop" className="py-14 px-4">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">מוצרים לרכישה</h2>
-            <p className="text-muted-foreground text-sm mb-6">מוצרי יופי מקצועיים לשימוש ביתי</p>
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">{t("store.beautyspalayout.shopTitle")}</h2>
+            <p className="text-muted-foreground text-sm mb-6">{t("store.beautyspalayout.shopSubtitle")}</p>
             {categories.length > 1 && (
               <div className="flex flex-wrap gap-2 mb-6">
-                {[{ id: null, name: "הכל" }, ...categories].map(c => (
+                {[{ id: null, name: t("store.beautyspalayout.allCategory") }, ...categories].map(c => (
                   <button key={c.id ?? "all"} onClick={() => onSelectCategory(c.id)}
                     className={`px-4 py-1.5 rounded-full text-sm border transition-colors ${selectedCategoryId === c.id ? "bg-primary text-primary-foreground border-primary" : "border-border hover:border-primary/40"}`}>
                     {c.name}
@@ -276,7 +278,7 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
         <div className="flex justify-center gap-3">
           {whatsappEnabled && phone && (
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-700 text-white text-sm font-medium">
-              <MessageCircle className="w-4 h-4" aria-hidden="true" /> וואטסאפ
+              <MessageCircle className="w-4 h-4" aria-hidden="true" /> {t("store.beautyspalayout.whatsapp")}
             </a>
           )}
           {phone && (
@@ -299,15 +301,15 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
               className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-sm flex flex-col bg-background border-l border-border shadow-2xl"
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
               <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                <button onClick={() => setCartOpen(false)} aria-label="סגור סל קניות" className="w-9 h-9 rounded-xl bg-muted border border-border flex items-center justify-center">
+                <button onClick={() => setCartOpen(false)} aria-label={t("store.beautyspalayout.closeCart")} className="w-9 h-9 rounded-xl bg-muted border border-border flex items-center justify-center">
                   <X className="w-5 h-5" aria-hidden="true" />
                 </button>
-                <span id="beauty-cart-title" className="font-display font-bold text-lg">סל קניות</span>
+                <span id="beauty-cart-title" className="font-display font-bold text-lg">{t("store.beautyspalayout.cart")}</span>
               </div>
               <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
                 {cartItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
-                    <ShoppingBag className="w-12 h-12 opacity-30" aria-hidden="true" /><p className="text-sm">הסל ריק</p>
+                    <ShoppingBag className="w-12 h-12 opacity-30" aria-hidden="true" /><p className="text-sm">{t("store.beautyspalayout.emptyCart")}</p>
                   </div>
                 ) : cartItems.map(item => (
                   <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
@@ -316,9 +318,9 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
                       <div className="text-sm font-semibold truncate">{item.name}</div>
                       <div className="text-primary font-bold text-sm">₪{item.price}</div>
                       <div className="flex items-center gap-2 mt-1 justify-end">
-                        <button onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity + 1)} aria-label={`הוסף יחידה: ${item.name}`} className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center"><Plus className="w-3.5 h-3.5" aria-hidden="true" /></button>
-                        <span className="text-sm font-bold w-4 text-center" aria-label={`כמות: ${item.quantity}`}>{item.quantity}</span>
-                        <button onClick={() => item.quantity > 1 ? onUpdateQuantity(item.cartLineId ?? item.id, item.quantity - 1) : onRemoveFromCart(item.cartLineId ?? item.id)} aria-label={item.quantity > 1 ? `הפחת יחידה: ${item.name}` : `הסר מהסל: ${item.name}`} className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center"><Minus className="w-3.5 h-3.5" aria-hidden="true" /></button>
+                        <button onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity + 1)} aria-label={`${t("store.beautyspalayout.addUnit")}: ${item.name}`} className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center"><Plus className="w-3.5 h-3.5" aria-hidden="true" /></button>
+                        <span className="text-sm font-bold w-4 text-center" aria-label={`${t("store.beautyspalayout.quantity")}: ${item.quantity}`}>{item.quantity}</span>
+                        <button onClick={() => item.quantity > 1 ? onUpdateQuantity(item.cartLineId ?? item.id, item.quantity - 1) : onRemoveFromCart(item.cartLineId ?? item.id)} aria-label={item.quantity > 1 ? `${t("store.beautyspalayout.reduceUnit")}: ${item.name}` : `${t("store.beautyspalayout.removeFromCart")}: ${item.name}`} className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center"><Minus className="w-3.5 h-3.5" aria-hidden="true" /></button>
                       </div>
                     </div>
                   </div>
@@ -328,9 +330,9 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
                 <div className="px-5 pb-6 pt-3 border-t border-border">
                   <div className="flex items-center justify-between mb-3">
                     <span className="font-bold text-lg">₪{total.toLocaleString()}</span>
-                    <span className="text-muted-foreground text-sm">סה"כ</span>
+                    <span className="text-muted-foreground text-sm">{t("store.beautyspalayout.totalLabel")}</span>
                   </div>
-                  <button onClick={() => { setCartOpen(false); onCheckout(); }} className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold">לתשלום</button>
+                  <button onClick={() => { setCartOpen(false); onCheckout(); }} className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold">{t("store.beautyspalayout.checkout")}</button>
                 </div>
               )}
             </motion.div>

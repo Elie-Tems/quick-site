@@ -11,6 +11,7 @@ import type { StorefrontLayoutProps } from './StorefrontLayout.types';
 import type { Product } from '@/components/storefront/StoreProducts';
 import ProductDetailModal from '@/components/storefront/ProductDetailModal';
 import { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * Service Card layout:
@@ -30,6 +31,7 @@ const ServiceLayout = ({
   // ServiceLayout is the shared default for services/vacation (which DO sell via cart)
   // AND nonprofit/synagogue (which never write to the orders table) - so cart/checkout
   // chrome must be gated on the business's actual commerce module, not shown unconditionally.
+  const { t } = useLanguage();
   const totalCartItems = cartItems.reduce((s, i) => s + i.quantity, 0);
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const pc = primaryColor || '#0077b6';
@@ -99,7 +101,7 @@ const ServiceLayout = ({
                 className="px-7 py-3 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: pc }}
               >
-                {ctaText || 'לשירותים שלנו'} <ArrowLeft className="inline w-4 h-4 mr-1" />
+                {ctaText || t('store.servicelayout.default_cta')} <ArrowLeft className="inline w-4 h-4 mr-1" />
               </button>
               {phone && (
                 <a
@@ -159,7 +161,7 @@ const ServiceLayout = ({
             <h2
               className="text-2xl font-semibold text-center text-foreground mb-2"
             >
-              {customLabels?.productsTitle || "השירותים שלנו"}
+              {customLabels?.productsTitle || t('store.servicelayout.default_products_title')}
             </h2>
             <p className="text-sm text-muted-foreground text-center mb-10">
               {tagline || ''}
@@ -167,7 +169,7 @@ const ServiceLayout = ({
 
             {products.length === 0 ? (
               <div className="text-center py-16 text-muted-foreground">
-                <p className="text-base">השירותים יתעדכנו בקרוב</p>
+                <p className="text-base">{t('store.servicelayout.services_coming_soon')}</p>
               </div>
             ) : null}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -205,7 +207,7 @@ const ServiceLayout = ({
                       className="mt-4 text-sm font-medium flex items-center gap-1"
                       style={{ color: pc }}
                     >
-                      לפרטים נוספים <ArrowLeft className="w-3.5 h-3.5" />
+                      {t('store.servicelayout.more_details')} <ArrowLeft className="w-3.5 h-3.5" />
                     </div>
                   </div>
                 </button>
@@ -221,8 +223,8 @@ const ServiceLayout = ({
             className="py-12 px-4 text-center"
             style={{ backgroundColor: `${pc}0d` }}
           >
-            <h3 className="text-xl font-semibold text-foreground mb-2">{customLabels?.ctaTitle || "מוכנים להתחיל?"}</h3>
-            <p className="text-sm text-muted-foreground mb-6">צרו קשר ונשמח לעזור</p>
+            <h3 className="text-xl font-semibold text-foreground mb-2">{customLabels?.ctaTitle || t('store.servicelayout.default_cta_title')}</h3>
+            <p className="text-sm text-muted-foreground mb-6">{t('store.servicelayout.contact_us_subtitle')}</p>
             <div className="flex flex-wrap justify-center gap-3">
               <a
                 href={`tel:${phone}`}

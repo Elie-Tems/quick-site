@@ -2,10 +2,12 @@ import { motion } from "framer-motion";
 import { Heart, MessageCircle, ArrowLeft, Check, Star } from "lucide-react";
 import type { StorefrontLayoutProps } from "./StorefrontLayout.types";
 import { STOREFRONT_IMAGE_PLACEHOLDER } from "@/lib/storefrontPlaceholders";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const FALLBACK_HERO = STOREFRONT_IMAGE_PLACEHOLDER;
 
 export default function CharityLayout(props: StorefrontLayoutProps) {
+  const { t } = useLanguage();
   const {
     businessName, tagline, heroTitle, aboutText, heroImageUrl, promoText,
     logoUrl, phone, products, banners, heroBenefits,
@@ -18,13 +20,13 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
   const projects = products.slice(0, 4);
 
   const highlights = heroBenefits || [
-    "נתמכים על ידי אלפי תורמים",
-    "100% מהתרומות לפרויקטים",
-    "שקיפות מלאה",
+    t("store.charitylayout.highlight_supporters"),
+    t("store.charitylayout.highlight_donations_percent"),
+    t("store.charitylayout.highlight_transparency"),
   ];
 
   const whatsappUrl = phone
-    ? `https://wa.me/972${phone.replace(/^0/, "")}?text=${encodeURIComponent("שלום, אשמח לשמוע עוד על הארגון")}`
+    ? `https://wa.me/972${phone.replace(/^0/, "")}?text=${encodeURIComponent(t("store.charitylayout.whatsapp_message"))}`
     : "#";
 
   return (
@@ -40,12 +42,12 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
           {whatsappEnabled && phone && (
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-card border border-border text-sm">
-              <MessageCircle className="w-4 h-4" aria-hidden="true" /> צרו קשר
+              <MessageCircle className="w-4 h-4" aria-hidden="true" /> {t("store.charitylayout.contact_us")}
             </a>
           )}
           <button onClick={() => document.getElementById("donate")?.scrollIntoView({ behavior: "smooth" })}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold">
-            <Heart className="w-4 h-4" aria-hidden="true" /> תרמו עכשיו
+            <Heart className="w-4 h-4" aria-hidden="true" /> {t("store.charitylayout.donate_now")}
           </button>
         </div>
       </header>
@@ -80,7 +82,7 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
               )}
               <button onClick={() => document.getElementById("donate")?.scrollIntoView({ behavior: "smooth" })}
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/30">
-                <Heart className="w-5 h-5" /> תרמו עכשיו <ArrowLeft className="w-4 h-4" />
+                <Heart className="w-5 h-5" /> {t("store.charitylayout.donate_now")} <ArrowLeft className="w-4 h-4" />
               </button>
             </motion.div>
           </div>
@@ -96,7 +98,7 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div>
-                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">{customLabels?.aboutTitle || "הסיפור שלנו"}</h2>
+                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">{customLabels?.aboutTitle || t("store.charitylayout.our_story")}</h2>
                 <p className="text-foreground/80 leading-relaxed text-lg">{aboutText}</p>
               </div>
               {albumImgs.length > 0 && (
@@ -117,8 +119,8 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
       {projects.length > 0 && (
         <section className="py-16 px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">{customLabels?.productsTitle || "הפרויקטים שלנו"}</h2>
-            <p className="text-muted-foreground text-sm mb-8">כל פרויקט מוצג עם שקיפות מלאה על ההתקדמות</p>
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">{customLabels?.productsTitle || t("store.charitylayout.our_projects")}</h2>
+            <p className="text-muted-foreground text-sm mb-8">{t("store.charitylayout.projects_subtitle")}</p>
             <div className="grid md:grid-cols-2 gap-5">
               {projects.map((p) => (
                 <div key={p.id} className="rounded-2xl border border-border bg-card overflow-hidden">
@@ -132,7 +134,7 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
                     {p.description && <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{p.description}</p>}
                     <button onClick={() => document.getElementById("donate")?.scrollIntoView({ behavior: "smooth" })}
                       className="w-full py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors">
-                      תרמו לפרויקט זה
+                      {t("store.charitylayout.donate_to_project")}
                     </button>
                   </div>
                 </div>
@@ -146,15 +148,15 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
       {reviewsCache && (reviewsCache.reviews || []).length > 0 && (
         <section className="py-14 px-4 bg-muted/20">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl font-display font-bold mb-6 text-center">מה אומרים התורמים שלנו</h2>
+            <h2 className="text-2xl font-display font-bold mb-6 text-center">{t("store.charitylayout.donor_reviews_title")}</h2>
             <div className="grid md:grid-cols-3 gap-4">
               {(reviewsCache.reviews || []).slice(0, 3).map((r, i) => (
                 <div key={i} className="p-5 rounded-2xl border border-border bg-card">
-                  <span aria-label={`דירוג: ${r.rating || 5} מתוך 5 כוכבים`} className="flex gap-0.5 mb-3">
+                  <span aria-label={t("store.charitylayout.rating_aria").replace("{rating}", String(r.rating || 5))} className="flex gap-0.5 mb-3">
                     {Array.from({ length: r.rating || 5 }).map((_, j) => <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden="true" />)}
                   </span>
                   <p className="text-sm text-muted-foreground leading-relaxed">"{r.text}"</p>
-                  <p className="mt-3 text-sm font-semibold">{r.author || "תורם/ת"}</p>
+                  <p className="mt-3 text-sm font-semibold">{r.author || t("store.charitylayout.default_donor_name")}</p>
                 </div>
               ))}
             </div>
@@ -164,11 +166,11 @@ export default function CharityLayout(props: StorefrontLayoutProps) {
 
       {/* BOTTOM CTA */}
       <section className="py-16 px-4 text-center">
-        <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{customLabels?.ctaTitle || "יחד נעשה שינוי"}</h2>
-        <p className="text-muted-foreground mb-8 text-lg max-w-lg mx-auto">{tagline || "כל תרומה, קטנה כגדולה, עושה הבדל אמיתי"}</p>
+        <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{customLabels?.ctaTitle || t("store.charitylayout.together_we_change")}</h2>
+        <p className="text-muted-foreground mb-8 text-lg max-w-lg mx-auto">{tagline || t("store.charitylayout.every_donation_matters")}</p>
         <button onClick={() => document.getElementById("donate")?.scrollIntoView({ behavior: "smooth" })}
           className="inline-flex items-center gap-2 px-10 py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-xl shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-shadow">
-          <Heart className="w-6 h-6" /> תרמו עכשיו
+          <Heart className="w-6 h-6" /> {t("store.charitylayout.donate_now")}
         </button>
       </section>
 

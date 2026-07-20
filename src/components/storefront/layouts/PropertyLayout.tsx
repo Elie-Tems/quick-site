@@ -6,6 +6,7 @@ import StoreReviews from '@/components/storefront/StoreReviews';
 import StoreFooter from '@/components/storefront/StoreFooter';
 import FloatingWhatsApp from '@/components/storefront/FloatingWhatsApp';
 import type { StorefrontLayoutProps } from './StorefrontLayout.types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * Property Grid layout (real-estate / lead vertical):
@@ -24,6 +25,7 @@ const PropertyLayout = ({
   favoritesCount, onScrollToProducts,
   onNavigateHome, verticalSlot,
 }: StorefrontLayoutProps) => {
+  const { t } = useLanguage();
   const pc = primaryColor || '#374151';
 
   return (
@@ -80,7 +82,7 @@ const PropertyLayout = ({
               onClick={onScrollToProducts}
               className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white border border-white/40 hover:bg-white/10 transition-colors backdrop-blur-sm"
             >
-              {ctaText || 'צפו בנכסים'} <ArrowLeft className="inline w-4 h-4 mr-1" />
+              {ctaText || t('store.propertylayout.default_cta')} <ArrowLeft className="inline w-4 h-4 mr-1" />
             </button>
           </div>
         </section>
@@ -94,7 +96,7 @@ const PropertyLayout = ({
 
         {phone && (
           <section className="py-10 px-4 text-center border-t border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">מעוניינים לשמוע עוד?</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t('store.propertylayout.contact_heading')}</h3>
             <a
               href={`tel:${phone}`}
               className="inline-flex items-center gap-2 px-8 py-3 rounded-lg text-sm font-semibold text-white"
