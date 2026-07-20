@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Wine, ShieldCheck, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AgeVerificationModalProps {
   businessName: string;
@@ -9,6 +10,7 @@ interface AgeVerificationModalProps {
 }
 
 const AgeVerificationModal = ({ businessName, onVerified }: AgeVerificationModalProps) => {
+  const { t } = useLanguage();
   const [isVisible, setIsVisible] = useState(true);
 
   const handleConfirm = () => {
@@ -55,14 +57,14 @@ const AgeVerificationModal = ({ businessName, onVerified }: AgeVerificationModal
 
           {/* Title */}
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
-            אימות גיל
+            {t("store.ageverify.title")}
           </h2>
 
           {/* Description */}
           <p className="text-muted-foreground mb-6 leading-relaxed">
-            מכירת אלכוהול מותרת מעל גיל 18 בלבד.
+            {t("store.ageverify.description")}
             <br />
-            האם את/ה מעל גיל 18?
+            {t("store.ageverify.question")}
           </p>
 
           {/* Store name */}
@@ -79,7 +81,7 @@ const AgeVerificationModal = ({ businessName, onVerified }: AgeVerificationModal
               variant="default"
             >
               <ShieldCheck className="w-5 h-5" />
-              אני מעל גיל 18
+              {t("store.ageverify.confirmButton")}
             </Button>
 
             <Button
@@ -89,13 +91,13 @@ const AgeVerificationModal = ({ businessName, onVerified }: AgeVerificationModal
               className="w-full gap-2 text-base text-muted-foreground hover:text-destructive hover:border-destructive"
             >
               <XCircle className="w-5 h-5" />
-              אני מתחת לגיל 18
+              {t("store.ageverify.denyButton")}
             </Button>
           </div>
 
           {/* Legal notice */}
           <p className="text-xs text-muted-foreground/50 mt-6">
-            בהמשך הגלישה באתר את/ה מאשר/ת שגילך מעל 18
+            {t("store.ageverify.legalNotice")}
           </p>
         </motion.div>
       </motion.div>

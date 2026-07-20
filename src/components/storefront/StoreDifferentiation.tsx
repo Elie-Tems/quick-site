@@ -1,3 +1,5 @@
+import { useLanguage } from "@/contexts/LanguageContext";
+
 interface DifferentiationItem {
   icon?: string;
   title: string;
@@ -17,6 +19,7 @@ const StoreDifferentiation = ({
   data: DifferentiationData | null | undefined;
   accent: string;
 }) => {
+  const { t } = useLanguage();
   if (!data?.items?.length) return null;
   return (
     <section className="py-8 px-4">
@@ -24,7 +27,7 @@ const StoreDifferentiation = ({
         <div className="text-center mb-5">
           <span className="inline-block h-1 w-12 rounded-full mb-3" style={{ background: accent }} />
           <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
-            {data.heading || "למה לבחור בנו"}
+            {data.heading || t("store.differentiation.defaultHeading")}
           </h2>
           {data.subheading && (
             <p className="text-muted-foreground mt-1.5">{data.subheading}</p>

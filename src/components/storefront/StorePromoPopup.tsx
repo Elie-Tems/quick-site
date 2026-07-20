@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { X, Copy, Check } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StorePromoPopupProps {
   campaignId: string;
@@ -16,6 +17,7 @@ interface StorePromoPopupProps {
 const StorePromoPopup = ({ campaignId, title, text, ctaText, ctaUrl, couponCode, accent = "#0E9F6E" }: StorePromoPopupProps) => {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { t } = useLanguage();
   const storageKey = `siango-promo-${campaignId}`;
 
   useEffect(() => {
@@ -44,7 +46,7 @@ const StorePromoPopup = ({ campaignId, title, text, ctaText, ctaUrl, couponCode,
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={close} />
       <div className="relative w-full max-w-sm rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="h-2" style={{ background: accent }} />
-        <button onClick={close} aria-label="סגירה" className="absolute top-3 left-3 text-gray-400 hover:text-gray-700">
+        <button onClick={close} aria-label={t("store.promopopup.close")} className="absolute top-3 left-3 text-gray-400 hover:text-gray-700">
           <X className="w-5 h-5" />
         </button>
         <div className="p-6 text-center">
@@ -59,7 +61,7 @@ const StorePromoPopup = ({ campaignId, title, text, ctaText, ctaUrl, couponCode,
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             </button>
           )}
-          {couponCode && <p className="text-[11px] text-gray-400 -mt-2 mb-4">{copied ? "הקוד הועתק!" : "לחצו להעתקת הקוד"}</p>}
+          {couponCode && <p className="text-[11px] text-gray-400 -mt-2 mb-4">{copied ? t("store.promopopup.codeCopied") : t("store.promopopup.clickToCopy")}</p>}
 
           {ctaText && (
             <a href={ctaUrl || "#"} onClick={close}

@@ -1,5 +1,6 @@
 import { ArrowRight, Heart, Package, Plus, ShoppingBag } from "lucide-react";
 import type { Product } from "./StoreProducts";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StoreFavoritesProps {
   products: Product[];
@@ -9,6 +10,8 @@ interface StoreFavoritesProps {
 }
 
 const StoreFavorites = ({ products, onAddToCart, onRemoveFavorite, onBack }: StoreFavoritesProps) => {
+  const { t } = useLanguage();
+
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("he-IL", {
       style: "currency",
@@ -27,17 +30,17 @@ const StoreFavorites = ({ products, onAddToCart, onRemoveFavorite, onBack }: Sto
             className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors mb-12"
           >
             <ArrowRight className="h-3.5 w-3.5" />
-            חזרה לחנות
+            {t("store.favorites.backToStore")}
           </button>
           <div className="border-t border-foreground/10 pt-16 pb-24 text-center">
             <Heart className="h-8 w-8 text-muted-foreground/20 mx-auto mb-6" />
-            <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-muted-foreground mb-3">אין מוצרים במועדפים</p>
-            <p className="text-sm text-muted-foreground/60 mb-8">לחץ על הלב במוצר כדי לשמור למועדפים</p>
+            <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-muted-foreground mb-3">{t("store.favorites.emptyTitle")}</p>
+            <p className="text-sm text-muted-foreground/60 mb-8">{t("store.favorites.emptySubtitle")}</p>
             <button
               onClick={onBack}
               className="text-[10px] font-bold tracking-[0.25em] uppercase border border-foreground/20 px-6 py-2.5 hover:border-foreground hover:bg-foreground hover:text-background transition-all"
             >
-              חזרה לחנות
+              {t("store.favorites.backToStore")}
             </button>
           </div>
         </div>
@@ -55,16 +58,16 @@ const StoreFavorites = ({ products, onAddToCart, onRemoveFavorite, onBack }: Sto
           className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors mb-10"
         >
           <ArrowRight className="h-3.5 w-3.5" />
-          חזרה לחנות
+          {t("store.favorites.backToStore")}
         </button>
 
         {/* ── Header ── */}
         <div className="flex items-baseline justify-between border-b border-foreground/10 pb-4 mb-8">
           <h1 className="text-sm font-bold tracking-[0.2em] uppercase text-foreground">
-            המועדפים שלי
+            {t("store.favorites.heading")}
           </h1>
           <span className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground">
-            {products.length} מוצרים
+            {products.length} {t("store.favorites.itemsCount")}
           </span>
         </div>
 
@@ -95,7 +98,7 @@ const StoreFavorites = ({ products, onAddToCart, onRemoveFavorite, onBack }: Sto
                 {/* Remove favorite */}
                 <button
                   onClick={() => onRemoveFavorite(product.id)}
-                  aria-label="הסר ממועדפים"
+                  aria-label={t("store.favorites.removeFavoriteAriaLabel")}
                   className="absolute top-2.5 left-2.5 w-8 h-8 bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
                 >
                   <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
@@ -108,7 +111,7 @@ const StoreFavorites = ({ products, onAddToCart, onRemoveFavorite, onBack }: Sto
                     className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold tracking-[0.15em] uppercase bg-background text-foreground hover:bg-foreground hover:text-background transition-colors"
                   >
                     <Plus className="h-3.5 w-3.5" />
-                    הוסף לסל
+                    {t("store.favorites.addToCart")}
                   </button>
                 </div>
               </div>
@@ -150,7 +153,7 @@ const StoreFavorites = ({ products, onAddToCart, onRemoveFavorite, onBack }: Sto
                   onClick={() => onAddToCart(product)}
                   className="mt-2.5 md:hidden w-full border border-foreground/20 py-2 text-[10px] font-bold tracking-[0.15em] uppercase hover:border-foreground transition-colors"
                 >
-                  + הוסף לסל
+                  + {t("store.favorites.addToCart")}
                 </button>
               </div>
             </article>
