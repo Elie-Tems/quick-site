@@ -81,7 +81,7 @@ serve(async (req) => {
     const token = await makeToken((biz as any).id, email, Date.now() + TTL_MS);
     const link = `https://siango.app/store/${slug}/my-orders?t=${encodeURIComponent(token)}`;
     const store = (biz as any).name || "החנות";
-    await sendViaResend({
+    const sendRes = await sendViaResend({
       to: email,
       fromName: store,
       subject: `ההזמנות שלך ב${store}`,
@@ -91,6 +91,9 @@ serve(async (req) => {
         <p><a href="${link}" style="display:inline-block;background:${(biz as any).primary_color || "#0E9F6E"};color:#fff;text-decoration:none;font-weight:700;border-radius:10px;padding:12px 28px">צפייה בהזמנות שלי ↗</a></p>
         <p style="font-size:12px;color:#9ca3af">אם לא ביקשתם זאת, אפשר להתעלם מהמייל.</p></div>`,
     });
+    // Response to the client stays generic (anti-enumeration) regardless of send
+    // outcome, but a real failure should still be observable server-side.
+    if (!sendRes.ok) console.error("customer-orders: magic link email failed:", email.replace(/(.{2}).+(@.+)/, "$1***$2"), sendRes.error);
     return json({ ok: true });
   }
 

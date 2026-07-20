@@ -71,7 +71,10 @@ Deno.serve(async (req) => {
         <tr><td style="padding:18px 18px;color:#333;font-size:15px;line-height:1.7">תודה שנרשמת לעדכונים שלנו! 🎉<br/>נעדכן אותך במבצעים ובחדשות. <a href="${esc(storeUrl)}" style="color:#0E9F6E">לחנות שלנו</a></td></tr>
         <tr><td style="background:#f6f7f8;padding:14px 16px;text-align:center"><div style="font-size:11px;color:#888"><b>פרסומת</b> · ${esc(biz.name || "")}</div><div style="font-size:11px;margin-top:3px"><a href="${siteUrl}/unsubscribe?email=${encodeURIComponent(email)}" style="color:#0E9F6E">להסרה מרשימת התפוצה</a></div></td></tr>
       </table></td></tr></table></body></html>`;
-    await sendViaResend({ to: email, subject: `ברוכים הבאים ל${biz.name || "חנות"}`, html, fromName: biz.name || "סיאנגו" });
+    try {
+      const res = await sendViaResend({ to: email, subject: `ברוכים הבאים ל${biz.name || "חנות"}`, html, fromName: biz.name || "סיאנגו" });
+      if (!res.ok) console.error("email-subscribe: welcome email failed:", email, res.error);
+    } catch (e) { console.error("email-subscribe: welcome email failed:", email, String(e)); }
   }
 
   return json({ ok: true });

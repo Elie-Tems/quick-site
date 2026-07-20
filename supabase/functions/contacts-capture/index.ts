@@ -121,10 +121,11 @@ Deno.serve(async (req) => {
   if (pipeline) {
     const stages = (pipeline.stages as { key: string }[]) ?? [];
     const firstStage = stages[0]?.key ?? "new";
-    await admin.from("pipeline_cards").insert({
+    const { error: cardErr } = await admin.from("pipeline_cards").insert({
       business_id: businessId, pipeline_id: pipeline.id, contact_id: contact.id,
       stage_key: firstStage, title: title || name, value: value ?? null, details: details ?? {},
     });
+    if (cardErr) console.error("contacts-capture: pipeline_cards insert failed - the lead's contact was saved but never appeared on the sales board:", businessId, cardErr.message);
   }
 
   // Notify the MERCHANT that a lead came in (best-effort). Without this the merchant

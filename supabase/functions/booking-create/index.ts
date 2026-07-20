@@ -138,11 +138,12 @@ Deno.serve(async (req) => {
     const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
     const cancelUrl = `${siteUrl}/booking/cancel?a=${appointmentId}&t=${encodeURIComponent(cancelToken)}`;
     try {
-      await sendLifecycleEmail(admin, {
+      const res = await sendLifecycleEmail(admin, {
         businessId, key: "booking_confirm", to: customer.email, name: customer.fullName,
         vars: { service: service.name },
         extraHtml: `<p style="margin:16px 0 0;font-size:13px;color:#6b7280">צריך לבטל את התור? <a href="${cancelUrl}" style="color:#2e8b6a;font-weight:600">לחצו כאן לביטול</a></p>`,
       });
+      if (!res.ok) console.error("booking confirm email failed:", appointmentId, res.error);
     } catch (e) { console.warn("booking confirm email failed:", appointmentId, String(e)); }
   };
 
@@ -168,11 +169,12 @@ Deno.serve(async (req) => {
           p(`מועד: ${when}`) +
           emailButton("צפייה ביומן", `${siteUrl}/dashboard`),
       });
-      await sendViaResend({
+      const res = await sendViaResend({
         to: biz.email,
         subject: `תור חדש: ${service.name} - ${customer.fullName}`,
         html, fromName: "Siango",
       });
+      if (!res.ok) console.error("merchant booking notify failed:", appointmentId, res.error);
     } catch (e) { console.warn("merchant booking notify failed:", appointmentId, String(e)); }
   };
 
