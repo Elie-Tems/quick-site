@@ -10,14 +10,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { 
-  useCampaigns, 
-  useCreateCampaign, 
-  useUpdateCampaign, 
+import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  useCampaigns,
+  useCreateCampaign,
+  useUpdateCampaign,
   useDeleteCampaign,
   useToggleCampaignActive,
   useDuplicateCampaign,
-  Campaign 
+  Campaign
 } from "@/hooks/useCampaigns";
 import CampaignBannersManager from "./CampaignBannersManager";
 import CampaignProductsManager from "./CampaignProductsManager";
@@ -31,6 +32,7 @@ interface DashboardCampaignsProps {
 type CampaignTab = 'details' | 'banners' | 'products';
 
 const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardCampaignsProps) => {
+  const { t } = useLanguage();
   const { data: campaigns, isLoading } = useCampaigns(businessId);
   const createCampaign = useCreateCampaign();
   const updateCampaign = useUpdateCampaign();
@@ -109,7 +111,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
     e.preventDefault();
     
     if (!businessId) {
-      toast.error("שגיאה: לא נמצא עסק");
+      toast.error(t("dash.campaigns.error_no_business"));
       return;
     }
 
@@ -132,11 +134,11 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
 
       if (editingCampaign) {
         await updateCampaign.mutateAsync({ id: editingCampaign.id, ...campaignData });
-        toast.success("הקמפיין עודכן בהצלחה");
+        toast.success(t("dash.campaigns.update_success"));
       } else {
         const newCampaign = await createCampaign.mutateAsync(campaignData);
         setEditingCampaign(newCampaign);
-        toast.success("הקמפיין נוצר בהצלחה");
+        toast.success(t("dash.campaigns.create_success"));
         // Stay in form to add banners/products
         setActiveTab('banners');
         return; // Don't reset form
@@ -144,19 +146,19 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
       resetForm();
     } catch (error) {
       console.error("Campaign save error:", error);
-      toast.error("שגיאה בשמירת הקמפיין");
+      toast.error(t("dash.campaigns.save_error"));
     }
   };
 
   const handleDelete = async (campaign: Campaign) => {
-    if (!confirm(`האם למחוק את הקמפיין "${campaign.name}"?`)) return;
-    
+    if (!confirm(`${t("dash.campaigns.delete_confirm")} "${campaign.name}"?`)) return;
+
     try {
       await deleteCampaign.mutateAsync({ id: campaign.id, businessId: campaign.business_id });
-      toast.success("הקמפיין נמחק");
+      toast.success(t("dash.campaigns.delete_success"));
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("שגיאה במחיקת הקמפיין");
+      toast.error(t("dash.campaigns.delete_error"));
     }
   };
 
@@ -167,35 +169,35 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
         isActive: !campaign.is_active,
         businessId: campaign.business_id,
       });
-      toast.success(campaign.is_active ? "הקמפיין כובה" : "הקמפיין הופעל");
+      toast.success(campaign.is_active ? t("dash.campaigns.deactivated") : t("dash.campaigns.activated"));
     } catch (error) {
       console.error("Toggle error:", error);
-      toast.error("שגיאה בעדכון סטטוס הקמפיין");
+      toast.error(t("dash.campaigns.toggle_error"));
     }
   };
 
   const openDuplicateDialog = (campaign: Campaign) => {
     setCampaignToDuplicate(campaign);
-    setDuplicateName(`${campaign.name} (עותק)`);
+    setDuplicateName(`${campaign.name} ${t("dash.campaigns.copy_suffix")}`);
     setDuplicateDialogOpen(true);
   };
 
   const handleDuplicate = async () => {
     if (!campaignToDuplicate || !businessId || !duplicateName.trim()) return;
-    
+
     try {
       await duplicateCampaign.mutateAsync({
         campaignId: campaignToDuplicate.id,
         businessId,
         newName: duplicateName.trim(),
       });
-      toast.success("הקמפיין שוכפל בהצלחה");
+      toast.success(t("dash.campaigns.duplicate_success"));
       setDuplicateDialogOpen(false);
       setCampaignToDuplicate(null);
       setDuplicateName('');
     } catch (error) {
       console.error("Duplicate error:", error);
-      toast.error("שגיאה בשכפול הקמפיין");
+      toast.error(t("dash.campaigns.duplicate_error"));
     }
   };
 
@@ -212,25 +214,25 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
     if (!startDate && !endDate) return null;
     
     if (startDate && startDate > now) {
-      return { type: 'scheduled', text: `מתוזמן להפעלה ב-${formatDate(campaign.start_date)}` };
+      return { type: 'scheduled', text: `${t("dash.campaigns.scheduled_prefix")}${formatDate(campaign.start_date)}` };
     }
     if (endDate && endDate < now) {
-      return { type: 'ended', text: `הסתיים ב-${formatDate(campaign.end_date)}` };
+      return { type: 'ended', text: `${t("dash.campaigns.ended_prefix")}${formatDate(campaign.end_date)}` };
     }
     if (startDate && endDate) {
-      return { type: 'active-period', text: `פעיל עד ${formatDate(campaign.end_date)}` };
+      return { type: 'active-period', text: `${t("dash.campaigns.active_until_prefix")} ${formatDate(campaign.end_date)}` };
     }
     if (endDate) {
-      return { type: 'active-period', text: `פעיל עד ${formatDate(campaign.end_date)}` };
+      return { type: 'active-period', text: `${t("dash.campaigns.active_until_prefix")} ${formatDate(campaign.end_date)}` };
     }
     return null;
   };
 
   const displayModeLabels = {
-    replace: 'ראש הדף',
-    add: 'בין המוצרים',
-    prioritize: 'מעל המוצרים',
-    all: 'כל המיקומים',
+    replace: t("dash.campaigns.mode_replace"),
+    add: t("dash.campaigns.mode_add"),
+    prioritize: t("dash.campaigns.mode_prioritize"),
+    all: t("dash.campaigns.mode_all"),
   };
 
   // Form View
@@ -242,7 +244,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
             <X className="h-5 w-5" />
           </button>
           <h1 className="text-xl font-semibold text-foreground flex-1">
-            {editingCampaign ? `עריכת פרסום: ${editingCampaign.name}` : 'פרסום חדש'}
+            {editingCampaign ? `${t("dash.campaigns.edit_title_prefix")} ${editingCampaign.name}` : t("dash.campaigns.new_title")}
           </h1>
           {editingCampaign && (
             <button
@@ -250,7 +252,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
               className="flex items-center gap-1.5 text-sm text-primary border border-primary/30 rounded-lg px-3 py-1.5 hover:bg-primary/5 transition-colors"
             >
               <Eye className="h-4 w-4" />
-              הצג בחנות
+              {t("dash.campaigns.view_in_store")}
             </button>
           )}
         </div>
@@ -260,15 +262,15 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
             <TabsList className="grid w-full max-w-md grid-cols-3 mb-6">
               <TabsTrigger value="details" className="gap-1.5">
                 <LayoutList className="h-4 w-4" />
-                פרטים
+                {t("dash.campaigns.tab_details")}
               </TabsTrigger>
               <TabsTrigger value="banners" className="gap-1.5">
                 <Image className="h-4 w-4" />
-                באנרים
+                {t("dash.campaigns.tab_banners")}
               </TabsTrigger>
               <TabsTrigger value="products" className="gap-1.5">
                 <Package className="h-4 w-4" />
-                מוצרים
+                {t("dash.campaigns.tab_products")}
               </TabsTrigger>
             </TabsList>
 
@@ -317,14 +319,14 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-foreground">פרסום באתר</h1>
+          <h1 className="text-xl font-semibold text-foreground">{t("dash.campaigns.page_title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            קדם מוצרים ומבצעים בתוך החנות שלך
+            {t("dash.campaigns.page_subtitle")}
           </p>
         </div>
         <Button onClick={openAddForm} className="gap-1.5">
           <Plus className="h-4 w-4" />
-          פרסום חדש
+          {t("dash.campaigns.new_title")}
         </Button>
       </div>
 
@@ -334,10 +336,10 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
           <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
           <div>
             <p className="font-medium text-green-800 dark:text-green-200">
-              פרסום פעיל: {campaigns.find(c => c.is_active)?.name}
+              {t("dash.campaigns.active_campaign_prefix")} {campaigns.find(c => c.is_active)?.name}
             </p>
             <p className="text-sm text-green-600 dark:text-green-400">
-              התוכן מוצג בחנות לפי הגדרות הקמפיין
+              {t("dash.campaigns.active_campaign_desc")}
             </p>
           </div>
         </div>
@@ -346,7 +348,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
       {isLoading ? (
         <div className="text-center py-12">
           <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto" />
-          <p className="text-muted-foreground mt-4">טוען פרסומים...</p>
+          <p className="text-muted-foreground mt-4">{t("dash.campaigns.loading")}</p>
         </div>
       ) : campaigns?.length === 0 ? (
         <div className="space-y-6">
@@ -357,13 +359,13 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
                 <Megaphone className="h-7 w-7 text-primary" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground mb-1">פרסום בתוך החנות שלך</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-1">{t("dash.campaigns.empty_title")}</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  פרסום באתר מאפשר לך לקדם מוצרים ומבצעים <b>ישירות בחנות שלך</b>. מוסיפים באנרים, חלון קופץ עם מבצע, ומוצרים ייעודיים שיקפצו לעין.
+                  {t("dash.campaigns.empty_desc_part1")}<b>{t("dash.campaigns.empty_desc_bold")}</b>{t("dash.campaigns.empty_desc_part2")}
                 </p>
                 <Button onClick={openAddForm} className="mt-4 gap-1.5">
                   <Plus className="h-4 w-4" />
-                  צור פרסום ראשון
+                  {t("dash.campaigns.create_first")}
                 </Button>
               </div>
             </div>
@@ -374,12 +376,12 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
             {/* Banner demo */}
             <div className="rounded-xl border border-border overflow-hidden">
               <div className="bg-muted/30 px-4 py-2 text-xs text-muted-foreground font-medium border-b">
-                דוגמה - באנר בראש החנות
+                {t("dash.campaigns.demo_banner_label")}
               </div>
               <div className="p-4">
                 <div className="rounded-lg bg-primary text-primary-foreground px-4 py-3 text-center space-y-1">
-                  <p className="font-bold text-sm">🌸 מבצעי פורים - עד 30% הנחה!</p>
-                  <p className="text-xs opacity-80">הנחה אוטומטית בסל הקניות</p>
+                  <p className="font-bold text-sm">{t("dash.campaigns.demo_banner_text")}</p>
+                  <p className="text-xs opacity-80">{t("dash.campaigns.demo_banner_subtext")}</p>
                 </div>
               </div>
             </div>
@@ -387,17 +389,17 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
             {/* Popup demo */}
             <div className="rounded-xl border border-border overflow-hidden">
               <div className="bg-muted/30 px-4 py-2 text-xs text-muted-foreground font-medium border-b">
-                דוגמה - חלון מבצע קופץ
+                {t("dash.campaigns.demo_popup_label")}
               </div>
               <div className="p-4 flex justify-center">
                 <div className="bg-background rounded-xl border shadow-lg p-5 max-w-[220px] w-full text-center space-y-2">
-                  <p className="font-bold text-sm">ברוכים הבאים! 🎉</p>
-                  <p className="text-xs text-muted-foreground">15% הנחה על הזמנה ראשונה</p>
+                  <p className="font-bold text-sm">{t("dash.campaigns.demo_popup_title")}</p>
+                  <p className="text-xs text-muted-foreground">{t("dash.campaigns.demo_popup_text")}</p>
                   <div className="bg-primary/10 text-primary font-mono font-bold px-3 py-1.5 rounded-lg text-xs inline-block">
                     WELCOME15
                   </div>
                   <button className="w-full bg-primary text-primary-foreground rounded-lg py-1.5 text-xs font-medium">
-                    קנו עכשיו
+                    {t("dash.campaigns.buy_now")}
                   </button>
                 </div>
               </div>
@@ -435,7 +437,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
                             ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
                             : 'bg-muted'
                         }`}>
-                          {campaign.is_active ? 'פעיל' : 'לא פעיל'}
+                          {campaign.is_active ? t("dash.campaigns.status_active") : t("dash.campaigns.status_inactive")}
                         </span>
                         <span>•</span>
                         <span>{displayModeLabels[campaign.display_mode]}</span>
@@ -472,46 +474,46 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
                       {campaign.is_active ? (
                         <>
                           <PowerOff className="h-3.5 w-3.5" />
-                          <span className="hidden sm:inline">כבה</span>
+                          <span className="hidden sm:inline">{t("dash.campaigns.action_disable")}</span>
                         </>
                       ) : (
                         <>
                           <Power className="h-3.5 w-3.5" />
-                          <span className="hidden sm:inline">הפעל</span>
+                          <span className="hidden sm:inline">{t("dash.campaigns.action_enable")}</span>
                         </>
                       )}
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => openEditForm(campaign)}
                       className="gap-1.5"
                     >
                       <Pencil className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">ערוך</span>
+                      <span className="hidden sm:inline">{t("dash.campaigns.action_edit")}</span>
                     </Button>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setPreviewCampaign(campaign)}
                           >
                             <Eye className="h-3.5 w-3.5" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>תצוגה מקדימה</p>
+                          <p>{t("dash.campaigns.preview_tooltip")}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => openDuplicateDialog(campaign)}
                             disabled={duplicateCampaign.isPending}
                           >
@@ -519,7 +521,7 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>שכפל קמפיין</p>
+                          <p>{t("dash.campaigns.duplicate_tooltip")}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -549,34 +551,33 @@ const DashboardCampaigns = ({ businessId, onNavigateToSubscription }: DashboardC
       <Dialog open={duplicateDialogOpen} onOpenChange={setDuplicateDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>שכפול קמפיין</DialogTitle>
+            <DialogTitle>{t("dash.campaigns.duplicate_dialog_title")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">
-              הקמפיין החדש יכלול את כל הבאנרים והמוצרים מהקמפיין המקורי.
-              התאריכים יאופסו והקמפיין יתחיל כלא פעיל.
+              {t("dash.campaigns.duplicate_dialog_desc")}
             </p>
             <div className="space-y-2">
-              <Label htmlFor="duplicate-name">שם הקמפיין החדש</Label>
+              <Label htmlFor="duplicate-name">{t("dash.campaigns.duplicate_name_label")}</Label>
               <Input
                 id="duplicate-name"
                 value={duplicateName}
                 onChange={(e) => setDuplicateName(e.target.value)}
-                placeholder="הזן שם לקמפיין החדש"
+                placeholder={t("dash.campaigns.duplicate_name_placeholder")}
               />
             </div>
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setDuplicateDialogOpen(false)}>
-              ביטול
+              {t("dash.campaigns.cancel")}
             </Button>
-            <Button 
-              onClick={handleDuplicate} 
+            <Button
+              onClick={handleDuplicate}
               disabled={!duplicateName.trim() || duplicateCampaign.isPending}
               className="gap-1.5"
             >
               <Copy className="h-4 w-4" />
-              {duplicateCampaign.isPending ? 'משכפל...' : 'שכפל קמפיין'}
+              {duplicateCampaign.isPending ? t("dash.campaigns.duplicating") : t("dash.campaigns.duplicate_tooltip")}
             </Button>
           </DialogFooter>
         </DialogContent>

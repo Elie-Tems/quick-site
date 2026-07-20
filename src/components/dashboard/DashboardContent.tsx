@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import AboutEditor from "./AboutEditor";
 import type { BusinessType } from "@/lib/businessModules";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DashboardContentProps {
   businessId?: string;
@@ -16,23 +17,24 @@ interface DashboardContentProps {
   businessSubType?: string;
 }
 
-const ABOUT_LABELS: Record<BusinessType, { title: string; desc: string; saveLabel: string }> = {
-  products:   { title: "אודות העסק",    desc: "ספרו על העסק — הסיפור, הערכים, מה מייחד אתכם.",                saveLabel: "שמרו אודות העסק"    },
-  services:   { title: "אודות העסק",    desc: "ספרו על השירות, הניסיון, ומה מייחד אתכם.",                      saveLabel: "שמרו אודות העסק"    },
-  nonprofit:  { title: "הסיפור שלנו",   desc: "ספרו על מטרת הארגון, הפעילות, ומה מניע אתכם לפעול.",            saveLabel: "שמרו את הסיפור"      },
-  synagogue:  { title: "על בית הכנסת",  desc: "ספרו על הקהילה, נוסח התפילה, השיעורים והפעילות.",              saveLabel: "שמרו על בית הכנסת"  },
-  realestate: { title: "על המשרד",      desc: "ספרו על משרד הנדל\"ן, הניסיון, ואזורי הפעילות שלכם.",           saveLabel: "שמרו על המשרד"       },
-  vacation:   { title: "על הנכס",       desc: "ספרו על מה שמיוחד במקום — הנוף, האווירה, מה כלול.",             saveLabel: "שמרו על הנכס"        },
-};
-
 type ContentTab = "hero" | "about" | "labels" | "rabbi" | "hosting" | "donations" | "differentiation" | "gallery" | "leadform";
 
 const DashboardContent = ({ businessId, businessType = "products", businessSubType }: DashboardContentProps) => {
+  const { t } = useLanguage();
   const isTorahCenter = businessSubType === "torah-center";
   const isDonationBased = businessType === "nonprofit" || businessType === "synagogue";
   const { data: business, isLoading } = useBusinessById(businessId);
   const updateBusiness = useUpdateBusiness();
   const [activeTab, setActiveTab] = useState<ContentTab>("hero");
+
+  const ABOUT_LABELS: Record<BusinessType, { title: string; desc: string; saveLabel: string }> = {
+    products:   { title: t("dash.content.about_labels.products.title"),   desc: t("dash.content.about_labels.products.desc"),   saveLabel: t("dash.content.about_labels.products.save") },
+    services:   { title: t("dash.content.about_labels.services.title"),   desc: t("dash.content.about_labels.services.desc"),   saveLabel: t("dash.content.about_labels.services.save") },
+    nonprofit:  { title: t("dash.content.about_labels.nonprofit.title"),  desc: t("dash.content.about_labels.nonprofit.desc"),  saveLabel: t("dash.content.about_labels.nonprofit.save") },
+    synagogue:  { title: t("dash.content.about_labels.synagogue.title"),  desc: t("dash.content.about_labels.synagogue.desc"),  saveLabel: t("dash.content.about_labels.synagogue.save") },
+    realestate: { title: t("dash.content.about_labels.realestate.title"), desc: t("dash.content.about_labels.realestate.desc"), saveLabel: t("dash.content.about_labels.realestate.save") },
+    vacation:   { title: t("dash.content.about_labels.vacation.title"),   desc: t("dash.content.about_labels.vacation.desc"),   saveLabel: t("dash.content.about_labels.vacation.save") },
+  };
 
   // Hero fields
   const [heroTitle, setHeroTitle] = useState("");
@@ -167,9 +169,9 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         cta_text: ctaText || null,
         whatsapp_message: whatsappMessage || null,
       } as any);
-      toast.success("הכותרת הראשית עודכנה");
+      toast.success(t("dash.content.toast.hero_saved"));
     } catch {
-      toast.error("שגיאה בשמירה");
+      toast.error(t("dash.content.toast.save_error"));
     } finally {
       setIsSavingHero(false);
     }
@@ -187,9 +189,9 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         about_page_body: aboutBody || null,
         about_page_contact: aboutContact || null,
       } as any);
-      toast.success(`${aboutLabels.title} עודכנה`);
+      toast.success(`${aboutLabels.title} ${t("dash.content.toast.updated_suffix")}`);
     } catch {
-      toast.error("שגיאה בשמירה");
+      toast.error(t("dash.content.toast.save_error"));
     } finally {
       setIsSavingAbout(false);
     }
@@ -210,9 +212,9 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           ...(labelGallery ? { galleryTitle: labelGallery } : {}),
         },
       } as any);
-      toast.success("כותרות הסקשנים עודכנו");
+      toast.success(t("dash.content.toast.labels_saved"));
     } catch {
-      toast.error("שגיאה בשמירה");
+      toast.error(t("dash.content.toast.save_error"));
     } finally {
       setIsSavingLabels(false);
     }
@@ -239,9 +241,9 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           : Array.isArray(data.heroBenefits) ? data.heroBenefits : [];
         setHeroBenefits(benefits);
       }
-      toast.success("תוכן חדש נוצר — בדקו ושמרו");
+      toast.success(t("dash.content.toast.ai_generated"));
     } catch {
-      toast.error("שגיאה ביצירת תוכן");
+      toast.error(t("dash.content.toast.ai_generate_error"));
     } finally {
       setIsGenerating(false);
     }
@@ -258,9 +260,9 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
       if (error) throw error;
       const { data } = supabase.storage.from("business-assets").getPublicUrl(path);
       setRabbiImageUrl(data.publicUrl);
-      toast.success("התמונה הועלתה");
+      toast.success(t("dash.content.toast.image_uploaded"));
     } catch {
-      toast.error("שגיאה בהעלאת תמונה");
+      toast.error(t("dash.content.toast.image_upload_error"));
     } finally {
       setIsUploadingRabbi(false);
     }
@@ -277,9 +279,9 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         rabbi_message: rabbiMessage || null,
         rabbi_image_url: rabbiImageUrl || null,
       } as any);
-      toast.success("דבר הרב עודכן");
+      toast.success(t("dash.content.toast.rabbi_saved"));
     } catch {
-      toast.error("שגיאה בשמירה");
+      toast.error(t("dash.content.toast.save_error"));
     } finally {
       setIsSavingRabbi(false);
     }
@@ -294,9 +296,9 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
       await supabase.from("business_profiles").update({
         settings: { ...(business as any)?.settings, donation_amounts: valid },
       } as any).eq("id", businessId);
-      toast.success("סכומי התרומה עודכנו");
+      toast.success(t("dash.content.toast.donations_saved"));
     } catch {
-      toast.error("שגיאה בשמירה");
+      toast.error(t("dash.content.toast.save_error"));
     } finally {
       setIsSavingDonations(false);
     }
@@ -310,8 +312,8 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         id: businessId,
         differentiation: { heading: diffHeading, subheading: diffSubheading, items: diffItems.filter(it => it.title.trim()) },
       } as any);
-      toast.success("סקשן הבידול עודכן");
-    } catch { toast.error("שגיאה בשמירה"); }
+      toast.success(t("dash.content.toast.diff_saved"));
+    } catch { toast.error(t("dash.content.toast.save_error")); }
     finally { setIsSavingDiff(false); }
   };
 
@@ -330,8 +332,8 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         uploaded.push({ url: data.publicUrl, caption: "" });
       }
       setGalleryImages(prev => [...prev, ...uploaded]);
-      toast.success(`${uploaded.length} תמונות הועלו`);
-    } catch { toast.error("שגיאה בהעלאת תמונות"); }
+      toast.success(`${uploaded.length} ${t("dash.content.toast.photos_uploaded")}`);
+    } catch { toast.error(t("dash.content.toast.photos_upload_error")); }
     finally { setIsUploadingGallery(false); if (galleryInputRef.current) galleryInputRef.current.value = ""; }
   };
 
@@ -343,8 +345,8 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         id: businessId,
         gallery_images: { heading: galleryHeading, images: galleryImages.filter(img => img.url) },
       } as any);
-      toast.success("גלריה עודכנה");
-    } catch { toast.error("שגיאה בשמירה"); }
+      toast.success(t("dash.content.toast.gallery_saved"));
+    } catch { toast.error(t("dash.content.toast.save_error")); }
     finally { setIsSavingGallery(false); }
   };
 
@@ -358,8 +360,8 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         lead_form_enabled: leadFormEnabled,
         custom_labels: { ...cl, leadFormHeading, leadFormSubheading },
       } as any);
-      toast.success("טופס הפנייה עודכן");
-    } catch { toast.error("שגיאה בשמירה"); }
+      toast.success(t("dash.content.toast.leadform_saved"));
+    } catch { toast.error(t("dash.content.toast.save_error")); }
     finally { setIsSavingLeadForm(false); }
   };
 
@@ -370,14 +372,14 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
 
   if (!businessId) return (
     <div className="p-6">
-      <p className="text-sm text-muted-foreground">לא נמצא עסק פעיל.</p>
+      <p className="text-sm text-muted-foreground">{t("dash.content.no_active_business")}</p>
     </div>
   );
 
   if (isLoading && !business) return (
     <div className="p-6 flex items-center gap-2 text-sm text-muted-foreground">
       <Loader2 className="h-4 w-4 animate-spin" />
-      <span>טוען...</span>
+      <span>{t("dash.content.loading")}</span>
     </div>
   );
 
@@ -385,12 +387,12 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
     <div className="p-4 md:p-6 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-foreground">תוכן האתר</h1>
+        <h1 className="text-xl font-semibold text-foreground">{t("dash.content.page_title")}</h1>
         {storeUrl && (
           <a href={storeUrl} target="_blank" rel="noopener noreferrer">
             <Button variant="outline" size="sm" className="gap-2">
               <ExternalLink className="h-3.5 w-3.5" />
-              ראו את החנות
+              {t("dash.content.view_store")}
             </Button>
           </a>
         )}
@@ -399,15 +401,15 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
       {/* Tabs */}
       <div className="flex gap-1 border-b border-border overflow-x-auto">
         {([
-          { id: "hero" as ContentTab, label: "כותרת ראשית", icon: LayoutTemplate },
+          { id: "hero" as ContentTab, label: t("dash.content.tab.hero"), icon: LayoutTemplate },
           { id: "about" as ContentTab, label: aboutLabels.title, icon: FileText },
-          { id: "labels" as ContentTab, label: "כותרות סקשנים", icon: Tags },
-          ...(isTorahCenter ? [{ id: "rabbi" as ContentTab, label: "דבר הרב", icon: BookOpen }] : []),
-          ...(businessType === "vacation" ? [{ id: "hosting" as ContentTab, label: "מדיניות אירוח", icon: FileText }] : []),
-          ...(isDonationBased ? [{ id: "donations" as ContentTab, label: "סכומי תרומה", icon: Heart }] : []),
-          ...((businessType === "realestate" || businessType === "services") ? [{ id: "differentiation" as ContentTab, label: "מה הבידול שלנו", icon: Award }] : []),
-          ...((businessType === "realestate" || businessType === "services" || businessType === "vacation" || (business as {enabled_modules?: string[] | null} | undefined)?.enabled_modules?.includes("gallery")) ? [{ id: "gallery" as ContentTab, label: "גלריה", icon: Images }] : []),
-          ...((businessType === "realestate" || businessType === "services") ? [{ id: "leadform" as ContentTab, label: "טופס פנייה", icon: ClipboardList }] : []),
+          { id: "labels" as ContentTab, label: t("dash.content.tab.labels"), icon: Tags },
+          ...(isTorahCenter ? [{ id: "rabbi" as ContentTab, label: t("dash.content.tab.rabbi"), icon: BookOpen }] : []),
+          ...(businessType === "vacation" ? [{ id: "hosting" as ContentTab, label: t("dash.content.tab.hosting"), icon: FileText }] : []),
+          ...(isDonationBased ? [{ id: "donations" as ContentTab, label: t("dash.content.tab.donations"), icon: Heart }] : []),
+          ...((businessType === "realestate" || businessType === "services") ? [{ id: "differentiation" as ContentTab, label: t("dash.content.tab.differentiation"), icon: Award }] : []),
+          ...((businessType === "realestate" || businessType === "services" || businessType === "vacation" || (business as {enabled_modules?: string[] | null} | undefined)?.enabled_modules?.includes("gallery")) ? [{ id: "gallery" as ContentTab, label: t("dash.content.tab.gallery"), icon: Images }] : []),
+          ...((businessType === "realestate" || businessType === "services") ? [{ id: "leadform" as ContentTab, label: t("dash.content.tab.leadform"), icon: ClipboardList }] : []),
         ]).map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -430,8 +432,8 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-base font-semibold">כותרת ראשית</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">מה שמבקרים רואים ראשון כשנכנסים לחנות</p>
+                <h2 className="text-base font-semibold">{t("dash.content.hero.title")}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("dash.content.hero.subtitle")}</p>
               </div>
               <button
                 type="button"
@@ -439,29 +441,29 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
                 disabled={isGenerating}
                 className="flex items-center gap-2 rounded-xl bg-gradient-to-l from-violet-600 to-indigo-500 text-white px-5 py-3 text-sm font-semibold shadow hover:opacity-90 transition-opacity disabled:opacity-60 shrink-0"
               >
-                ✨ {isGenerating ? "יוצר תוכן..." : "צור עם AI בחינם"}
+                ✨ {isGenerating ? t("dash.content.hero.generating") : t("dash.content.hero.generate_ai")}
               </button>
             </div>
 
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label>כותרת ראשית</Label>
+                <Label>{t("dash.content.hero.title")}</Label>
                 <Input
                   value={heroTitle}
                   onChange={e => setHeroTitle(e.target.value)}
-                  placeholder="למשל: הלבשה ייחודית שתגרום לכם להרגיש טוב"
+                  placeholder={t("dash.content.hero.title_placeholder")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>סלוגן / תת-כותרת</Label>
+                <Label>{t("dash.content.hero.tagline_label")}</Label>
                 <Input
                   value={tagline}
                   onChange={e => setTagline(e.target.value)}
-                  placeholder="משפט קצר שמתאר את הייחוד שלכם"
+                  placeholder={t("dash.content.hero.tagline_placeholder")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>נקודות יתרון</Label>
+                <Label>{t("dash.content.hero.benefits_label")}</Label>
                 <div className="space-y-2">
                   {heroBenefits.map((b, i) => (
                     <div key={i} className="flex gap-2">
@@ -472,7 +474,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
                           next[i] = e.target.value;
                           setHeroBenefits(next);
                         }}
-                        placeholder={`יתרון ${i + 1}`}
+                        placeholder={`${t("dash.content.hero.benefit_item")} ${i + 1}`}
                       />
                       <Button
                         type="button" variant="ghost" size="icon"
@@ -489,7 +491,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
                       className="text-muted-foreground gap-1.5"
                       onClick={() => setHeroBenefits([...heroBenefits, ""])}
                     >
-                      <Plus className="h-3.5 w-3.5" /> הוסיפו יתרון
+                      <Plus className="h-3.5 w-3.5" /> {t("dash.content.hero.add_benefit")}
                     </Button>
                   )}
                 </div>
@@ -500,42 +502,42 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           {/* Secondary fields */}
           <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
             <div>
-              <h2 className="text-base font-semibold">פרטים נוספים</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">בנר, כפתורים והודעות</p>
+              <h2 className="text-base font-semibold">{t("dash.content.hero.more_details")}</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("dash.content.hero.more_details_sub")}</p>
             </div>
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label>בנר עליון (סרט)</Label>
+                <Label>{t("dash.content.hero.promo_label")}</Label>
                 <Input
                   value={promoText}
                   onChange={e => setPromoText(e.target.value)}
-                  placeholder='למשל: "משלוח חינם בהזמנה מעל ₪199 ⭐ הנחה 10% לנרשמים"'
+                  placeholder={t("dash.content.hero.promo_placeholder")}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label>תג מעל הכותרת</Label>
+                  <Label>{t("dash.content.hero.badge_label")}</Label>
                   <Input
                     value={heroBadge}
                     onChange={e => setHeroBadge(e.target.value)}
-                    placeholder='למשל: "חדש בחנות"'
+                    placeholder={t("dash.content.hero.badge_placeholder")}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>טקסט כפתור ראשי</Label>
+                  <Label>{t("dash.content.hero.cta_label")}</Label>
                   <Input
                     value={ctaText}
                     onChange={e => setCtaText(e.target.value)}
-                    placeholder='למשל: "לקולקציה"'
+                    placeholder={t("dash.content.hero.cta_placeholder")}
                   />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label>הודעת וואטסאפ (מוכנה מראש)</Label>
+                <Label>{t("dash.content.hero.whatsapp_label")}</Label>
                 <Input
                   value={whatsappMessage}
                   onChange={e => setWhatsappMessage(e.target.value)}
-                  placeholder="שלום, הגעתי מהאתר שלכם ואשמח לקבל פרטים נוספים"
+                  placeholder={t("dash.content.hero.whatsapp_placeholder")}
                 />
               </div>
             </div>
@@ -543,7 +545,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
 
           <Button onClick={handleSaveHero} disabled={isSavingHero} className="w-full">
             {isSavingHero && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-            שמרו כותרת ראשית
+            {t("dash.content.hero.save")}
           </Button>
         </div>
       )}
@@ -567,12 +569,12 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
             />
 
             <div className="space-y-1.5 pt-3 border-t border-border">
-              <Label htmlFor="aboutContact">פרטי יצירת קשר (אופציונלי)</Label>
+              <Label htmlFor="aboutContact">{t("dash.content.about.contact_label")}</Label>
               <Textarea
                 id="aboutContact"
                 value={aboutContact}
                 onChange={e => setAboutContact(e.target.value)}
-                placeholder={"📍 כתובת: ...\n📞 טלפון נוסף: ...\n✉️ מייל: ..."}
+                placeholder={t("dash.content.about.contact_placeholder")}
                 rows={3}
               />
             </div>
@@ -590,13 +592,13 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         <div className="space-y-4 max-w-2xl">
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
             <div>
-              <h2 className="text-base font-semibold">דבר הרב / ראש הישיבה</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">תמונה, שם ומלל שיופיעו כסקציה ייחודית באתר</p>
+              <h2 className="text-base font-semibold">{t("dash.content.rabbi.title")}</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("dash.content.rabbi.subtitle")}</p>
             </div>
 
             {/* Rabbi photo */}
             <div className="space-y-2">
-              <Label>תמונת הרב</Label>
+              <Label>{t("dash.content.rabbi.photo_label")}</Label>
               <input
                 ref={rabbiImageInputRef}
                 type="file"
@@ -608,7 +610,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
                 <div className="relative inline-block">
                   <img
                     src={rabbiImageUrl}
-                    alt="תמונת הרב"
+                    alt={t("dash.content.rabbi.photo_alt")}
                     className="w-32 h-32 object-cover rounded-2xl border border-border"
                   />
                   <button
@@ -627,36 +629,36 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
                   {isUploadingRabbi
                     ? <Loader2 className="h-4 w-4 animate-spin" />
                     : <Upload className="h-4 w-4" />}
-                  העלו תמונת הרב
+                  {t("dash.content.rabbi.upload_photo")}
                 </button>
               )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>שם הרב</Label>
+                <Label>{t("dash.content.rabbi.name_label")}</Label>
                 <Input
                   value={rabbiName}
                   onChange={e => setRabbiName(e.target.value)}
-                  placeholder='למשל: הרב יצחק כהן'
+                  placeholder={t("dash.content.rabbi.name_placeholder")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>תואר</Label>
+                <Label>{t("dash.content.rabbi.role_label")}</Label>
                 <Input
                   value={rabbiTitle}
                   onChange={e => setRabbiTitle(e.target.value)}
-                  placeholder='ראש הישיבה / אב"ד'
+                  placeholder={t("dash.content.rabbi.role_placeholder")}
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label>דבר הרב</Label>
+              <Label>{t("dash.content.rabbi.message_label")}</Label>
               <Textarea
                 value={rabbiMessage}
                 onChange={e => setRabbiMessage(e.target.value)}
-                placeholder="כתבו כאן את דברי הרב — ברכה, חזון, מסר לתורמים..."
+                placeholder={t("dash.content.rabbi.message_placeholder")}
                 rows={6}
                 dir="rtl"
               />
@@ -665,7 +667,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
 
           <Button onClick={handleSaveRabbi} disabled={isSavingRabbi} className="w-full">
             {isSavingRabbi && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-            שמרו דבר הרב
+            {t("dash.content.rabbi.save")}
           </Button>
         </div>
       )}
@@ -675,12 +677,12 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         <div className="space-y-4 max-w-2xl">
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
             <div>
-              <h2 className="text-base font-semibold">מדיניות אירוח</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">הגדירו את כללי הכניסה, היציאה וההתנהגות באירוח</p>
+              <h2 className="text-base font-semibold">{t("dash.content.hosting.title")}</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("dash.content.hosting.subtitle")}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium">שעת כניסה (check-in)</label>
+                <label className="text-sm font-medium">{t("dash.content.hosting.checkin")}</label>
                 <input
                   type="time"
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
@@ -689,7 +691,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium">שעת יציאה (check-out)</label>
+                <label className="text-sm font-medium">{t("dash.content.hosting.checkout")}</label>
                 <input
                   type="time"
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
@@ -699,37 +701,37 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
               </div>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium">מדיניות ביטול</label>
+              <label className="text-sm font-medium">{t("dash.content.hosting.cancellation")}</label>
               <select
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                 value={hostingPolicy?.cancellation_policy ?? ""}
                 onChange={e => { setHostingPolicy(p => ({ ...p, cancellation_policy: e.target.value })); scheduleAutosave({ settings: { ...(business as any)?.settings, hosting_policy: { ...hostingPolicy, cancellation_policy: e.target.value } } }); }}
               >
-                <option value="">בחר מדיניות</option>
-                <option value="flexible">גמישה - ביטול עד 24 שעות לפני</option>
-                <option value="moderate">מתונה - ביטול עד שבוע לפני</option>
-                <option value="strict">מחמירה - ללא החזר</option>
+                <option value="">{t("dash.content.hosting.choose_policy")}</option>
+                <option value="flexible">{t("dash.content.hosting.policy_flexible")}</option>
+                <option value="moderate">{t("dash.content.hosting.policy_moderate")}</option>
+                <option value="strict">{t("dash.content.hosting.policy_strict")}</option>
               </select>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium">חיות מחמד</label>
+                <label className="text-sm font-medium">{t("dash.content.hosting.pets")}</label>
                 <select className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                   value={hostingPolicy?.pets ?? ""} onChange={e => setHostingPolicy(p => ({ ...p, pets: e.target.value }))}>
-                  <option value="">בחר</option>
-                  <option value="no">לא מותר</option>
-                  <option value="yes">מותר</option>
-                  <option value="fee">מותר בתוספת תשלום</option>
+                  <option value="">{t("dash.content.hosting.choose")}</option>
+                  <option value="no">{t("dash.content.hosting.pets_no")}</option>
+                  <option value="yes">{t("dash.content.hosting.pets_yes")}</option>
+                  <option value="fee">{t("dash.content.hosting.pets_fee")}</option>
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium">עישון</label>
+                <label className="text-sm font-medium">{t("dash.content.hosting.smoking")}</label>
                 <select className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                   value={hostingPolicy?.smoking ?? ""} onChange={e => setHostingPolicy(p => ({ ...p, smoking: e.target.value }))}>
-                  <option value="">בחר</option>
-                  <option value="no">אסור לחלוטין</option>
-                  <option value="outside">מותר בחוץ בלבד</option>
-                  <option value="yes">מותר</option>
+                  <option value="">{t("dash.content.hosting.choose")}</option>
+                  <option value="no">{t("dash.content.hosting.smoking_no")}</option>
+                  <option value="outside">{t("dash.content.hosting.smoking_outside")}</option>
+                  <option value="yes">{t("dash.content.hosting.smoking_yes")}</option>
                 </select>
               </div>
             </div>
@@ -742,15 +744,15 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         <div className="space-y-4 max-w-2xl">
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
             <div>
-              <h2 className="text-base font-semibold">סכומי תרומה מוצעים</h2>
+              <h2 className="text-base font-semibold">{t("dash.content.donations.title")}</h2>
               <p className="text-sm text-muted-foreground mt-0.5">
-                ארבעת הכפתורים שיופיעו בדף התרומה. תורמים יכולים גם להכניס סכום חופשי.
+                {t("dash.content.donations.subtitle")}
               </p>
             </div>
 
             {/* Preview */}
             <div className="rounded-xl bg-muted/40 p-3">
-              <p className="text-xs text-muted-foreground mb-2 font-medium">תצוגה מקדימה</p>
+              <p className="text-xs text-muted-foreground mb-2 font-medium">{t("dash.content.donations.preview")}</p>
               <div className="grid grid-cols-4 gap-2">
                 {donationAmounts.map((amt, i) => (
                   <div key={i} className={`py-2.5 rounded-xl text-sm font-bold border text-center ${i === 1 ? "bg-primary text-primary-foreground border-primary" : "border-border bg-background"}`}>
@@ -764,7 +766,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
             <div className="grid grid-cols-2 gap-3">
               {donationAmounts.map((amt, i) => (
                 <div key={i} className="space-y-1">
-                  <label className="text-xs text-muted-foreground">כפתור {i + 1}</label>
+                  <label className="text-xs text-muted-foreground">{t("dash.content.donations.button")} {i + 1}</label>
                   <div className="relative">
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">₪</span>
                     <Input
@@ -785,13 +787,13 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
             </div>
 
             <p className="text-xs text-muted-foreground">
-              טיפ: הסכום השני בולט יותר בעיצוב — שימו שם את הסכום הנפוץ ביותר.
+              {t("dash.content.donations.tip")}
             </p>
           </div>
 
           <Button onClick={handleSaveDonations} disabled={isSavingDonations} className="w-full">
             {isSavingDonations && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-            שמרו סכומי תרומה
+            {t("dash.content.donations.save")}
           </Button>
         </div>
       )}
@@ -801,53 +803,53 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         <div className="space-y-4 max-w-2xl">
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
             <div>
-              <h2 className="text-base font-semibold">מה הבידול שלנו</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">סקשן ייחודי שמסביר ללקוח למה לבחור בכם ולא באחרים</p>
+              <h2 className="text-base font-semibold">{t("dash.content.diff.title")}</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("dash.content.diff.subtitle")}</p>
             </div>
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label>כותרת הסקשן</Label>
-                <Input value={diffHeading} onChange={e => setDiffHeading(e.target.value)} placeholder="למה לבחור בנו?" />
+                <Label>{t("dash.content.diff.heading_label")}</Label>
+                <Input value={diffHeading} onChange={e => setDiffHeading(e.target.value)} placeholder={t("dash.content.diff.heading_placeholder")} />
               </div>
               <div className="space-y-1.5">
-                <Label>תת-כותרת (אופציונלי)</Label>
-                <Input value={diffSubheading} onChange={e => setDiffSubheading(e.target.value)} placeholder="ניסיון של שנים, שקיפות מלאה, ותוצאות אמיתיות." />
+                <Label>{t("dash.content.diff.subheading_label")}</Label>
+                <Input value={diffSubheading} onChange={e => setDiffSubheading(e.target.value)} placeholder={t("dash.content.diff.subheading_placeholder")} />
               </div>
             </div>
 
             <div className="space-y-3 pt-2 border-t border-border">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">כרטיסי יתרונות</p>
+                <p className="text-sm font-medium">{t("dash.content.diff.cards_title")}</p>
                 {diffItems.length < 6 && (
                   <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-muted-foreground"
                     onClick={() => setDiffItems([...diffItems, { icon: "", title: "", body: "" }])}>
-                    <Plus className="h-3.5 w-3.5" /> הוסיפו כרטיס
+                    <Plus className="h-3.5 w-3.5" /> {t("dash.content.diff.add_card")}
                   </Button>
                 )}
               </div>
               {diffItems.map((item, i) => (
                 <div key={i} className="rounded-xl border border-border bg-muted/30 p-3 space-y-2">
                   <div className="flex items-center gap-2">
-                    <Input value={item.icon} onChange={e => { const n = [...diffItems]; n[i] = { ...n[i], icon: e.target.value }; setDiffItems(n); }} placeholder="אמוג'י (אופציונלי) 🏆" className="w-32" />
-                    <Input value={item.title} onChange={e => { const n = [...diffItems]; n[i] = { ...n[i], title: e.target.value }; setDiffItems(n); }} placeholder="כותרת היתרון" className="flex-1" />
+                    <Input value={item.icon} onChange={e => { const n = [...diffItems]; n[i] = { ...n[i], icon: e.target.value }; setDiffItems(n); }} placeholder={t("dash.content.diff.icon_placeholder")} className="w-32" />
+                    <Input value={item.title} onChange={e => { const n = [...diffItems]; n[i] = { ...n[i], title: e.target.value }; setDiffItems(n); }} placeholder={t("dash.content.diff.card_title_placeholder")} className="flex-1" />
                     <Button type="button" variant="ghost" size="icon" onClick={() => setDiffItems(diffItems.filter((_, j) => j !== i))}>
                       <Trash2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
                   </div>
-                  <Textarea value={item.body} onChange={e => { const n = [...diffItems]; n[i] = { ...n[i], body: e.target.value }; setDiffItems(n); }} placeholder="תיאור קצר של היתרון..." rows={2} />
+                  <Textarea value={item.body} onChange={e => { const n = [...diffItems]; n[i] = { ...n[i], body: e.target.value }; setDiffItems(n); }} placeholder={t("dash.content.diff.card_body_placeholder")} rows={2} />
                 </div>
               ))}
               {diffItems.length === 0 && (
                 <button type="button" onClick={() => setDiffItems([{ icon: "", title: "", body: "" }])}
                   className="w-full py-6 rounded-xl border-2 border-dashed border-border text-sm text-muted-foreground hover:border-primary/40 transition-colors">
-                  + הוסיפו את כרטיס הבידול הראשון
+                  + {t("dash.content.diff.add_first_card")}
                 </button>
               )}
             </div>
           </div>
           <Button onClick={handleSaveDiff} disabled={isSavingDiff} className="w-full">
             {isSavingDiff && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-            שמרו סקשן בידול
+            {t("dash.content.diff.save")}
           </Button>
         </div>
       )}
@@ -857,15 +859,15 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         <div className="space-y-4 max-w-2xl">
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
             <div>
-              <h2 className="text-base font-semibold">גלריית תמונות</h2>
+              <h2 className="text-base font-semibold">{t("dash.content.gallery.title")}</h2>
               <p className="text-sm text-muted-foreground mt-0.5">
-                {businessType === "realestate" ? "תמונות אווירה, שכונה ואורח חיים" : businessType === "vacation" ? "תמונות הנכס, הסביבה והאווירה" : "תיק עבודות ודוגמאות"}
+                {businessType === "realestate" ? t("dash.content.gallery.desc_realestate") : businessType === "vacation" ? t("dash.content.gallery.desc_vacation") : t("dash.content.gallery.desc_services")}
               </p>
             </div>
             <div className="space-y-1.5">
-              <Label>כותרת הגלריה</Label>
+              <Label>{t("dash.content.gallery.heading_label")}</Label>
               <Input value={galleryHeading} onChange={e => setGalleryHeading(e.target.value)}
-                placeholder={businessType === "services" ? "תיק עבודות" : "גלריית אווירה"} />
+                placeholder={businessType === "services" ? t("dash.content.gallery.placeholder_services") : t("dash.content.gallery.placeholder_default")} />
             </div>
 
             <div className="space-y-2">
@@ -877,7 +879,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-border text-sm text-muted-foreground hover:border-primary/50 transition-colors w-full justify-center"
               >
                 {isUploadingGallery ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                העלו תמונות לגלריה (ניתן להעלות כמה בו-זמנית)
+                {t("dash.content.gallery.upload")}
               </button>
             </div>
 
@@ -885,7 +887,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
               <div className="grid grid-cols-3 gap-2">
                 {galleryImages.map((img, i) => (
                   <div key={i} className="relative group">
-                    <img src={img.url} alt={img.caption || `תמונה ${i + 1}`} className="w-full aspect-square object-cover rounded-xl border border-border" />
+                    <img src={img.url} alt={img.caption || `${t("dash.content.gallery.image_alt")} ${i + 1}`} className="w-full aspect-square object-cover rounded-xl border border-border" />
                     <button
                       onClick={() => setGalleryImages(galleryImages.filter((_, j) => j !== i))}
                       className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
@@ -895,7 +897,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
                     <Input
                       value={img.caption}
                       onChange={e => { const n = [...galleryImages]; n[i] = { ...n[i], caption: e.target.value }; setGalleryImages(n); }}
-                      placeholder="כיתוב (אופציונלי)"
+                      placeholder={t("dash.content.gallery.caption_placeholder")}
                       className="mt-1 text-xs h-7 px-2"
                     />
                   </div>
@@ -905,7 +907,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           </div>
           <Button onClick={handleSaveGallery} disabled={isSavingGallery} className="w-full">
             {isSavingGallery && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-            שמרו גלריה
+            {t("dash.content.gallery.save")}
           </Button>
         </div>
       )}
@@ -916,8 +918,8 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-base font-semibold">טופס פנייה</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">טופס "השאירו פרטים" שמוסיף כל פנייה ישר ל-CRM שלכם</p>
+                <h2 className="text-base font-semibold">{t("dash.content.leadform.title")}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("dash.content.leadform.subtitle")}</p>
               </div>
               <button type="button" onClick={() => setLeadFormEnabled(!leadFormEnabled)} className="shrink-0 mt-0.5">
                 {leadFormEnabled
@@ -928,35 +930,35 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
 
             {!leadFormEnabled && (
               <div className="rounded-xl bg-muted/40 p-3 text-sm text-muted-foreground text-center">
-                הטופס כבוי - הדליקו אותו כדי שיופיע באתר
+                {t("dash.content.leadform.disabled_notice")}
               </div>
             )}
 
             {leadFormEnabled && (
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label>כותרת הטופס</Label>
+                  <Label>{t("dash.content.leadform.heading_label")}</Label>
                   <Input value={leadFormHeading} onChange={e => setLeadFormHeading(e.target.value)}
-                    placeholder={businessType === "realestate" ? "מעוניינים? השאירו פרטים" : "רוצים לשמוע עוד? צרו קשר"} />
+                    placeholder={businessType === "realestate" ? t("dash.content.leadform.placeholder_realestate") : t("dash.content.leadform.placeholder_services")} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>תת-כותרת (אופציונלי)</Label>
+                  <Label>{t("dash.content.leadform.subheading_label")}</Label>
                   <Input value={leadFormSubheading} onChange={e => setLeadFormSubheading(e.target.value)}
-                    placeholder="נחזור אליכם בהקדם האפשרי" />
+                    placeholder={t("dash.content.leadform.subheading_placeholder")} />
                 </div>
                 <div className="rounded-xl bg-primary/5 border border-primary/20 p-3 text-xs text-muted-foreground space-y-1">
-                  <p className="font-medium text-foreground">מה הלקוח יראה בטופס:</p>
-                  <p>• שם מלא (חובה)</p>
-                  <p>• טלפון (חובה)</p>
-                  <p>• אימייל (אופציונלי)</p>
-                  <p>• הודעה חופשית (אופציונלי)</p>
+                  <p className="font-medium text-foreground">{t("dash.content.leadform.preview_title")}</p>
+                  <p>• {t("dash.content.leadform.field_name")}</p>
+                  <p>• {t("dash.content.leadform.field_phone")}</p>
+                  <p>• {t("dash.content.leadform.field_email")}</p>
+                  <p>• {t("dash.content.leadform.field_message")}</p>
                 </div>
               </div>
             )}
           </div>
           <Button onClick={handleSaveLeadForm} disabled={isSavingLeadForm} className="w-full">
             {isSavingLeadForm && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-            שמרו הגדרות טופס
+            {t("dash.content.leadform.save")}
           </Button>
         </div>
       )}
@@ -966,56 +968,56 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
         <div className="space-y-4 max-w-2xl">
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
             <div>
-              <h2 className="text-base font-semibold">כותרות סקשנים</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">דרסו את הכותרות הקבועות בתבנית. השאירו ריק כדי לשמור על ברירת המחדל.</p>
+              <h2 className="text-base font-semibold">{t("dash.content.labels.title")}</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("dash.content.labels.subtitle")}</p>
             </div>
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label>סקשן מוצרים / שירותים</Label>
+                <Label>{t("dash.content.labels.products_label")}</Label>
                 <Input
                   value={labelProducts}
                   onChange={e => setLabelProducts(e.target.value)}
                   placeholder={
-                    businessType === "nonprofit" ? "הפרויקטים שלנו" :
-                    businessType === "realestate" ? "הנכסים שלנו" :
-                    businessType === "services" ? "השירותים שלנו" :
-                    "הקולקציה שלנו"
+                    businessType === "nonprofit" ? t("dash.content.labels.products_ph_nonprofit") :
+                    businessType === "realestate" ? t("dash.content.labels.products_ph_realestate") :
+                    businessType === "services" ? t("dash.content.labels.products_ph_services") :
+                    t("dash.content.labels.products_ph_default")
                   }
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>סקשן אודות</Label>
+                <Label>{t("dash.content.labels.about_label")}</Label>
                 <Input
                   value={labelAbout}
                   onChange={e => setLabelAbout(e.target.value)}
-                  placeholder={businessType === "nonprofit" ? "הסיפור שלנו" : "קצת עלינו"}
+                  placeholder={businessType === "nonprofit" ? t("dash.content.labels.about_ph_nonprofit") : t("dash.content.labels.about_ph_default")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>כפתור CTA תחתון</Label>
+                <Label>{t("dash.content.labels.cta_label")}</Label>
                 <Input
                   value={labelCta}
                   onChange={e => setLabelCta(e.target.value)}
                   placeholder={
-                    businessType === "nonprofit" ? "יחד נעשה שינוי" :
-                    businessType === "realestate" ? "מעוניינים לשמוע עוד?" :
-                    "מוכנים להתחיל?"
+                    businessType === "nonprofit" ? t("dash.content.labels.cta_ph_nonprofit") :
+                    businessType === "realestate" ? t("dash.content.labels.cta_ph_realestate") :
+                    t("dash.content.labels.cta_ph_default")
                   }
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>גלריה / עבודות (אם קיים בתבנית)</Label>
+                <Label>{t("dash.content.labels.gallery_label")}</Label>
                 <Input
                   value={labelGallery}
                   onChange={e => setLabelGallery(e.target.value)}
-                  placeholder={businessType === "services" ? "עבודות אחרונות" : "גלריית עבודות"}
+                  placeholder={businessType === "services" ? t("dash.content.labels.gallery_ph_services") : t("dash.content.labels.gallery_ph_default")}
                 />
               </div>
             </div>
           </div>
           <Button onClick={handleSaveLabels} disabled={isSavingLabels} className="w-full">
             {isSavingLabels && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-            שמרו כותרות
+            {t("dash.content.labels.save")}
           </Button>
         </div>
       )}

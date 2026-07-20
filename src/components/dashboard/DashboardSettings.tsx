@@ -13,6 +13,7 @@ import { useUpdateBusiness } from "@/hooks/useBusiness";
 import { BusinessCategory, businessCategoryList } from "@/lib/categoryConfig";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/useAdmin";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type { BusinessCategory };
 
@@ -169,6 +170,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { data: isAdmin } = useIsAdmin();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState(settings);
 
   // Re-sync when the parent reloads business data (e.g. after save)
@@ -179,7 +181,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
 
   const handleResetOnboarding = useCallback(async () => {
     if (!user) return;
-    if (!window.confirm("לאפס את תהליך ה-Onboarding? בכניסה הבאה תועבר לאשף ההגדרה מחדש.")) return;
+    if (!window.confirm(t("dash.settings.reset_onboarding_confirm"))) return;
     setIsResettingOnboarding(true);
     const { error } = await supabase
       .from("profiles")
@@ -187,12 +189,12 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
       .eq("id", user.id);
     setIsResettingOnboarding(false);
     if (error) {
-      toast({ title: "שגיאה", description: error.message, variant: "destructive" });
+      toast({ title: t("dash.settings.error_generic"), description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "אופס!", description: "ה-Onboarding אופס — מרענן..." });
+      toast({ title: t("dash.settings.reset_onboarding_done_title"), description: t("dash.settings.reset_onboarding_done_desc") });
       setTimeout(() => window.location.href = "/", 1200);
     }
-  }, [user]);
+  }, [user, t]);
   const updateBusiness = useUpdateBusiness();
   const [isSaving, setIsSaving] = useState(false);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
@@ -213,8 +215,8 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
     
     if (!settings.id) {
       toast({
-        title: "שגיאה",
-        description: "מזהה העסק חסר",
+        title: t("dash.settings.error_generic"),
+        description: t("dash.settings.error_missing_business_id"),
         variant: "destructive",
       });
       return;
@@ -246,8 +248,8 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
       onSettingsChange(formData);
     } catch (error: any) {
       toast({
-        title: "שגיאה בשמירה",
-        description: error.message || "נסה שוב",
+        title: t("dash.settings.error_save_title"),
+        description: error.message || t("dash.settings.error_try_again"),
         variant: "destructive",
       });
     } finally {
@@ -272,8 +274,8 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
 
     if (!file.type.startsWith('image/')) {
       toast({
-        title: "קובץ לא תקין",
-        description: "יש להעלות קובץ תמונה בלבד (JPG, PNG, WEBP)",
+        title: t("dash.settings.error_invalid_file_title"),
+        description: t("dash.settings.error_invalid_file_desc"),
         variant: "destructive",
       });
       return;
@@ -281,8 +283,8 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
 
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "הקובץ גדול מדי",
-        description: "גודל הקובץ המקסימלי הוא 5MB",
+        title: t("dash.settings.error_file_too_large_title"),
+        description: t("dash.settings.error_file_too_large_desc"),
         variant: "destructive",
       });
       return;
@@ -306,14 +308,14 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
       const logoUrl = urlData.publicUrl;
       setFormData(prev => ({ ...prev, logoUrl }));
       toast({
-        title: "הלוגו הועלה בהצלחה! 🎉",
-        description: "שמרו את ההגדרות כדי לעדכן את החנות.",
+        title: t("dash.settings.logo_upload_success_title"),
+        description: t("dash.settings.logo_upload_success_desc"),
       });
     } catch (err: any) {
       console.error('Failed to upload logo image:', err);
       toast({
-        title: "שגיאה בהעלאת הלוגו",
-        description: err.message || "נסה שוב מאוחר יותר",
+        title: t("dash.settings.error_logo_upload_title"),
+        description: err.message || t("dash.settings.error_try_again_later"),
         variant: "destructive",
       });
     } finally {
@@ -329,28 +331,28 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
       <div className="rounded-2xl bg-gradient-to-l from-gray-500/10 to-gray-500/5 border border-border p-5 mb-1 flex items-center gap-4">
         <div className="text-4xl">⚙️</div>
         <div>
-          <h1 className="text-lg font-bold text-foreground">הגדרות</h1>
-          <p className="text-sm text-muted-foreground">פרטי העסק, קטגוריות, משלוחים</p>
+          <h1 className="text-lg font-bold text-foreground">{t("dash.settings.page_title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dash.settings.page_subtitle")}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
         {/* Business Info Section */}
-        <AccordionSection title="פרטי העסק" summary={formData.name || "שם, סלוגן, טלפון, אימייל ולוגו"} defaultOpen>
+        <AccordionSection title={t("dash.settings.section_business_info")} summary={formData.name || t("dash.settings.section_business_info_summary")} defaultOpen>
           <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">שם העסק</Label>
+                <Label htmlFor="name">{t("dash.settings.field_business_name")}</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="שם העסק"
+                  placeholder={t("dash.settings.field_business_name")}
                 />
               </div>
 
               {/* Store URL slug */}
               <div className="space-y-2">
-                <Label htmlFor="slug">כתובת האתר שלך</Label>
+                <Label htmlFor="slug">{t("dash.settings.field_store_url")}</Label>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">siango.app/store/</span>
                   <Input
@@ -369,26 +371,26 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
                     className="font-mono text-sm"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">רק אותיות לועזיות, מספרים ומקף. שינוי הכתובת ישבור קישורים ישנים.</p>
+                <p className="text-xs text-muted-foreground">{t("dash.settings.field_store_url_help")}</p>
               </div>
 
               {/* Shabbat mode - auto-close the store on Shabbat/Yom Tov */}
               <div className="flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/30 p-4">
                 <div>
-                  <p className="font-medium text-foreground">🕯️ סגירת החנות בשבת</p>
+                  <p className="font-medium text-foreground">🕯️ {t("dash.settings.shabbat_mode_title")}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    החנות תיסגר אוטומטית בשבת ובחגים (לפי זמני ישראל) ותיפתח בצאת השבת/החג.
+                    {t("dash.settings.shabbat_mode_desc")}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {formData.shabbatMode === true ? "פעיל" : "כבוי"}
+                    {formData.shabbatMode === true ? t("dash.settings.status_active") : t("dash.settings.status_off")}
                   </span>
                   <Switch
                     id="shabbat-mode"
                     checked={formData.shabbatMode === true}
                     onCheckedChange={(checked) => setFormData({ ...formData, shabbatMode: checked })}
-                    aria-label="סגירת החנות בשבת"
+                    aria-label={t("dash.settings.shabbat_mode_title")}
                   />
                 </div>
               </div>
@@ -396,12 +398,12 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
               {/* Top strip (marquee) with business name - on/off */}
               <div className="flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/30 p-4">
                 <div>
-                  <p className="font-medium text-foreground">פס עליון עם שם החנות</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">הפס המסתובב מעל התפריט עם שם העסק</p>
+                  <p className="font-medium text-foreground">{t("dash.settings.marquee_title")}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("dash.settings.marquee_desc")}</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {formData.useMarqueeBar === true ? "מוצג" : "מוסתר"}
+                    {formData.useMarqueeBar === true ? t("dash.settings.status_shown") : t("dash.settings.status_hidden")}
                   </span>
                   <Switch
                     id="use-marquee-bar"
@@ -409,7 +411,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
                     onCheckedChange={(checked) =>
                       setFormData({ ...formData, useMarqueeBar: checked })
                     }
-                    aria-label="הצג פס עליון עם שם החנות"
+                    aria-label={t("dash.settings.marquee_aria_label")}
                   />
                 </div>
               </div>
@@ -417,10 +419,10 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
               {/* Tagline with switch */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="tagline">סלוגן / תיאור קצר</Label>
+                  <Label htmlFor="tagline">{t("dash.settings.field_tagline")}</Label>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">
-                      {effectiveUseTagline ? "מופעל" : "ללא סלוגן"}
+                      {effectiveUseTagline ? t("dash.settings.status_enabled") : t("dash.settings.tagline_disabled_label")}
                     </span>
                     <Switch
                       checked={effectiveUseTagline}
@@ -434,14 +436,14 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
                   id="tagline"
                   value={formData.tagline || ''}
                   onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
-                  placeholder="המוצרים הכי טובים במחירים הכי טובים"
+                  placeholder={t("dash.settings.field_tagline_placeholder")}
                   disabled={!effectiveUseTagline}
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone">טלפון</Label>
+                  <Label htmlFor="phone">{t("dash.settings.field_phone")}</Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -453,7 +455,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">אימייל לקבלת הזמנות *</Label>
+                  <Label htmlFor="email">{t("dash.settings.field_order_email")}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -467,7 +469,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
               </div>
 
               <div className="space-y-2">
-                <Label>לוגו</Label>
+                <Label>{t("dash.settings.field_logo")}</Label>
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center overflow-hidden">
                     {formData.logoUrl ? (
@@ -482,7 +484,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
                         type="url"
                         value={formData.logoUrl || ''}
                         onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
-                        placeholder="URL ללוגו"
+                        placeholder={t("dash.settings.field_logo_url_placeholder")}
                         dir="ltr"
                         className="flex-1"
                       />
@@ -503,12 +505,12 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
                           className="gap-2"
                         >
                           <Upload className="h-4 w-4" />
-                          העלה לוגו
+                          {t("dash.settings.upload_logo_button")}
                         </Button>
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      ניתן להדביק קישור ללוגו או להעלות קובץ תמונה (עד 5MB)
+                      {t("dash.settings.field_logo_help")}
                     </p>
                   </div>
                 </div>
@@ -518,12 +520,12 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
 
         {/* Business Category Section */}
         <AccordionSection
-          title="קטגוריית העסק"
-          summary={formData.businessCategory ? categories.find(c => c.id === formData.businessCategory)?.label || "לא נבחרה קטגוריה" : "לא נבחרה קטגוריה"}
+          title={t("dash.settings.section_category")}
+          summary={formData.businessCategory ? categories.find(c => c.id === formData.businessCategory)?.label || t("dash.settings.category_not_selected") : t("dash.settings.category_not_selected")}
         >
           <div className="space-y-3">
               <p className="text-xs text-muted-foreground">
-                בחר קטגוריה כדי להתאים טקסטים ותמונות לסוג העסק.
+                {t("dash.settings.category_help")}
               </p>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {categories.map((cat) => (
@@ -556,15 +558,15 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
               {/* Custom Category Name - shown only when "other" is selected */}
               {formData.businessCategory === "other" && (
                 <div className="space-y-2">
-                  <Label htmlFor="customCategoryName">שם הקטגוריה המותאמת אישית</Label>
+                  <Label htmlFor="customCategoryName">{t("dash.settings.field_custom_category")}</Label>
                   <Input
                     id="customCategoryName"
                     value={formData.customCategoryName || ""}
                     onChange={(e) => setFormData({ ...formData, customCategoryName: e.target.value })}
-                    placeholder="לדוגמה: סטודיו צילום, שירותי ניקיון, מוצרי טבע..."
+                    placeholder={t("dash.settings.field_custom_category_placeholder")}
                   />
                   <p className="text-xs text-muted-foreground">
-                    הקטגוריה תשמש לזיהוי העסק במערכת
+                    {t("dash.settings.field_custom_category_help")}
                   </p>
                 </div>
               )}
@@ -573,11 +575,11 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
 
         {/* Shipping / Lodging Section - conditional on businessType */}
         {businessType !== "vacation" ? (
-        <AccordionSection title="משלוחים ואיסוף" summary="הגדרות משלוח">
+        <AccordionSection title={t("dash.settings.section_shipping")} summary={t("dash.settings.section_shipping_summary")}>
           <div className="space-y-4">
               <div className="space-y-3">
-                <Label>אופן אספקה</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="אופן אספקה">
+                <Label>{t("dash.settings.field_delivery_mode")}</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label={t("dash.settings.field_delivery_mode")}>
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, deliveryMode: 'pickup_only' })}
@@ -588,9 +590,9 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
                     }`}
                     aria-pressed={(formData.deliveryMode || 'pickup_only') === 'pickup_only'}
                   >
-                    <span className="font-medium text-foreground">איסוף עצמי בלבד</span>
+                    <span className="font-medium text-foreground">{t("dash.settings.delivery_mode_pickup_only")}</span>
                     <span className="text-xs text-foreground/80">
-                      הלקוח יבחר רק איסוף עצמי, ללא אפשרות משלוח.
+                      {t("dash.settings.delivery_mode_pickup_only_desc")}
                     </span>
                   </button>
                   <button
@@ -603,9 +605,9 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
                     }`}
                     aria-pressed={formData.deliveryMode === 'pickup_and_delivery'}
                   >
-                    <span className="font-medium text-foreground">איסוף עצמי + משלוחים</span>
+                    <span className="font-medium text-foreground">{t("dash.settings.delivery_mode_pickup_and_delivery")}</span>
                     <span className="text-xs text-foreground/80">
-                      בצ׳קאווט הלקוח יוכל לבחור בין איסוף עצמי למשלוח.
+                      {t("dash.settings.delivery_mode_pickup_and_delivery_desc")}
                     </span>
                   </button>
                 </div>
@@ -613,7 +615,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
 
               {formData.deliveryMode === 'pickup_and_delivery' && (
                 <div className="space-y-2">
-                  <Label htmlFor="deliveryFee">עלות משלוח (₪)</Label>
+                  <Label htmlFor="deliveryFee">{t("dash.settings.field_delivery_fee")}</Label>
                   <Input
                     id="deliveryFee"
                     type="number"
@@ -626,34 +628,34 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
                         deliveryFee: e.target.value === '' ? undefined : Number(e.target.value),
                       })
                     }
-                    placeholder="לדוגמה: 25"
+                    placeholder={t("dash.settings.field_delivery_fee_placeholder")}
                   />
                   <p className="text-xs text-muted-foreground">
-                    עלות המשלוח שתתווסף לסכום ההזמנה כאשר הלקוח בוחר משלוח.
+                    {t("dash.settings.field_delivery_fee_help")}
                   </p>
                 </div>
               )}
           </div>
         </AccordionSection>
         ) : (
-        <AccordionSection title="מדיניות לינה" summary="שעות כניסה, ביטולים">
+        <AccordionSection title={t("dash.settings.section_lodging")} summary={t("dash.settings.section_lodging_summary")}>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-sm font-medium">שעת כניסה</label>
+                <label className="text-sm font-medium">{t("dash.settings.field_checkin_time")}</label>
                 <input type="time" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" defaultValue="15:00" />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium">שעת יציאה</label>
+                <label className="text-sm font-medium">{t("dash.settings.field_checkout_time")}</label>
                 <input type="time" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" defaultValue="11:00" />
               </div>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium">מדיניות ביטול</label>
+              <label className="text-sm font-medium">{t("dash.settings.field_cancellation_policy")}</label>
               <select className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm">
-                <option value="flexible">גמישה - ביטול עד 24 שעות לפני</option>
-                <option value="moderate">מתונה - ביטול עד שבוע לפני</option>
-                <option value="strict">מחמירה - ללא החזר</option>
+                <option value="flexible">{t("dash.settings.cancellation_flexible")}</option>
+                <option value="moderate">{t("dash.settings.cancellation_moderate")}</option>
+                <option value="strict">{t("dash.settings.cancellation_strict")}</option>
               </select>
             </div>
           </div>
@@ -661,10 +663,10 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
         )}
 
         {/* Legal Section */}
-        <AccordionSection title="תקנון ומדיניות" summary="בדוק לפני שמוכרים">
+        <AccordionSection title={t("dash.settings.section_legal")} summary={t("dash.settings.section_legal_summary")}>
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              התקנון שלך נוצר אוטומטית ומופיע בחנות. חשוב לבדוק שהוא מתאים לעסק שלך לפני שמתחילים למכור.
+              {t("dash.settings.section_legal_desc")}
             </p>
           </div>
         </AccordionSection>
@@ -819,7 +821,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
         {/* Save Button */}
         <Button type="submit" size="lg" className="w-full gap-2" disabled={isSaving}>
           {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-          שמרו הגדרות
+          {t("dash.settings.save_button")}
         </Button>
       </form>
 
@@ -831,7 +833,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
             to real merchants. */}
       {isAdmin && (
           <div className="border-t border-border pt-4 mt-2">
-            <p className="text-xs text-muted-foreground mb-2 text-right">בדיקות ופיתוח (אדמין)</p>
+            <p className="text-xs text-muted-foreground mb-2 text-right">{t("dash.settings.admin_dev_tools_label")}</p>
             <Button
               type="button"
               variant="outline"
@@ -842,7 +844,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
             >
               {isResettingOnboarding && <Loader2 className="h-3.5 w-3.5 animate-spin ml-2" />}
               <RefreshCw className="h-3.5 w-3.5 ml-2" />
-              אפס Onboarding - עבור לאשף מחדש
+              {t("dash.settings.reset_onboarding_button")}
             </Button>
           </div>
         )}
@@ -853,6 +855,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
 // ── AccountSection: email + password change (separate from business form) ─────
 function AccountSection() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -866,10 +869,10 @@ function AccountSection() {
     try {
       const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
       if (error) throw error;
-      toast({ title: "נשלח אימות", description: "שלחנו לינק אימות לכתובת החדשה. לחצו עליו כדי לאשר את השינוי." });
+      toast({ title: t("dash.settings.email_change_sent_title"), description: t("dash.settings.email_change_sent_desc") });
       setNewEmail("");
     } catch (err: any) {
-      toast({ title: "שגיאה", description: err.message || "לא הצלחנו לעדכן אימייל", variant: "destructive" });
+      toast({ title: t("dash.settings.error_generic"), description: err.message || t("dash.settings.error_update_email"), variant: "destructive" });
     } finally {
       setIsSavingEmail(false);
     }
@@ -878,22 +881,22 @@ function AccountSection() {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword.length < 6) {
-      toast({ title: "סיסמה קצרה מדי", description: "הסיסמה חייבת להכיל לפחות 6 תווים.", variant: "destructive" });
+      toast({ title: t("dash.settings.error_password_too_short_title"), description: t("dash.settings.error_password_too_short_desc"), variant: "destructive" });
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast({ title: "סיסמאות לא תואמות", description: "וודאו שאתם מקלידים את אותה סיסמה פעמיים.", variant: "destructive" });
+      toast({ title: t("dash.settings.error_passwords_mismatch_title"), description: t("dash.settings.error_passwords_mismatch_desc"), variant: "destructive" });
       return;
     }
     setIsSavingPassword(true);
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
-      toast({ title: "הסיסמה עודכנה", description: "הסיסמה שונתה בהצלחה." });
+      toast({ title: t("dash.settings.password_updated_title"), description: t("dash.settings.password_updated_desc") });
       setNewPassword("");
       setConfirmPassword("");
     } catch (err: any) {
-      toast({ title: "שגיאה", description: err.message || "לא הצלחנו לשנות סיסמה", variant: "destructive" });
+      toast({ title: t("dash.settings.error_generic"), description: err.message || t("dash.settings.error_update_password"), variant: "destructive" });
     } finally {
       setIsSavingPassword(false);
     }
@@ -901,42 +904,42 @@ function AccountSection() {
 
   return (
     <div className="space-y-3 border-t border-border pt-4 mt-2" dir="rtl">
-      <p className="text-sm font-semibold text-foreground">פרטי חשבון</p>
+      <p className="text-sm font-semibold text-foreground">{t("dash.settings.account_section_title")}</p>
 
       {/* Current email (read-only display) */}
       <div className="rounded-xl border border-border bg-muted/40 px-4 py-3 flex items-center justify-between">
         <div>
-          <p className="text-xs text-muted-foreground mb-0.5">אימייל נוכחי</p>
+          <p className="text-xs text-muted-foreground mb-0.5">{t("dash.settings.current_email_label")}</p>
           <p className="text-sm font-medium text-foreground">{user?.email}</p>
         </div>
       </div>
 
       {/* Change email */}
       <form onSubmit={handleEmailChange} className="space-y-2">
-        <Label htmlFor="new-email" className="text-xs text-muted-foreground">שינוי אימייל</Label>
+        <Label htmlFor="new-email" className="text-xs text-muted-foreground">{t("dash.settings.change_email_label")}</Label>
         <div className="flex gap-2">
           <Input
             id="new-email"
             type="email"
-            placeholder="כתובת אימייל חדשה"
+            placeholder={t("dash.settings.change_email_placeholder")}
             value={newEmail}
             onChange={e => setNewEmail(e.target.value)}
             className="flex-1 text-sm"
             dir="ltr"
           />
           <Button type="submit" variant="outline" size="sm" disabled={isSavingEmail || !newEmail.trim()}>
-            {isSavingEmail ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "שנה"}
+            {isSavingEmail ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("dash.settings.change_button")}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">ישלח אימות לכתובת החדשה לפני שהשינוי ייכנס לתוקף.</p>
+        <p className="text-xs text-muted-foreground">{t("dash.settings.change_email_help")}</p>
       </form>
 
       {/* Change password */}
       <form onSubmit={handlePasswordChange} className="space-y-2 pt-1">
-        <Label className="text-xs text-muted-foreground">שינוי סיסמה</Label>
+        <Label className="text-xs text-muted-foreground">{t("dash.settings.change_password_label")}</Label>
         <Input
           type="password"
-          placeholder="סיסמה חדשה (6 תווים לפחות)"
+          placeholder={t("dash.settings.new_password_placeholder")}
           value={newPassword}
           onChange={e => setNewPassword(e.target.value)}
           className="text-sm"
@@ -944,7 +947,7 @@ function AccountSection() {
         />
         <Input
           type="password"
-          placeholder="אישור סיסמה"
+          placeholder={t("dash.settings.confirm_password_placeholder")}
           value={confirmPassword}
           onChange={e => setConfirmPassword(e.target.value)}
           className="text-sm"
@@ -952,7 +955,7 @@ function AccountSection() {
         />
         <Button type="submit" variant="outline" size="sm" className="w-full" disabled={isSavingPassword || !newPassword}>
           {isSavingPassword ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
-          עדכנו סיסמה
+          {t("dash.settings.update_password_button")}
         </Button>
       </form>
     </div>

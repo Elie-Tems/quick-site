@@ -9,6 +9,7 @@ import { useBusinessUsage } from "@/hooks/useBusinessUsage";
 import { ImageUploadBlocker, ImageUploadWarning, ImageUsageMeter } from "./ImageUploadBlocker";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface Banner {
   id: string;
@@ -30,6 +31,7 @@ interface DashboardBannersProps {
 }
 
 const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSubscription }: DashboardBannersProps) => {
+  const { t } = useLanguage();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [showBlockerDialog, setShowBlockerDialog] = useState(false);
@@ -103,7 +105,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
   };
 
   const handleDelete = (bannerId: string) => {
-    if (confirm('האם למחוק את הבאנר?')) {
+    if (confirm(t("dash.banners.confirm_delete"))) {
       onBannersChange(banners.filter(b => b.id !== bannerId));
     }
   };
@@ -112,7 +114,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
     const file = e.target.files?.[0];
     if (!file || !businessId) return;
     if (!file.type.startsWith('image/')) {
-      toast.error('נא לבחור קובץ תמונה');
+      toast.error(t("dash.banners.err_select_image"));
       return;
     }
     if (usageStatus?.imageUploadBlocked) {
@@ -130,10 +132,10 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
       if (error) throw error;
       const { data } = supabase.storage.from('business-assets').getPublicUrl(filePath);
       setFormData(prev => ({ ...prev, imageUrl: data.publicUrl }));
-      toast.success('התמונה הועלתה');
+      toast.success(t("dash.banners.image_uploaded"));
     } catch (err) {
       console.error(err);
-      toast.error('שגיאה בהעלאת התמונה');
+      toast.error(t("dash.banners.err_upload_image"));
     } finally {
       setIsUploadingImage(false);
       if (bannerImageInputRef.current) bannerImageInputRef.current.value = '';
@@ -167,25 +169,25 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
             <X className="h-5 w-5" />
           </button>
           <h1 className="text-xl font-bold text-foreground">
-            {editingBanner ? 'עריכת באנר' : 'הוספת באנר'}
+            {editingBanner ? t("dash.banners.edit_banner_title") : t("dash.banners.add_banner_title")}
           </h1>
         </div>
 
         <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="internalTitle">שם הבאנר (לשימוש פנימי) *</Label>
+            <Label htmlFor="internalTitle">{t("dash.banners.internal_title_label")}</Label>
             <Input
               id="internalTitle"
               value={formData.internalTitle}
               onChange={(e) => setFormData({ ...formData, internalTitle: e.target.value })}
-              placeholder="לדוגמה: באנר מבצע קיץ"
+              placeholder={t("dash.banners.internal_title_placeholder")}
               required
             />
-            <p className="text-xs text-muted-foreground">שם לזיהוי הבאנר בלוח הניהול בלבד - לא מוצג ללקוחות.</p>
+            <p className="text-xs text-muted-foreground">{t("dash.banners.internal_title_help")}</p>
           </div>
 
           <div className="space-y-2">
-            <Label>תמונה *</Label>
+            <Label>{t("dash.banners.image_label")}</Label>
             
             {/* Always-visible quota meter + near-limit warning */}
             <ImageUsageMeter
@@ -229,7 +231,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
                 <Upload className={`h-8 w-8 mx-auto mb-2 ${usageStatus?.imageUploadBlocked ? 'text-destructive/50' : 'text-muted-foreground'}`} />
               )}
               <p className={`text-sm ${usageStatus?.imageUploadBlocked ? 'text-destructive' : 'text-muted-foreground'}`}>
-                {usageStatus?.imageUploadBlocked ? 'מכסת התמונות מלאה - לחצו לשדרוג' : 'לחצו להעלאת תמונה או הזינו URL למטה'}
+                {usageStatus?.imageUploadBlocked ? t("dash.banners.quota_full") : t("dash.banners.upload_hint")}
               </p>
               <Input
                 type="url"
@@ -241,7 +243,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
                   }
                   setFormData({ ...formData, imageUrl: e.target.value });
                 }}
-                placeholder="או הזן URL לתמונה"
+                placeholder={t("dash.banners.image_url_placeholder")}
                 className="mt-3"
                 dir="ltr"
                 required
@@ -252,33 +254,33 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="text">טקסט (אופציונלי)</Label>
+            <Label htmlFor="text">{t("dash.banners.text_label")}</Label>
             <Textarea
               id="text"
               value={formData.text}
               onChange={(e) => setFormData({ ...formData, text: e.target.value })}
-              placeholder="טקסט שיוצג על הבאנר"
+              placeholder={t("dash.banners.text_placeholder")}
               rows={2}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="ctaText">CTA טקסט</Label>
+              <Label htmlFor="ctaText">{t("dash.banners.cta_text_label")}</Label>
               <Input
                 id="ctaText"
                 value={formData.ctaText}
                 onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
-                placeholder="לדוגמה: לצפייה"
+                placeholder={t("dash.banners.cta_text_placeholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ctaTarget">CTA יעד</Label>
+              <Label htmlFor="ctaTarget">{t("dash.banners.cta_target_label")}</Label>
               <Input
                 id="ctaTarget"
                 value={formData.ctaTarget}
                 onChange={(e) => setFormData({ ...formData, ctaTarget: e.target.value })}
-                placeholder="#products או URL"
+                placeholder={t("dash.banners.cta_target_placeholder")}
                 dir="ltr"
               />
             </div>
@@ -286,7 +288,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startDate">תאריך התחלה</Label>
+              <Label htmlFor="startDate">{t("dash.banners.start_date_label")}</Label>
               <Input
                 id="startDate"
                 type="date"
@@ -296,7 +298,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="endDate">תאריך סיום</Label>
+              <Label htmlFor="endDate">{t("dash.banners.end_date_label")}</Label>
               <Input
                 id="endDate"
                 type="date"
@@ -308,7 +310,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
           </div>
 
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-            <Label htmlFor="active" className="cursor-pointer">באנר פעיל</Label>
+            <Label htmlFor="active" className="cursor-pointer">{t("dash.banners.active_label")}</Label>
             <Switch
               id="active"
               checked={formData.active}
@@ -318,10 +320,10 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" className="flex-1">
-              {editingBanner ? 'שמרו שינויים' : 'הוסיפו באנר'}
+              {editingBanner ? t("dash.banners.save_changes") : t("dash.banners.add_banner_submit")}
             </Button>
             <Button type="button" variant="outline" onClick={resetForm}>
-              ביטול
+              {t("dash.banners.cancel")}
             </Button>
           </div>
         </form>
@@ -333,19 +335,19 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">באנרים</h1>
+        <h1 className="text-2xl font-bold text-foreground">{t("dash.banners.title")}</h1>
         <Button onClick={openAddForm} className="gap-1.5">
           <Plus className="h-4 w-4" />
-          הוסף באנר
+          {t("dash.banners.add_banner_btn")}
         </Button>
       </div>
 
       {banners.length === 0 ? (
         <div className="text-center py-12 bg-muted/30 rounded-xl">
           <ImageIcon className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">עדיין אין באנרים</p>
+          <p className="text-muted-foreground mb-4">{t("dash.banners.empty_state")}</p>
           <Button onClick={openAddForm} variant="outline">
-            הוסף באנר ראשון
+            {t("dash.banners.add_first_banner")}
           </Button>
         </div>
       ) : (
@@ -367,7 +369,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
                   <div className="flex items-center gap-1.5">
                     <div className={`w-2 h-2 rounded-full ${banner.active ? 'bg-green-500' : 'bg-gray-300'}`} />
                     <span className="text-xs text-muted-foreground">
-                      {banner.active ? 'פעיל' : 'לא פעיל'}
+                      {banner.active ? t("dash.banners.active") : t("dash.banners.inactive")}
                     </span>
                   </div>
                 </div>
@@ -382,7 +384,7 @@ const DashboardBanners = ({ banners, onBannersChange, businessId, onNavigateToSu
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => openEditForm(banner)} className="flex-1 gap-1.5">
                     <Pencil className="h-3.5 w-3.5" />
-                    עריכה
+                    {t("dash.banners.edit_btn")}
                   </Button>
                   <Button 
                     variant="outline" 
