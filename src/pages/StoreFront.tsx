@@ -889,9 +889,14 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
 
   const FOOD_CATEGORIES: string[] = ['restaurant', 'cafe', 'bakery', 'bar', 'fast_food', 'food'];
 
-  // Pick layout component based on template layoutId, with auto-detection for food businesses
+  // Pick layout component based on template layoutId, with auto-detection for food businesses.
+  // getTemplate() always resolves to a real layoutId (defaults to 'classic' when no
+  // template_id is saved), so template?.layoutId is never falsy - the food-category
+  // auto-detect must run whenever the merchant never explicitly chose a template,
+  // not merely when template?.layoutId happens to be unset.
+  const hasExplicitTemplate = !!(previewTemplateId ?? (business as any)?.template_id);
   const LayoutComponent = (() => {
-    let layoutId = template?.layoutId
+    let layoutId = (hasExplicitTemplate ? template?.layoutId : undefined)
       ?? (businessCategory && FOOD_CATEGORIES.includes(businessCategory) ? 'restaurant' : undefined)
       ?? getDefaultLayout(business);
     // A lead/donation vertical (real estate, nonprofit, synagogue) must NEVER render a

@@ -91,6 +91,21 @@ Deno.serve(async (req) => {
     .in("id", items.map((i) => i.product_id));
   if (!products?.length) return json({ error: "Products not found" }, 400);
 
+  // A client-supplied variant_id must actually belong to the product/business being
+  // ordered from before it's trusted to decrement stock (this is a public,
+  // unauthenticated endpoint - otherwise anyone could pass any variant_id and drain
+  // another merchant's stock on an unrelated order).
+  const requestedVariantIds = [...new Set(items.map((i) => i.variant_id).filter(Boolean))] as string[];
+  const validVariantProductId = new Map<string, string>();
+  if (requestedVariantIds.length) {
+    const { data: variants } = await admin
+      .from("product_variants")
+      .select("id, product_id")
+      .eq("business_id", businessId)
+      .in("id", requestedVariantIds);
+    for (const v of variants ?? []) validVariantProductId.set(v.id, v.product_id);
+  }
+
   const priceOf = (p: any) => (p.is_on_sale && p.sale_price != null ? Number(p.sale_price) : Number(p.price));
   let subtotal = 0;
   const orderItems: { product_id: string; product_name: string; price_at_order: number; quantity: number; cost_at_order: number | null; variant_id: string | null; variant_color: string | null; variant_size: string | null }[] = [];
@@ -103,9 +118,10 @@ Deno.serve(async (req) => {
     subtotal += unit * qty;
     // Snapshot the cost so historical profit stays accurate if cost changes later.
     const cost = (p as any).cost_price != null ? Number((p as any).cost_price) : null;
+    const verifiedVariantId = line.variant_id && validVariantProductId.get(line.variant_id) === p.id ? line.variant_id : null;
     orderItems.push({
       product_id: p.id, product_name: p.name, price_at_order: unit, quantity: qty, cost_at_order: cost,
-      variant_id: line.variant_id ?? null, variant_color: line.variant_color ?? null, variant_size: line.variant_size ?? null,
+      variant_id: verifiedVariantId, variant_color: line.variant_color ?? null, variant_size: line.variant_size ?? null,
     });
   }
   if (!orderItems.length) return json({ error: "No valid items" }, 400);
