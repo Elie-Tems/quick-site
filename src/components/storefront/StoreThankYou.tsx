@@ -6,12 +6,14 @@ interface StoreThankYouProps {
   paymentSuccess?: boolean;
   onContinueShopping: () => void;
   businessPhone?: string;
+  orderId?: string;
 }
 
-const StoreThankYou = ({ 
-  hasPayment, 
-  paymentSuccess = true, 
-  onContinueShopping 
+const StoreThankYou = ({
+  hasPayment,
+  paymentSuccess = true,
+  onContinueShopping,
+  orderId,
 }: StoreThankYouProps) => {
   return (
     <div className="fixed inset-0 z-50 bg-background flex items-center justify-center">
@@ -48,10 +50,11 @@ const StoreThankYou = ({
          
         </div>
 
-        {/* Order Number (if available) */}
-        <p className="text-sm text-muted-foreground mt-8">
-          שמרו את העמוד הזה לצורך מעקב
-        </p>
+        {orderId && (
+          <p className="text-sm text-muted-foreground mt-8 font-mono">
+            מספר הזמנה: <span className="font-semibold text-foreground">{orderId.slice(0, 8).toUpperCase()}</span>
+          </p>
+        )}
       </div>
     </div>
   );

@@ -85,11 +85,57 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     });
   }, [isUnpublishedError]);
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(`cart_${slug}`);
+      return saved ? (JSON.parse(saved) as CartItem[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null);
+
+  // Persist cart to localStorage so a refresh doesn't lose items.
+  useEffect(() => {
+    if (!slug) return;
+    try {
+      if (cartItems.length === 0) {
+        localStorage.removeItem(`cart_${slug}`);
+      } else {
+        localStorage.setItem(`cart_${slug}`, JSON.stringify(cartItems));
+      }
+    } catch { /* storage may be unavailable */ }
+  }, [cartItems, slug]);
+
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [viewState, setViewState] = useState<ViewState>('shopping');
   // Hosted payment page URL, shown in an on-site iframe so the customer stays on Siango.
   const [paymentIframeUrl, setPaymentIframeUrl] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
+  // Fallback: if the iframe is still blank after 5 s (gateway refuses to be framed),
+  // open the payment page in a new tab so the customer can still pay.
+  useEffect(() => {
+    if (!paymentIframeUrl) return;
+    const t = setTimeout(() => {
+      try {
+        const doc = iframeRef.current?.contentDocument;
+        // If the iframe is empty (blocked by X-Frame-Options / CSP) the document will
+        // have no body content OR the access will throw (cross-origin) — either way we
+        // treat it as a load failure and fall back to a new tab.
+        const empty = !doc || (doc.body?.innerHTML?.trim() ?? "") === "";
+        if (empty) {
+          window.open(paymentIframeUrl, "_blank", "noopener,noreferrer");
+          setPaymentIframeUrl(null);
+          toast.info("עמוד התשלום נפתח בחלון חדש.");
+        }
+      } catch {
+        // Cross-origin access denied → the iframe loaded something (the payment page
+        // itself, not a blank). This is the happy path — do nothing.
+      }
+    }, 5000);
+    return () => clearTimeout(t);
+  }, [paymentIframeUrl]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [ageVerified, setAgeVerified] = useState(false);
 
@@ -399,6 +445,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     const orderId = sp.get("order");
     if (p === "success") {
       setCartItems([]);
+      if (orderId) setLastOrderId(orderId);
       setViewState("thankyou");
       // The gateway's IPN can be late or never fire, leaving the order "pending" (no
       // emails, merchant sees no sale). Confirm server-side on return: payments-confirm
@@ -566,7 +613,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     }
 
     try {
-      await createOrder.mutateAsync({
+      const created = await createOrder.mutateAsync({
         order: {
           business_id: business.id,
           customer_name: data.fullName,
@@ -599,6 +646,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
       });
       trackEvent(business.id, "purchase", { value: orderTotal });
       gtm.purchase(orderTotal);
+      if (created?.order_id) setLastOrderId(created.order_id);
       setCartItems([]);
       setViewState('thankyou');
     } catch {
@@ -638,6 +686,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
               <ShieldCheck className="w-4 h-4" /> תשלום מאובטח - פרטי האשראי נשמרים אצל חברת הסליקה בלבד
             </div>
             <iframe
+              ref={iframeRef}
               title="תשלום מאובטח"
               src={paymentIframeUrl}
               className="w-full grow min-h-[min(80vh,820px)] border-0 bg-white"
@@ -693,6 +742,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
         hasPayment={business.payment_enabled ?? false}
         paymentSuccess={true}
         businessPhone={business.phone || undefined}
+        orderId={lastOrderId ?? undefined}
         onContinueShopping={handleContinueShopping}
       />
     );
