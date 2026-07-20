@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { StepNavigation } from "./StepNavigation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Props {
   data: OnboardingData;
@@ -23,16 +24,17 @@ interface GeneratedContent {
   promoText: string;
 }
 
-const PROGRESS_STEPS = ["מנתח תיאור...", "מייצר כותרות...", "כותב טקסט אודות...", "מסיים פרטים..."];
+const PROGRESS_KEYS = ["ob.ai.p0", "ob.ai.p1", "ob.ai.p2", "ob.ai.p3"];
 
 const METHODS = [
-  { id: "text" as Method,  icon: Wand2,     label: "תיאור חופשי",  color: "from-violet-500 to-purple-600" },
-  { id: "url" as Method,   icon: Globe,     label: "אתר קיים",     color: "from-sky-500 to-blue-600" },
-  { id: "file" as Method,  icon: FileText,  label: "קובץ / PDF",   color: "from-amber-500 to-orange-600" },
-  { id: "voice" as Method, icon: Mic,       label: "הקלטה קולית",  color: "from-rose-500 to-pink-600" },
+  { id: "text" as Method,  icon: Wand2,     labelKey: "ob.ai.m_text",  color: "from-violet-500 to-purple-600" },
+  { id: "url" as Method,   icon: Globe,     labelKey: "ob.ai.m_url",   color: "from-sky-500 to-blue-600" },
+  { id: "file" as Method,  icon: FileText,  labelKey: "ob.ai.m_file",  color: "from-amber-500 to-orange-600" },
+  { id: "voice" as Method, icon: Mic,       labelKey: "ob.ai.m_voice", color: "from-rose-500 to-pink-600" },
 ];
 
 const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
+  const { t } = useLanguage();
   const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Cancel the auto-advance timer when the user navigates away manually.
   const safeOnNext = useCallback(() => {
@@ -77,13 +79,13 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
 
   const generate = async (rawText: string) => {
     if (!rawText.trim() || rawText.trim().length < 10) {
-      toast({ title: "יש להזין תיאור של לפחות 10 תווים", variant: "destructive" });
+      toast({ title: t("ob.ai.err_short"), variant: "destructive" });
       return;
     }
     setIsGenerating(true);
     setProgressStep(0);
     const interval = setInterval(() => {
-      setProgressStep(p => Math.min(p + 1, PROGRESS_STEPS.length - 1));
+      setProgressStep(p => Math.min(p + 1, PROGRESS_KEYS.length - 1));
     }, 900);
     try {
       const { data: result, error } = await supabase.functions.invoke("generate-content", {
@@ -107,7 +109,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       setShowSuccess(true);
       autoAdvanceRef.current = setTimeout(() => { autoAdvanceRef.current = null; onNext(); }, 2000);
     } catch {
-      toast({ title: "שגיאה ביצירת תכנים", description: "נסו שוב", variant: "destructive" });
+      toast({ title: t("ob.ai.err_gen"), description: t("ob.ai.retry"), variant: "destructive" });
     } finally {
       clearInterval(interval);
       setIsGenerating(false);
@@ -138,7 +140,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       mr.start();
       setIsRecording(true);
     } catch {
-      toast({ title: "לא ניתן לגשת למיקרופון", variant: "destructive" });
+      toast({ title: t("ob.ai.err_mic"), variant: "destructive" });
     }
   };
 
@@ -165,7 +167,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
       setTranscript(text);
       await generate(text);
     } catch {
-      toast({ title: "שגיאה בתמלול", description: "נסו שוב", variant: "destructive" });
+      toast({ title: t("ob.ai.err_transcribe"), description: t("ob.ai.retry"), variant: "destructive" });
     } finally {
       setIsGenerating(false);
     }
@@ -183,13 +185,13 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
     <div className="space-y-5 relative">
       {/* Header */}
       <div className="text-center space-y-1">
-        <h2 className="text-2xl font-display font-bold pv-strong">ספרו לנו על העסק שלכם</h2>
-        <p className="text-sm pv-muted">נכתוב את כל הטקסטים לאתר - כותרות, אודות, תיאורים</p>
+        <h2 className="text-2xl font-display font-bold pv-strong">{t("ob.ai.title")}</h2>
+        <p className="text-sm pv-muted">{t("ob.ai.subtitle")}</p>
       </div>
 
       {/* Method selector */}
       <div className="grid grid-cols-4 gap-2">
-        {METHODS.map(({ id, icon: Icon, label, color }) => {
+        {METHODS.map(({ id, icon: Icon, labelKey, color }) => {
           const on = method === id;
           return (
             <button
@@ -204,7 +206,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
                 <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-90`} />
               )}
               <Icon className={`w-5 h-5 relative z-10 ${on ? "text-white" : ""}`} />
-              <span className="relative z-10">{label}</span>
+              <span className="relative z-10">{t(labelKey)}</span>
             </button>
           );
         })}
@@ -219,7 +221,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
             <textarea
               value={textInput}
               onChange={e => setTextInput(e.target.value)}
-              placeholder="ספרו מה מייחד אתכם, למי אתם מיועדים..."
+              placeholder={t("ob.ai.text_ph")}
               rows={4}
               maxLength={1000}
               className="w-full rounded-xl border border-border pv-surface2 pv-text placeholder:pv-faint text-sm p-4 resize-none focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40"
@@ -238,7 +240,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
               className="w-full h-12 rounded-xl border border-border pv-surface2 pv-text placeholder:pv-faint text-sm px-4 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40"
               dir="ltr"
             />
-            <p className="text-xs pv-faint">נשתמש בתוכן האתר לכתיבת הטקסטים</p>
+            <p className="text-xs pv-faint">{t("ob.ai.url_hint")}</p>
           </motion.div>
         )}
 
@@ -253,7 +255,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
                 className="w-full py-8 rounded-xl border-2 border-dashed border-amber-500/30 hover:border-amber-500/60 bg-amber-500/5 text-sm pv-muted flex flex-col items-center gap-2 transition-colors"
               >
                 <FileText className="w-8 h-8 text-amber-500/60" />
-                <span>לחצו לבחירת קובץ טקסט / PDF</span>
+                <span>{t("ob.ai.file_pick")}</span>
               </button>
             )}
           </motion.div>
@@ -264,7 +266,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
             {transcript ? (
               <div className="w-full rounded-xl border border-border pv-surface2 p-4 text-sm pv-text">{transcript}</div>
             ) : (
-              <p className="text-sm pv-muted">{isRecording ? "" : "לחצו על המיקרופון וספרו על העסק שלכם"}</p>
+              <p className="text-sm pv-muted">{isRecording ? "" : t("ob.ai.voice_prompt")}</p>
             )}
             <button
               type="button"
@@ -278,7 +280,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
             >
               {isRecording ? <MicOff className="w-7 h-7" /> : <Mic className="w-7 h-7" />}
             </button>
-            {isRecording && <p className="text-xs text-rose-400 font-medium">מקליט... לחצו שוב לסיום</p>}
+            {isRecording && <p className="text-xs text-rose-400 font-medium">{t("ob.ai.recording")}</p>}
           </motion.div>
         )}
       </AnimatePresence>
@@ -295,9 +297,9 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
         }`}
       >
         {isGenerating ? (
-          <><Loader2 className="w-4 h-4 animate-spin" />{PROGRESS_STEPS[progressStep]}</>
+          <><Loader2 className="w-4 h-4 animate-spin" />{t(PROGRESS_KEYS[progressStep])}</>
         ) : (
-          <><Sparkles className="w-4 h-4" />צרו לי את התכנים</>
+          <><Sparkles className="w-4 h-4" />{t("ob.ai.generate")}</>
         )}
       </button>
 
@@ -307,14 +309,14 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
           onClick={onNext}
           className="w-full text-center text-xs pv-faint hover:pv-muted underline underline-offset-4 transition-colors"
         >
-          דלגו לעכשיו - אפשר למלא ולערוך את כל הטקסטים מאזור הניהול
+          {t("ob.ai.skip")}
         </button>
       )}
 
       <StepNavigation
         onNext={safeOnNext}
         onBack={onBack}
-        nextLabel="הבא ←"
+        nextLabel={t("ob.common.next")}
         showPreview={false}
         showSave={false}
       />
@@ -343,7 +345,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
               transition={{ delay: 0.25 }}
               className="text-2xl font-display font-bold pv-strong mb-2"
             >
-              קיבלנו!
+              {t("ob.ai.success_title")}
             </motion.h3>
             <motion.p
               initial={{ opacity: 0 }}
@@ -351,7 +353,7 @@ const StepContentAI = ({ data, updateData, onNext, onBack }: Props) => {
               transition={{ delay: 0.4 }}
               className="text-sm pv-muted"
             >
-              האתר שלכם מוכן - עוד שניה רואים את זה חי
+              {t("ob.ai.success_sub")}
             </motion.p>
           </motion.div>
         )}
