@@ -12,6 +12,7 @@ import OnboardingPreview from "./OnboardingPreview";
 import { StoreTemplateId, getTemplate } from "@/lib/storeTemplates";
 import { getCategoryConfig } from "@/lib/categoryConfig";
 import { getPublishFeeIls } from "@/lib/publishPaymentConfig";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StepPublishProps {
   data: OnboardingData;
@@ -29,6 +30,7 @@ const BUSINESS_WEBHOOK_URL = import.meta.env.VITE_BUSINESS_WEBHOOK_URL || "";
 const skipPublishPayment = import.meta.env.VITE_PUBLISH_SKIP_PAYMENT === "true";
 
 const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreviewMode, existingBusinessId }: StepPublishProps) => {
+  const { t } = useLanguage();
   const [isPublishing, setIsPublishing] = useState(false);
   const [legalAcknowledged, setLegalAcknowledged] = useState(false);
   const { user } = useAuth();
@@ -45,8 +47,8 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(`https://${import.meta.env.VITE_WEBSITE_URL}/store/${businessSlug}`);
     toast({
-      title: "הכתובת הועתקה",
-      description: "הכתובת הועתקה ללוח",
+      title: t("ob.pub.copy_title"),
+      description: t("ob.pub.copy_desc"),
     });
   };
 
@@ -64,8 +66,8 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
     if (!user) {
       console.log('❌ User not authenticated, redirecting to login');
       toast({
-        title: "נדרשת התחברות",
-        description: "יש להתחבר כדי לפרסם את האתר",
+        title: t("ob.fin.err_login"),
+        description: t("ob.pub.login_desc"),
         variant: "destructive",
       });
       navigate("/login");
@@ -156,10 +158,10 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
 
       // Webhook will be sent only after payment is completed and user clicks "Publish" button
       toast({
-        title: "החנות נשמרה",
+        title: t("ob.fin.saved_title"),
         description: skipPublishPayment
-          ? "מעבירים להשלמה…"
-          : "ממשיכים לתשלום לפרסום בכתובת הציבורית",
+          ? t("ob.pub.saved_desc_skip")
+          : t("ob.pub.saved_desc_pay"),
       });
 
       console.log("✅ Business created successfully:", result);
@@ -177,8 +179,8 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
         if (sessErr) {
           console.error(sessErr);
           toast({
-            title: "שגיאה",
-            description: "לא ניתן לדלג על תשלום כעת",
+            title: t("ob.fin.err"),
+            description: t("ob.pub.err_skip_now"),
             variant: "destructive",
           });
           return;
@@ -188,17 +190,16 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
         });
         if (fin?.legalNotApproved) {
           toast({
-            title: "האתר נבנה! 🎉",
-            description: "נשאר רק לאשר את המסמכים המשפטיים (תקנון ומדיניות פרטיות) בדשבורד כדי לפרסם.",
+            title: t("ob.fin.built_title"),
+            description: t("ob.fin.built_desc"),
           });
           navigate("/dashboard");
           return;
         }
         if (finErr || !fin?.ok) {
           toast({
-            title: "דילוג תשלום (פיתוח)",
-            description:
-              "הגדירו ב-Supabase סוד ALLOW_UNVERIFIED_PUBLISH=true או השלימו תשלום רגיל.",
+            title: t("ob.pub.dev_skip_title"),
+            description: t("ob.pub.dev_skip_desc"),
             variant: "destructive",
           });
           navigate(`/publish-payment?businessId=${encodeURIComponent(result.businessId)}`, {
@@ -220,8 +221,8 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
         details: error.details,
       });
       toast({
-        title: "שגיאה בפרסום",
-        description: error.message || "משהו השתבש, נסה שוב",
+        title: t("ob.fin.err_publish"),
+        description: error.message || t("ob.fin.err_generic"),
         variant: "destructive",
       });
     } finally {
@@ -232,26 +233,26 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
   const summaryItems = [
     {
       icon: Globe,
-      label: "שם העסק",
+      label: t("ob.fin.s_name"),
       value: data.businessName,
     },
     {
       icon: Package,
-      label: "מוצרים",
-      value: `${data.products.length} מוצרים`,
+      label: t("ob.fin.products"),
+      value: `${data.products.length} ${t("ob.fin.products")}`,
     },
     {
       icon: CreditCard,
-      label: "סוג הזמנות",
-      value: data.orderType === "orders-payments" ? "הזמנות + סליקה" : "הזמנות בלבד",
+      label: t("ob.pub.order_type"),
+      value: data.orderType === "orders-payments" ? t("ob.pub.ot_pay") : t("ob.pub.ot_only"),
     },
   ];
 
   if (data.orderType === "orders-payments") {
     summaryItems.push({
       icon: Check,
-      label: "סליקה",
-      value: data.paymentConnected ? "מחובר" : "לא מחובר",
+      label: t("ob.pub.s_pay"),
+      value: data.paymentConnected ? t("ob.pub.connected") : t("ob.pub.not_connected"),
     });
   }
 
@@ -260,15 +261,13 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
       {/* Header */}
       <div className="text-center">
         <span className="inline-block text-sm font-semibold text-primary mb-3 px-3 py-1 rounded-full bg-primary/10">
-          שלב אחרון
+          {t("ob.pub.last_step")}
         </span>
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-          הכל מוכן לפרסום! 🎉
+          {t("ob.pub.ready")}
         </h1>
         <p className="text-muted-foreground">
-          {skipPublishPayment
-            ? "בדוק את הפרטים ולחץ להשלמה (מצב פיתוח ללא תשלום)"
-            : "בדוק את הפרטים - נשמור את החנות ונמשיך לתשלום לפרסום בכתובת הציבורית"}
+          {skipPublishPayment ? t("ob.pub.ready_sub_skip") : t("ob.pub.ready_sub_pay")}
         </p>
       </div>
 
@@ -277,9 +276,9 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
         <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-foreground">נדרשת התחברות</p>
+            <p className="font-medium text-foreground">{t("ob.fin.err_login")}</p>
             <p className="text-sm text-muted-foreground">
-              יש להתחבר כדי לפרסם את האתר. לחיצה על "האתר באוויר" תעביר אותך להתחברות.
+              {t("ob.pub.auth_warn_desc")}
             </p>
           </div>
         </div>
@@ -296,7 +295,7 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
       {/* Summary */}
       <div className="p-6 rounded-xl bg-card border border-border space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-foreground">סיכום</h3>
+          <h3 className="font-semibold text-foreground">{t("ob.pub.summary")}</h3>
           <Button
             variant="ghost"
             size="sm"
@@ -304,7 +303,7 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
             className="text-xs gap-1"
           >
             <Pencil className="w-3 h-3" />
-            ערוך
+            {t("ob.pub.edit")}
           </Button>
         </div>
         <div className="space-y-3">
@@ -324,7 +323,7 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
 
       {/* URL Preview */}
       <div className="p-6 rounded-xl gradient-border bg-card space-y-3">
-        <h3 className="font-semibold text-foreground">כתובת האתר שלך</h3>
+        <h3 className="font-semibold text-foreground">{t("oc.url_label")}</h3>
         <div className="flex items-center gap-3">
           <div className="flex-1 p-3 rounded-lg bg-surface-1 font-mono text-sm text-foreground" dir="ltr">
            {siteUrl}
@@ -339,17 +338,15 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          ניתן לחבר דומיין מותאם אישית בהמשך
+          {t("ob.pub.domain_hint")}
         </p>
       </div>
 
       {/* Legal acknowledgment - non-blocking baseline, but must be confirmed once */}
       <div className="p-5 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-3">
-        <h3 className="font-semibold text-foreground flex items-center gap-2">⚖️ נושאים משפטיים</h3>
+        <h3 className="font-semibold text-foreground flex items-center gap-2">{t("ob.pub.legal_title")}</h3>
         <p className="text-sm text-muted-foreground">
-          לאתר שלך נוצרו אוטומטית <strong className="text-foreground">תקנון</strong> ו
-          <strong className="text-foreground">מדיניות פרטיות</strong> (תבנית בסיסית). ניתן לערוך אותם בכל עת
-          בלוח הניהול תחת "מסמכים משפטיים".
+          {t("ob.pub.legal_body")}
         </p>
         <label className="flex items-start gap-3 cursor-pointer">
           <input
@@ -359,7 +356,7 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
             className="mt-1 w-4 h-4 accent-primary flex-shrink-0"
           />
           <span className="text-sm text-foreground">
-            קראתי והבנתי שהתקנון ומדיניות הפרטיות הם תבנית בלבד, ושהאחריות המשפטית לבדיקתם והתאמתם לעסק מוטלת עליי.
+            {t("ob.pub.legal_ack")}
           </span>
         </label>
       </div>
@@ -375,19 +372,19 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
         {isPublishing ? (
           <>
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            מפרסם את האתר...
+            {t("ob.pub.publishing")}
           </>
         ) : (
           <>
             <Rocket className="w-5 h-5" />
-            {skipPublishPayment ? "השלם (פיתוח)" : "שמור הכל"}
+            {skipPublishPayment ? t("ob.pub.complete_dev") : t("ob.pub.save_all")}
           </>
         )}
       </Button>
 
       {/* Reassurance: nothing here is final */}
       <p className="text-center text-sm text-muted-foreground mt-3">
-        ✏️ אל דאגה - תוכלו לערוך הכל (טקסטים, מוצרים, צבעים ועיצוב) גם אחרי שהאתר יהיה באוויר.
+        {t("ob.pub.reassure")}
       </p>
 
       {/* Navigation - just back button for this step */}
@@ -399,7 +396,7 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
           className="w-full gap-2"
         >
           <ArrowRight className="w-4 h-4" />
-          חזרה לעריכה
+          {t("ob.pub.back_edit")}
         </Button>
       </div>
     </div>
