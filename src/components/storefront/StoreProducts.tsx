@@ -11,6 +11,7 @@ import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import type { StoreTemplate } from "@/lib/storeTemplates";
 import ProductDetailModal from "./ProductDetailModal";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface ProductCustomField {
   id: string;
@@ -49,22 +50,25 @@ interface StoreProductsProps {
 type SortOption = "default" | "price_asc" | "price_desc" | "name_asc" | "name_desc";
 type FilterOption = "all" | "sale" | "new" | "hot";
 
-const SORT_LABELS: Record<SortOption, string> = {
-  default: "ברירת מחדל",
-  price_asc: "מחיר: נמוך לגבוה",
-  price_desc: "מחיר: גבוה לנמוך",
-  name_asc: "שם: א-ב",
-  name_desc: "שם: ת-א",
-};
+const getSortLabels = (t: (key: string) => string): Record<SortOption, string> => ({
+  default: t("store.products.sortDefault"),
+  price_asc: t("store.products.sortPriceAsc"),
+  price_desc: t("store.products.sortPriceDesc"),
+  name_asc: t("store.products.sortNameAsc"),
+  name_desc: t("store.products.sortNameDesc"),
+});
 
-const FILTER_LABELS: Record<FilterOption, string> = {
-  all: "הכל",
-  sale: "מבצעים",
-  new: "חדש",
-  hot: "חם",
-};
+const getFilterLabels = (t: (key: string) => string): Record<FilterOption, string> => ({
+  all: t("store.products.filterAll"),
+  sale: t("store.products.filterSale"),
+  new: t("store.products.filterNew"),
+  hot: t("store.products.filterHot"),
+});
 
 const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, productCardStyle, productGrid, sectionTitle }: StoreProductsProps) => {
+  const { t } = useLanguage();
+  const SORT_LABELS = useMemo(() => getSortLabels(t), [t]);
+  const FILTER_LABELS = useMemo(() => getFilterLabels(t), [t]);
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
@@ -119,7 +123,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
     onAddToCart(product);
     setAddedProductId(product.id);
     setTimeout(() => setAddedProductId(null), 1500);
-    toast.success(`${product.name} נוסף לסל`);
+    toast.success(`${product.name} ${t("store.products.addedToCart")}`);
   };
 
   // From the product modal: add, then close so the shopper sees it landed in the cart.
@@ -144,7 +148,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
         <div className="container">
           <div className="text-center py-32 border-t border-foreground/10">
             <Package className="h-10 w-10 text-muted-foreground/30 mx-auto mb-6" />
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">אין מוצרים זמינים כרגע</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">{t("store.products.noProductsAvailable")}</p>
           </div>
         </div>
       </section>
@@ -199,17 +203,17 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
           <div className="absolute top-3 right-3 flex flex-col gap-1.5">
             {product.isHot && (
               <span className="flex items-center gap-1 bg-orange-500 text-white text-[9px] font-bold tracking-[0.15em] uppercase px-2 py-1">
-                <Flame className="h-2.5 w-2.5" /> חם
+                <Flame className="h-2.5 w-2.5" /> {t("store.products.badgeHot")}
               </span>
             )}
             {product.isNew && (
               <span className="bg-foreground text-background text-[9px] font-bold tracking-[0.15em] uppercase px-2 py-1">
-                חדש
+                {t("store.products.badgeNew")}
               </span>
             )}
             {product.isSale && (
               <span className="bg-red-500 text-white text-[9px] font-bold tracking-[0.15em] uppercase px-2 py-1">
-                מבצע
+                {t("store.products.badgeSale")}
               </span>
             )}
           </div>
@@ -238,11 +242,11 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
             >
               {addedProductId === product.id ? (
                 <>
-                  <ShoppingBag className="h-3.5 w-3.5" /> נוסף לסל
+                  <ShoppingBag className="h-3.5 w-3.5" /> {t("store.products.addedToCart")}
                 </>
               ) : (
                 <>
-                  <Plus className="h-3.5 w-3.5" /> הוסף לסל
+                  <Plus className="h-3.5 w-3.5" /> {t("store.products.addToCart")}
                 </>
               )}
             </button>
@@ -293,7 +297,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
                 : "border-foreground/20 text-foreground hover:border-foreground"
             }`}
           >
-            {addedProductId === product.id ? "נוסף ✓" : "+ הוסף לסל"}
+            {addedProductId === product.id ? t("store.products.addedToCartShort") : t("store.products.addToCartMobile")}
           </button>
         </div>
       </article>
@@ -311,7 +315,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
             <div className="flex items-center gap-3 mb-6 md:mb-8">
               <div className="h-px flex-1 bg-foreground/10" />
               <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-[0.3em] uppercase text-orange-500">
-                <Flame className="h-3 w-3" /> מוצרים חמים
+                <Flame className="h-3 w-3" /> {t("store.products.hotProductsSection")}
               </span>
               <div className="h-px flex-1 bg-foreground/10" />
             </div>
@@ -356,9 +360,9 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
           {/* Title + count - שורה נפרדת במובייל */}
           <div className="flex items-baseline gap-2 flex-shrink-0">
             <h2 className="text-sm font-bold tracking-[0.15em] uppercase text-foreground whitespace-nowrap">
-              {sectionTitle || (hotProducts.length > 0 ? "כל המוצרים" : "המוצרים שלנו")}
+              {sectionTitle || (hotProducts.length > 0 ? t("store.products.allProducts") : t("store.products.ourProducts"))}
             </h2>
-            <span className="text-xs text-muted-foreground whitespace-nowrap">{displayedProducts.length} פריטים</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{displayedProducts.length} {t("store.products.itemsCount")}</span>
           </div>
 
           {/* Filter chips + sort - שורה שנייה במובייל, גלילה אופקית */}
@@ -370,12 +374,12 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="חיפוש מוצר..."
-                aria-label="חיפוש מוצר"
+                placeholder={t("store.products.searchPlaceholder")}
+                aria-label={t("store.products.searchAriaLabel")}
                 className="w-full h-9 rounded-md border border-foreground/15 bg-background pr-8 pl-7 text-sm focus:border-foreground/40 outline-none"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery("")} aria-label="נקה חיפוש" className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <button onClick={() => setSearchQuery("")} aria-label={t("store.products.clearSearchAriaLabel")} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   <X className="h-3.5 w-3.5" />
                 </button>
               )}
@@ -488,7 +492,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
               disabled={currentPage === 1}
               className="px-4 py-2 text-xs font-bold tracking-[0.15em] uppercase border border-foreground/20 text-foreground hover:bg-foreground hover:text-background transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-foreground"
             >
-              הקודם
+              {t("store.products.previousPage")}
             </button>
             
             <div className="flex items-center gap-1">
@@ -531,7 +535,7 @@ const StoreProducts = ({ products, onAddToCart, favoriteIds, onToggleFavorite, p
               disabled={currentPage === totalPages}
               className="px-4 py-2 text-xs font-bold tracking-[0.15em] uppercase border border-foreground/20 text-foreground hover:bg-foreground hover:text-background transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-foreground"
             >
-              הבא
+              {t("store.products.nextPage")}
             </button>
           </div>
         )}

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StoreAboutProps {
   aboutText: string;
@@ -7,24 +8,30 @@ interface StoreAboutProps {
 
 // When a customer gives only a line or two, pad it into a proper about section
 // so the page looks complete. They can always edit it from the dashboard.
-function enrichAbout(text: string, businessName: string): { headline: string; body: string } {
+function enrichAbout(
+  text: string,
+  businessName: string,
+  t: (key: string) => string
+): { headline: string; body: string } {
   const trimmed = text.trim();
+  const headline = t("store.about.heading").replace("{business}", businessName);
 
   if (trimmed.length >= 100) {
-    return { headline: `אודות ${businessName}`, body: trimmed };
+    return { headline, body: trimmed };
   }
 
   // Short text — treat it as a tagline and add a professional paragraph
-  const body = trimmed
-    + `\n\nאנחנו מאמינים בשירות אישי, מקצועי ואמין. הצוות של ${businessName} כאן בשבילכם בכל שאלה — מהפנייה הראשונה ועד לסיום השירות. נשמח להכיר, ליעץ ולעזור. פנו אלינו בכל עת.`;
+  const filler = t("store.about.filler_text").replace("{business}", businessName);
+  const body = `${trimmed}\n\n${filler}`;
 
-  return { headline: `אודות ${businessName}`, body };
+  return { headline, body };
 }
 
 const StoreAbout = ({ aboutText, businessName }: StoreAboutProps) => {
+  const { t } = useLanguage();
   if (!aboutText) return null;
 
-  const { headline, body } = enrichAbout(aboutText, businessName);
+  const { headline, body } = enrichAbout(aboutText, businessName, t);
 
   return (
     <section id="about" dir="rtl" className="py-16 md:py-24 border-t border-border bg-background">

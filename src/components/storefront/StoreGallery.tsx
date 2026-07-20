@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface GalleryImage {
   url: string;
@@ -15,6 +16,7 @@ const StoreGallery = ({
   accent: string;
   heading?: string;
 }) => {
+  const { t } = useLanguage();
   const [lightbox, setLightbox] = useState<GalleryImage | null>(null);
   if (!images?.length) return null;
 
@@ -24,7 +26,7 @@ const StoreGallery = ({
         <div className="text-center mb-5">
           <span className="inline-block h-1 w-12 rounded-full mb-3" style={{ background: accent }} />
           <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
-            {heading || "גלריה"}
+            {heading || t("store.gallery.heading")}
           </h2>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -37,7 +39,7 @@ const StoreGallery = ({
             >
               <img
                 src={img.url}
-                alt={img.caption || `תמונה ${i + 1}`}
+                alt={img.caption || `${t("store.gallery.image_alt")} ${i + 1}`}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
               {img.caption && (
@@ -57,13 +59,14 @@ const StoreGallery = ({
         >
           <button
             onClick={() => setLightbox(null)}
+            aria-label={t("store.gallery.close_label")}
             className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-white hover:bg-white/25"
           >
             <X className="w-5 h-5" />
           </button>
           <img
             src={lightbox.url}
-            alt={lightbox.caption || "תמונה"}
+            alt={lightbox.caption || t("store.gallery.image_alt")}
             className="max-w-full max-h-[85vh] rounded-xl object-contain"
             onClick={e => e.stopPropagation()}
           />

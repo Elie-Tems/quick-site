@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { useAccessibility } from "@/contexts/AccessibilityContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Banner {
   id: string;
@@ -18,6 +19,7 @@ interface StoreBannersProps {
 const StoreBanners = ({ banners }: StoreBannersProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { settings } = useAccessibility();
+  const { t } = useLanguage();
   const activeBanners = banners.slice(0, 5);
 
   const goToNext = useCallback(() => {
@@ -97,14 +99,14 @@ const StoreBanners = ({ banners }: StoreBannersProps) => {
             <>
               <button
                 onClick={goToNext}
-                aria-label="הבאנר הבא"
+                aria-label={t("store.banners.nextBannerAriaLabel")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-background transition-colors"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
               <button
                 onClick={goToPrev}
-                aria-label="הבאנר הקודם"
+                aria-label={t("store.banners.prevBannerAriaLabel")}
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-background transition-colors"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -119,7 +121,7 @@ const StoreBanners = ({ banners }: StoreBannersProps) => {
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index)}
-                  aria-label={`עבור לבאנר ${index + 1}`}
+                  aria-label={`${t("store.banners.goToBannerAriaLabel")} ${index + 1}`}
                   className={`h-px transition-all duration-300 focus:outline-none ${
                     index === currentIndex
                       ? "w-8 bg-white"
