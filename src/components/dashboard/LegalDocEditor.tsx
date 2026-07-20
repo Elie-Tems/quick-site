@@ -1,6 +1,7 @@
 import { Lock, Trash2, Plus, ChevronUp, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { LegalSection } from "@/lib/legalTemplates";
 
 /**
@@ -14,6 +15,7 @@ interface LegalDocEditorProps {
 }
 
 const LegalDocEditor = ({ sections, onChange }: LegalDocEditorProps) => {
+  const { t } = useLanguage();
   const update = (id: string, patch: Partial<LegalSection>) =>
     onChange(sections.map((s) => (s.id === id ? { ...s, ...patch } : s)));
 
@@ -30,7 +32,7 @@ const LegalDocEditor = ({ sections, onChange }: LegalDocEditorProps) => {
 
   const add = () => {
     const id = `section-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e4)}`;
-    onChange([...sections, { id, heading: "סעיף חדש", body: "" }]);
+    onChange([...sections, { id, heading: t("dash.legal.editor.new_section_heading"), body: "" }]);
   };
 
   return (
@@ -46,7 +48,9 @@ const LegalDocEditor = ({ sections, onChange }: LegalDocEditorProps) => {
             <>
               <div className="flex items-center gap-2 mb-2 text-amber-600 dark:text-amber-400">
                 <Lock className="w-4 h-4" />
-                <span className="text-sm font-semibold">{section.heading} (חובה - לא ניתן למחוק)</span>
+                <span className="text-sm font-semibold">
+                  {section.heading} {t("dash.legal.editor.locked_suffix")}
+                </span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">{section.body}</p>
             </>
@@ -57,16 +61,16 @@ const LegalDocEditor = ({ sections, onChange }: LegalDocEditorProps) => {
                   value={section.heading}
                   onChange={(e) => update(section.id, { heading: e.target.value })}
                   className="h-10 font-semibold"
-                  placeholder="כותרת הסעיף"
+                  placeholder={t("dash.legal.editor.heading_placeholder")}
                 />
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => move(index, -1)} title="העבר למעלה">
+                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => move(index, -1)} title={t("dash.legal.editor.move_up")}>
                     <ChevronUp className="w-4 h-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => move(index, 1)} title="העבר למטה">
+                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => move(index, 1)} title={t("dash.legal.editor.move_down")}>
                     <ChevronDown className="w-4 h-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => remove(section.id)} title="מחק סעיף">
+                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => remove(section.id)} title={t("dash.legal.editor.delete_section")}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -75,7 +79,7 @@ const LegalDocEditor = ({ sections, onChange }: LegalDocEditorProps) => {
                 value={section.body}
                 onChange={(e) => update(section.id, { body: e.target.value })}
                 rows={4}
-                placeholder="תוכן הסעיף..."
+                placeholder={t("dash.legal.editor.body_placeholder")}
                 className="w-full rounded-lg bg-background border border-border p-3 text-sm leading-relaxed focus:border-primary focus:outline-none resize-y"
               />
             </>
@@ -85,7 +89,7 @@ const LegalDocEditor = ({ sections, onChange }: LegalDocEditorProps) => {
 
       <Button type="button" variant="outline" onClick={add} className="w-full gap-2 border-dashed">
         <Plus className="w-4 h-4" />
-        הוספת סעיף
+        {t("dash.legal.editor.add_section")}
       </Button>
     </div>
   );

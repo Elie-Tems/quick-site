@@ -5,17 +5,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Props {
   businessId?: string;
 }
 
-const STYLES = [
-  { id: "modern",        label: "מודרני",       emoji: "🏙️" },
-  { id: "mediterranean", label: "ים תיכוני",    emoji: "🌿" },
-  { id: "classic",       label: "קלאסי",        emoji: "🏛️" },
-  { id: "industrial",    label: "תעשייתי",      emoji: "🔩" },
-  { id: "luxury",        label: "יוקרתי",       emoji: "✨" },
+const STYLE_IDS = [
+  { id: "modern",        key: "dash.vizstudio.style_modern",        emoji: "🏙️" },
+  { id: "mediterranean", key: "dash.vizstudio.style_mediterranean", emoji: "🌿" },
+  { id: "classic",       key: "dash.vizstudio.style_classic",       emoji: "🏛️" },
+  { id: "industrial",    key: "dash.vizstudio.style_industrial",    emoji: "🔩" },
+  { id: "luxury",        key: "dash.vizstudio.style_luxury",        emoji: "✨" },
 ];
 
 interface GeneratedImage {
@@ -26,6 +27,8 @@ interface GeneratedImage {
 }
 
 const DashboardVisualizationStudio = ({ businessId }: Props) => {
+  const { t } = useLanguage();
+  const STYLES = STYLE_IDS.map(s => ({ id: s.id, label: t(s.key), emoji: s.emoji }));
   const [type, setType] = useState<"exterior" | "interior">("exterior");
   const [style, setStyle] = useState("modern");
   const [brief, setBrief] = useState("");
@@ -56,7 +59,7 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
     setIsGenerating(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("לא מחובר");
+      if (!session) throw new Error(t("dash.vizstudio.not_logged_in"));
 
       let referenceImageBase64: string | undefined;
       let referenceImageMime: string | undefined;
@@ -83,12 +86,12 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
       );
 
       const json = await resp.json();
-      if (!json.success) throw new Error(json.error || "שגיאה ביצירת ההדמיה");
+      if (!json.success) throw new Error(json.error || t("dash.vizstudio.generate_error"));
 
       setResults(prev => [{ url: json.imageUrl, type, style, brief }, ...prev]);
-      toast.success("ההדמיה נוצרה בהצלחה!");
+      toast.success(t("dash.vizstudio.generate_success"));
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "שגיאה ביצירת ההדמיה");
+      toast.error(err instanceof Error ? err.message : t("dash.vizstudio.generate_error"));
     } finally {
       setIsGenerating(false);
     }
@@ -107,10 +110,10 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
       <div>
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
           <Images className="h-5 w-5 text-primary" />
-          סטודיו הדמיות
+          {t("dash.vizstudio.title")}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          יצירת הדמיות ריאליסטיות לפרויקטים — ניתן להעלות שרטוט וה-AI יהפוך אותו לתמונה שיווקית
+          {t("dash.vizstudio.subtitle")}
         </p>
       </div>
 
@@ -120,23 +123,23 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
 
           {/* Type toggle */}
           <div>
-            <Label className="!text-foreground mb-2 block">סוג הדמיה</Label>
+            <Label className="!text-foreground mb-2 block">{t("dash.vizstudio.type_label")}</Label>
             <div className="grid grid-cols-2 gap-2">
               {([
-                { id: "exterior", label: "חוץ", icon: Building2 },
-                { id: "interior", label: "פנים", icon: Sofa },
-              ] as const).map(t => (
+                { id: "exterior", label: t("dash.vizstudio.type_exterior"), icon: Building2 },
+                { id: "interior", label: t("dash.vizstudio.type_interior"), icon: Sofa },
+              ] as const).map(opt => (
                 <button
-                  key={t.id}
-                  onClick={() => setType(t.id)}
+                  key={opt.id}
+                  onClick={() => setType(opt.id)}
                   className={`flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-medium transition-colors ${
-                    type === t.id
+                    type === opt.id
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border text-muted-foreground hover:border-primary/40"
                   }`}
                 >
-                  <t.icon className="h-4 w-4" />
-                  {t.label}
+                  <opt.icon className="h-4 w-4" />
+                  {opt.label}
                 </button>
               ))}
             </div>
@@ -144,7 +147,7 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
 
           {/* Style */}
           <div>
-            <Label className="!text-foreground mb-2 block">סגנון אדריכלי</Label>
+            <Label className="!text-foreground mb-2 block">{t("dash.vizstudio.style_label")}</Label>
             <div className="flex flex-wrap gap-2">
               {STYLES.map(s => (
                 <button
@@ -165,13 +168,13 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
           {/* Brief */}
           <div>
             <Label htmlFor="brief" className="!text-foreground mb-1 block">
-              תיאור הפרויקט <span className="text-muted-foreground font-normal text-xs">(אופציונלי)</span>
+              {t("dash.vizstudio.brief_label")} <span className="text-muted-foreground font-normal text-xs">{t("dash.vizstudio.optional")}</span>
             </Label>
             <Textarea
               id="brief"
               value={brief}
               onChange={e => setBrief(e.target.value)}
-              placeholder="למשל: בניין 8 קומות בצפון תל אביב, חזית זכוכית וקונקרט, גינה ירוקה בכניסה..."
+              placeholder={t("dash.vizstudio.brief_placeholder")}
               className="resize-none"
               rows={3}
               dir="rtl"
@@ -181,7 +184,7 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
           {/* Reference file */}
           <div>
             <Label className="!text-foreground mb-1 block">
-              שרטוט / תוכנית <span className="text-muted-foreground font-normal text-xs">(אופציונלי — ה-AI יתבסס עליו)</span>
+              {t("dash.vizstudio.reference_label")} <span className="text-muted-foreground font-normal text-xs">{t("dash.vizstudio.optional_ai_based")}</span>
             </Label>
             <input
               ref={fileInputRef}
@@ -192,7 +195,7 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
             />
             {referencePreview ? (
               <div className="relative rounded-xl overflow-hidden border border-border">
-                <img src={referencePreview} alt="שרטוט" className="w-full max-h-48 object-contain bg-muted" />
+                <img src={referencePreview} alt={t("dash.vizstudio.reference_alt")} className="w-full max-h-48 object-contain bg-muted" />
                 <button
                   onClick={clearReference}
                   className="absolute top-2 left-2 w-7 h-7 rounded-full bg-background/90 flex items-center justify-center hover:bg-background transition-colors shadow"
@@ -206,8 +209,8 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
                 className="w-full border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors"
               >
                 <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">גרור קובץ או לחץ להעלאה</p>
-                <p className="text-xs text-muted-foreground/60 mt-1">תוכנית קומה, חזית, סקיצה</p>
+                <p className="text-sm text-muted-foreground">{t("dash.vizstudio.upload_hint")}</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">{t("dash.vizstudio.upload_subhint")}</p>
               </button>
             )}
           </div>
@@ -218,25 +221,25 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
             className="w-full h-12 text-base gap-2"
           >
             {isGenerating
-              ? <><Loader2 className="h-5 w-5 animate-spin" />יוצר הדמיה...</>
-              : <><Wand2 className="h-5 w-5" />צור הדמיה</>
+              ? <><Loader2 className="h-5 w-5 animate-spin" />{t("dash.vizstudio.generating")}</>
+              : <><Wand2 className="h-5 w-5" />{t("dash.vizstudio.generate_btn")}</>
             }
           </Button>
 
           {isGenerating && (
             <p className="text-center text-xs text-muted-foreground animate-pulse">
-              ה-AI בונה את ההדמיה, זה לוקח כ-15-30 שניות...
+              {t("dash.vizstudio.generating_hint")}
             </p>
           )}
         </div>
 
         {/* Right: results */}
         <div className="space-y-3">
-          <Label className="!text-foreground block">הדמיות שנוצרו</Label>
+          <Label className="!text-foreground block">{t("dash.vizstudio.results_label")}</Label>
           {results.length === 0 ? (
             <div className="border-2 border-dashed border-border rounded-xl p-12 text-center">
               <Images className="h-10 w-10 mx-auto mb-3 text-muted-foreground/30" />
-              <p className="text-sm text-muted-foreground">ההדמיות יופיעו כאן</p>
+              <p className="text-sm text-muted-foreground">{t("dash.vizstudio.empty_results")}</p>
             </div>
           ) : (
             <div className="grid gap-3">
@@ -244,7 +247,7 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
                 <div key={i} className="group relative rounded-xl overflow-hidden border border-border bg-muted">
                   <img
                     src={img.url}
-                    alt="הדמיה"
+                    alt={t("dash.vizstudio.result_alt")}
                     className="w-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
                     style={{ aspectRatio: "3/2" }}
                     onClick={() => setLightbox(img.url)}
@@ -253,13 +256,13 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
                     <button
                       onClick={() => handleDownload(img.url)}
                       className="w-8 h-8 rounded-lg bg-background/90 backdrop-blur flex items-center justify-center shadow hover:bg-background transition-colors"
-                      title="הורד"
+                      title={t("dash.vizstudio.download_title")}
                     >
                       <Download className="h-4 w-4" />
                     </button>
                   </div>
                   <div className="px-3 py-2 flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="capitalize">{img.type === "exterior" ? "חוץ" : "פנים"}</span>
+                    <span className="capitalize">{img.type === "exterior" ? t("dash.vizstudio.type_exterior") : t("dash.vizstudio.type_interior")}</span>
                     <span>·</span>
                     <span>{STYLES.find(s => s.id === img.style)?.label}</span>
                     {img.brief && <><span>·</span><span className="truncate">{img.brief}</span></>}
@@ -285,7 +288,7 @@ const DashboardVisualizationStudio = ({ businessId }: Props) => {
           </button>
           <img
             src={lightbox}
-            alt="הדמיה"
+            alt={t("dash.vizstudio.result_alt")}
             className="max-w-full max-h-full rounded-xl object-contain"
             onClick={e => e.stopPropagation()}
           />

@@ -6,6 +6,7 @@ import { Image as ImageIcon, ImagePlus, Coins, Gift, Download, Package, ArrowLef
 import { useAICredits, useAIImageJobs, useGrantFreeCredits } from "@/hooks/useAIImageEngine";
 import { toast } from "@/hooks/use-toast";
 import AICreditPackages from "./AICreditPackages";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DashboardAIImagesProps {
   businessId?: string;
@@ -18,6 +19,7 @@ interface DashboardAIImagesProps {
 // description and image together - the advanced styling engine (on-model, skin
 // tone, studio backgrounds) is available there via the product image studio.
 const DashboardAIImages = ({ businessId, onNavigateToProducts }: DashboardAIImagesProps) => {
+  const { t } = useLanguage();
   const { data: credits, isLoading: creditsLoading, refetch: refetchCredits } = useAICredits(businessId);
   const { data: jobs } = useAIImageJobs(businessId);
   const grantFreeCredits = useGrantFreeCredits();
@@ -39,20 +41,20 @@ const DashboardAIImages = ({ businessId, onNavigateToProducts }: DashboardAIImag
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <ImagePlus className="h-6 w-6 text-primary" />
-            תמונות AI - קרדיטים
+            {t("dash.aiimages.title")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">כל יצירת תמונה עולה קרדיט אחד. כאן מנהלים את היתרה ורוכשים חבילות.</p>
+          <p className="text-sm text-muted-foreground mt-0.5">{t("dash.aiimages.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           {!freeCreditsGranted && !creditsLoading && (
             <Badge variant="outline" className="border-green-500 text-green-600 gap-1">
-              <Gift className="h-3 w-3" /> חינם
+              <Gift className="h-3 w-3" /> {t("dash.aiimages.free_badge")}
             </Badge>
           )}
           <div className="flex items-center gap-1.5 bg-muted rounded-lg px-3 py-2">
             <Coins className="h-4 w-4 text-primary" />
             <span className="font-semibold text-sm text-black dark:text-white">{creditsLoading ? "..." : creditsRemaining}</span>
-            <span className="text-xs text-muted-foreground">קרדיטים</span>
+            <span className="text-xs text-muted-foreground">{t("dash.aiimages.credits_label")}</span>
           </div>
         </div>
       </div>
@@ -68,13 +70,13 @@ const DashboardAIImages = ({ businessId, onNavigateToProducts }: DashboardAIImag
               <Package className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-foreground">יש לכם קרדיטים? ממשו אותם במוצרים</h3>
+              <h3 className="font-semibold text-foreground">{t("dash.aiimages.redeem_title")}</h3>
               <p className="text-sm text-muted-foreground">
-                נכנסים למוצר ויוצרים או משדרגים את התמונה לצד עריכת השם והתיאור.
+                {t("dash.aiimages.redeem_desc")}
               </p>
             </div>
             <Button onClick={onNavigateToProducts} className="gap-2 shrink-0">
-              עברו למוצרים <ArrowLeft className="h-4 w-4" />
+              {t("dash.aiimages.redeem_cta")} <ArrowLeft className="h-4 w-4" />
             </Button>
           </CardContent>
         </Card>
@@ -85,7 +87,7 @@ const DashboardAIImages = ({ businessId, onNavigateToProducts }: DashboardAIImag
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <ImageIcon className="h-5 w-5" /> תמונות שנוצרו לאחרונה
+              <ImageIcon className="h-5 w-5" /> {t("dash.aiimages.recent_title")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -99,9 +101,9 @@ const DashboardAIImages = ({ businessId, onNavigateToProducts }: DashboardAIImag
                       job.status === "processing" ? "bg-blue-500 hover:bg-blue-500" :
                       job.status === "failed" ? "bg-red-500 hover:bg-red-500" : "bg-gray-500"
                     }`}>
-                      {job.status === "completed" ? "✓ הושלם" :
-                        job.status === "processing" ? "⏳ מעבד" :
-                        job.status === "failed" ? "✗ נכשל" : "ממתין"}
+                      {job.status === "completed" ? `✓ ${t("dash.aiimages.status_completed")}` :
+                        job.status === "processing" ? `⏳ ${t("dash.aiimages.status_processing")}` :
+                        job.status === "failed" ? `✗ ${t("dash.aiimages.status_failed")}` : t("dash.aiimages.status_pending")}
                     </Badge>
                   </div>
                   {job.status === "completed" && job.generated_image_url && (
@@ -115,12 +117,12 @@ const DashboardAIImages = ({ businessId, onNavigateToProducts }: DashboardAIImag
                           a.href = url; a.download = `ai-image-${job.id}.png`;
                           document.body.appendChild(a); a.click();
                           window.URL.revokeObjectURL(url); document.body.removeChild(a);
-                          toast({ title: "התמונה הורדה בהצלחה" });
+                          toast({ title: t("dash.aiimages.download_success") });
                         } catch {
-                          toast({ title: "שגיאה בהורדה", variant: "destructive" });
+                          toast({ title: t("dash.aiimages.download_error"), variant: "destructive" });
                         }
                       }}>
-                        <Download className="h-4 w-4 ml-1" /> הורד
+                        <Download className="h-4 w-4 ml-1" /> {t("dash.aiimages.download_button")}
                       </Button>
                     </div>
                   )}

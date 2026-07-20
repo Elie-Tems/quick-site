@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Coins, CreditCard, Loader2 } from "lucide-react";
 import { AI_CREDIT_PACKAGES } from "@/lib/pricingConfig";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AICreditPackagesProps {
   businessId?: string;
@@ -14,6 +15,7 @@ interface AICreditPackagesProps {
 }
 
 const AICreditPackages = ({ businessId, currentCredits, onPurchaseComplete }: AICreditPackagesProps) => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [isPurchasing, setIsPurchasing] = useState(false);
@@ -21,8 +23,8 @@ const AICreditPackages = ({ businessId, currentCredits, onPurchaseComplete }: AI
   const handlePurchase = async (packageId: string) => {
     if (!businessId) {
       toast({
-        title: "שגיאה",
-        description: "לא נמצא מזהה עסק",
+        title: t("dash.aiimages.credits.error_title"),
+        description: t("dash.aiimages.credits.error_no_business"),
         variant: "destructive",
       });
       return;
@@ -40,10 +42,10 @@ const AICreditPackages = ({ businessId, currentCredits, onPurchaseComplete }: AI
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Coins className="h-5 w-5 text-primary" />
-          חבילות קרדיטים
+          {t("dash.aiimages.credits.title")}
         </CardTitle>
         <CardDescription>
-          בחר חבילה שמתאימה לך • הקרדיטים לא פגים לעולם
+          {t("dash.aiimages.credits.description")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -60,7 +62,7 @@ const AICreditPackages = ({ businessId, currentCredits, onPurchaseComplete }: AI
             >
               {pkg.recommended && (
                 <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary">
-                  מומלץ
+                  {t("dash.aiimages.credits.recommended_badge")}
                 </Badge>
               )}
               <CardContent className="pt-6 text-center space-y-4">
@@ -68,23 +70,23 @@ const AICreditPackages = ({ businessId, currentCredits, onPurchaseComplete }: AI
                   <h3 className="font-bold text-lg">{pkg.name}</h3>
                   <p className="text-3xl font-bold text-primary mt-2">
                     {pkg.credits}
-                    <span className="text-sm font-normal text-muted-foreground mr-1">קרדיטים</span>
+                    <span className="text-sm font-normal text-muted-foreground mr-1">{t("dash.aiimages.credits.unit")}</span>
                   </p>
                 </div>
-                
+
                 <div className="text-2xl font-bold">
                   {pkg.label}
-                  <span className="text-xs font-normal text-muted-foreground block">+ מע״מ</span>
+                  <span className="text-xs font-normal text-muted-foreground block">{t("dash.aiimages.credits.vat_suffix")}</span>
                 </div>
 
                 <ul className="text-sm text-muted-foreground space-y-1">
                   <li className="flex items-center gap-2 justify-center">
                     <Check className="h-4 w-4 text-green-500" />
-                    שדרוג ויצירת {pkg.credits} תמונות
+                    {t("dash.aiimages.credits.feature_upgrade_prefix")} {pkg.credits} {t("dash.aiimages.credits.feature_upgrade_suffix")}
                   </li>
                   <li className="flex items-center gap-2 justify-center">
                     <Check className="h-4 w-4 text-green-500" />
-                    ללא תאריך תפוגה
+                    {t("dash.aiimages.credits.feature_no_expiry")}
                   </li>
                 </ul>
 
@@ -98,7 +100,7 @@ const AICreditPackages = ({ businessId, currentCredits, onPurchaseComplete }: AI
                   ) : (
                     <CreditCard className="h-4 w-4 ml-2" />
                   )}
-                  רכוש עכשיו
+                  {t("dash.aiimages.credits.buy_now")}
                 </Button>
               </CardContent>
             </Card>
@@ -108,7 +110,7 @@ const AICreditPackages = ({ businessId, currentCredits, onPurchaseComplete }: AI
         <div className="mt-6 p-4 bg-muted/50 rounded-lg text-center">
           <p className="text-sm text-muted-foreground">
             <Coins className="h-4 w-4 inline ml-1" />
-            נשארו לך כרגע <strong className="text-foreground">{currentCredits}</strong> קרדיטים
+            {t("dash.aiimages.credits.remaining_prefix")} <strong className="text-foreground">{currentCredits}</strong> {t("dash.aiimages.credits.remaining_suffix")}
           </p>
         </div>
       </CardContent>

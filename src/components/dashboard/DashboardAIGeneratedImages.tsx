@@ -8,6 +8,7 @@ import { useAIImageJobs } from "@/hooks/useAIImageEngine";
 import { useProducts, useUpdateProduct } from "@/hooks/useProducts";
 import { useBanners, useUpdateBanner } from "@/hooks/useBanners";
 import { useMyBusiness, useUpdateBusiness } from "@/hooks/useBusiness";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/select";
 
 const DashboardAIGeneratedImages = () => {
+  const { t } = useLanguage();
   const { data: business } = useMyBusiness();
   const { data: credits } = useAICredits(business?.id);
   const { data: jobs, isLoading } = useAIImageJobs(business?.id);
@@ -50,9 +52,9 @@ const DashboardAIGeneratedImages = () => {
       out.push({ id, url, source });
     };
     (jobs || []).forEach((j) => { if (j.status === "completed") add(j.generated_image_url, "AI", `job-${j.id}`); });
-    (products || []).forEach((p) => add((p as any).image_url, "מוצר", `prod-${p.id}`));
-    (banners || []).forEach((b) => add((b as any).image_url, "באנר", `ban-${b.id}`));
-    add((business as any)?.hero_image_url, "רקע", "hero");
+    (products || []).forEach((p) => add((p as any).image_url, t("dash.aigallery.source_product"), `prod-${p.id}`));
+    (banners || []).forEach((b) => add((b as any).image_url, t("dash.aigallery.source_banner"), `ban-${b.id}`));
+    add((business as any)?.hero_image_url, t("dash.aigallery.source_hero"), "hero");
     return out;
   })();
 
@@ -68,9 +70,9 @@ const DashboardAIGeneratedImages = () => {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      toast.success("התמונה הורדה בהצלחה");
+      toast.success(t("dash.aigallery.download_success"));
     } catch (error) {
-      toast.error("שגיאה בהורדת התמונה");
+      toast.error(t("dash.aigallery.download_error"));
     }
   };
 
@@ -86,29 +88,29 @@ const DashboardAIGeneratedImages = () => {
       if (assignType === 'hero') {
         // Assign as Hero Image
         if (!business?.id) {
-          toast.error("לא נמצא מזהה עסק");
+          toast.error(t("dash.aigallery.business_not_found"));
           return;
         }
-        
+
         await updateBusiness.mutateAsync({
           id: business.id,
           hero_image_url: selectedImage,
         });
-        toast.success("התמונה שויכה לתמונת רקע ראשית");
+        toast.success(t("dash.aigallery.assign_hero_success"));
       } else if (assignType === 'banner' && selectedTargetId) {
         // Assign to Banner
         await updateBanner.mutateAsync({
           id: selectedTargetId,
           image_url: selectedImage,
         });
-        toast.success("התמונה שויכה לבאנר");
+        toast.success(t("dash.aigallery.assign_banner_success"));
       } else if (assignType === 'product' && selectedTargetId) {
         // Assign to Product
         await updateProduct.mutateAsync({
           id: selectedTargetId,
           image_url: selectedImage,
         });
-        toast.success("התמונה שויכה למוצר");
+        toast.success(t("dash.aigallery.assign_product_success"));
       }
 
       setAssignDialogOpen(false);
@@ -116,7 +118,7 @@ const DashboardAIGeneratedImages = () => {
       setAssignType(null);
       setSelectedTargetId("");
     } catch (error) {
-      toast.error("שגיאה בשיוך התמונה");
+      toast.error(t("dash.aigallery.assign_error"));
     }
   };
 
@@ -132,9 +134,9 @@ const DashboardAIGeneratedImages = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
         <ImageIcon className="h-16 w-16 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">אין עדיין תמונות</h3>
+        <h3 className="text-lg font-semibold mb-2">{t("dash.aigallery.empty_title")}</h3>
         <p className="text-muted-foreground">
-          תמונות המוצרים, הבאנרים והתמונות שתיצור יופיעו כאן
+          {t("dash.aigallery.empty_desc")}
         </p>
       </div>
     );
@@ -144,9 +146,9 @@ const DashboardAIGeneratedImages = () => {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">התמונות שלי</h2>
+          <h2 className="text-2xl font-bold">{t("dash.aigallery.title")}</h2>
           <p className="text-muted-foreground">
-            {allImages.length} תמונות - מוצרים, באנרים, רקע ותמונות AI
+            {allImages.length} {t("dash.aigallery.count_suffix")}
           </p>
         </div>
       </div>
@@ -173,7 +175,7 @@ const DashboardAIGeneratedImages = () => {
                 className="w-full"
               >
                 <Download className="h-4 w-4 ml-1" />
-                הורד
+                {t("dash.aigallery.download_btn")}
               </Button>
               <Button
                 size="sm"
@@ -182,7 +184,7 @@ const DashboardAIGeneratedImages = () => {
                 className="w-full"
               >
                 <Package className="h-4 w-4 ml-1" />
-                שייך
+                {t("dash.aigallery.assign_btn")}
               </Button>
             </div>
 
@@ -197,9 +199,9 @@ const DashboardAIGeneratedImages = () => {
       {/* AI Credits upgrade section */}
       <div className="border-t border-border pt-6">
         <div className="mb-4">
-          <h3 className="text-lg font-bold text-foreground">שדרוג קרדיטים לתמונות AI</h3>
+          <h3 className="text-lg font-bold text-foreground">{t("dash.aigallery.credits_title")}</h3>
           <p className="text-sm text-muted-foreground mt-0.5">
-            יצירת תמונות מקצועיות לחנות בכמה שניות - ללא צלם ובלי מעצב
+            {t("dash.aigallery.credits_desc")}
           </p>
         </div>
         <AICreditPackages
@@ -212,9 +214,9 @@ const DashboardAIGeneratedImages = () => {
       <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>שיוך תמונה</DialogTitle>
+            <DialogTitle>{t("dash.aigallery.assign_dialog_title")}</DialogTitle>
             <DialogDescription>
-              בחר לאן תרצה לשייך את התמונה
+              {t("dash.aigallery.assign_dialog_desc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -232,7 +234,7 @@ const DashboardAIGeneratedImages = () => {
 
             {/* Assign Type */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">סוג שיוך</label>
+              <label className="text-sm font-medium">{t("dash.aigallery.assign_type_label")}</label>
               <Select
                 value={assignType || ""}
                 onValueChange={(value) => {
@@ -241,12 +243,12 @@ const DashboardAIGeneratedImages = () => {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="בחר סוג שיוך" />
+                  <SelectValue placeholder={t("dash.aigallery.assign_type_placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="hero">תמונת רקע ראשית (Hero)</SelectItem>
-                  <SelectItem value="banner">באנר</SelectItem>
-                  <SelectItem value="product">מוצר</SelectItem>
+                  <SelectItem value="hero">{t("dash.aigallery.assign_type_hero")}</SelectItem>
+                  <SelectItem value="banner">{t("dash.aigallery.source_banner")}</SelectItem>
+                  <SelectItem value="product">{t("dash.aigallery.source_product")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -254,15 +256,15 @@ const DashboardAIGeneratedImages = () => {
             {/* Target Selection */}
             {assignType === 'banner' && (
               <div className="space-y-2">
-                <label className="text-sm font-medium">בחר באנר</label>
+                <label className="text-sm font-medium">{t("dash.aigallery.select_banner_label")}</label>
                 <Select value={selectedTargetId} onValueChange={setSelectedTargetId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="בחר באנר" />
+                    <SelectValue placeholder={t("dash.aigallery.select_banner_label")} />
                   </SelectTrigger>
                   <SelectContent>
                     {banners?.map((banner) => (
                       <SelectItem key={banner.id} value={banner.id}>
-                        באנר {banner.title || banner.id.slice(0, 8)}
+                        {t("dash.aigallery.banner_item_prefix")} {banner.title || banner.id.slice(0, 8)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -272,10 +274,10 @@ const DashboardAIGeneratedImages = () => {
 
             {assignType === 'product' && (
               <div className="space-y-2">
-                <label className="text-sm font-medium">בחר מוצר</label>
+                <label className="text-sm font-medium">{t("dash.aigallery.select_product_label")}</label>
                 <Select value={selectedTargetId} onValueChange={setSelectedTargetId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="בחר מוצר" />
+                    <SelectValue placeholder={t("dash.aigallery.select_product_label")} />
                   </SelectTrigger>
                   <SelectContent>
                     {products?.map((product) => (
@@ -300,7 +302,7 @@ const DashboardAIGeneratedImages = () => {
               }}
               className="flex-1"
             >
-              ביטול
+              {t("dash.aigallery.cancel")}
             </Button>
             <Button
               onClick={handleAssignConfirm}
@@ -310,7 +312,7 @@ const DashboardAIGeneratedImages = () => {
               }
               className="flex-1"
             >
-              שייך
+              {t("dash.aigallery.assign_btn")}
             </Button>
           </div>
         </DialogContent>

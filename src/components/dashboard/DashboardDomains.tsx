@@ -6,6 +6,7 @@ import { Globe, Search, Link2, Loader2, Plug } from "lucide-react";
 import DomainSearch from "@/components/domains/DomainSearch";
 import DomainPurchaseDialog from "@/components/domains/DomainPurchaseDialog";
 import ConnectOwnDomain from "@/components/domains/ConnectOwnDomain";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Props {
   businessId?: string;
@@ -19,6 +20,7 @@ interface Props {
  * already registered for this store.
  */
 const DashboardDomains = ({ businessId }: Props) => {
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [buying, setBuying] = useState<{ domain: string; price: number | null } | null>(null);
   const [mode, setMode] = useState<"buy" | "own">("buy");
@@ -59,10 +61,10 @@ const DashboardDomains = ({ businessId }: Props) => {
   // or briefly right after purchase before the first sync/register attempt.
   const connectionLabel = (d: { status: string; cf_ssl_status: string | null }) => {
     if (d.status !== "active") return d.status;
-    if (d.cf_ssl_status === "active") return "מחובר ומאובטח (SSL פעיל)";
-    if (d.cf_ssl_status === "pending_validation") return "מתחבר... (אימות SSL בתהליך)";
-    if (d.cf_ssl_status === "error" || d.cf_ssl_status === "pending_deployment") return "מתחבר... (ייתכן עיכוב, אנחנו על זה)";
-    return "פעיל";
+    if (d.cf_ssl_status === "active") return t("dash.domains.status_connected_ssl");
+    if (d.cf_ssl_status === "pending_validation") return t("dash.domains.status_connecting_ssl");
+    if (d.cf_ssl_status === "error" || d.cf_ssl_status === "pending_deployment") return t("dash.domains.status_connecting_delay");
+    return t("dash.domains.status_active");
   };
 
   const onBuy = (domain: string, priceIls: number | null) => {
@@ -80,13 +82,13 @@ const DashboardDomains = ({ businessId }: Props) => {
       if (error) throw error;
       if (data?.ok === false) throw new Error(data?.error || "provision failed");
       if (data?.configured === false) {
-        toast.info(data.message || "חיבור דומיינים מותאמים בהקמה - יופעל בקרוב.");
+        toast.info(data.message || t("dash.domains.provisioning_soon"));
       } else {
-        toast.success(`שלחנו בקשת חיבור ל-${domain}. האבטחה (SSL) עשויה לקחת כמה דקות.`);
+        toast.success(`${t("dash.domains.connect_request_prefix")}${domain}${t("dash.domains.connect_request_suffix")}`);
       }
       queryClient.invalidateQueries({ queryKey: ["my-domains", businessId] });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "לא הצלחנו לחבר את הדומיין כרגע. נסו שוב.");
+      toast.error(e instanceof Error ? e.message : t("dash.domains.connect_error"));
     } finally {
       setProvisioning(null);
     }
@@ -97,8 +99,8 @@ const DashboardDomains = ({ businessId }: Props) => {
       <div className="flex items-center gap-3">
         <Globe className="h-7 w-7 text-primary" />
         <div>
-          <h1 className="text-2xl font-bold text-foreground">דומיין משלך</h1>
-          <p className="text-sm text-muted-foreground">כתובת אמיתית ומקצועית לאתר - חפשו ורכשו בקליק. אחרי הרכישה אנחנו מחברים את הדומיין לאתר שלכם ומסנכרנים אותו - בלי שתצטרכו לגעת בהגדרות. תוך זמן קצר האתר עולה על הכתובת החדשה.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("dash.domains.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dash.domains.subtitle")}</p>
         </div>
       </div>
 
@@ -110,7 +112,7 @@ const DashboardDomains = ({ businessId }: Props) => {
               mode === "buy" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
             }`}
           >
-            <Search className="w-3.5 h-3.5" /> חיפוש ורכישה
+            <Search className="w-3.5 h-3.5" /> {t("dash.domains.tab_search")}
           </button>
           <button
             onClick={() => setMode("own")}
@@ -118,7 +120,7 @@ const DashboardDomains = ({ businessId }: Props) => {
               mode === "own" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
             }`}
           >
-            <Link2 className="w-3.5 h-3.5" /> יש לי כבר דומיין
+            <Link2 className="w-3.5 h-3.5" /> {t("dash.domains.tab_own")}
           </button>
         </div>
 
@@ -134,20 +136,20 @@ const DashboardDomains = ({ businessId }: Props) => {
 
       {owned && owned.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5">
-          <h3 className="font-semibold text-foreground mb-3">הדומיינים שלי</h3>
+          <h3 className="font-semibold text-foreground mb-3">{t("dash.domains.my_domains")}</h3>
           <div className="space-y-2">
             {owned.map((d) => (
               <div key={d.id} className="flex items-center justify-between rounded-lg border border-border p-3 text-sm">
                 <div className="flex items-center gap-2">
                   <span dir="ltr" className="font-medium text-foreground">{d.domain}</span>
                   {d.source === "byod" && (
-                    <span className="text-[11px] rounded-full bg-muted px-2 py-0.5 text-muted-foreground">דומיין אישי</span>
+                    <span className="text-[11px] rounded-full bg-muted px-2 py-0.5 text-muted-foreground">{t("dash.domains.personal_domain_badge")}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-muted-foreground">
                     {connectionLabel(d)}
-                    {d.expires_at ? ` · עד ${new Date(d.expires_at).toLocaleDateString("he-IL")}` : ""}
+                    {d.expires_at ? ` ${t("dash.domains.expires_until")} ${new Date(d.expires_at).toLocaleDateString("he-IL")}` : ""}
                   </span>
                   {/* Purchased domains only: byod domains are connected via the
                       add-on flow and have no completed domain_order to re-provision. */}
@@ -162,7 +164,7 @@ const DashboardDomains = ({ businessId }: Props) => {
                       ) : (
                         <Plug className="h-3 w-3" />
                       )}
-                      {d.cf_ssl_status === "active" ? "חבר מחדש" : "חבר דומיין"}
+                      {d.cf_ssl_status === "active" ? t("dash.domains.reconnect") : t("dash.domains.connect_domain")}
                     </button>
                   )}
                 </div>

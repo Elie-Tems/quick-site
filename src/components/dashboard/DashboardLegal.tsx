@@ -3,6 +3,7 @@ import { ScrollText, ShieldCheck, Loader2, Eye, CheckCircle2 } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
+import { useLanguage } from "@/contexts/LanguageContext";
 import LegalDocEditor from "@/components/dashboard/LegalDocEditor";
 import {
   buildDefaultDocument,
@@ -24,6 +25,7 @@ interface BusinessLike {
 }
 
 const DashboardLegal = ({ business }: { business?: BusinessLike }) => {
+  const { t } = useLanguage();
   const updateBusiness = useUpdateBusiness();
   const [activeDoc, setActiveDoc] = useState<LegalDocType>("terms");
   const [isSaving, setIsSaving] = useState(false);
@@ -61,10 +63,10 @@ const DashboardLegal = ({ business }: { business?: BusinessLike }) => {
         terms_sections: terms,
         privacy_sections: privacy,
       } as any);
-      toast.success("המסמכים המשפטיים נשמרו");
+      toast.success(t("dash.legal.toast_saved"));
     } catch (err) {
       console.error("save legal docs failed:", err);
-      toast.error("שגיאה בשמירת המסמכים");
+      toast.error(t("dash.legal.toast_save_error"));
     } finally {
       setIsSaving(false);
     }
@@ -85,10 +87,10 @@ const DashboardLegal = ({ business }: { business?: BusinessLike }) => {
         legal_approved_at: now,
       } as any);
       setApprovedAt(now);
-      toast.success("המסמכים אושרו - האתר מוכן לפרסום");
+      toast.success(t("dash.legal.toast_approved"));
     } catch (err) {
       console.error("approve legal docs failed:", err);
-      toast.error("שגיאה באישור המסמכים");
+      toast.error(t("dash.legal.toast_approve_error"));
     } finally {
       setIsApproving(false);
     }
@@ -99,8 +101,8 @@ const DashboardLegal = ({ business }: { business?: BusinessLike }) => {
     : null;
 
   const tabs: { id: LegalDocType; label: string; icon: typeof ScrollText }[] = [
-    { id: "terms", label: "תקנון", icon: ScrollText },
-    { id: "privacy", label: "מדיניות פרטיות", icon: ShieldCheck },
+    { id: "terms", label: t("dash.legal.tab_terms"), icon: ScrollText },
+    { id: "privacy", label: t("dash.legal.tab_privacy"), icon: ShieldCheck },
   ];
 
   return (
@@ -108,14 +110,14 @@ const DashboardLegal = ({ business }: { business?: BusinessLike }) => {
       <div className="flex items-center gap-3 mb-2">
         <ScrollText className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="text-2xl font-bold text-foreground">מסמכים משפטיים</h1>
-          <p className="text-sm text-muted-foreground">תקנון ומדיניות פרטיות לאתר שלכם</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("dash.legal.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dash.legal.subtitle")}</p>
         </div>
       </div>
 
       <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-sm text-foreground mb-6">
-        ⚖️ המסמכים מגיעים כתבנית מוכנה. <strong>מומלץ להיוועץ בעורך דין</strong> ולהתאים אותם לעסק שלכם - האחריות
-        המשפטית על בעל האתר.
+        {t("dash.legal.disclaimer_prefix")} <strong>{t("dash.legal.disclaimer_bold")}</strong>{" "}
+        {t("dash.legal.disclaimer_suffix")}
       </div>
 
       {/* Doc tabs */}
@@ -142,7 +144,7 @@ const DashboardLegal = ({ business }: { business?: BusinessLike }) => {
       <div className="flex items-center gap-3 mt-6 flex-wrap">
         <Button onClick={handleSave} variant="outline" size="lg" className="gap-2" disabled={isSaving || !business?.id}>
           {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-          שמירת המסמכים
+          {t("dash.legal.save_button")}
         </Button>
         {business?.slug && (
           <a
@@ -152,7 +154,7 @@ const DashboardLegal = ({ business }: { business?: BusinessLike }) => {
             className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
           >
             <Eye className="w-4 h-4" />
-            צפייה בדף בחנות
+            {t("dash.legal.view_in_store")}
           </a>
         )}
       </div>
@@ -163,26 +165,26 @@ const DashboardLegal = ({ business }: { business?: BusinessLike }) => {
           <div className="flex items-start gap-3">
             <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-foreground">המסמכים אושרו ✓</p>
+              <p className="font-semibold text-foreground">{t("dash.legal.approved_title")}</p>
               <p className="text-sm text-muted-foreground mt-0.5">
-                אושרו בתאריך {approvedDateLabel}. האתר מאושר לפרסום. אם תערכו את המסמכים - מומלץ לאשר שוב.
+                {t("dash.legal.approved_date_prefix")} {approvedDateLabel}. {t("dash.legal.approved_date_suffix")}
               </p>
               <Button onClick={handleApprove} variant="ghost" size="sm" className="gap-2 mt-2 text-primary" disabled={isApproving || !business?.id}>
                 {isApproving && <Loader2 className="h-4 w-4 animate-spin" />}
-                אישור מחדש לאחר עריכה
+                {t("dash.legal.reapprove_button")}
               </Button>
             </div>
           </div>
         ) : (
           <div>
-            <p className="font-semibold text-foreground mb-1">אישור לפני פרסום</p>
+            <p className="font-semibold text-foreground mb-1">{t("dash.legal.approve_gate_title")}</p>
             <p className="text-sm text-muted-foreground mb-4">
-              כדי שהאתר יעלה לאוויר צריך לאשר שקראת את התקנון ומדיניות הפרטיות. האחריות המשפטית על תוכן המסמכים היא של בעל/ת העסק.
-              <strong className="text-foreground"> זה לא מעכב את בניית האתר</strong> - רק את הפרסום.
+              {t("dash.legal.approve_gate_text")}
+              <strong className="text-foreground"> {t("dash.legal.approve_gate_bold")}</strong> {t("dash.legal.approve_gate_suffix")}
             </p>
             <Button onClick={handleApprove} size="lg" className="gap-2" disabled={isApproving || !business?.id}>
               {isApproving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
-              קראתי ואני מאשר/ת את המסמכים
+              {t("dash.legal.approve_button")}
             </Button>
           </div>
         )}
