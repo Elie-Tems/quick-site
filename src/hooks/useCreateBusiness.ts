@@ -444,7 +444,7 @@ export function useCreateBusiness() {
             business_id: businessId,
             name: product.name,
             description: product.description || null,
-            price: product.price,
+            price: product.price ?? 0,
             image_url: productImageUrl,
             sort_order: i,
             active: true,

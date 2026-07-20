@@ -436,7 +436,16 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
                 <img src={heroImageUrl} alt="Hero" className="w-full h-full object-cover" />
                 <button
                   type="button"
-                  onClick={() => setHeroImageUrl("")}
+                  onClick={async () => {
+                    setHeroImageUrl("");
+                    if (!businessId) return;
+                    try {
+                      await updateBusiness.mutateAsync({ id: businessId, hero_image_url: null } as any);
+                      toast.success("תמונת הבאנר הוסרה");
+                    } catch (err: any) {
+                      toast.error(err.message || "שגיאה בהסרת התמונה");
+                    }
+                  }}
                   className="absolute top-1.5 left-1.5 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
                 >
                   <X className="h-3 w-3" />

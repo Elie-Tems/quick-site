@@ -353,6 +353,7 @@ const StepBannerUpload = ({ data, updateData, onNext, onBack }: StepBannerUpload
         saveLabel={heroPreview ? t("ob.common.save") : undefined}
         showPreview={!heroPreview}
         showSave={!!heroPreview}
+        isLoading={isGeneratingHero}
       />
     </div>
   );
