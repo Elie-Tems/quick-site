@@ -57,7 +57,7 @@ import UpgradeCheckoutModal, { type CheckoutItem } from "@/components/dashboard/
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useOrders, useUpdateOrder } from "@/hooks/useOrders";
 import { useDonationStats } from "@/hooks/useDonations";
-import { useAppointments, useBookingServices } from "@/hooks/useBooking";
+import { useAppointments, useBookingServices, useTodayBookings, useUpdateAppointmentStatus } from "@/hooks/useBooking";
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner } from "@/hooks/useBanners";
 import { useProductCategories } from "@/hooks/useProductCategories";
 import { useAuth } from "@/contexts/AuthContext";
@@ -183,6 +183,22 @@ const Dashboard = () => {
   const hasBookingModule = hasModule(business as any, 'booking');
   const { data: appointments = [] } = useAppointments(hasBookingModule ? business?.id : undefined);
   const { data: bookingServices = [] } = useBookingServices(hasBookingModule ? business?.id : undefined);
+  const { data: todayAppointments = [], isLoading: todayAppointmentsLoading } =
+    useTodayBookings(hasBookingModule ? business?.id : undefined);
+
+  const pendingBookingsCount = todayAppointments.filter(
+    (a) => a.status === "pending"
+  ).length;
+
+  const updateAppointmentStatus = useUpdateAppointmentStatus();
+
+  const handleConfirmAppointment = (id: string) => {
+    updateAppointmentStatus.mutate({ id, status: "confirmed" });
+  };
+
+  const handleCancelAppointment = (id: string) => {
+    updateAppointmentStatus.mutate({ id, status: "cancelled" });
+  };
   const updateOrder = useUpdateOrder();
   // Persist an order status change. Maps the UI status back to the DB status
   // (inverse of the load mapping below) so it actually saves.
@@ -659,7 +675,7 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (currentView) {
       case 'home':
-        return <DashboardHome stats={stats} businessId={business?.id} storeSlug={business?.slug ?? undefined} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} cancelledUntil={cancelledUntil} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} legalApprovedAt={(business as any)?.legal_approved_at ?? null} businessType={getBusinessType(business)} onNavigate={goToView} popupState={popupState} onReopenPopup={(id: PopupId) => { setPopupState(prev => prev ? { ...prev, shown: prev.shown.filter(s => s !== id), dismissed: prev.dismissed.filter(d => d !== id) } : prev); }} />;
+        return <DashboardHome stats={stats} businessId={business?.id} storeSlug={business?.slug ?? undefined} isPublished={!!(business as any)?.is_published} isSubscribed={isSubscribed} cancelledUntil={cancelledUntil} hasPaymentFailure={hasPaymentFailure} hasAbout={!!(business as any)?.about_text?.trim()} legalApprovedAt={(business as any)?.legal_approved_at ?? null} businessType={getBusinessType(business)} onNavigate={goToView} popupState={popupState} onReopenPopup={(id: PopupId) => { setPopupState(prev => prev ? { ...prev, shown: prev.shown.filter(s => s !== id), dismissed: prev.dismissed.filter(d => d !== id) } : prev); }} hasBooking={hasBookingModule} todayAppointments={todayAppointments} todayAppointmentsLoading={todayAppointmentsLoading} onConfirmAppointment={handleConfirmAppointment} onCancelAppointment={handleCancelAppointment} />;
       case 'verticals':
         return <VerticalModules business={business as any} />;
       case 'lifecycle-emails':
@@ -965,6 +981,7 @@ const Dashboard = () => {
             canUseAIImages={true}
             showVerticals={verticalModules.length > 0}
             verticalsLabel={verticalsLabel}
+            pendingBookingsCount={pendingBookingsCount}
           />
           
           <main className="flex-1 pb-20 md:pb-0">

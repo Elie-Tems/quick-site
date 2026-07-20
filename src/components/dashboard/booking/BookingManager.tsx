@@ -46,7 +46,7 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
   const addBlackout = useAddBlackout();
   const deleteBlackout = useDeleteBlackout();
 
-  const [newSvc, setNewSvc] = useState({ name: "", duration: "45", price: "" });
+  const [newSvc, setNewSvc] = useState({ name: "", duration: "45", price: "", description: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newBlackout, setNewBlackout] = useState({ from: "", to: "", reason: "" });
 
@@ -90,12 +90,13 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
       ...(editingId ? { id: editingId } : {}),
       business_id: businessId, name: newSvc.name.trim(),
       duration_minutes: Number(newSvc.duration) || 30, price: Number(newSvc.price) || 0,
-    }, { onSuccess: () => { setNewSvc({ name: "", duration: "45", price: "" }); setEditingId(null); } });
+      description: newSvc.description.trim() || undefined,
+    }, { onSuccess: () => { setNewSvc({ name: "", duration: "45", price: "", description: "" }); setEditingId(null); } });
   };
 
   const editService = (s: { id: string; name: string; duration_minutes: number; price: number }) => {
     setEditingId(s.id);
-    setNewSvc({ name: s.name, duration: String(s.duration_minutes), price: String(s.price) });
+    setNewSvc({ name: s.name, duration: String(s.duration_minutes), price: String(s.price), description: (s as any).description ?? "" });
   };
 
   return (
@@ -114,24 +115,42 @@ const BookingManager = ({ businessId }: { businessId: string }) => {
           {services.map((s) => (
             <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
               <div className="flex-1 min-w-0"><div className="font-medium text-foreground truncate">{s.name}</div>
-                <div className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="w-3 h-3" /> {s.duration_minutes} דקות · ₪{s.price}</div></div>
+                <div className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="w-3 h-3" /> {s.duration_minutes} דקות · ₪{s.price}</div>
+                {(s as any).description && (
+                  <div className="text-xs text-muted-foreground/70 mt-0.5 line-clamp-1">{(s as any).description}</div>
+                )}</div>
               <Button size="icon" variant="ghost" onClick={() => editService(s)} title="עריכה"><Pencil className="w-4 h-4 text-muted-foreground" /></Button>
               <Button size="icon" variant="ghost" onClick={() => { if (confirm(`למחוק את "${s.name}"?`)) deleteService.mutate({ id: s.id, business_id: businessId }); }} title="מחיקה"><Trash2 className="w-4 h-4 text-rose-500" /></Button>
             </div>
           ))}
           {!sLoading && services.length === 0 && <p className="text-sm text-muted-foreground">עוד אין שירותים - הוסיפו את הראשון.</p>}
         </div>
-        <div className="flex flex-wrap gap-2 items-end">
-          <div><label className="block text-xs text-muted-foreground mb-1">שם השירות</label>
-            <Input placeholder="לק ג'ל" value={newSvc.name} onChange={(e) => setNewSvc({ ...newSvc, name: e.target.value })} className="max-w-[180px]" /></div>
-          <div><label className="block text-xs text-muted-foreground mb-1">משך (דקות)</label>
-            <Input type="number" placeholder="45" value={newSvc.duration} onChange={(e) => setNewSvc({ ...newSvc, duration: e.target.value })} className="max-w-[110px]" /></div>
-          <div><label className="block text-xs text-muted-foreground mb-1">מחיר (₪)</label>
-            <Input type="number" placeholder="120" value={newSvc.price} onChange={(e) => setNewSvc({ ...newSvc, price: e.target.value })} className="max-w-[110px]" /></div>
-          <Button onClick={addService} disabled={upsertService.isPending}>
-            {editingId ? <><Check className="w-4 h-4 ml-1" /> עדכן</> : <><Plus className="w-4 h-4 ml-1" /> הוסף</>}
-          </Button>
-          {editingId && <Button variant="ghost" onClick={() => { setEditingId(null); setNewSvc({ name: "", duration: "45", price: "" }); }}>ביטול</Button>}
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-2 items-end">
+            <div><label className="block text-xs text-muted-foreground mb-1">שם השירות</label>
+              <Input placeholder="לק ג'ל" value={newSvc.name} onChange={(e) => setNewSvc({ ...newSvc, name: e.target.value })} className="max-w-[180px]" /></div>
+            <div><label className="block text-xs text-muted-foreground mb-1">משך (דקות)</label>
+              <Input type="number" placeholder="45" value={newSvc.duration} onChange={(e) => setNewSvc({ ...newSvc, duration: e.target.value })} className="max-w-[110px]" /></div>
+            <div><label className="block text-xs text-muted-foreground mb-1">מחיר (₪)</label>
+              <Input type="number" placeholder="120" value={newSvc.price} onChange={(e) => setNewSvc({ ...newSvc, price: e.target.value })} className="max-w-[110px]" /></div>
+            <Button onClick={addService} disabled={upsertService.isPending}>
+              {editingId ? <><Check className="w-4 h-4 ml-1" /> עדכן</> : <><Plus className="w-4 h-4 ml-1" /> הוסף</>}
+            </Button>
+            {editingId && <Button variant="ghost" onClick={() => { setEditingId(null); setNewSvc({ name: "", duration: "45", price: "", description: "" }); }}>ביטול</Button>}
+          </div>
+          <div className="w-full">
+            <label className="block text-xs text-muted-foreground mb-1">
+              תיאור קצר <span className="text-muted-foreground/60">(אופציונלי)</span>
+            </label>
+            <textarea
+              rows={2}
+              placeholder='למשל: "ניקוי עמוק, קילוף ועיסוי פנים — 60 דקות"'
+              value={newSvc.description}
+              onChange={(e) => setNewSvc({ ...newSvc, description: e.target.value })}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+            <p className="text-[11px] text-muted-foreground mt-0.5">הלקוחה רואה את זה בדף ההזמנה</p>
+          </div>
         </div>
       </section>
 

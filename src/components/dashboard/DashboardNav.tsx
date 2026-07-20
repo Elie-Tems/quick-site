@@ -20,6 +20,7 @@ interface DashboardNavProps {
   showVerticals?: boolean;
   /** התווית המדויקת למודול ("יומן ותורים" / "לידים ונכסים" / "תרומות") */
   verticalsLabel?: string;
+  pendingBookingsCount?: number;
 }
 
 // Sidebar groups (desktop shows these as section headers). Order here = display
@@ -155,6 +156,7 @@ const DashboardNav = ({
   canUseAIImages = true,
   showVerticals = false,
   verticalsLabel,
+  pendingBookingsCount = 0,
 }: DashboardNavProps) => {
   const { t } = useLanguage();
   const typeConfig = TYPE_CONFIG[businessType] ?? {};
@@ -215,7 +217,16 @@ const DashboardNav = ({
               )}
             >
               <Icon className="h-5 w-5" />
-              <span className="text-xs whitespace-nowrap">{item.shortLabel || item.label}</span>
+              {item.id === "verticals" && pendingBookingsCount > 0 ? (
+                <span className="flex items-center gap-1 text-xs whitespace-nowrap">
+                  <span>{item.shortLabel || item.label}</span>
+                  <span className="flex-shrink-0 min-w-[16px] h-[16px] rounded-full bg-rose-500 text-white text-[9px] font-semibold flex items-center justify-center px-1 leading-none">
+                    {pendingBookingsCount > 9 ? "9+" : pendingBookingsCount}
+                  </span>
+                </span>
+              ) : (
+                <span className="text-xs whitespace-nowrap">{item.shortLabel || item.label}</span>
+              )}
               {item.premium && (
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
               )}
@@ -279,7 +290,16 @@ const DashboardNav = ({
                     )}>
                       <Icon className={cn("h-3.5 w-3.5", isActive ? "text-primary" : "text-muted-foreground")} />
                     </div>
-                    <span>{item.label}</span>
+                    {item.id === "verticals" && pendingBookingsCount > 0 ? (
+                      <span className="flex items-center gap-1.5 flex-1 min-w-0">
+                        <span className="truncate">{item.label}</span>
+                        <span className="flex-shrink-0 min-w-[18px] h-[18px] rounded-full bg-rose-500 text-white text-[10px] font-semibold flex items-center justify-center px-1 leading-none">
+                          {pendingBookingsCount > 9 ? "9+" : pendingBookingsCount}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="truncate">{item.label}</span>
+                    )}
                     {item.premium && (
                       <span className="mr-auto px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded">
                         {t("dash.nav.premium")}

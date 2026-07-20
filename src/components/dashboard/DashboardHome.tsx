@@ -5,6 +5,7 @@ import type { BusinessType } from "@/lib/businessModules";
 import ReferralBox from "./ReferralBox";
 import WowStrip from "./WowStrip";
 import type { PopupId, PopupState } from "./PostLaunchPopups";
+import { TodayAppointmentsCard } from "./TodayAppointmentsCard";
 
 interface DashboardHomeProps {
   stats: {
@@ -28,6 +29,11 @@ interface DashboardHomeProps {
   onNavigate: (view: DashboardView) => void;
   popupState?: PopupState | null;
   onReopenPopup?: (id: PopupId) => void;
+  hasBooking?: boolean;
+  todayAppointments?: import("@/hooks/useBooking").Appointment[];
+  todayAppointmentsLoading?: boolean;
+  onConfirmAppointment?: (id: string) => void;
+  onCancelAppointment?: (id: string) => void;
 }
 
 const DashboardHome = ({
@@ -43,6 +49,11 @@ const DashboardHome = ({
   onNavigate,
   popupState,
   onReopenPopup,
+  hasBooking = false,
+  todayAppointments = [],
+  todayAppointmentsLoading = false,
+  onConfirmAppointment,
+  onCancelAppointment,
 }: DashboardHomeProps) => {
   const slugHasHebrew = storeSlug ? /[֐-׿]/.test(storeSlug) : false;
   // Per-business-type label mapping
@@ -77,6 +88,16 @@ const DashboardHome = ({
 
   return (
     <div className="p-4 md:p-6 space-y-5">
+
+      {hasBooking && (
+        <TodayAppointmentsCard
+          appointments={todayAppointments}
+          isLoading={todayAppointmentsLoading}
+          onConfirm={onConfirmAppointment ?? (() => {})}
+          onCancel={onCancelAppointment ?? (() => {})}
+          onNavigateToCalendar={() => onNavigate("verticals")}
+        />
+      )}
 
       {/* 1. Not subscribed yet - preview mode banner (top, non-dismissible) */}
       {!isSubscribed && !cancelledUntil && (
