@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Save, Eye, Wand2 } from "lucide-react";
 import { ReactNode } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StepNavigationProps {
   /** Optional reassuring line shown above the buttons (e.g. "you can change this later"). */
@@ -24,9 +25,9 @@ export const StepNavigation = ({
   onNext,
   onBack,
   onSaveAndContinue,
-  nextLabel = "הבא",
-  backLabel = "חזרה",
-  saveLabel = "שמרו והמשיכו",
+  nextLabel,
+  backLabel,
+  saveLabel,
   saveIcon,
   nextDisabled = false,
   saveDisabled = false,
@@ -36,6 +37,13 @@ export const StepNavigation = ({
   isLoading = false,
   reassurance,
 }: StepNavigationProps) => {
+  // Self-translating defaults: callers that don't override a label (e.g. the
+  // back button, almost never overridden) still get the merchant's language
+  // instead of a hardcoded Hebrew fallback.
+  const { t } = useLanguage();
+  nextLabel ??= t("ob.common.next");
+  backLabel ??= t("ob.common.back");
+  saveLabel ??= t("ob.common.save");
   return (
     <>
     {reassurance && (
