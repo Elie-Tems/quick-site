@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { getTemplate } from "@/lib/storeTemplates";
 import { getCategoryConfig, BusinessCategory } from "@/lib/categoryConfig";
 import { getPublishFeeIls } from "@/lib/publishPaymentConfig";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Props {
   data: OnboardingData;
@@ -50,15 +51,16 @@ const SUB_TYPE_LABELS: Record<string, string> = {
   other: 'אחר',
 };
 
-// Staged publish progress for a reassuring "building your site" experience.
+// Staged publish progress - labelKey resolved with t() (shared ob.shell.publish.*).
 const PUBLISH_STAGES = [
-  { at: 0, label: "מקימים את החנות..." },
-  { at: 25, label: "מעלים מוצרים ותמונות..." },
-  { at: 55, label: "מחילים עיצוב וצבעים..." },
-  { at: 80, label: "מפרסמים את האתר..." },
+  { at: 0, labelKey: "ob.shell.publish.building" },
+  { at: 25, labelKey: "ob.shell.publish.uploading" },
+  { at: 55, labelKey: "ob.shell.publish.styling" },
+  { at: 80, labelKey: "ob.shell.publish.publishing" },
 ];
 
 const StepFinish = ({ data, updateData, onBack }: Props) => {
+  const { t } = useLanguage();
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishProgress, setPublishProgress] = useState(0);
   const [legalAcknowledged, setLegalAcknowledged] = useState(false);
@@ -84,7 +86,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
 
   const handlePublish = async () => {
     if (!user) {
-      toast({ title: "נדרשת התחברות", variant: "destructive" });
+      toast({ title: t("ob.fin.err_login"), variant: "destructive" });
       navigate("/login");
       return;
     }
@@ -144,7 +146,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         })),
       });
 
-      toast({ title: "החנות נשמרה", description: "ממשיכים לתשלום לפרסום" });
+      toast({ title: t("ob.fin.saved_title"), description: t("ob.fin.saved_desc") });
 
       if (skipPublishPayment && user) {
         const token = crypto.randomUUID();
@@ -157,7 +159,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
           provider: "icount",
         });
         if (sessErr) {
-          toast({ title: "שגיאה", description: "לא ניתן לדלג על תשלום", variant: "destructive" });
+          toast({ title: t("ob.fin.err"), description: t("ob.fin.err_skip"), variant: "destructive" });
           return;
         }
         const { data: fin, error: finErr } = await supabase.functions.invoke("finalize-publish", {
@@ -165,8 +167,8 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         });
         if (fin?.legalNotApproved) {
           toast({
-            title: "האתר נבנה! 🎉",
-            description: "נשאר רק לאשר את המסמכים המשפטיים (תקנון ומדיניות פרטיות) בדשבורד כדי לפרסם.",
+            title: t("ob.fin.built_title"),
+            description: t("ob.fin.built_desc"),
           });
           navigate("/dashboard");
           return;
@@ -187,7 +189,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
         state: { onboardingData: data },
       });
     } catch (error: any) {
-      toast({ title: "שגיאה בפרסום", description: error.message || "משהו השתבש, נסה שוב", variant: "destructive" });
+      toast({ title: t("ob.fin.err_publish"), description: error.message || t("ob.fin.err_generic"), variant: "destructive" });
     } finally {
       setIsPublishing(false);
     }
@@ -202,8 +204,8 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
           <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
             <Rocket className="w-7 h-7 text-primary animate-pulse" />
           </div>
-          <h1 className="text-2xl font-medium pv-strong">בונים את האתר שלך...</h1>
-          <p className="text-sm pv-muted">{stage.label}</p>
+          <h1 className="text-2xl font-medium pv-strong">{t("ob.fin.building")}</h1>
+          <p className="text-sm pv-muted">{t(stage.labelKey)}</p>
         </div>
 
         <div className="max-w-md mx-auto space-y-4">
@@ -228,7 +230,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
                   }`}>
                     {done ? <Check className="w-3.5 h-3.5" /> : active ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span className="w-1.5 h-1.5 rounded-full bg-current" />}
                   </div>
-                  <span className={active ? "pv-strong font-medium" : done ? "pv-muted" : "pv-faint"}>{s.label}</span>
+                  <span className={active ? "pv-strong font-medium" : done ? "pv-muted" : "pv-faint"}>{t(s.labelKey)}</span>
                 </div>
               );
             })}
@@ -246,17 +248,17 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
           <Rocket className="w-9 h-9 text-primary" />
           <span className="absolute -top-1 -right-1 text-lg">✨</span>
         </div>
-        <h1 className="text-3xl font-semibold pv-strong">כמעט שם!</h1>
-        <p className="text-sm pv-muted mt-2">עוד לחיצה אחת - והחנות שלכם בשידור חי 🎉</p>
+        <h1 className="text-3xl font-semibold pv-strong">{t("ob.fin.almost")}</h1>
+        <p className="text-sm pv-muted mt-2">{t("ob.fin.almost_sub")}</p>
       </div>
 
       {/* Summary grid */}
       <div className="grid grid-cols-2 gap-3">
         {[
-          { emoji: "🏪", label: "שם העסק", value: data.businessName || "—" },
-          { emoji: "📦", label: "מוצרים", value: `${data.products.length} מוצרים` },
-          { emoji: "🎨", label: "תבנית", value: getTemplate(data.storeTemplate).name },
-          { emoji: "📩", label: "הזמנות", value: "ישירות למייל" },
+          { emoji: "🏪", label: t("ob.fin.s_name"), value: data.businessName || "—" },
+          { emoji: "📦", label: t("ob.fin.products"), value: `${data.products.length} ${t("ob.fin.products")}` },
+          { emoji: "🎨", label: t("ob.fin.s_template"), value: getTemplate(data.storeTemplate).name },
+          { emoji: "📩", label: t("ob.fin.s_orders"), value: t("ob.fin.orders_val") },
         ].map(item => (
           <div key={item.label} className="rounded-xl border pv-border pv-surface2 p-4 flex items-start gap-3">
             <span className="text-xl leading-none mt-0.5">{item.emoji}</span>
@@ -272,7 +274,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
       <div className="rounded-xl bg-primary/5 border border-primary/15 p-3.5 flex items-start gap-2.5">
         <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
         <p className="text-xs pv-strong leading-relaxed">
-          רוצים לקבל תשלומים בכרטיס / ביט ישירות באתר? אפשר להוסיף סליקה בכל רגע מלוח הניהול.
+          {t("ob.fin.upsell")}
         </p>
       </div>
 
@@ -285,10 +287,10 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
           className="mt-0.5 accent-primary w-4 h-4 shrink-0"
         />
         <span className="text-xs pv-muted leading-relaxed">
-          קראתי ואני מסכים/ה ל
-          <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1">תנאי השימוש</a>
-          ול
-          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1">מדיניות הפרטיות</a>
+          {t("ob.fin.legal_pre")}
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1">{t("ob.fin.legal_terms")}</a>
+          {t("ob.fin.legal_and")}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1">{t("ob.fin.legal_privacy")}</a>
         </span>
       </label>
 
@@ -296,7 +298,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
       <div className="flex gap-3 pb-2">
         <button onClick={onBack}
           className="flex-none px-5 h-12 rounded-xl border border-border text-sm hover:bg-muted transition-colors">
-          חזרה
+          {t("ob.common.back")}
         </button>
         <button
           onClick={handlePublish}
@@ -304,7 +306,7 @@ const StepFinish = ({ data, updateData, onBack }: Props) => {
           className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground text-base font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-primary/20"
         >
           {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />}
-          {isPublishing ? "מפרסם..." : "פרסמו את האתר ←"}
+          {isPublishing ? t("ob.fin.publishing") : t("ob.fin.publish")}
         </button>
       </div>
     </div>
