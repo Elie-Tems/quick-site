@@ -2,11 +2,13 @@ import { motion } from "framer-motion";
 import { Shield, Award, Clock, ThumbsUp, Phone, MessageCircle, ArrowLeft, Star, CheckCircle2 } from "lucide-react";
 import type { StorefrontLayoutProps } from "./StorefrontLayout.types";
 import { STOREFRONT_IMAGE_PLACEHOLDER } from "@/lib/storefrontPlaceholders";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const FALLBACK_HERO = STOREFRONT_IMAGE_PLACEHOLDER;
 const TRUST_ICONS = [Shield, Award, Clock, ThumbsUp];
 
 export default function HomeProLayout(props: StorefrontLayoutProps) {
+  const { t } = useLanguage();
   const {
     businessName, tagline, heroTitle, aboutText, heroImageUrl, promoText,
     logoUrl, phone, products, banners, heroBenefits,
@@ -18,14 +20,14 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
   const displayGallery = workGallery;
 
   const trustItems = heroBenefits?.slice(0, 4) || [
-    "מחיר שקוף וקבוע מראש",
-    "ניסיון של 10+ שנים",
-    "מגיעים בזמן",
-    "עבודה מובטחת",
+    t("store.homeprolayout.trustPricing"),
+    t("store.homeprolayout.trustExperience"),
+    t("store.homeprolayout.trustOnTime"),
+    t("store.homeprolayout.trustGuaranteed"),
   ];
 
   const whatsappUrl = phone
-    ? `https://wa.me/972${phone.replace(/^0/, "")}?text=${encodeURIComponent("שלום, אשמח לקבל הצעת מחיר")}`
+    ? `https://wa.me/972${phone.replace(/^0/, "")}?text=${encodeURIComponent(t("store.homeprolayout.whatsappMessage"))}`
     : "#";
 
   return (
@@ -41,7 +43,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
         <div className="flex items-center gap-2">
           {whatsappEnabled && phone && (
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500 text-white text-sm font-medium">
-              <MessageCircle className="w-4 h-4" /> הצעת מחיר
+              <MessageCircle className="w-4 h-4" /> {t("store.homeprolayout.quoteRequest")}
             </a>
           )}
           {phone && (
@@ -73,11 +75,11 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
                 <a href={whatsappEnabled && phone ? whatsappUrl : `tel:${phone}`}
                   target={whatsappEnabled ? "_blank" : undefined} rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/30">
-                  קבלו הצעת מחיר <ArrowLeft className="w-5 h-5" />
+                  {t("store.homeprolayout.getQuote")} <ArrowLeft className="w-5 h-5" />
                 </a>
                 <button onClick={onScrollToProducts}
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl border border-white/30 bg-white/10 text-white font-medium backdrop-blur-sm hover:bg-white/20 transition-colors">
-                  השירותים שלנו
+                  {t("store.homeprolayout.ourServices")}
                 </button>
               </div>
             </motion.div>
@@ -108,8 +110,8 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
       {products.length > 0 && (
         <section id="services" className="py-16 px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">{customLabels?.productsTitle || "השירותים שלנו"}</h2>
-            <p className="text-muted-foreground text-sm mb-8">כל עבודה עם אחריות ושקיפות מלאה</p>
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">{customLabels?.productsTitle || t("store.homeprolayout.ourServices")}</h2>
+            <p className="text-muted-foreground text-sm mb-8">{t("store.homeprolayout.servicesSubtitle")}</p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
               {products.map((p, i) => (
                 <motion.div key={p.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
@@ -133,7 +135,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
                   <a href={whatsappEnabled && phone ? whatsappUrl : `tel:${phone}`}
                     target={whatsappEnabled ? "_blank" : undefined} rel="noopener noreferrer"
                     className="mt-4 w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl border border-primary/30 text-primary text-sm font-medium hover:bg-primary/5 transition-colors">
-                    בקשו הצעת מחיר
+                    {t("store.homeprolayout.requestQuote")}
                   </a>
                 </motion.div>
               ))}
@@ -146,8 +148,8 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
       {displayGallery.length > 0 && (
       <section className="py-14 px-4 bg-muted/20">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-display font-bold mb-2">{customLabels?.galleryTitle || "עבודות אחרונות"}</h2>
-          <p className="text-muted-foreground text-sm mb-6">תוצאות אמיתיות של לקוחות מרוצים</p>
+          <h2 className="text-2xl font-display font-bold mb-2">{customLabels?.galleryTitle || t("store.homeprolayout.galleryTitle")}</h2>
+          <p className="text-muted-foreground text-sm mb-6">{t("store.homeprolayout.gallerySubtitle")}</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {displayGallery.slice(0, 8).map((img, i) => (
               <div key={i} className="aspect-square rounded-xl overflow-hidden">
@@ -165,7 +167,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div>
-                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">{customLabels?.aboutTitle || "קצת עלינו"}</h2>
+                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">{customLabels?.aboutTitle || t("store.homeprolayout.aboutTitle")}</h2>
                 <p className="text-muted-foreground leading-relaxed mb-6">{aboutText}</p>
                 <div className="space-y-2">
                   {trustItems.map((item, i) => (
@@ -188,7 +190,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
       {reviewsCache && (reviewsCache.reviews || []).length > 0 && (
         <section className="py-14 px-4 bg-muted/20">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl font-display font-bold mb-6">מה אומרים הלקוחות</h2>
+            <h2 className="text-2xl font-display font-bold mb-6">{t("store.homeprolayout.reviewsTitle")}</h2>
             <div className="grid md:grid-cols-3 gap-4">
               {(reviewsCache.reviews || []).slice(0, 3).map((r, i) => (
                 <div key={i} className="p-5 rounded-2xl border border-border bg-card">
@@ -196,7 +198,7 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
                     <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />
                   ))}</div>
                   <p className="text-sm text-muted-foreground leading-relaxed">"{r.text}"</p>
-                  <p className="mt-3 text-sm font-semibold">{r.author || "לקוח/ה"}</p>
+                  <p className="mt-3 text-sm font-semibold">{r.author || t("store.reviews.anonymousCustomer")}</p>
                 </div>
               ))}
             </div>
@@ -207,13 +209,13 @@ export default function HomeProLayout(props: StorefrontLayoutProps) {
       {/* LEAD FORM CTA */}
       <section className="py-14 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-display font-bold mb-3">{customLabels?.ctaTitle || "מוכנים לקבל הצעת מחיר?"}</h2>
-          <p className="text-muted-foreground mb-7">בלי עלויות נסתרות. מחיר סופי, עבודה מקצועית.</p>
+          <h2 className="text-2xl md:text-3xl font-display font-bold mb-3">{customLabels?.ctaTitle || t("store.homeprolayout.ctaTitle")}</h2>
+          <p className="text-muted-foreground mb-7">{t("store.homeprolayout.ctaSubtitle")}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {whatsappEnabled && phone && (
               <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-emerald-500 text-white font-bold text-lg shadow-lg shadow-emerald-500/30">
-                <MessageCircle className="w-5 h-5" /> שלחו הודעה
+                <MessageCircle className="w-5 h-5" /> {t("store.homeprolayout.sendMessage")}
               </a>
             )}
             {phone && (

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getBusinessType, getEnabledModules, type BusinessLike } from "@/lib/businessModules";
 import { useBookingServices } from "@/hooks/useBooking";
+import { useLanguage } from "@/contexts/LanguageContext";
 import BookingWidget from "./BookingWidget";
 import ListingsBoard from "./ListingsBoard";
 import DonationWidget from "./DonationWidget";
@@ -38,6 +39,7 @@ const Section = ({ title, subtitle, accent, children }: { title: string; subtitl
 const StorefrontVertical = ({ business }: {
   business: (BusinessLike & { id: string; primary_color?: string | null; phone?: string | null }) | null | undefined;
 }) => {
+  const { t } = useLanguage();
   const isVacation = getBusinessType(business) === "vacation";
   const hasBookingModule = getEnabledModules(business).includes("booking");
 
@@ -75,7 +77,7 @@ const StorefrontVertical = ({ business }: {
         <LodgingWidget businessId={business.id} units={lodgingUnits} />
       )}
       {modules.includes("booking") && bookingServices.length > 0 && (
-        <Section title="קביעת תור" subtitle="בחרו שירות ומועד - ונתראה" accent={accent}>
+        <Section title={t("store.vertical.booking_title")} subtitle={t("store.vertical.booking_subtitle")} accent={accent}>
           <BookingWidget businessId={business.id} />
         </Section>
       )}
@@ -83,20 +85,20 @@ const StorefrontVertical = ({ business }: {
         <ListingsBoard businessId={business.id} businessPhone={business.phone ?? undefined} />
       )}
       {modules.includes("donations") && (
-        <Section title="לתרומה" subtitle="כל תרומה עושה הבדל" accent={accent}>
+        <Section title={t("store.vertical.donation_title")} subtitle={t("store.vertical.donation_subtitle")} accent={accent}>
           <DonationWidget businessId={business.id} donationAmounts={(business as any)?.settings?.donation_amounts} />
         </Section>
       )}
       {modules.includes("synagogue") && (
-        <Section title="אזור המתפללים" subtitle="עליות, נדרים וזמני תפילה" accent={accent}>
+        <Section title={t("store.vertical.synagogue_title")} subtitle={t("store.vertical.synagogue_subtitle")} accent={accent}>
           <div className="text-center">
             <p className="text-muted-foreground mb-5">
-              עליות, נדרים, זמני תפילה ואזור אישי - הכל מחכה לכם באזור המתפללים של בית הכנסת.
+              {t("store.vertical.synagogue_description")}
             </p>
             <a href={`/shul/${(business as any).slug}`}
               className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90"
               style={{ background: accent }}>
-              כניסה לאזור המתפללים
+              {t("store.vertical.synagogue_cta")}
             </a>
           </div>
         </Section>

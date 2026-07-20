@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Product {
   id: string;
@@ -29,8 +30,10 @@ interface StoreSEOProps {
 }
 
 const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
+  const { t } = useLanguage();
   const siteName = business.name;
-  const description = business.tagline || business.about_text?.slice(0, 160) || `הזמנות אונליין מ${business.name}`;
+  const pageTitle = t("store.seo.page_title").replace("{business}", siteName);
+  const description = business.tagline || business.about_text?.slice(0, 160) || t("store.seo.default_description").replace("{business}", siteName);
   const ogImage = business.hero_image_url || business.logo_url || "https://siango.app/og-image.png";
   
   // Category mapping for Schema.org
@@ -102,7 +105,7 @@ const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
   const productListSchema = products.length > 0 ? {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "name": `מוצרים מ${siteName}`,
+    "name": t("store.seo.product_list_name").replace("{business}", siteName),
     "numberOfItems": products.length,
     "itemListElement": products.slice(0, 10).map((product, index) => ({
       "@type": "ListItem",
@@ -175,7 +178,7 @@ const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
       {
         "@type": "ListItem",
         "position": 1,
-        "name": "סיאנגו",
+        "name": t("store.seo.brand_name"),
         "item": "https://siango.app"
       },
       {
@@ -190,8 +193,8 @@ const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
   return (
     <Helmet>
       {/* Primary Meta Tags */}
-      <title>{siteName} | הזמנה אונליין</title>
-      <meta name="title" content={`${siteName} | הזמנה אונליין`} />
+      <title>{pageTitle}</title>
+      <meta name="title" content={pageTitle} />
       <meta name="description" content={description} />
       
       {/* Canonical URL */}
@@ -203,7 +206,7 @@ const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
       {/* Open Graph / Facebook */}
       <meta property="og:type" content="website" />
       <meta property="og:url" content={storeUrl} />
-      <meta property="og:title" content={`${siteName} | הזמנה אונליין`} />
+      <meta property="og:title" content={pageTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:image:width" content="1200" />
@@ -214,7 +217,7 @@ const StoreSEO = ({ business, products, storeUrl }: StoreSEOProps) => {
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={storeUrl} />
-      <meta name="twitter:title" content={`${siteName} | הזמנה אונליין`} />
+      <meta name="twitter:title" content={pageTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={ogImage} />
       

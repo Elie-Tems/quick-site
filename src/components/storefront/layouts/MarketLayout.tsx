@@ -8,6 +8,7 @@ import StoreFooter from '@/components/storefront/StoreFooter';
 import FloatingCart from '@/components/storefront/FloatingCart';
 import FloatingWhatsApp from '@/components/storefront/FloatingWhatsApp';
 import NewsletterSignup from '@/components/storefront/NewsletterSignup';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { StorefrontLayoutProps } from './StorefrontLayout.types';
 
 /**
@@ -25,6 +26,7 @@ const MarketLayout = ({
   hasPayment,
   customLabels, verticalSlot,
 }: StorefrontLayoutProps) => {
+  const { t } = useLanguage();
   const totalCartItems = cartItems.reduce((s, i) => s + i.quantity, 0);
   const pc = primaryColor || '#6b21a8';
 
@@ -114,7 +116,7 @@ const MarketLayout = ({
                       : { backgroundColor: 'transparent', color: 'var(--foreground)' }
                   }
                 >
-                  הכל
+                  {t("store.header.allCategories")}
                 </button>
                 {categories.map(cat => (
                   <button

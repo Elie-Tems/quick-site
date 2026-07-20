@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ShoppingBag, X, Plus, Minus, MessageCircle, Phone, ArrowLeft, UtensilsCrossed } from "lucide-react";
 import type { StorefrontLayoutProps } from "./StorefrontLayout.types";
 import { STOREFRONT_IMAGE_PLACEHOLDER } from "@/lib/storefrontPlaceholders";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const FALLBACK_HERO = STOREFRONT_IMAGE_PLACEHOLDER;
 const FALLBACK_ITEM_IMG = STOREFRONT_IMAGE_PLACEHOLDER;
@@ -14,6 +15,7 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
     cartItems, onAddToCart, onUpdateQuantity, onRemoveFromCart,
     onCheckout, whatsappEnabled, customLabels, verticalSlot,
   } = props;
+  const { t } = useLanguage();
 
   const [cartOpen, setCartOpen] = useState(false);
   const openCartBtnRef = useRef<HTMLButtonElement>(null);
@@ -24,7 +26,7 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
   const total = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
 
   const whatsappUrl = phone
-    ? `https://wa.me/972${phone.replace(/^0/, "")}?text=${encodeURIComponent("שלום, אשמח לשאול על התפריט")}`
+    ? `https://wa.me/972${phone.replace(/^0/, "")}?text=${encodeURIComponent(t("store.restaurantlayout.whatsapp_message"))}`
     : "#";
 
   // Group products by category
@@ -34,7 +36,7 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
         name: cat.name,
         items: products.filter(p => p.categoryId === cat.id),
       })).filter(s => s.items.length > 0)
-    : [{ id: null, name: customLabels?.productsTitle || "התפריט", items: products }];
+    : [{ id: null, name: customLabels?.productsTitle || t("store.restaurantlayout.default_menu_title"), items: products }];
 
   useEffect(() => {
     if (cartOpen) closeCartBtnRef.current?.focus();
@@ -71,11 +73,11 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
           <button
             ref={openCartBtnRef}
             onClick={() => setCartOpen(true)}
-            aria-label={`סל הזמנה${itemCount > 0 ? `, ${itemCount} פריטים` : ""}`}
+            aria-label={`${t("store.restaurantlayout.cart_aria_label")}${itemCount > 0 ? `, ${itemCount} ${t("store.restaurantlayout.items_suffix")}` : ""}`}
             className="relative inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium"
           >
             <ShoppingBag className="w-4 h-4" aria-hidden="true" />
-            הזמנה
+            {t("store.restaurantlayout.order_button")}
             {itemCount > 0 && (
               <span aria-hidden="true" className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-rose-500 text-white text-[11px] font-bold flex items-center justify-center">
                 {itemCount}
@@ -111,7 +113,7 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
               )}
               <a href="#menu"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow">
-                לתפריט <ArrowLeft className="w-4 h-4" />
+                {t("store.restaurantlayout.to_menu_cta")} <ArrowLeft className="w-4 h-4" />
               </a>
             </motion.div>
           </div>
@@ -126,7 +128,7 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
 
         {/* CATEGORY NAV */}
         {menuSections.length > 1 && (
-          <nav className="sticky top-[57px] z-20 bg-background/95 backdrop-blur border-b border-border overflow-x-auto" aria-label="קטגוריות תפריט">
+          <nav className="sticky top-[57px] z-20 bg-background/95 backdrop-blur border-b border-border overflow-x-auto" aria-label={t("store.restaurantlayout.menu_categories_aria")}>
             <div className="flex gap-1 px-4 py-2 min-w-max">
               {menuSections.map(s => (
                 <a key={String(s.id)} href={`#cat-${s.id}`}
@@ -143,7 +145,7 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
           {products.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <UtensilsCrossed className="w-10 h-10 mx-auto mb-3 opacity-40" aria-hidden="true" />
-              <p>התפריט יתעדכן בקרוב</p>
+              <p>{t("store.restaurantlayout.menu_coming_soon")}</p>
             </div>
           ) : menuSections.map((section, si) => (
             <section key={String(section.id)} id={`cat-${section.id}`}>
@@ -186,16 +188,16 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
                         {qty === 0 ? (
                           <button
                             onClick={() => { onAddToCart(item); setCartOpen(true); }}
-                            aria-label={`הוסף ${item.name} להזמנה`}
+                            aria-label={`${t("store.restaurantlayout.add_item_aria")}: ${item.name}`}
                             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
                           >
-                            <Plus className="w-4 h-4" /> הוסף
+                            <Plus className="w-4 h-4" /> {t("store.restaurantlayout.add_button")}
                           </button>
                         ) : (
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => onUpdateQuantity(cartEntry?.cartLineId ?? item.id, qty - 1)}
-                              aria-label={`הפחת כמות של ${item.name}`}
+                              aria-label={`${t("store.restaurantlayout.decrease_qty_aria")}: ${item.name}`}
                               className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80"
                             >
                               <Minus className="w-3.5 h-3.5" />
@@ -203,7 +205,7 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
                             <span className="w-6 text-center font-bold text-sm" aria-live="polite">{qty}</span>
                             <button
                               onClick={() => onAddToCart(item)}
-                              aria-label={`הוסף עוד ${item.name}`}
+                              aria-label={`${t("store.restaurantlayout.add_more_aria")}: ${item.name}`}
                               className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90"
                             >
                               <Plus className="w-3.5 h-3.5" />
@@ -223,7 +225,7 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
         {aboutText && (
           <section className="bg-muted/30 border-t border-border py-14 px-4">
             <div className="max-w-2xl mx-auto text-center">
-              <h2 className="text-2xl font-display font-bold mb-3">אודות</h2>
+              <h2 className="text-2xl font-display font-bold mb-3">{t("store.restaurantlayout.about_heading")}</h2>
               <p className="text-muted-foreground leading-relaxed">{aboutText}</p>
             </div>
           </section>
@@ -236,7 +238,7 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
               {whatsappEnabled && (
                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-emerald-500 text-white font-semibold">
-                  <MessageCircle className="w-5 h-5" /> הזמנות ב-WhatsApp
+                  <MessageCircle className="w-5 h-5" /> {t("store.restaurantlayout.whatsapp_order_cta")}
                 </a>
               )}
               <a href={`tel:${phone}`}
@@ -256,19 +258,19 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
 
       {/* CART DRAWER */}
       {cartOpen && (
-        <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label="סל הזמנה">
+        <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label={t("store.restaurantlayout.cart_aria_label")}>
           <div className="absolute inset-0 bg-black/50" onClick={() => setCartOpen(false)} />
           <aside className="relative mr-auto w-full max-w-sm bg-background border-l border-border flex flex-col h-full shadow-2xl">
             <div className="flex items-center justify-between px-4 py-4 border-b border-border">
-              <h2 className="font-display font-bold text-lg">סל הזמנה</h2>
-              <button ref={closeCartBtnRef} onClick={() => setCartOpen(false)} aria-label="סגור סל" className="p-2 rounded-lg hover:bg-muted">
+              <h2 className="font-display font-bold text-lg">{t("store.restaurantlayout.cart_aria_label")}</h2>
+              <button ref={closeCartBtnRef} onClick={() => setCartOpen(false)} aria-label={t("store.restaurantlayout.close_cart_aria")} className="p-2 rounded-lg hover:bg-muted">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
               {cartItems.length === 0 && (
-                <div className="py-12 text-center text-muted-foreground text-sm">הסל ריק</div>
+                <div className="py-12 text-center text-muted-foreground text-sm">{t("store.restaurantlayout.cart_empty")}</div>
               )}
               {cartItems.map(item => (
                 <div key={item.id} className="flex items-center gap-3">
@@ -293,11 +295,11 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
             {cartItems.length > 0 && (
               <div className="px-4 py-4 border-t border-border space-y-3">
                 <div className="flex justify-between font-bold text-lg">
-                  <span>סה"כ</span>
+                  <span>{t("store.restaurantlayout.total_label")}</span>
                   <span>₪{total.toLocaleString()}</span>
                 </div>
-                <button onClick={onCheckout} className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-base shadow-lg shadow-primary/25 hover:opacity-90 transition-opacity">
-                  להזמנה ←
+                <button onClick={onCheckout} className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-base shadow-lg shadow-primary/25 hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                  {t("store.restaurantlayout.checkout_button")} <ArrowLeft className="w-4 h-4" />
                 </button>
               </div>
             )}
