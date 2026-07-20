@@ -4,6 +4,7 @@ import { StoreTemplateId } from "@/lib/storeTemplates";
 import { ShoppingBag, Heart, Check, Upload, Loader2, Wand2, X, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Props {
   data: OnboardingData;
@@ -212,9 +213,10 @@ const MiniProductGrid = ({ products, primaryColor, productGrid = "uniform-3col" 
 const MiniTemplatePreview = ({ template, primaryColor, userProducts, businessName, bannerImage }: {
   template: TemplateStyle; primaryColor: string; userProducts: TemplateStyle["products"]; businessName: string; bannerImage: string | null;
 }) => {
+  const { t } = useLanguage();
   const display = userProducts.length > 0 ? userProducts : template.products;
   const heroImg = bannerImage || template.heroImage;
-  const label = businessName || "החנות שלי";
+  const label = businessName || t("ob.vis.store_fallback");
   const bg = "#0f0f0f";
 
   if (template.heroLayout === "split") return (
@@ -278,11 +280,12 @@ const MiniTemplatePreview = ({ template, primaryColor, userProducts, businessNam
 // ─── Big live preview ─────────────────────────────────────────────────────────
 
 const BigProductGrid = ({ products, primaryColor, productGrid = "uniform-3col" }: { products: TemplateStyle["products"]; primaryColor: string; productGrid?: TemplateStyle["productGrid"] }) => {
+  const { t } = useLanguage();
   const Card = ({ p, aspectClass }: { p: TemplateStyle["products"][0]; aspectClass: string }) => (
     <div className="relative overflow-hidden rounded-lg bg-[#1a1a1a]">
       <div className={`${aspectClass} overflow-hidden`}>
         {p.img ? <img src={p.img} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-[#262626]"><ShoppingBag className="w-6 h-6 text-white/25" /></div>}
-        {p.sale && <div className="absolute top-1 right-1 px-1 py-0.5 text-[9px] font-bold text-white rounded bg-red-600">מבצע</div>}
+        {p.sale && <div className="absolute top-1 right-1 px-1 py-0.5 text-[9px] font-bold text-white rounded bg-red-600">{t("ob.vis.sale_badge")}</div>}
       </div>
       <div className="p-1.5">
         <div className="text-xs font-medium truncate text-white mb-0.5">{p.name}</div>
@@ -323,9 +326,10 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
   bannerImage: string | null;
   businessName: string;
 }) => {
+  const { t } = useLanguage();
   const display = userProducts.length > 0 ? userProducts : template.products;
   const bg = "#0f0f0f";
-  const name = businessName || "החנות שלי";
+  const name = businessName || t("ob.vis.store_fallback");
 
   const Nav = () => (
     <div className="h-11 flex items-center justify-between px-4 border-b border-white/10 bg-[#1a1a1a] shrink-0">
@@ -342,7 +346,7 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
   const HeroPlaceholder = ({ height }: { height: number }) => (
     <div className="flex flex-col items-center justify-center gap-2 shrink-0 border-b border-white/5" style={{ height, background: "#141414" }}>
       <Upload className="w-5 h-5 text-white/20" />
-      <span className="text-xs text-white/25">העלו תמונה למעלה לתצוגה מלאה</span>
+      <span className="text-xs text-white/25">{t("ob.vis.hero_placeholder")}</span>
     </div>
   );
 
@@ -353,7 +357,7 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
         <div className="flex flex-row overflow-hidden" style={{ height: '150px' }}>
           <div className="w-[42%] flex flex-col justify-center px-4 py-3 shrink-0" style={{ background: primaryColor }}>
             <span className="text-xl font-black text-white leading-tight mb-2">{name}</span>
-            <div className="px-2.5 py-1 text-xs font-bold text-white w-fit bg-black/25 rounded">קנו עכשיו</div>
+            <div className="px-2.5 py-1 text-xs font-bold text-white w-fit bg-black/25 rounded">{t("ob.vis.cta_buy_now")}</div>
           </div>
           <div className="flex-1 relative overflow-hidden">
             <img src={bannerImage} alt="" className="w-full h-full object-cover" />
@@ -373,7 +377,7 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
           <div className="absolute inset-0 bg-black/55" />
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
             <span className="text-xl font-black text-white leading-tight mb-2">{name}</span>
-            <div className="px-3 py-1 text-xs font-bold text-white rounded-full" style={{ background: primaryColor }}>גלו עכשיו</div>
+            <div className="px-3 py-1 text-xs font-bold text-white rounded-full" style={{ background: primaryColor }}>{t("ob.vis.cta_discover_now")}</div>
           </div>
         </div>
       ) : <HeroPlaceholder height={130} />}
@@ -401,6 +405,7 @@ const BigTemplatePreview = ({ template, primaryColor, userProducts, bannerImage,
 // ─── Main component ───────────────────────────────────────────────────────────
 
 const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
+  const { t } = useLanguage();
   const primaryColor = data.extractedBranding?.primaryColor || "#7C3AED";
   const [hexInput, setHexInput] = useState(primaryColor);
   const [scanning, setScanning] = useState(false);
@@ -413,10 +418,10 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
   // (a placeholder fills in for a missing image). Only fall back to the template
   // demo products when the user has none at all.
   const userProducts = data.products.slice(0, 3).map(p => ({
-    img: p.imageUrl || "", name: p.name || "מוצר", price: `₪${p.price}`,
+    img: p.imageUrl || "", name: p.name || t("spv.product"), price: `₪${p.price}`,
   }));
 
-  const selectedTemplate = templateStyles.find(t => t.id === data.storeTemplate) || templateStyles[0];
+  const selectedTemplate = templateStyles.find(ts => ts.id === data.storeTemplate) || templateStyles[0];
 
   const setColor = (color: string) => {
     setHexInput(color);
@@ -435,9 +440,9 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
     try {
       const color = await extractColorFromFile(file);
       setColor(color);
-      toast.success("זיהינו את הצבע הראשי מהקובץ");
+      toast.success(t("ob.vis.t_color_detected"));
     } catch {
-      toast.error("לא הצלחנו לזהות צבע — נסו קובץ אחר");
+      toast.error(t("ob.vis.err_color_detect"));
     } finally {
       setScanning(false);
       if (colorFileRef.current) colorFileRef.current.value = "";
@@ -476,9 +481,9 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
           heroImageUrl: res.imageUrl,
         },
       });
-      toast.success("הבאנר נוצר!");
+      toast.success(t("ob.vis.t_banner_generated"));
     } catch {
-      toast.error("לא הצלחנו ליצור באנר — נסו שוב");
+      toast.error(t("ob.vis.err_banner_generate"));
     } finally {
       setGeneratingBanner(false);
     }
@@ -496,16 +501,16 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
   return (
     <div className="space-y-6 pb-20" dir="rtl">
       <div className="text-center">
-        <h1 className="text-2xl font-medium text-foreground mb-1">מראה האתר</h1>
-        <p className="text-sm text-muted-foreground">לחצו על תבנית או צבע — הפריוויו מתעדכן מיד</p>
+        <h1 className="text-2xl font-medium text-foreground mb-1">{t("ob.vis.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("ob.vis.subtitle")}</p>
       </div>
 
       {/* Banner — first, so user sets the hero image before seeing the preview */}
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium">תמונה ראשית (באנר)</p>
-            <p className="text-xs text-muted-foreground">התמונה הגדולה בראש האתר - אופציונלי</p>
+            <p className="text-sm font-medium">{t("ob.vis.banner_label")}</p>
+            <p className="text-xs text-muted-foreground">{t("ob.vis.banner_hint")}</p>
           </div>
           {bannerPreview && (
             <button onClick={clearBanner} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -517,15 +522,15 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
           <div className="flex items-center gap-3">
             <img src={bannerPreview} alt="banner" className="w-16 h-10 object-cover rounded-lg shrink-0 border border-white/10" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-foreground font-medium">תמונה הועלתה</p>
-              <p className="text-xs text-muted-foreground">נראית בפריוויו למטה</p>
+              <p className="text-sm text-foreground font-medium">{t("ob.vis.banner_uploaded")}</p>
+              <p className="text-xs text-muted-foreground">{t("ob.vis.banner_uploaded_sub")}</p>
             </div>
             <input ref={bannerFileRef} type="file" accept="image/*" className="hidden" onChange={handleBannerFile} />
             <button
               onClick={() => bannerFileRef.current?.click()}
               className="text-xs text-primary hover:underline shrink-0"
             >
-              החלף
+              {t("ob.vis.banner_replace")}
             </button>
           </div>
         ) : (
@@ -536,7 +541,7 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
               className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg border border-dashed border-border hover:border-primary/50 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <Upload className="w-4 h-4" />
-              העלו תמונה
+              {t("ob.vis.banner_upload")}
             </button>
             <button
               onClick={generateBanner}
@@ -544,7 +549,7 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
               className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg border border-dashed border-primary/40 text-sm text-primary hover:bg-primary/5 transition-colors disabled:opacity-50"
             >
               {generatingBanner ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-              {generatingBanner ? "יוצר..." : "צרו עם AI"}
+              {generatingBanner ? t("ob.vis.banner_generating") : t("ob.vis.banner_create_ai")}
             </button>
           </div>
         )}
@@ -556,7 +561,7 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
           <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
           <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
           <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-          <span className="text-[10px] text-white/30 mr-2 font-mono">תצוגה מקדימה — האתר שלך</span>
+          <span className="text-[10px] text-white/30 mr-2 font-mono">{t("ob.vis.preview_label")}</span>
         </div>
         <div style={{ minHeight: '380px' }}>
           <BigTemplatePreview
@@ -571,7 +576,7 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
 
       {/* Template selector — thumbnails */}
       <div>
-        <p className="text-sm font-medium text-foreground mb-2">בחרו תבנית</p>
+        <p className="text-sm font-medium text-foreground mb-2">{t("ob.vis.choose_template")}</p>
         <div className="grid grid-cols-4 gap-2">
           {templateStyles.map((template) => {
             const isSelected = data.storeTemplate === template.id;
@@ -606,7 +611,7 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
       {/* Colour picker */}
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium">צבע ראשי</p>
+          <p className="text-sm font-medium">{t("ob.vis.primary_color")}</p>
           <div className="w-6 h-6 rounded-full border-2 border-border transition-colors" style={{ background: primaryColor }} />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -649,7 +654,7 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
             className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-sm hover:bg-muted transition-colors disabled:opacity-50"
           >
             {scanning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-            {scanning ? "סורק..." : "חלץ מקובץ"}
+            {scanning ? t("ob.vis.scanning") : t("ob.vis.extract_file")}
           </button>
         </div>
       </div>
@@ -661,13 +666,13 @@ const StepVisuals = ({ data, updateData, onNext, onBack }: Props) => {
           className="flex items-center gap-2 px-5 h-11 rounded-xl border border-border text-sm hover:bg-muted transition-colors"
         >
           <ArrowRight className="w-4 h-4" />
-          חזרה
+          {t("ob.common.back")}
         </button>
         <button
           onClick={onNext}
           className="flex items-center gap-2 px-6 h-11 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
         >
-          המשך
+          {t("ob.vis.continue")}
           <ArrowLeft className="w-4 h-4" />
         </button>
       </div>
