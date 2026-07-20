@@ -41,9 +41,9 @@ const MarketLayout = ({
         promoText={promoText}
         primaryColor={primaryColor}
         businessCategory={businessCategory}
-        storeCategories={[]}
-        selectedCategoryId={null}
-        onSelectCategory={() => {}}
+        storeCategories={categories}
+        selectedCategoryId={selectedCategoryId}
+        onSelectCategory={onSelectCategory}
         onScrollToAbout={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
         onNavigateHome={onNavigateHome}
         onScrollToProducts={onScrollToProducts}
