@@ -699,8 +699,18 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
 
   // Continue to the next step. If the merchant is skipping with an empty store,
   // seed 5 demo products so the site isn't blank, and tell them they're editable.
+  // ONLY for a pure "products" store (a bare e-commerce catalog with zero items
+  // is the most jarring empty state, and this demo-seed feature is designed and
+  // announced for that case). Every other business type (services/nonprofit/
+  // synagogue/realestate/vacation) gets "commerce" enabled only as a secondary,
+  // optional add-on module (e.g. a salon selling retail shampoo) - silently
+  // injecting 5 fake-priced stock-photo products onto their live storefront is
+  // real fabricated content on a real published site (violates the no-fake-data
+  // rule), not a helpful placeholder. Those business types simply publish with
+  // zero products; their storefront's primary content is the booking/donation/
+  // listing module instead.
   const handleContinue = () => {
-    if (data.products.length === 0) {
+    if (data.products.length === 0 && data.businessType === "products") {
       const now = Date.now();
       const demo = getDemoProducts(data.businessCategory, data.businessType).map((p, i) => ({
         id: `demo-${now}-${i}`,
