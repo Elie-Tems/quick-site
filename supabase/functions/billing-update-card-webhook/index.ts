@@ -28,9 +28,23 @@ Deno.serve(async (req) => {
   const u = new URL(req.url);
   if (!safeEqual(u.searchParams.get("secret") ?? "", secret)) return json({ error: "unauthorized" }, 401);
 
-  const businessId = u.searchParams.get("business_id");
   const sessionToken = u.searchParams.get("session_token");
-  if (!businessId || !sessionToken) return json({ error: "missing params" }, 400);
+  if (!sessionToken) return json({ error: "missing params" }, 400);
+
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+  // The session_token must resolve to a session WE created (never trust a
+  // business_id passed in the URL/query string directly - the shared webhook
+  // secret alone isn't enough since it's visible in every legitimate webhook
+  // URL sent to every merchant who runs this flow).
+  const { data: session } = await admin
+    .from("card_update_sessions")
+    .select("id, user_id, business_id, status")
+    .eq("session_token", sessionToken)
+    .maybeSingle();
+  if (!session) return json({ error: "session not found" }, 404);
+  const businessId = (session as { business_id: string }).business_id;
 
   let payload: Record<string, unknown> = {};
   try {
@@ -45,9 +59,6 @@ Deno.serve(async (req) => {
   const lowProfileId = (typeof payload["LowProfileId"] === "string" && payload["LowProfileId"])
     ? payload["LowProfileId"] as string : null;
   if (!lowProfileId) return json({ error: "no LowProfileId" }, 400);
-
-  const url = Deno.env.get("SUPABASE_URL")!;
-  const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
   // Server-to-server verification
   const result = await getLpResult(lowProfileId);
@@ -116,6 +127,8 @@ Deno.serve(async (req) => {
       }).catch(() => {});
     }
   }
+
+  await admin.from("card_update_sessions").update({ status: "completed" }).eq("id", (session as { id: string }).id);
 
   return json({ ok: true, tokenUpdated: true, reactivated: wasPaymentDue });
 });

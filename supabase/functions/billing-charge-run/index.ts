@@ -103,19 +103,34 @@ serve(async (req) => {
     if (existing && (existing as any).status === "success") { skipped++; continue; }
 
     // Consolidated invoice: base subscription + any active recurring add-ons, each as
-    // its OWN line, in ONE Document. Defensive: if the add-ons table is missing/empty
-    // the charge is base-only (identical to before). price_ils is the gross per line.
+    // its OWN line, in ONE Document. If the add-ons table doesn't exist yet the charge
+    // is base-only (pre-add-ons behavior); any OTHER fetch error skips this cycle
+    // entirely rather than risk charging base-only and losing add-on revenue silently.
+    // price_ils is the gross per line; a persisted 'forever' coupon (see addon-subscribe)
+    // is re-applied every cycle via chargeAmount.
     const invLines: { description: string; quantity: number; unitCost: number }[] =
       [{ description: "מנוי פרסום אתר Siango - חיוב חודשי", quantity: 1, unitCost: baseAmount }];
     let addonsTotal = 0;
-    try {
-      const { data: addons } = await admin.from("subscription_addons")
-        .select("description, price_ils").eq("business_id", s.business_id).eq("active", true);
-      for (const a of (addons ?? [])) {
-        const p = Math.round(Number((a as any).price_ils) * 100) / 100;
-        if (p > 0) { invLines.push({ description: `${(a as any).description} - חיוב חודשי`, quantity: 1, unitCost: p }); addonsTotal += p; }
-      }
-    } catch (_e) { /* add-ons not enabled yet - base only */ }
+    const { data: addons, error: addonsErr } = await admin.from("subscription_addons")
+      .select("description, price_ils, coupon_discount_type, coupon_discount_value, coupon_duration")
+      .eq("business_id", s.business_id).eq("active", true);
+    // Only treat a genuinely-missing table as "add-ons not enabled yet - base
+    // only" (error code 42P01). Any other error (transient DB issue, RLS,
+    // etc.) must NOT silently charge the merchant base-only with zero add-on
+    // revenue collected and no trace anywhere - skip this cycle and retry
+    // next run instead.
+    if (addonsErr && (addonsErr as { code?: string }).code !== "42P01") {
+      console.error(`charge-run: add-ons fetch failed for sub ${s.id} - skipping this cycle (will retry next run)`, addonsErr);
+      skipped++; continue;
+    }
+    for (const a of (addons ?? [])) {
+      const base = Math.round(Number((a as any).price_ils) * 100) / 100;
+      const addonCoupon: CouponInfo | null = (a as any).coupon_duration === "forever"
+        ? { discount_type: (a as any).coupon_discount_type, discount_value: Number((a as any).coupon_discount_value), duration: "forever" }
+        : null;
+      const p = addonCoupon ? chargeAmount(base, addonCoupon, 1) : base;
+      if (p > 0) { invLines.push({ description: `${(a as any).description} - חיוב חודשי`, quantity: 1, unitCost: p }); addonsTotal += p; }
+    }
     const amount = Math.round((baseAmount + addonsTotal) * 100) / 100;
 
     // Reserve the charge row first (unique idempotency_key blocks a concurrent double).
@@ -178,6 +193,20 @@ serve(async (req) => {
       const invoiceUrl = (res.data as any)?.DocumentUrl ?? (res.data as any)?.DocumentInfo?.DocumentUrl ?? null;
       const tranzId = (res.data as any)?.TranzactionId;   // needed to refund this charge later
       await admin.from("billing_charges").update({ status: "success", confirmation_code: res.data.ApprovalNumber ?? null, provider_transaction_id: tranzId != null ? String(tranzId) : null, invoice_url: invoiceUrl }).eq("idempotency_key", idem);
+      // Every successful monthly charge used to send zero confirmation - only the
+      // failure/expired paths emailed anything, so a merchant had no record this
+      // even happened unless they went looking for the invoice themselves.
+      if (email) {
+        fetch(`${url}/functions/v1/send-platform-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
+          body: JSON.stringify({
+            type: "paymentReceipt",
+            to: email,
+            ctx: { amountIls: amount, invoiceUrl: invoiceUrl ?? undefined, recipientEmail: email, lang: "he" },
+          }),
+        }).catch(() => {});
+      }
       // Anniversary billing: next charge is the same day-of-month the merchant joined
       // (billing_anchor_day). Falls back to today's day for legacy rows without an anchor.
       const anchorDay = Number(s.billing_anchor_day) || new Date(nowMs).getUTCDate();

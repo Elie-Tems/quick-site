@@ -48,16 +48,20 @@ Deno.serve(async (req) => {
   if (!sub) return json({ ok: false, error: "no subscription" }, 404);
   if ((sub as { user_id?: string }).user_id !== user.id) return json({ ok: false, error: "forbidden" }, 403);
 
-  const wasImmediate = (sub as { cancel_type?: string }).cancel_type === "immediate";
-
   const { error: upErr } = await admin.from("subscriptions")
     .update({ status: "active", cancel_type: null, cancel_at: null, updated_at: new Date().toISOString() })
     .eq("id", (sub as { id: string }).id);
   if (upErr) return json({ ok: false, error: "לא הצלחנו לחדש כרגע. נסו שוב עוד רגע." }, 500);
 
-  // Bring THIS store back online if an immediate cancel had taken it down.
+  // Bring THIS store back online unconditionally. An immediate cancel takes the
+  // store down right away; an end-of-period cancel leaves it up until cancel_at
+  // passes, at which point a cron also takes it down. Gating this on cancel_type
+  // ("wasImmediate") missed exactly that second case - a merchant resuming (and
+  // being billed again) after their end-of-period cancellation had already taken
+  // effect stayed offline with no republish. Resuming an active, paid
+  // subscription should always mean the store is live.
   const subBusinessId = (sub as { business_id?: string }).business_id;
-  if (wasImmediate && subBusinessId) {
+  if (subBusinessId) {
     await admin.from("businesses").update({ is_published: true }).eq("id", subBusinessId);
   }
 

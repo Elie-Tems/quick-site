@@ -63,7 +63,13 @@ Deno.serve(async (req) => {
   if (!sub) return json({ error: "no_cardcom_subscription" }, 400);
 
   const sessionToken = crypto.randomUUID();
+  const { error: sessionErr } = await admin.from("card_update_sessions").insert({
+    user_id: user.id, business_id: businessId, session_token: sessionToken,
+  });
+  if (sessionErr) return json({ error: "לא ניתן להתחיל את עדכון הכרטיס. נסו שוב." }, 500);
   const webhookSecret = Deno.env.get("CARDCOM_WEBHOOK_SECRET") ?? "";
+  // business_id is still passed for readability/logging, but the webhook must
+  // never trust it - it looks up business_id from this session row instead.
   const webhookUrl = `${url}/functions/v1/billing-update-card-webhook?session_token=${sessionToken}&secret=${encodeURIComponent(webhookSecret)}&business_id=${businessId}`;
 
   // ₪1 verify charge (Cardcom refunds automatically)

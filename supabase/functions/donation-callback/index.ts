@@ -115,13 +115,14 @@ Deno.serve(async (req) => {
       const d = (txn.details ?? {}) as Record<string, any>;
       if (d.donor_email && !d.donor_anonymous) {
         const alloc = paidDetails.receipt_allocation_number as string | undefined;
-        await sendLifecycleEmail(admin, {
+        const res = await sendLifecycleEmail(admin, {
           businessId: txn.business_id, key: "donation_thanks",
           to: d.donor_email, name: d.donor_name || undefined,
           extraHtml: alloc
             ? `<p dir="rtl" style="margin:0 0 14px;font-family:Arial,Tahoma,sans-serif;font-size:14px;color:#1f5c46;text-align:right;">דווח לתרומות ישראל · מספר הקצאה <span dir="ltr">${alloc}</span>. הזיכוי יופיע באזור האישי שלך ברשות המסים - אין צורך לשמור קבלה.</p>`
             : undefined,
         });
+        if (!res.ok) console.error("donor thank-you email failed - txn", txn.id, "error", res.error);
       }
     } catch (e) {
       console.warn("donor thank-you email failed:", txn.id, String(e));

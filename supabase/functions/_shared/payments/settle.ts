@@ -26,6 +26,21 @@ export async function settlePaidOrder(admin: any, orderId: string, transactionUi
 
   await admin.from("payments").update({ status: "success", provider_transaction_id: transactionUid, updated_at: nowIso }).eq("order_id", order.id);
 
+  // Decrement variant stock now that payment is CONFIRMED (not at payments-create
+  // time, since an online-payment order can be abandoned or fail and must never
+  // touch stock). orders-create (COD) already decrements at creation time since a
+  // COD order is authoritative immediately.
+  try {
+    const { data: paidItems } = await admin.from("order_items").select("variant_id, quantity").eq("order_id", order.id);
+    for (const it of paidItems ?? []) {
+      if (it.variant_id) {
+        await admin.rpc("decrement_variant_stock", { p_variant_id: it.variant_id, p_qty: it.quantity }).catch(() => {});
+      }
+    }
+  } catch (e) {
+    console.warn("settle: variant stock decrement failed:", e);
+  }
+
   // Count the coupon use now that the payment is confirmed.
   const { data: payRow } = await admin.from("payments").select("metadata").eq("order_id", order.id).maybeSingle();
   const couponId = (payRow?.metadata as Record<string, unknown> | null)?.coupon_id as string | undefined;
@@ -69,16 +84,18 @@ export async function settlePaidOrder(admin: any, orderId: string, transactionUi
     const merchantEmail = (biz as { email?: string } | null)?.email;
     if (merchantEmail && biz) {
       const mail = newOrderMerchant({ businessName: biz.name, amountIls: total, dashboardUrl: `${siteUrl}/dashboard`, recipientEmail: merchantEmail });
-      await sendViaResend({ to: merchantEmail, subject: mail.subject, html: mail.html, fromName: "Siango" })
-        .catch((e) => console.warn("settle: merchant email failed:", e));
+      const res = await sendViaResend({ to: merchantEmail, subject: mail.subject, html: mail.html, fromName: "Siango" })
+        .catch((e) => ({ ok: false, error: String(e) }));
+      if (!res.ok) console.error("settle: merchant order email failed - order", order.id, "error", res.error);
     }
     if (order.customer_email) {
       const itemsHtml = emailItemsTable((items || []).map((it: Record<string, unknown>) => ({ name: String(it.product_name), quantity: Number(it.quantity), price: Number(it.price_at_order) })), total);
-      await sendLifecycleEmail(admin, {
+      const res = await sendLifecycleEmail(admin, {
         businessId: order.business_id, key: "order_confirm", to: order.customer_email, name: order.customer_name,
         extraHtml: itemsHtml,
         buttonUrl: (biz as { slug?: string } | null)?.slug ? `${siteUrl}/store/${(biz as { slug?: string }).slug}` : undefined,
-      }).catch((e) => console.warn("settle: customer email failed:", e));
+      }).catch((e) => ({ ok: false, error: String(e) }));
+      if (!res.ok) console.error("settle: customer order-confirm email failed - order", order.id, "error", res.error);
     }
   } catch (e) {
     console.warn("settle: order emails failed:", e);

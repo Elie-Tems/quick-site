@@ -15,7 +15,7 @@ const json = (b: unknown, s = 200) =>
 
 interface ReqBody {
   businessId: string;
-  items: { product_id: string; quantity: number }[];
+  items: { product_id: string; quantity: number; variant_id?: string | null; variant_color?: string | null; variant_size?: string | null }[];
   customer: { fullName: string; phone: string; email: string };
   notes?: string;
   deliveryMethod?: "pickup" | "delivery";
@@ -76,18 +76,38 @@ Deno.serve(async (req) => {
     .eq("business_id", businessId).in("id", items.map((i) => i.product_id));
   if (!products?.length) return json({ error: "Products not found" }, 400);
 
+  // Same variant-ownership verification as orders-create: a client-supplied
+  // variant_id must actually belong to the product/business being ordered from
+  // before its price_override is trusted or it's persisted onto the order.
+  const requestedVariantIds = [...new Set(items.map((i) => i.variant_id).filter(Boolean))] as string[];
+  const validVariants = new Map<string, { product_id: string; price_override: number | null }>();
+  if (requestedVariantIds.length) {
+    const { data: variants } = await admin
+      .from("product_variants")
+      .select("id, product_id, price_override")
+      .eq("business_id", businessId)
+      .in("id", requestedVariantIds);
+    for (const v of variants ?? []) validVariants.set(v.id, { product_id: v.product_id, price_override: v.price_override });
+  }
+
   const priceOf = (p: any) => (p.is_on_sale && p.sale_price != null ? Number(p.sale_price) : Number(p.price));
   let subtotal = 0;
   const lineItems: { name: string; quantity: number; price: number }[] = [];
-  const orderItems: { product_id: string; product_name: string; price_at_order: number; quantity: number }[] = [];
+  const orderItems: { product_id: string; product_name: string; price_at_order: number; quantity: number; variant_id: string | null; variant_color: string | null; variant_size: string | null }[] = [];
   for (const line of items) {
     const p = products.find((x) => x.id === line.product_id);
     if (!p || p.active !== true) continue;
     const qty = Math.max(1, Math.floor(Number(line.quantity) || 1));
-    const unit = priceOf(p);
+    const variant = line.variant_id ? validVariants.get(line.variant_id) : undefined;
+    const verifiedVariantId = variant && variant.product_id === p.id ? line.variant_id! : null;
+    const matchedVariant = verifiedVariantId ? variant : undefined;
+    const unit = matchedVariant?.price_override != null ? Number(matchedVariant.price_override) : priceOf(p);
     subtotal += unit * qty;
     lineItems.push({ name: p.name, quantity: qty, price: unit });
-    orderItems.push({ product_id: p.id, product_name: p.name, price_at_order: unit, quantity: qty });
+    orderItems.push({
+      product_id: p.id, product_name: p.name, price_at_order: unit, quantity: qty,
+      variant_id: verifiedVariantId, variant_color: line.variant_color ?? null, variant_size: line.variant_size ?? null,
+    });
   }
   if (!orderItems.length) return json({ error: "No valid items" }, 400);
 

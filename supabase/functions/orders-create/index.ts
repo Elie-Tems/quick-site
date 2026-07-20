@@ -96,14 +96,14 @@ Deno.serve(async (req) => {
   // unauthenticated endpoint - otherwise anyone could pass any variant_id and drain
   // another merchant's stock on an unrelated order).
   const requestedVariantIds = [...new Set(items.map((i) => i.variant_id).filter(Boolean))] as string[];
-  const validVariantProductId = new Map<string, string>();
+  const validVariants = new Map<string, { product_id: string; price_override: number | null }>();
   if (requestedVariantIds.length) {
     const { data: variants } = await admin
       .from("product_variants")
-      .select("id, product_id")
+      .select("id, product_id, price_override")
       .eq("business_id", businessId)
       .in("id", requestedVariantIds);
-    for (const v of variants ?? []) validVariantProductId.set(v.id, v.product_id);
+    for (const v of variants ?? []) validVariants.set(v.id, { product_id: v.product_id, price_override: v.price_override });
   }
 
   const priceOf = (p: any) => (p.is_on_sale && p.sale_price != null ? Number(p.sale_price) : Number(p.price));
@@ -114,11 +114,13 @@ Deno.serve(async (req) => {
     const p = products.find((x) => x.id === line.product_id);
     if (!p || p.active !== true) continue;
     const qty = Math.max(1, Math.floor(Number(line.quantity) || 1));
-    const unit = priceOf(p);
+    const variant = line.variant_id ? validVariants.get(line.variant_id) : undefined;
+    const verifiedVariantId = variant && variant.product_id === p.id ? line.variant_id! : null;
+    const matchedVariant = verifiedVariantId ? variant : undefined;
+    const unit = matchedVariant?.price_override != null ? Number(matchedVariant.price_override) : priceOf(p);
     subtotal += unit * qty;
     // Snapshot the cost so historical profit stays accurate if cost changes later.
     const cost = (p as any).cost_price != null ? Number((p as any).cost_price) : null;
-    const verifiedVariantId = line.variant_id && validVariantProductId.get(line.variant_id) === p.id ? line.variant_id : null;
     orderItems.push({
       product_id: p.id, product_name: p.name, price_at_order: unit, quantity: qty, cost_at_order: cost,
       variant_id: verifiedVariantId, variant_color: line.variant_color ?? null, variant_size: line.variant_size ?? null,

@@ -123,11 +123,12 @@ Deno.serve(async (req) => {
   const daysLeft = Math.max(1, Math.min(30, Math.ceil((new Date(nextChargeAt).getTime() - nowMs) / 864e5)));
   const proratedGross = Math.max(1, Math.round(monthGross * (daysLeft / 30) * 100) / 100);
 
-  // Optional coupon: server-validated for THIS add-on (or scope 'all'). The
-  // discount applies to the first (prorated) charge only; the recurring price
-  // stays full and the consolidated monthly invoice bills the add-on at list
-  // price from next cycle. chargeAmount only ever REDUCES the amount, and we
-  // clamp to >= 1 so Cardcom always sees a real amount.
+  // Optional coupon: server-validated for THIS add-on (or scope 'all'). A
+  // 'first_month' coupon discounts only this prorated charge; the recurring
+  // price stays full from next cycle. A 'forever' coupon is persisted onto the
+  // subscription_addons row below (see activate()) so billing-charge-run keeps
+  // applying it every consolidated monthly charge. chargeAmount only ever
+  // REDUCES the amount, and we clamp to >= 1 so Cardcom always sees a real amount.
   let coupon: CouponInfo | null = null;
   let couponCode: string | null = null;
   if (body.couponCode?.trim()) {
@@ -149,7 +150,12 @@ Deno.serve(async (req) => {
 
   if (existingStatus === "success") {
     // Charge already happened; just ensure the add-on + flag are active.
-    await activate(admin, { user, businessId, addonType, addon, monthGross, domain: domainInput });
+    try {
+      await activate(admin, { user, businessId, addonType, addon, monthGross, domain: domainInput, coupon, couponCode });
+    } catch (e) {
+      console.error("addon-subscribe: activate() failed AFTER a prior confirmed charge - business", businessId, "addon", addonType, e);
+      return json({ ok: false, error: "התשלום כבר בוצע אך הפעלת התוסף נכשלה. פנו לתמיכה.", chargedButNotActivated: true });
+    }
     return json({ ok: true, alreadyCharged: true, cnameTarget });
   }
 
@@ -189,14 +195,25 @@ Deno.serve(async (req) => {
   await admin.from("billing_charges").update({ status: "success", confirmation_code: confirmation, invoice_url: invoiceUrl }).eq("idempotency_key", idem);
 
   // Activate the add-on line + its feature flag ONLY after a confirmed charge.
-  await activate(admin, { user, businessId, addonType, addon, monthGross, domain: domainInput });
+  // Money has already moved at this point, so a failure here must be loud and
+  // recoverable, not silently swallowed - the merchant paid for something that
+  // didn't turn on.
+  try {
+    await activate(admin, { user, businessId, addonType, addon, monthGross, domain: domainInput, coupon, couponCode });
+  } catch (e) {
+    console.error("addon-subscribe: activate() failed AFTER a successful charge - business", businessId, "addon", addonType, "idem", idem, e);
+    return json({ ok: false, error: "התשלום בוצע אך הפעלת התוסף נכשלה. פנו לתמיכה ונציין את מספר האישור " + (confirmation ?? idem) + ".", chargedButNotActivated: true, proratedIls: chargeGross, invoiceUrl });
+  }
 
   return json({ ok: true, proratedIls: chargeGross, monthlyIls: monthGross, invoiceUrl, couponApplied: !!coupon, cnameTarget });
 });
 
 // deno-lint-ignore no-explicit-any
-async function activate(admin: any, o: { user: { id: string }; businessId: string; addonType: string; addon: { description: string; flag?: string; subFlag?: string }; monthGross: number; domain?: string }) {
+async function activate(admin: any, o: { user: { id: string }; businessId: string; addonType: string; addon: { description: string; flag?: string; subFlag?: string }; monthGross: number; domain?: string; coupon?: CouponInfo | null; couponCode?: string | null }) {
   const now = new Date().toISOString();
+  // Persist the coupon only when it must keep applying every future cycle -
+  // billing-charge-run re-derives the monthly charge from these columns.
+  const persistCoupon = o.coupon?.duration === "forever";
   if (o.addonType === "custom_domain" && o.domain) {
     // Connect the merchant's OWN domain (bought elsewhere) to Cloudflare, same
     // engine as purchased domains - the only difference is WE never touch their
@@ -219,6 +236,10 @@ async function activate(admin: any, o: { user: { id: string }; businessId: strin
     user_id: o.user.id, business_id: o.businessId, addon_type: o.addonType,
     description: o.addon.description, price_ils: o.monthGross, active: true,
     cancelled_at: null, updated_at: now,
+    coupon_code: persistCoupon ? o.couponCode : null,
+    coupon_discount_type: persistCoupon ? o.coupon!.discount_type : null,
+    coupon_discount_value: persistCoupon ? o.coupon!.discount_value : null,
+    coupon_duration: persistCoupon ? o.coupon!.duration : null,
   }, { onConflict: "business_id,addon_type" });
   if (o.addon.flag) {
     await admin.from("businesses").update({ [o.addon.flag]: true, updated_at: now }).eq("id", o.businessId);

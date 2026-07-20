@@ -134,39 +134,65 @@ Deno.serve(async (req) => {
   const amount = round2(Number(o.amount_ils));
   const useTxId = o.transaction_id || txId;
 
-  // Atomically consume the OTP BEFORE charging so a double-submit can't double-refund.
+  // Atomically consume the OTP BEFORE charging so a double-submit can't double-refund
+  // with the SAME code. This alone doesn't stop two DIFFERENT valid OTPs issued for
+  // the same charge (e.g. the admin requested a code twice) from both passing the
+  // amount check below, since each request read refunded_amount independently -
+  // the compare-and-set right before the gateway call closes that gap.
   const { data: claimed } = await admin.from("admin_refund_otps")
     .update({ consumed_at: new Date().toISOString() })
     .eq("id", o.id).is("consumed_at", null).select("id");
   if (!claimed || !claimed.length) return json({ error: "הקוד כבר נוצל" }, 409);
 
-  // Execute the refund at the gateway.
+  // Re-read the charge's CURRENT refunded_amount (may have moved since this request
+  // started) and reserve this refund atomically: the update only succeeds if
+  // refunded_amount still matches what we just read. A second concurrent refund
+  // request (different OTP, same charge) loses this race and is rejected before
+  // any money moves at the gateway.
+  const { data: fresh } = await admin.from("billing_charges").select("refunded_amount, amount_ils").eq("id", c.id).maybeSingle();
+  const freshAlready = round2(Number((fresh as { refunded_amount?: number } | null)?.refunded_amount || 0));
+  const freshRemaining = round2(Number((fresh as { amount_ils?: number } | null)?.amount_ils ?? c.amount_ils) - freshAlready);
+  if (amount > freshRemaining) return json({ error: "הסכום כבר עודכן מאז שהוזן הקוד - רעננו ונסו שוב" }, 409);
+  const newRefunded = round2(freshAlready + amount);
+  const fully = newRefunded >= round2(Number(c.amount_ils));
+  const { data: reserved } = await admin.from("billing_charges")
+    .update({ refunded_amount: newRefunded, ...(fully ? { status: "refunded" } : {}) })
+    .eq("id", c.id).eq("refunded_amount", freshAlready).select("id");
+  if (!reserved || !reserved.length) return json({ error: "זיכוי כפול נחסם - הסכום כבר עודכן. רעננו ונסו שוב." }, 409);
+
+  // Execute the refund at the gateway. If it fails, roll back the reservation so
+  // the charge doesn't show as (partially) refunded when no money actually moved.
   let newTxId: string | null = null;
-  if (isCardcom) {
-    if (!useTxId) return json({ error: "no_transaction_id" }, 400);
-    const partial = amount < remaining ? amount : undefined; // omit for a full refund
-    const res = await refundByTransactionId({ transactionId: useTxId, partialSum: partial });
-    if (!res.ok) return json({ error: "cardcom_refund_failed", detail: res.error || res.data }, 502);
-    newTxId = (res.data as { NewTranzactionId?: number })?.NewTranzactionId != null
-      ? String((res.data as { NewTranzactionId?: number }).NewTranzactionId) : null;
-  } else {
-    const res = await refundCharge({ confirmation_code: c.confirmation_code, sum: amount });
-    if (!res.ok) return json({ error: "icount_refund_failed", detail: res.error || res.data }, 502);
+  try {
+    if (isCardcom) {
+      if (!useTxId) throw { rollbackError: "no_transaction_id" };
+      const partial = amount < freshRemaining ? amount : undefined; // omit for a full refund
+      const res = await refundByTransactionId({ transactionId: useTxId, partialSum: partial });
+      if (!res.ok) throw { rollbackError: "cardcom_refund_failed", detail: res.error || res.data };
+      newTxId = (res.data as { NewTranzactionId?: number })?.NewTranzactionId != null
+        ? String((res.data as { NewTranzactionId?: number }).NewTranzactionId) : null;
+    } else {
+      const res = await refundCharge({ confirmation_code: c.confirmation_code, sum: amount });
+      if (!res.ok) throw { rollbackError: "icount_refund_failed", detail: res.error || res.data };
+    }
+  } catch (e) {
+    await admin.from("billing_charges").update({ refunded_amount: freshAlready, status: c.status }).eq("id", c.id);
+    const err = e as { rollbackError?: string; detail?: unknown };
+    if (err?.rollbackError) return json({ error: err.rollbackError, detail: err.detail }, err.rollbackError === "no_transaction_id" ? 400 : 502);
+    throw e;
   }
 
-  // Record it: bump refunded_amount, flip to 'refunded' once fully refunded, audit row.
-  const newRefunded = round2(already + amount);
-  const fully = newRefunded >= round2(Number(c.amount_ils));
-  await admin.from("billing_charges").update({
-    refunded_amount: newRefunded, ...(fully ? { status: "refunded" } : {}),
-  }).eq("id", c.id);
-  await admin.from("billing_charges").insert({
+  // Audit row. This is a record-keeping insert AFTER the gateway refund already
+  // succeeded and refunded_amount is already reserved - log loudly on failure
+  // instead of silently losing the audit trail of a real refund.
+  const { error: auditErr } = await admin.from("billing_charges").insert({
     user_id: c.user_id, subscription_id: c.subscription_id, business_id: c.business_id,
     amount_ils: -Math.abs(amount), status: "refunded",
     payment_description: `זיכוי ${fully ? "מלא" : "חלקי"} (ע"י אדמין) לחיוב ${c.id}`,
     provider_transaction_id: newTxId,
     idempotency_key: `refund:${c.id}:${o.id}`,
-  }).then(() => {}).catch(() => {});
+  });
+  if (auditErr) console.error("billing-refund: audit row insert FAILED after a real gateway refund - charge", c.id, "amount", amount, "error", auditErr);
 
   return json({ ok: true, refundedChargeId: c.id, amount, fullyRefunded: fully, newTransactionId: newTxId });
 });
