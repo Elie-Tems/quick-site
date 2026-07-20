@@ -802,7 +802,11 @@ const DashboardProducts = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price" className="!text-foreground">מחיר (₪) *</Label>
+                  {/* Vacation listings are priced per-night (below), not by this generic
+                      field - a room saved without price_per_night silently falls
+                      through into the commerce cart/quantity flow instead of the
+                      check-in/out booking flow on the storefront. */}
+                  <Label htmlFor="price" className="!text-foreground">מחיר (₪){businessType !== "vacation" && " *"}</Label>
                   <Input
                     id="price"
                     type="number"
@@ -811,7 +815,7 @@ const DashboardProducts = ({
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     placeholder="0"
-                    required
+                    required={businessType !== "vacation"}
                     dir="ltr"
                   />
                 </div>
@@ -855,11 +859,12 @@ const DashboardProducts = ({
                   <p className="text-sm font-medium">פרטי לינה</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground">מחיר ללילה (₪)</label>
+                      <label className="text-xs text-muted-foreground">מחיר ללילה (₪) *</label>
                       <Input
                         type="number"
                         value={vacationForm.price_per_night}
                         onChange={e => setVacationForm(v => ({ ...v, price_per_night: e.target.value }))}
+                        required={businessType === "vacation"}
                       />
                     </div>
                     <div className="space-y-1">

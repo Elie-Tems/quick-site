@@ -196,10 +196,19 @@ Deno.serve(async (req) => {
   );
   if (itemsErr) return json({ error: "Could not save order items" }, 500);
 
-  // Decrement stock for any purchased variant (atomic, never below 0). Best-effort.
+  // Decrement stock for any purchased variant (atomic, never below 0). The order
+  // itself is never blocked on stock (no cart-side stock cap exists yet to
+  // prevent this at the source) - but an oversell should be loud, not silent,
+  // so a merchant can restock/reconcile instead of finding out from an angry
+  // customer.
   for (const it of orderItems) {
     if (it.variant_id) {
+      const { data: before } = await admin.from("product_variants").select("stock").eq("id", it.variant_id).maybeSingle();
+      const priorStock = (before as { stock?: number } | null)?.stock ?? null;
       await admin.rpc("decrement_variant_stock", { p_variant_id: it.variant_id, p_qty: it.quantity }).catch(() => {});
+      if (priorStock != null && it.quantity > priorStock) {
+        console.error("orders-create: oversold variant - order", order.id, "variant", it.variant_id, "requested", it.quantity, "available", priorStock);
+      }
     }
   }
 
@@ -215,10 +224,15 @@ Deno.serve(async (req) => {
         dashboardUrl: `${siteUrl}/dashboard`,
         recipientEmail: merchantEmail,
       });
-      await sendViaResend({ to: merchantEmail, subject: mail.subject, html: mail.html, fromName: "Siango" });
+      const res = await sendViaResend({ to: merchantEmail, subject: mail.subject, html: mail.html, fromName: "Siango" });
+      if (!res.ok) console.error("merchant order email failed - order", order.id, "error", res.error);
     } catch (e) {
       console.warn("merchant order email failed:", e);
     }
+  } else {
+    // No fallback and nothing observable when this happens - the merchant would
+    // never learn an order came in unless they happen to check the dashboard.
+    console.warn("orders-create: business has no email configured, merchant notification skipped - business", businessId, "order", order.id);
   }
 
   // Customer order confirmation - a merchant-editable lifecycle email (can be turned
@@ -229,11 +243,12 @@ Deno.serve(async (req) => {
       orderItems.map((it) => ({ name: it.product_name, quantity: it.quantity, price: it.price_at_order })),
       totalPrice,
     );
-    await sendLifecycleEmail(admin, {
+    const res = await sendLifecycleEmail(admin, {
       businessId, key: "order_confirm", to: customer.email, name: customer.fullName,
       extraHtml: itemsHtml,
       buttonUrl: body.slug ? `${siteUrl}/store/${body.slug}` : undefined,
     });
+    if (!res.ok) console.error("customer order confirmation email failed - order", order.id, "error", res.error);
   } catch (e) {
     console.warn("customer order confirmation email failed:", e);
   }
@@ -340,7 +355,12 @@ async function handleLodging(admin: any, body: ReqBody): Promise<Response> {
     price_at_order: nightly, quantity: nights, cost_at_order: null,
     variant_id: null, variant_color: null, variant_size: null,
   });
-  if (lodgingItemsErr) console.warn("lodging order_items insert failed:", lodgingItemsErr.message);
+  // Unlike the main product-cart path (which fails the whole order on this same
+  // insert error), the reservation itself is already safely recorded on the
+  // `orders` row above (unit_name/num_guests/dates) - failing the whole booking
+  // here would strand a guest with a valid stay and no confirmation. Loud
+  // logging (not a silent warn) so this is at least flagged for reconciliation.
+  if (lodgingItemsErr) console.error("lodging order_items insert failed - order", order.id, "needs manual reconciliation:", lodgingItemsErr.message);
 
   // Notify the merchant - money-first subject, works for COD. Best-effort.
   const merchantEmail = (business as any).email;
@@ -353,10 +373,13 @@ async function handleLodging(admin: any, body: ReqBody): Promise<Response> {
         dashboardUrl: `${siteUrl}/dashboard`,
         recipientEmail: merchantEmail,
       });
-      await sendViaResend({ to: merchantEmail, subject: mail.subject, html: mail.html, fromName: "Siango" });
+      const res = await sendViaResend({ to: merchantEmail, subject: mail.subject, html: mail.html, fromName: "Siango" });
+      if (!res.ok) console.error("merchant lodging email failed - order", order.id, "error", res.error);
     } catch (e) {
       console.warn("merchant lodging email failed:", e);
     }
+  } else {
+    console.warn("orders-create (lodging): business has no email configured, merchant notification skipped - business", businessId, "order", order.id);
   }
 
   // Customer confirmation - merchant-editable lifecycle email. Best-effort.
@@ -368,10 +391,11 @@ async function handleLodging(admin: any, body: ReqBody): Promise<Response> {
       `${nights} לילות · ${numGuests} אורחים<br/>` +
       `סה״כ לתשלום מול המארח: <strong>₪${totalPrice.toLocaleString()}</strong>` +
       `</div>`;
-    await sendLifecycleEmail(admin, {
+    const res = await sendLifecycleEmail(admin, {
       businessId, key: "order_confirm", to: customer.email, name: customerName,
       extraHtml: stayHtml,
     });
+    if (!res.ok) console.error("customer lodging confirmation email failed - order", order.id, "error", res.error);
   } catch (e) {
     console.warn("customer lodging confirmation email failed:", e);
   }

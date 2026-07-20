@@ -37,6 +37,7 @@ const SUB_TYPE_TO_CATEGORY: Record<string, BusinessCategory> = {
   legal: 'other', developer: 'other', 'car-dealer': 'automotive',
   charity: 'other', crowdfunding: 'other', community: 'other',
   education: 'other', social: 'other', animals: 'pets',
+  'torah-center': 'other', synagogue: 'other',
 };
 
 const SUB_TYPE_LABELS: Record<string, string> = {
@@ -50,6 +51,7 @@ const SUB_TYPE_LABELS: Record<string, string> = {
   legal: 'עו"ד / רו"ח', developer: 'יזם / פרויקט נדל"ן', 'car-dealer': 'רכב / מכירות',
   charity: 'תרומות כלליות', crowdfunding: 'גיוס המונים', community: 'קהילה',
   education: 'חינוך / עמותת ילדים', social: 'רווחה חברתית', animals: 'הגנת בעלי חיים',
+  synagogue: 'מרכז תורני / קהילה', 'torah-center': 'מרכז תורני / ישיבה',
 };
 
 // labelKey resolves with t() at render so the publish overlay + step bar follow
