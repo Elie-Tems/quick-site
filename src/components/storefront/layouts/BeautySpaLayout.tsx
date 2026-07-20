@@ -313,9 +313,9 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
                       <div className="text-sm font-semibold truncate">{item.name}</div>
                       <div className="text-primary font-bold text-sm">₪{item.price}</div>
                       <div className="flex items-center gap-2 mt-1 justify-end">
-                        <button onClick={() => onUpdateQuantity(item.id, item.quantity + 1)} aria-label={`הוסף יחידה: ${item.name}`} className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center"><Plus className="w-3.5 h-3.5" aria-hidden="true" /></button>
+                        <button onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity + 1)} aria-label={`הוסף יחידה: ${item.name}`} className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center"><Plus className="w-3.5 h-3.5" aria-hidden="true" /></button>
                         <span className="text-sm font-bold w-4 text-center" aria-label={`כמות: ${item.quantity}`}>{item.quantity}</span>
-                        <button onClick={() => item.quantity > 1 ? onUpdateQuantity(item.id, item.quantity - 1) : onRemoveFromCart(item.id)} aria-label={item.quantity > 1 ? `הפחת יחידה: ${item.name}` : `הסר מהסל: ${item.name}`} className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center"><Minus className="w-3.5 h-3.5" aria-hidden="true" /></button>
+                        <button onClick={() => item.quantity > 1 ? onUpdateQuantity(item.cartLineId ?? item.id, item.quantity - 1) : onRemoveFromCart(item.cartLineId ?? item.id)} aria-label={item.quantity > 1 ? `הפחת יחידה: ${item.name}` : `הסר מהסל: ${item.name}`} className="w-6 h-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center"><Minus className="w-3.5 h-3.5" aria-hidden="true" /></button>
                       </div>
                     </div>
                   </div>

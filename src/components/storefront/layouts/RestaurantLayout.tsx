@@ -149,7 +149,8 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
               <h2 className="text-2xl font-display font-bold mb-6 pb-2 border-b border-border">{section.name}</h2>
               <div className="space-y-3">
                 {section.items.map((item, ii) => {
-                  const qty = cartItems.find(c => c.id === item.id)?.quantity ?? 0;
+                  const cartEntry = cartItems.find(c => c.id === item.id);
+                  const qty = cartEntry?.quantity ?? 0;
                   return (
                     <motion.div
                       key={item.id}
@@ -192,7 +193,7 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
                         ) : (
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() => onUpdateQuantity(item.id, qty - 1)}
+                              onClick={() => onUpdateQuantity(cartEntry?.cartLineId ?? item.id, qty - 1)}
                               aria-label={`הפחת כמות של ${item.name}`}
                               className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80"
                             >
@@ -275,7 +276,7 @@ export default function RestaurantLayout(props: StorefrontLayoutProps) {
                     <div className="text-sm text-muted-foreground">₪{item.price} × {item.quantity}</div>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => onUpdateQuantity(item.id, item.quantity - 1)} className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                    <button onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity - 1)} className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
                       <Minus className="w-3 h-3" />
                     </button>
                     <span className="w-5 text-center text-sm font-bold">{item.quantity}</span>
