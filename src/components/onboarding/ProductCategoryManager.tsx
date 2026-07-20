@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, FolderOpen, Trash2, Edit2, Check, X, ChevronDown, ChevronUp } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface ProductCategory {
   id: string;
@@ -19,8 +20,9 @@ interface ProductCategoryManagerProps {
   productsCountByCategory: Record<string, number>;
 }
 
+// i18n keys resolved with t() at render (industry + example chips localized).
 const EXAMPLE_CATEGORIES = [
-  { industry: "חנות בגדים", examples: ["חולצות", "מכנסיים", "שמלות", "אביזרים"] },
+  { industryKey: "ob.pcat.ex_industry", exampleKeys: ["ob.pcat.ex1", "ob.pcat.ex2", "ob.pcat.ex3", "ob.pcat.ex4"] },
 ];
 
 const ProductCategoryManager = ({
@@ -32,6 +34,7 @@ const ProductCategoryManager = ({
   onUpdateCategory,
   productsCountByCategory,
 }: ProductCategoryManagerProps) => {
+  const { t } = useLanguage();
   const [showAddForm, setShowAddForm] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -92,7 +95,7 @@ const ProductCategoryManager = ({
           }`}
         >
           <FolderOpen className="w-4 h-4 shrink-0" />
-          <span className="text-sm font-medium flex-1">כל המוצרים</span>
+          <span className="text-sm font-medium flex-1">{t("ob.pcat.all")}</span>
           <span className="text-xs opacity-60">
             {Object.values(productsCountByCategory).reduce((a, b) => a + b, 0)}
           </span>
@@ -167,7 +170,7 @@ const ProductCategoryManager = ({
       {showAddForm ? (
         <div className="p-4 rounded-lg bg-muted/30 border border-border space-y-3">
           <Input
-            placeholder="שם הקטגוריה (למשל: מקררים)"
+            placeholder={t("ob.pcat.name_ph")}
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
             onKeyDown={(e) => {
@@ -183,7 +186,7 @@ const ProductCategoryManager = ({
               onClick={() => setShowAddForm(false)}
               className="flex-1"
             >
-              ביטול
+              {t("ob.pcat.cancel")}
             </Button>
             <Button
               size="sm"
@@ -192,7 +195,7 @@ const ProductCategoryManager = ({
               className="flex-1 gap-1"
             >
               <Plus className="w-4 h-4" />
-              הוסף
+              {t("ob.pcat.add")}
             </Button>
           </div>
         </div>
@@ -202,7 +205,7 @@ const ProductCategoryManager = ({
           className="w-full p-3 rounded-lg border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/5 transition-all flex items-center justify-center gap-2 text-primary"
         >
           <Plus className="w-5 h-5" />
-          <span className="font-medium">הוסף קטגוריה</span>
+          <span className="font-medium">{t("ob.pcat.add_category")}</span>
         </button>
       )}
 
@@ -213,25 +216,28 @@ const ProductCategoryManager = ({
             onClick={() => setShowExamples(!showExamples)}
             className="w-full flex items-center justify-between text-sm pv-muted pv-text-hover transition-colors"
           >
-            <span>💡 דוגמאות לקטגוריות לפי תחום</span>
+            <span>{t("ob.pcat.examples")}</span>
             {showExamples ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
           
           {showExamples && (
             <div className="mt-3 space-y-3">
               {EXAMPLE_CATEGORIES.map((item) => (
-                <div key={item.industry} className="p-3 rounded-lg bg-muted/30 border border-border">
-                  <p className="text-xs font-medium pv-muted mb-2">{item.industry}:</p>
+                <div key={item.industryKey} className="p-3 rounded-lg bg-muted/30 border border-border">
+                  <p className="text-xs font-medium pv-muted mb-2">{t(item.industryKey)}:</p>
                   <div className="flex flex-wrap gap-2">
-                    {item.examples.map((example) => (
+                    {item.exampleKeys.map((exampleKey) => {
+                      const example = t(exampleKey);
+                      return (
                       <button
-                        key={example}
+                        key={exampleKey}
                         onClick={() => handleQuickAddExample(example)}
                         className="px-3 py-1.5 text-sm bg-background border border-border rounded-full hover:border-primary hover:text-primary transition-colors"
                       >
                         + {example}
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}
