@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CreditCard, ExternalLink, Mail, Clock, ShieldCheck, CircleCheck, Sparkles, ArrowRight } from "lucide-react";
+import { CreditCard, ExternalLink, Mail, ShieldCheck, CircleCheck, Sparkles, ArrowRight, CheckCircle2, AlertTriangle, Pencil } from "lucide-react";
 import PayplusConnectForm from "@/components/payments/PayplusConnectForm";
 import IcountConnectForm from "@/components/payments/IcountConnectForm";
 import PaymentApprovalKit from "@/components/payments/PaymentApprovalKit";
@@ -7,6 +7,7 @@ import type { BusinessSettings } from "@/components/dashboard/DashboardSettings"
 import { PARTNER_LINKS } from "@/lib/partnerLinks";
 import { ProviderLogo } from "@/components/payments/ProviderLogo";
 import { supabase } from "@/integrations/supabase/client";
+import { usePaymentCredentials } from "@/hooks/usePayplus";
 
 interface DashboardPaymentsProps {
   settings: BusinessSettings;
@@ -23,11 +24,19 @@ const PROVIDERS = [
   ...PARTNER_LINKS.map((p) => ({ id: p.id, name: p.name, domain: p.domain })),
 ];
 
+// Providers with in-app automated checkout. Others show "coming soon".
+const CONNECTABLE = ["payplus", "icount"];
+
 const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
+  const { data: payplusCreds } = usePaymentCredentials(settings.id);
+  const isConnected = !!(settings as any).payment_enabled || !!payplusCreds?.verified_at;
+  const connectedProvider = (settings as any).payment_provider as string | undefined;
+
   // Progressive disclosure: one question at a time, so a non-technical merchant
   // isn't hit with a checklist + a wizard + 7 providers + API fields all at once.
   const [hasAccount, setHasAccount] = useState<null | boolean>(null);
   const [provider, setProvider] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
 
   const goToPartner = (id: string, url: string | null) => {
     if (settings.id) void supabase.from("partner_referrals").insert({ business_id: settings.id, provider: id } as any);
@@ -56,8 +65,46 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
         </span>
       </div>
 
+      {/* Connected status banner — shown when payment is already live */}
+      {isConnected && !editMode && (
+        <div className="rounded-2xl border border-[#639922] bg-[#eaf3de]/60 p-4 flex items-start gap-3 mb-2">
+          <CheckCircle2 className="w-5 h-5 text-[#3b6d11] shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-[#27500a]">
+              הסליקה מחוברת ופעילה
+              {connectedProvider && (
+                <span className="mr-1.5 text-xs font-normal bg-[#dcebc7] text-[#27500a] rounded-full px-2 py-0.5 capitalize">{connectedProvider}</span>
+              )}
+              {payplusCreds?.mode === "test" && (
+                <span className="mr-1.5 text-xs font-bold bg-amber-100 text-amber-700 rounded-full px-2 py-0.5">TEST MODE</span>
+              )}
+            </p>
+            <p className="text-sm text-[#3b6d11] mt-0.5">לקוחות יכולים לשלם בכרטיס אשראי ישירות באתר שלך.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setEditMode(true); setHasAccount(true); setProvider(connectedProvider ?? null); }}
+            className="shrink-0 inline-flex items-center gap-1.5 text-xs text-[#3b6d11] hover:underline"
+          >
+            <Pencil className="w-3.5 h-3.5" /> עריכה
+          </button>
+        </div>
+      )}
+
+      {payplusCreds?.mode === "test" && !editMode && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-3 flex items-start gap-2 mb-2">
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-700 dark:text-amber-400">
+            <span className="font-bold">Test mode פעיל</span> — תשלומים לא נגבים בפועל. לאחר קבלת אישור מ-PayPlus, עברו לעריכה והחליפו ל-Live.
+          </p>
+        </div>
+      )}
+
+      {/* When connected and not editing — done */}
+      {isConnected && !editMode && null}
+
       {/* Step 0 - the only thing on screen at entry: one simple question. */}
-      {hasAccount === null && (
+      {!isConnected && hasAccount === null && (
         <div className="space-y-4">
           <p className="text-base font-medium text-foreground text-center">האם כבר פתחת חשבון אצל ספק סליקה?</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -85,7 +132,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
       )}
 
       {/* "No account yet" - open one. ALL providers, neutral, with logos. */}
-      {hasAccount === false && (
+      {!isConnected && hasAccount === false && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-foreground">בחרו ספק ופתחו חשבון</h2>
@@ -118,7 +165,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
       )}
 
       {/* "Has account" - pick the provider, then connect. */}
-      {hasAccount === true && (
+      {(hasAccount === true || editMode) && (
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-foreground">באיזה ספק החשבון שלך?</h2>
@@ -127,19 +174,29 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {PROVIDERS.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => setProvider(p.id)}
-                className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
-                  provider === p.id ? "border-[#639922] bg-[#eaf3de] text-[#27500a]" : "border-border text-muted-foreground hover:border-[#639922]/40"
-                }`}
-              >
-                <ProviderLogo domain={p.domain} name={p.name} className="h-4 w-4" />
-                {p.name}
-              </button>
-            ))}
+            {PROVIDERS.map((p) => {
+              const canConnect = CONNECTABLE.includes(p.id);
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => canConnect && setProvider(p.id)}
+                  disabled={!canConnect}
+                  title={!canConnect ? "חיבור ישיר בקרוב" : undefined}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
+                    !canConnect
+                      ? "border-border text-muted-foreground/50 opacity-50 cursor-not-allowed"
+                      : provider === p.id
+                      ? "border-[#639922] bg-[#eaf3de] text-[#27500a]"
+                      : "border-border text-muted-foreground hover:border-[#639922]/40"
+                  }`}
+                >
+                  <ProviderLogo domain={p.domain} name={p.name} className="h-4 w-4" />
+                  {p.name}
+                  {!canConnect && <span className="text-[9px] font-bold bg-muted rounded-full px-1.5 py-0.5">בקרוב</span>}
+                </button>
+              );
+            })}
           </div>
 
           {/* PayPlus is the acquirer with in-app automatic checkout today. */}
@@ -166,18 +223,6 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
               : <p className="text-sm text-muted-foreground">יש לשמור את פרטי העסק לפני חיבור סליקה.</p>
           )}
 
-          {provider && provider !== "payplus" && provider !== "icount" && (
-            <div className="rounded-2xl border border-border bg-muted/30 p-4 flex items-start gap-3">
-              <Clock className="h-5 w-5 text-[#3b6d11] shrink-0 mt-0.5" />
-              <div className="text-sm text-muted-foreground">
-                <p className="text-foreground font-medium mb-1">חיבור ישיר ל-{providerName(provider)} - בקרוב</p>
-                <p>
-                  בינתיים אפשר לקבל הזמנות באתר ולגבות דרך {providerName(provider)} מול הלקוח.
-                  נשמח לעזור - <a href={`mailto:${SUPPORT_EMAIL}`} className="text-[#3b6d11] hover:underline">{SUPPORT_EMAIL}</a>.
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>

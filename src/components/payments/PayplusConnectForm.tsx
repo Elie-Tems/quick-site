@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { gtm } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ExternalLink, Loader2, Check, X, ShieldCheck, Zap, Lock, Eye, EyeOff, ImageIcon } from "lucide-react";
+import { ExternalLink, Loader2, Check, X, ShieldCheck, Zap, Lock, Eye, EyeOff } from "lucide-react";
 import {
   PAYPLUS_SIGNUP_URL,
   usePaymentCredentials,
@@ -49,38 +49,71 @@ const STEPS = [
   },
 ] as const;
 
-// Placeholder shown when screenshot hasn't been dropped in yet.
-const ScreenshotPlaceholder = ({ src, alt }: { src: string; alt: string }) => {
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
-
-  if (!error && !loaded) {
+// Inline illustrated guide — shows WHERE in PayPlus UI to find each key.
+// Renders immediately; no dependency on external images.
+const StepGuide = ({ stepId }: { stepId: string }) => {
+  if (stepId === "api" || stepId === "secret") {
     return (
-      <>
-        <img
-          src={src}
-          alt={alt}
-          className="hidden"
-          onLoad={() => setLoaded(true)}
-          onError={() => setError(true)}
-        />
-        <div className="w-full rounded-xl border-2 border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
-          <ImageIcon className="w-7 h-7 opacity-40" />
-          <p className="text-xs">תמונת הדרכה — בקרוב</p>
+      <div className="rounded-xl border border-border bg-muted/20 overflow-hidden text-xs" dir="ltr">
+        <div className="flex">
+          {/* Sidebar */}
+          <div className="w-28 shrink-0 border-r border-border bg-muted/40 p-2 space-y-1">
+            <div className="px-2 py-1 rounded text-muted-foreground">Dashboard</div>
+            <div className="px-2 py-1 rounded text-muted-foreground">Orders</div>
+            <div className="px-2 py-1 rounded bg-[#0f6e56]/15 text-[#0f6e56] font-medium flex items-center gap-1">
+              <span>⚙</span> Settings
+            </div>
+            <div className="px-2 py-1 rounded text-muted-foreground">Reports</div>
+          </div>
+          {/* Content */}
+          <div className="flex-1 p-3 space-y-2">
+            <p className="font-semibold text-foreground text-[11px] border-b border-border pb-1.5 mb-2">Settings → API Keys</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5">
+                <span className="text-muted-foreground text-[10px] w-16 shrink-0">API Key</span>
+                <span className="font-mono text-[10px] flex-1 text-foreground">1a87cde2-••••••••</span>
+                {stepId === "api" && (
+                  <span className="shrink-0 rounded bg-[#0f6e56] text-white text-[9px] px-1.5 py-0.5 font-bold animate-pulse">← העתק</span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5">
+                <span className="text-muted-foreground text-[10px] w-16 shrink-0">Secret Key</span>
+                <span className="font-mono text-[10px] flex-1 text-foreground">••••••••••••••</span>
+                {stepId === "secret" && (
+                  <span className="shrink-0 rounded bg-[#0f6e56] text-white text-[9px] px-1.5 py-0.5 font-bold animate-pulse">← העתק</span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-      </>
+      </div>
     );
   }
 
-  if (error) return null;
+  if (stepId === "page") {
+    return (
+      <div className="rounded-xl border border-border bg-muted/20 overflow-hidden text-xs" dir="ltr">
+        <div className="flex">
+          <div className="w-28 shrink-0 border-r border-border bg-muted/40 p-2 space-y-1">
+            <div className="px-2 py-1 rounded text-muted-foreground">Dashboard</div>
+            <div className="px-2 py-1 rounded bg-[#0f6e56]/15 text-[#0f6e56] font-medium flex items-center gap-1">
+              <span>⚙</span> Settings
+            </div>
+          </div>
+          <div className="flex-1 p-3">
+            <p className="font-semibold text-foreground text-[11px] border-b border-border pb-1.5 mb-2">Settings → Payment Pages</p>
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5">
+              <span className="text-muted-foreground text-[10px] w-20 shrink-0">Page UID</span>
+              <span className="font-mono text-[10px] flex-1 text-foreground">5b616e7e-••••••••</span>
+              <span className="shrink-0 rounded bg-[#0f6e56] text-white text-[9px] px-1.5 py-0.5 font-bold animate-pulse">← העתק</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  return (
-    <img
-      src={src}
-      alt={alt}
-      className="w-full rounded-xl border border-border shadow-sm"
-    />
-  );
+  return null;
 };
 
 const PayplusConnectForm = ({ businessId }: Props) => {
@@ -92,11 +125,13 @@ const PayplusConnectForm = ({ businessId }: Props) => {
   const [verifying, setVerifying] = useState(false);
   const [verifyState, setVerifyState] = useState<"idle" | "ok" | "fail">("idle");
   const [verifyMsg, setVerifyMsg] = useState("");
+  const [mode, setMode] = useState<"live" | "test">("live");
 
   useEffect(() => {
     if (saved) {
       setValues({ api: saved.api_key || "", secret: saved.secret_key || "", page: saved.page_uid || "" });
       if (saved.verified_at) setVerifyState("ok");
+      if (saved.mode) setMode(saved.mode);
     }
   }, [saved]);
 
@@ -123,7 +158,7 @@ const PayplusConnectForm = ({ businessId }: Props) => {
   const handleSave = async () => {
     if (!filled) return;
     gtm.connectPaymentClick();
-    await save.mutateAsync({ ...creds(), verified: verifyState === "ok" });
+    await save.mutateAsync({ ...creds(), mode, verified: verifyState === "ok" });
   };
 
   return (
@@ -166,8 +201,8 @@ const PayplusConnectForm = ({ businessId }: Props) => {
             {/* Instruction */}
             <p className="text-sm text-muted-foreground leading-relaxed">{s.instruction}</p>
 
-            {/* Screenshot with arrow */}
-            <ScreenshotPlaceholder src={s.screenshot} alt={`הדרכה שלב ${s.step}`} />
+            {/* Inline step guide */}
+            <StepGuide stepId={s.id} />
 
             {/* Input */}
             <div className="relative">
@@ -197,6 +232,32 @@ const PayplusConnectForm = ({ businessId }: Props) => {
           </div>
         </div>
       ))}
+
+      {/* Mode toggle — live vs test */}
+      <div className="rounded-xl border border-border bg-card p-3 flex items-center justify-between gap-3" dir="rtl">
+        <div>
+          <p className="text-sm font-semibold text-foreground">מצב סליקה</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {mode === "live" ? "כרטיסים ייגבו בפועל — לאחר אישור PayPlus" : "תשלומי בדיקה בלבד, לא ייגבה כסף אמיתי"}
+          </p>
+        </div>
+        <div className="flex items-center gap-1 rounded-lg border border-border p-0.5 bg-muted/30">
+          <button
+            type="button"
+            onClick={() => setMode("live")}
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${mode === "live" ? "bg-[#1d9e75] text-white" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            Live
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("test")}
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${mode === "test" ? "bg-amber-500 text-white" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            Test
+          </button>
+        </div>
+      </div>
 
       {/* Verify + Save */}
       <div className="space-y-3">
