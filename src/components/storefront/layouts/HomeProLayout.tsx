@@ -1,14 +1,9 @@
 import { motion } from "framer-motion";
 import { Shield, Award, Clock, ThumbsUp, Phone, MessageCircle, ArrowLeft, Star, CheckCircle2 } from "lucide-react";
 import type { StorefrontLayoutProps } from "./StorefrontLayout.types";
+import { STOREFRONT_IMAGE_PLACEHOLDER } from "@/lib/storefrontPlaceholders";
 
-const FALLBACK_HERO = "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80";
-const FALLBACK_WORK = [
-  "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80",
-  "https://images.unsplash.com/photo-1565538810643-b5bdb714032a?w=600&q=80",
-  "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80",
-  "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&q=80",
-];
+const FALLBACK_HERO = STOREFRONT_IMAGE_PLACEHOLDER;
 const TRUST_ICONS = [Shield, Award, Clock, ThumbsUp];
 
 export default function HomeProLayout(props: StorefrontLayoutProps) {

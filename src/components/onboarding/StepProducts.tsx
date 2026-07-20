@@ -481,15 +481,19 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   };
 
   const handleDownloadTemplate = () => {
+    // The import parser (parseExcelFile above) already recognizes header terms in
+    // both Hebrew and English regardless of which language downloaded the
+    // template, so translating this is safe - it won't break re-importing the
+    // filled-in file back in.
     const ws = XLSX.utils.aoa_to_sheet([
-      ['שם מוצר', 'תיאור מוצר', 'מחיר'],
-      ['זר פרחים קיץ', 'זר צבעוני עם חמניות ולבנדר', '150'],
-      ['עציץ בונסאי', 'עציץ בונסאי קטן מתאים לשולחן', '220'],
+      [t("ob.prod.tpl_col_name"), t("ob.prod.tpl_col_desc"), t("ob.prod.tpl_col_price")],
+      [t("ob.prod.tpl_sample1_name"), t("ob.prod.tpl_sample1_desc"), '150'],
+      [t("ob.prod.tpl_sample2_name"), t("ob.prod.tpl_sample2_desc"), '220'],
     ]);
     ws["!cols"] = [{ wch: 30 }, { wch: 40 }, { wch: 12 }];
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "מוצרים");
-    XLSX.writeFile(wb, 'תבנית_מוצרים.xlsx');
+    XLSX.utils.book_append_sheet(wb, ws, t("ob.prod.tpl_sheet_name"));
+    XLSX.writeFile(wb, `${t("ob.prod.tpl_filename")}.xlsx`);
     toast.success(t("ob.prod.t_template_downloaded"));
   };
 

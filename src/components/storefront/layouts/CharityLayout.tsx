@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, ArrowLeft, Check, Star } from "lucide-react";
 import type { StorefrontLayoutProps } from "./StorefrontLayout.types";
+import { STOREFRONT_IMAGE_PLACEHOLDER } from "@/lib/storefrontPlaceholders";
 
-const FALLBACK_HERO = "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1600&q=80";
+const FALLBACK_HERO = STOREFRONT_IMAGE_PLACEHOLDER;
 
 export default function CharityLayout(props: StorefrontLayoutProps) {
   const {

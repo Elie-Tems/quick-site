@@ -2,9 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ShoppingBag, X, Plus, Minus, MessageCircle, Phone, ArrowLeft, UtensilsCrossed } from "lucide-react";
 import type { StorefrontLayoutProps } from "./StorefrontLayout.types";
+import { STOREFRONT_IMAGE_PLACEHOLDER } from "@/lib/storefrontPlaceholders";
 
-const FALLBACK_HERO = "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&q=80";
-const FALLBACK_ITEM_IMG = "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80";
+const FALLBACK_HERO = STOREFRONT_IMAGE_PLACEHOLDER;
+const FALLBACK_ITEM_IMG = STOREFRONT_IMAGE_PLACEHOLDER;
 
 export default function RestaurantLayout(props: StorefrontLayoutProps) {
   const {

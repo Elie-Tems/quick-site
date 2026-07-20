@@ -2,15 +2,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Star, Phone, MessageCircle, ArrowLeft, CalendarDays, ShoppingBag, Plus, Minus, X, ChevronLeft, ChevronRight } from "lucide-react";
 import type { StorefrontLayoutProps } from "./StorefrontLayout.types";
+import { STOREFRONT_IMAGE_PLACEHOLDER } from "@/lib/storefrontPlaceholders";
 
-const FALLBACK_HERO = "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1600&q=80";
-const FALLBACK_PRODUCT = "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=80";
-const PORTFOLIO_FALLBACK = [
-  "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=500&q=80",
-  "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80",
-  "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=500&q=80",
-  "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&q=80",
-];
+const FALLBACK_HERO = STOREFRONT_IMAGE_PLACEHOLDER;
+const FALLBACK_PRODUCT = STOREFRONT_IMAGE_PLACEHOLDER;
 
 export default function BeautySpaLayout(props: StorefrontLayoutProps) {
   const {
@@ -24,9 +19,13 @@ export default function BeautySpaLayout(props: StorefrontLayoutProps) {
   const [galleryIdx, setGalleryIdx] = useState(0);
 
   const heroImg = heroImageUrl || banners?.[0]?.imageUrl || FALLBACK_HERO;
+  // Real banner images only - a "גלריית עבודות" (portfolio) section falling back to
+  // stock photos of an unrelated salon would present someone else's work as this
+  // business's own, a clear no-fake-data violation. Both sections that read
+  // galleryImgs already hide themselves when it's empty (length > 0 / length > 1).
   const galleryImgs = banners.length > 1
     ? banners.slice(1).map(b => b.imageUrl!).filter(Boolean)
-    : PORTFOLIO_FALLBACK;
+    : [];
 
   // A product with BOTH an image and a price used to match both filters and render
   // twice - once as an icon-only "service" card (no image, book-appointment CTA),

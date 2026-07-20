@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, X, Plus, Minus, ArrowLeft, Flame, Tag, Heart, Phone, MessageCircle } from "lucide-react";
 import type { StorefrontLayoutProps } from "./StorefrontLayout.types";
+import { STOREFRONT_IMAGE_PLACEHOLDER } from "@/lib/storefrontPlaceholders";
 
-const FALLBACK_HERO = "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=1600&q=80";
-const FALLBACK_PRODUCT_IMG = "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?w=400&q=80";
+const FALLBACK_HERO = STOREFRONT_IMAGE_PLACEHOLDER;
+const FALLBACK_PRODUCT_IMG = STOREFRONT_IMAGE_PLACEHOLDER;
 
 export default function BoutiqueLayout(props: StorefrontLayoutProps) {
   const {
