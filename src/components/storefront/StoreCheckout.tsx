@@ -7,7 +7,7 @@ import FormConsentNotice from "@/components/FormConsentNotice";
 import FormErrorSummary from "@/components/FormErrorSummary";
 import { supabase } from "@/integrations/supabase/client";
 import { databaseDisclosure } from "@/lib/email/compliance";
-import { ShoppingBag, ArrowRight, CheckCircle, Ticket, X, Loader2 } from "lucide-react";
+import { ShoppingBag, ArrowRight, Ticket, X, Loader2, ChevronDown } from "lucide-react";
 import { useValidateCoupon, type Coupon } from "@/hooks/useCoupons";
 import type { CartItem } from "./FloatingCart";
 
@@ -38,8 +38,8 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
     fullName: '', phone: '', email: '', notes: '', deliveryAddress: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [errors, setErrors] = useState<Partial<CheckoutData>>({});
+  const [showNotes, setShowNotes] = useState(false);
   const [deliveryMethod, setDeliveryMethod] = useState<'pickup' | 'delivery'>('pickup');
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<{ coupon: Coupon; discount: number } | null>(null);
@@ -110,7 +110,7 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
       // For online-payment orders onSubmit redirects to the gateway - do NOT flash the
       // "order received" screen; the redirect is the next step. Only a completed local
       // order (no payment) shows success here.
-      if (!(res as { redirected?: boolean } | void)?.redirected) setIsSuccess(true);
+      // StoreFront handles success navigation (setViewState('thankyou')) for all order types.
     } catch {
       // onSubmit already surfaced the reason (toast). Do NOT show the success
       // screen when the order/payment failed.
@@ -137,25 +137,6 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
   };
 
   /* ── Success ── */
-  if (isSuccess) {
-    return (
-      <div className="fixed inset-0 z-50 bg-gradient-to-b from-muted/40 to-background flex items-center justify-center p-4" dir="rtl">
-        <div className="text-center max-w-sm bg-card border border-border rounded-3xl shadow-2xl px-8 py-12" role="status" aria-live="polite">
-          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-primary" />
-          </div>
-          <h2 className="text-2xl font-extrabold text-foreground mb-2">ההזמנה התקבלה! 🎉</h2>
-          <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-            {hasPayment ? 'התשלום התקבל בהצלחה. ניצור איתך קשר בהקדם.' : 'תודה רבה! ניצור איתך קשר לתיאום התשלום.'}
-          </p>
-          <button onClick={onBack} className="rounded-2xl bg-primary text-primary-foreground font-bold px-8 py-3 hover:scale-[1.03] active:scale-95 transition-transform shadow-lg shadow-primary/25">
-            חזרה לחנות
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const fieldCls = (err?: string) =>
     `rounded-xl border-border bg-background h-12 px-4 text-[15px] focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary transition-shadow ${err ? 'border-destructive' : ''}`;
   const lbl = "text-sm font-medium text-foreground mb-1.5 block";
@@ -207,8 +188,24 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
               ))}
 
               <div>
-                <label htmlFor="notes" className={lbl}>הערות להזמנה</label>
-                <Textarea id="notes" value={formData.notes} onChange={(e) => handleChange('notes', e.target.value)} placeholder="משהו שכדאי שנדע? (אופציונלי)" rows={3} className="rounded-xl border-border bg-background px-4 py-3 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary resize-none" />
+                <button
+                  type="button"
+                  onClick={() => setShowNotes((v) => !v)}
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ChevronDown className={`h-4 w-4 transition-transform ${showNotes ? 'rotate-180' : ''}`} />
+                  הוסף הערה להזמנה
+                </button>
+                {showNotes && (
+                  <Textarea
+                    id="notes"
+                    value={formData.notes}
+                    onChange={(e) => handleChange('notes', e.target.value)}
+                    placeholder="משהו שכדאי שנדע? (אופציונלי)"
+                    rows={3}
+                    className="mt-2 rounded-xl border-border bg-background px-4 py-3 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary resize-none"
+                  />
+                )}
               </div>
 
               {deliveryMode === 'pickup_and_delivery' && (
