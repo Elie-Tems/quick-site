@@ -826,6 +826,7 @@ const ar: Record<string, string> = {
   'ob.welcome.login': 'تسجيل الدخول',
   'ob.welcome.preview_mode': 'وضع المعاينة',
   'ob.create.err_title': 'خطأ في إنشاء الموقع',
+  'oc.seo_title': 'اكتمل إعداد الموقع | سيانغو',
   // Onboarding · publish review (StepPublish)
   'ob.pub.copy_title': 'تم نسخ العنوان',
   'ob.pub.copy_desc': 'تم نسخ العنوان إلى الحافظة',

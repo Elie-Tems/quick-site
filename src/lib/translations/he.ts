@@ -826,6 +826,7 @@ const he: Record<string, string> = {
   'ob.welcome.login': 'כניסה',
   'ob.welcome.preview_mode': 'מצב תצוגה',
   'ob.create.err_title': 'שגיאה ביצירת האתר',
+  'oc.seo_title': 'הגדרת האתר הושלמה | סיאנגו',
   // Onboarding · publish review (StepPublish)
   'ob.pub.copy_title': 'הכתובת הועתקה',
   'ob.pub.copy_desc': 'הכתובת הועתקה ללוח',

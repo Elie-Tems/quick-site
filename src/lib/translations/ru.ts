@@ -826,6 +826,7 @@ const ru: Record<string, string> = {
   'ob.welcome.login': 'Войти',
   'ob.welcome.preview_mode': 'Режим просмотра',
   'ob.create.err_title': 'Ошибка создания сайта',
+  'oc.seo_title': 'Настройка сайта завершена | Siango',
   // Onboarding · publish review (StepPublish)
   'ob.pub.copy_title': 'Адрес скопирован',
   'ob.pub.copy_desc': 'Адрес скопирован в буфер обмена',

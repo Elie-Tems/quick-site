@@ -826,6 +826,7 @@ const en: Record<string, string> = {
   'ob.welcome.login': 'Sign in',
   'ob.welcome.preview_mode': 'Preview mode',
   'ob.create.err_title': 'Error creating the site',
+  'oc.seo_title': 'Site setup complete | Siango',
   // Onboarding · publish review (StepPublish)
   'ob.pub.copy_title': 'Address copied',
   'ob.pub.copy_desc': 'The address was copied to the clipboard',

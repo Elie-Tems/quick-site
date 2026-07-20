@@ -2,6 +2,7 @@ import SEOHead from "@/components/SEOHead";
 import { useLocation } from "react-router-dom";
 import OnboardingComplete from "@/components/onboarding/OnboardingComplete";
 import type { OnboardingData } from "@/pages/Onboarding";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
  * /onboarding/complete - shown after any successful publish payment. location.state
@@ -12,11 +13,12 @@ import type { OnboardingData } from "@/pages/Onboarding";
  */
 const OnboardingCompleteGate = () => {
   const location = useLocation();
+  const { t } = useLanguage();
   const data = (location.state as { data?: OnboardingData } | null)?.data;
 
   return (
     <>
-      <SEOHead title="הגדרת האתר הושלמה | סיאנגו" noindex={true} />
+      <SEOHead title={t("oc.seo_title")} noindex={true} />
       <OnboardingComplete data={data} />
     </>
   );
