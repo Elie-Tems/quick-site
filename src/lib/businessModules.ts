@@ -10,7 +10,7 @@
 
 export type BusinessType = "products" | "services" | "realestate" | "nonprofit" | "synagogue" | "vacation";
 
-export type ModuleKey = "commerce" | "booking" | "listings" | "donations" | "synagogue";
+export type ModuleKey = "commerce" | "booking" | "listings" | "donations" | "synagogue" | "gallery";
 
 export interface ModuleDef {
   key: ModuleKey;
@@ -26,6 +26,7 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
   listings: { key: "listings", label: "לוח ולידים", description: "נכסים/פריטים עם סינון ולכידת לידים", transaction: "lead" },
   donations: { key: "donations", label: "תרומות", description: "תרומה חד-פעמית/חוזרת וקמפיינים", transaction: "donation" },
   synagogue: { key: "synagogue", label: "בית כנסת", description: "עליות ונדרים, מקומות, זמני תפילה", transaction: "donation" },
+  gallery: { key: "gallery", label: "גלריה ותיק עבודות", description: "תצוגת תמונות ועבודות בעמוד החנות", transaction: "order" },
 };
 
 /**
@@ -35,13 +36,11 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
  */
 export const DEFAULT_MODULES: Record<BusinessType, ModuleKey[]> = {
   products: ["commerce"],
-  services: ["booking", "commerce"],
-  realestate: ["listings"],
+  services: ["booking", "commerce", "gallery"],
+  realestate: ["listings", "gallery"],
   nonprofit: ["donations"],
-  // A synagogue is a nonprofit that also runs synagogue ops (עליות/נדרים, מקומות,
-  // זמני תפילה) - so it keeps donations + adds the synagogue module.
   synagogue: ["donations", "synagogue"],
-  vacation: ["commerce"],
+  vacation: ["commerce", "gallery"],
 };
 
 /** Capabilities every business has regardless of type. */

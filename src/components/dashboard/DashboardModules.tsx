@@ -38,16 +38,17 @@ const LIVE: Live[] = [
   { key: "listings",  icon: Building2,     color: "#6d4bd0", title: "לוח נכסים ולידים",  desc: "נכסים/פריטים עם סינון, וכל פנייה נכנסת ל-CRM כליד עם מעקב." },
   { key: "donations", icon: Heart,         color: "#c0392b", title: "תרומות",           desc: "תרומה חד-פעמית או חודשית, קמפיינים עם יעד, וסעיף 46." },
   { key: "synagogue", icon: Landmark,      color: "#c07d12", title: "בית כנסת",         desc: "עליות ונדרים, מקומות קבועים וזמני תפילה." },
+  { key: "gallery",   icon: Images,        color: "#0891b2", title: "גלריה ותיק עבודות", desc: "תצוגת תמונות ועבודות מקצועיות בעמוד החנות — לצלמים, מעצבים, קוסמטיקאיות ובעלי מקצוע." },
 ];
 
 /** Which LIVE module keys make sense to offer per business type. */
 const ALLOWED_LIVE: Record<BusinessType, ModuleKey[]> = {
-  products:   ["commerce"],
-  services:   ["commerce", "booking"],
-  realestate: ["listings", "booking"],
-  nonprofit:  ["donations", "commerce"],
-  synagogue:  ["donations", "synagogue"],
-  vacation:   ["commerce", "booking"],
+  products:   ["commerce", "gallery"],
+  services:   ["commerce", "booking", "gallery"],
+  realestate: ["listings", "booking", "gallery"],
+  nonprofit:  ["donations", "commerce", "gallery"],
+  synagogue:  ["donations", "synagogue", "gallery"],
+  vacation:   ["commerce", "booking", "gallery"],
 };
 
 type SoonItem = {
@@ -61,7 +62,6 @@ type SoonItem = {
 // Phase-2 modules - shown as an invitation, not yet toggleable.
 const SOON: SoonItem[] = [
   { icon: Hotel,         color: "#6d4bd0", title: "חדרים / יחידות אירוח", desc: "יחידות עם זמינות בלוח, מחיר ללילה והזמנה - לצימרים ואירוח.", types: ["vacation", "services"] },
-  { icon: Images,        color: "#0b9e77", title: "גלריה / תיק עבודות",   desc: "תצוגת עבודות ופרויקטים - לצלמים, מעצבים ובעלי מקצוע.", types: ["products"] },
   { icon: ClipboardList, color: "#c07d12", title: "טופס לידים עצמאי",     desc: "\"השאירו פרטים\" - נכנס ישר ל-CRM.", types: ["products", "nonprofit", "synagogue"] },
 ];
 

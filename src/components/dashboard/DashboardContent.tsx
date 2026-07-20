@@ -406,7 +406,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           ...(businessType === "vacation" ? [{ id: "hosting" as ContentTab, label: "מדיניות אירוח", icon: FileText }] : []),
           ...(isDonationBased ? [{ id: "donations" as ContentTab, label: "סכומי תרומה", icon: Heart }] : []),
           ...((businessType === "realestate" || businessType === "services") ? [{ id: "differentiation" as ContentTab, label: "מה הבידול שלנו", icon: Award }] : []),
-          ...((businessType === "realestate" || businessType === "services" || businessType === "vacation") ? [{ id: "gallery" as ContentTab, label: "גלריה", icon: Images }] : []),
+          ...((businessType === "realestate" || businessType === "services" || businessType === "vacation" || (business as {enabled_modules?: string[] | null} | undefined)?.enabled_modules?.includes("gallery")) ? [{ id: "gallery" as ContentTab, label: "גלריה", icon: Images }] : []),
           ...((businessType === "realestate" || businessType === "services") ? [{ id: "leadform" as ContentTab, label: "טופס פנייה", icon: ClipboardList }] : []),
         ]).map(({ id, label, icon: Icon }) => (
           <button
