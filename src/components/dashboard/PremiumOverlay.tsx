@@ -1,4 +1,5 @@
 import { Lock, Crown, Check, Loader2 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PremiumOverlayProps {
   locked: boolean;
@@ -16,6 +17,8 @@ interface PremiumOverlayProps {
 // (a live demo), but it's non-interactive and topped with an upgrade banner. When
 // unlocked, children render normally.
 const PremiumOverlay = ({ locked, title, description, bullets, priceLabel, onUpgrade, busy, children }: PremiumOverlayProps) => {
+  const { t } = useLanguage();
+
   if (!locked) return <>{children}</>;
 
   return (
@@ -27,7 +30,7 @@ const PremiumOverlay = ({ locked, title, description, bullets, priceLabel, onUpg
           </div>
           <div className="flex-1">
             <h3 className="text-base font-semibold flex items-center gap-2">{title}
-              <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600"><Lock className="w-3 h-3" /> פרימיום</span>
+              <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600"><Lock className="w-3 h-3" /> {t("dash.premiumoverlay.premium_badge")}</span>
             </h3>
             <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
             {bullets && bullets.length > 0 && (
@@ -46,7 +49,7 @@ const PremiumOverlay = ({ locked, title, description, bullets, priceLabel, onUpg
                 className="rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 inline-flex items-center gap-2"
               >
                 {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-                הפעילו עכשיו
+                {t("dash.premiumoverlay.activate_now")}
               </button>
               {priceLabel && <span className="text-sm text-muted-foreground">{priceLabel}</span>}
             </div>
@@ -54,7 +57,7 @@ const PremiumOverlay = ({ locked, title, description, bullets, priceLabel, onUpg
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground text-center">👇 כך זה נראה בפעולה - זוהי תצוגת דמו. הפעילו כדי לעבוד עם הנתונים האמיתיים שלכם.</p>
+      <p className="text-xs text-muted-foreground text-center">👇 {t("dash.premiumoverlay.demo_notice")}</p>
 
       {/* Live demo behind the gate - visible but not interactive */}
       <div className="relative">

@@ -2,6 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Pencil, Trash2, ToggleLeft, ToggleRight, Package } from "lucide-react";
 import type { Product } from "./types";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SortableProductItemProps {
   product: Product;
@@ -22,6 +23,7 @@ const SortableProductItem = ({
   isSelected = false,
   onToggleSelect
 }: SortableProductItemProps) => {
+  const { t } = useLanguage();
   const {
     attributes,
     listeners,
@@ -62,7 +64,7 @@ const SortableProductItem = ({
             {...attributes}
             {...listeners}
             className="p-1 hover:bg-muted rounded-md cursor-grab active:cursor-grabbing touch-none"
-            title="גרור לשינוי סדר"
+            title={t("dash.sortableitem.drag_to_reorder")}
           >
             <GripVertical className="h-5 w-5 text-muted-foreground" />
           </button>
@@ -78,7 +80,7 @@ const SortableProductItem = ({
           <button 
             onClick={() => onToggleActive(product.id)}
             className="p-1.5 hover:bg-muted rounded-md transition-colors"
-            title={product.active ? 'השבת' : 'הפעל'}
+            title={product.active ? t("dash.sortableitem.deactivate") : t("dash.sortableitem.activate")}
           >
             {product.active ? (
               <ToggleRight className="h-5 w-5 text-green-600" />
@@ -142,7 +144,7 @@ const SortableProductItem = ({
         <div className="flex items-center gap-1.5 mt-0.5">
           <div className={`w-2 h-2 rounded-full ${product.active ? 'bg-green-500' : 'bg-gray-300'}`} />
           <span className="text-xs text-muted-foreground">
-            {product.active ? 'פעיל' : 'לא פעיל'}
+            {product.active ? t("dash.sortableitem.active") : t("dash.sortableitem.inactive")}
           </span>
         </div>
       </div>

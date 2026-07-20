@@ -1,6 +1,7 @@
 // src/components/dashboard/WowStrip.tsx
 import type { DashboardView } from "./DashboardNav";
 import type { BusinessType } from "@/lib/businessModules";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface WowFeature {
   emoji: string;
@@ -9,34 +10,36 @@ interface WowFeature {
 }
 
 // Base 8 features for all types
-const BASE_FEATURES: WowFeature[] = [
-  { emoji: "🛍️", label: "ניהול מוצרים", view: "products" },
-  { emoji: "👥", label: "לקוחות & CRM", view: "customers" },
-  { emoji: "📊", label: "אנליטיקס", view: "home" },
-  { emoji: "✍️", label: "תוכן AI", view: "content" },
-  { emoji: "🎨", label: "עיצוב ותבניות", view: "design" },
-  { emoji: "📄", label: "תקנון ומדיניות", view: "legal" },
-  { emoji: "🌐", label: "דומיין מותאם", view: "domains" },
-  { emoji: "📸", label: "תמונות AI", view: "ai-images" },
+const getBaseFeatures = (t: (key: string) => string): WowFeature[] => [
+  { emoji: "🛍️", label: t("dash.wowstrip.products"), view: "products" },
+  { emoji: "👥", label: t("dash.wowstrip.customers"), view: "customers" },
+  { emoji: "📊", label: t("dash.wowstrip.analytics"), view: "home" },
+  { emoji: "✍️", label: t("dash.wowstrip.content_ai"), view: "content" },
+  { emoji: "🎨", label: t("dash.wowstrip.design"), view: "design" },
+  { emoji: "📄", label: t("dash.wowstrip.legal"), view: "legal" },
+  { emoji: "🌐", label: t("dash.wowstrip.domain"), view: "domains" },
+  { emoji: "📸", label: t("dash.wowstrip.ai_images"), view: "ai-images" },
 ];
 
 // Per-type label overrides (first N items)
-const TYPE_LABEL_OVERRIDES: Partial<Record<BusinessType, Array<{ label?: string; view?: DashboardView }>>> = {
-  services:   [{ label: "ניהול שירותים" }],
-  realestate: [{ label: "ניהול נכסים" }, { label: "לידים & CRM" }],
-  nonprofit:  [{ label: "ניהול פרויקטים" }, { label: "תורמים & CRM" }],
-  synagogue:  [{ label: "ניהול פרויקטים" }, { label: "קהל & CRM" }],
+const getTypeLabelOverrides = (
+  t: (key: string) => string
+): Partial<Record<BusinessType, Array<{ label?: string; view?: DashboardView }>>> => ({
+  services:   [{ label: t("dash.wowstrip.services_management") }],
+  realestate: [{ label: t("dash.wowstrip.properties_management") }, { label: t("dash.wowstrip.leads_crm") }],
+  nonprofit:  [{ label: t("dash.wowstrip.projects_management") }, { label: t("dash.wowstrip.donors_crm") }],
+  synagogue:  [{ label: t("dash.wowstrip.projects_management") }, { label: t("dash.wowstrip.community_crm") }],
   vacation:   [
-    { label: "חדרים ויחידות" },
-    { label: "אורחים & CRM" },
-    { label: "אנליטיקס" },
-    { label: "תוכן AI" },
-    { label: "עיצוב ותבניות" },
-    { label: "תקנון ומדיניות" },
-    { label: "דומיין מותאם" },
-    { label: "יומן זמינות", view: "availability" as DashboardView },
+    { label: t("dash.wowstrip.rooms_units") },
+    { label: t("dash.wowstrip.guests_crm") },
+    { label: t("dash.wowstrip.analytics") },
+    { label: t("dash.wowstrip.content_ai") },
+    { label: t("dash.wowstrip.design") },
+    { label: t("dash.wowstrip.legal") },
+    { label: t("dash.wowstrip.domain") },
+    { label: t("dash.wowstrip.availability_calendar"), view: "availability" as DashboardView },
   ],
-};
+});
 
 interface WowStripProps {
   businessType?: BusinessType;
@@ -44,15 +47,16 @@ interface WowStripProps {
 }
 
 export default function WowStrip({ businessType = "products", onNavigate }: WowStripProps) {
-  const overrides = TYPE_LABEL_OVERRIDES[businessType] ?? [];
-  const features = BASE_FEATURES.map((f, i) => ({
+  const { t } = useLanguage();
+  const overrides = getTypeLabelOverrides(t)[businessType] ?? [];
+  const features = getBaseFeatures(t).map((f, i) => ({
     ...f,
     ...(overrides[i] ?? {}),
   }));
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
-      <p className="text-xs font-medium text-muted-foreground mb-3">מה כלול בדשבורד שלך</p>
+      <p className="text-xs font-medium text-muted-foreground mb-3">{t("dash.wowstrip.title")}</p>
       <div className="grid grid-cols-4 gap-2">
         {features.map((f) => (
           <button

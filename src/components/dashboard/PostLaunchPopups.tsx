@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { DashboardView } from "./DashboardNav";
 
 export type PopupId = "products" | "legal" | "payments" | "crm" | "share" | "design" | "content";
@@ -20,75 +21,77 @@ interface PopupConfig {
   skipTodo?: boolean;
 }
 
-export const POPUPS: PopupConfig[] = [
-  {
-    id: "products",
-    emoji: "🛍️",
-    title: "המוצרים שלכם",
-    body: "יצרנו מוצרי דמו כדי שהאתר ייראה מלא. עכשיו הגיע הזמן לערוך את השמות, התמונות והמחירים, ולמחוק את מה שלא רלוונטי.",
-    ctaLabel: "ערכו מוצרים",
-    ctaView: "products",
-    color: "from-violet-600 to-purple-500",
-  },
-  {
-    id: "legal",
-    emoji: "📄",
-    title: "תקנון — עדכנו לפרטים שלכם",
-    body: "הכנו תבנית מוכנה של תקנון ומדיניות פרטיות. עכשיו צריך להכניס את הפרטים שלכם: שם העסק, כתובת, מייל. האחריות על תוכן המסמכים היא שלכם - אנחנו רק עזרנו עם המבנה.",
-    ctaLabel: "עדכנו את התקנון",
-    ctaView: "legal",
-    color: "from-red-500 to-orange-500",
-  },
-  {
-    id: "payments",
-    emoji: "💳",
-    title: "קבלת תשלומים",
-    body: "כרגע הזמנות מגיעות ישירות למייל, ועל הלקוח/ה לשלם בנפרד. כדי לקבל תשלומים ישירות בחנות - חברו ספק סליקה בקלות ובלי טכנולוגיה.",
-    ctaLabel: "הגדירו סליקה",
-    ctaView: "payments",
-    color: "from-blue-600 to-sky-500",
-  },
-  {
-    id: "crm",
-    emoji: "👥",
-    skipTodo: true,
-    title: "ה-CRM שלכם",
-    body: "ברגע שיגיעו הזמנות, הן יצטברו בפרופיל לקוח אוטומטי. תוכלו לראות מי הזמין/ה, כמה פעמים, ולנהל את הקשר איתם - הכל במקום אחד.",
-    ctaLabel: "גלו את ה-CRM",
-    ctaView: "customers",
-    color: "from-emerald-600 to-teal-500",
-  },
-  {
-    id: "share",
-    emoji: "🔗",
-    skipTodo: true,
-    title: "שתפו את האתר",
-    body: "האתר חי וזמין לכולם! שתפו אותו בוואטסאפ, פייסבוק, אינסטגרם - ואצלו את הלינק שלכם לפרופיל. כל לחיצה יכולה להיות לקוח/ה חדש/ה.",
-    ctaLabel: "שתפו עכשיו",
-    ctaView: null,
-    color: "from-amber-500 to-orange-400",
-  },
-  {
-    id: "design",
-    emoji: "🎨",
-    skipTodo: true,
-    title: "עיצובים ופלטות צבע",
-    body: "לאתר שלכם יש יותר מעיצוב אחד! תוכלו לבחור מתוך פריסות שונות - קלאסי, בוטיק, שירותים, נדל\"ן ועוד - ולשנות את פלטת הצבעים בלחיצה אחת.",
-    ctaLabel: "שנו עיצוב",
-    ctaView: "design",
-    color: "from-pink-600 to-rose-500",
-  },
-  {
-    id: "content",
-    emoji: "✏️",
-    skipTodo: true,
-    title: "ערכו את הטקסטים שלכם",
-    body: "הכותרת, הטאגליין, הטקסט של האודות - כל אלה ניתנים לעריכה בקלות. תנו לאתר שלכם קול אישי שמשקף את העסק שלכם.",
-    ctaLabel: "ערכו תוכן",
-    ctaView: "content",
-    color: "from-cyan-600 to-sky-500",
-  },
-];
+function getPopups(t: (key: string) => string): PopupConfig[] {
+  return [
+    {
+      id: "products",
+      emoji: "🛍️",
+      title: t("dash.postlaunch.products_title"),
+      body: t("dash.postlaunch.products_body"),
+      ctaLabel: t("dash.postlaunch.products_cta"),
+      ctaView: "products",
+      color: "from-violet-600 to-purple-500",
+    },
+    {
+      id: "legal",
+      emoji: "📄",
+      title: t("dash.postlaunch.legal_title"),
+      body: t("dash.postlaunch.legal_body"),
+      ctaLabel: t("dash.postlaunch.legal_cta"),
+      ctaView: "legal",
+      color: "from-red-500 to-orange-500",
+    },
+    {
+      id: "payments",
+      emoji: "💳",
+      title: t("dash.postlaunch.payments_title"),
+      body: t("dash.postlaunch.payments_body"),
+      ctaLabel: t("dash.postlaunch.payments_cta"),
+      ctaView: "payments",
+      color: "from-blue-600 to-sky-500",
+    },
+    {
+      id: "crm",
+      emoji: "👥",
+      skipTodo: true,
+      title: t("dash.postlaunch.crm_title"),
+      body: t("dash.postlaunch.crm_body"),
+      ctaLabel: t("dash.postlaunch.crm_cta"),
+      ctaView: "customers",
+      color: "from-emerald-600 to-teal-500",
+    },
+    {
+      id: "share",
+      emoji: "🔗",
+      skipTodo: true,
+      title: t("dash.postlaunch.share_title"),
+      body: t("dash.postlaunch.share_body"),
+      ctaLabel: t("dash.postlaunch.share_cta"),
+      ctaView: null,
+      color: "from-amber-500 to-orange-400",
+    },
+    {
+      id: "design",
+      emoji: "🎨",
+      skipTodo: true,
+      title: t("dash.postlaunch.design_title"),
+      body: t("dash.postlaunch.design_body"),
+      ctaLabel: t("dash.postlaunch.design_cta"),
+      ctaView: "design",
+      color: "from-pink-600 to-rose-500",
+    },
+    {
+      id: "content",
+      emoji: "✏️",
+      skipTodo: true,
+      title: t("dash.postlaunch.content_title"),
+      body: t("dash.postlaunch.content_body"),
+      ctaLabel: t("dash.postlaunch.content_cta"),
+      ctaView: "content",
+      color: "from-cyan-600 to-sky-500",
+    },
+  ];
+}
 
 export interface PopupState {
   shown: PopupId[];
@@ -104,6 +107,8 @@ interface PostLaunchPopupsProps {
 }
 
 export default function PostLaunchPopups({ businessId, onNavigate, popupState, onStateChange }: PostLaunchPopupsProps) {
+  const { t } = useLanguage();
+  const POPUPS = getPopups(t);
   const [activePopup, setActivePopup] = useState<PopupConfig | null>(null);
   const suppressNextRef = useRef(false);
 
@@ -194,7 +199,7 @@ export default function PostLaunchPopups({ businessId, onNavigate, popupState, o
             <button
               onClick={handleSkip}
               className="absolute top-4 left-4 rounded-full bg-white/20 p-1.5 hover:bg-white/30 transition-colors"
-              aria-label="דלג"
+              aria-label={t("dash.postlaunch.skip")}
             >
               <X className="h-4 w-4 text-white" />
             </button>
@@ -214,7 +219,7 @@ export default function PostLaunchPopups({ businessId, onNavigate, popupState, o
                 onClick={handleSkip}
                 className="text-white/70 hover:text-white text-sm transition-colors px-2"
               >
-                דלג
+                {t("dash.postlaunch.skip")}
               </button>
             </div>
           </motion.div>
