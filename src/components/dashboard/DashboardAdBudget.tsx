@@ -19,15 +19,33 @@ import {
   useAdChannels, useCreateChannel, useUpdateChannel, useDeleteChannel,
   useAdLinks, useCreateLink, useUpdateLink, useDeleteLink,
 } from "@/hooks/useAdBudget";
+import { useLanguage } from "@/contexts/LanguageContext";
 
+// Legacy fallback only: older rows may lack a stored `icon` field, so we try to
+// match their (Hebrew) channel name to an emoji. Not shown to users directly -
+// the actual on-screen preset list is built by getChannelPresets() below.
 const CHANNEL_ICONS: Record<string, string> = {
   פייסבוק: "📘", גוגל: "🔍", אינסטגרם: "📸", טיקטוק: "🎵",
   יוטיוב: "▶️", לינקדאין: "💼", טוויטר: "🐦", אחר: "📣",
 };
 
-const PERIOD_LABELS: Record<string, string> = {
-  monthly: "חודשי", weekly: "שבועי", custom: "טווח מותאם",
-};
+// Preset channel options shown in the "add channel" dropdown, translated.
+const getChannelPresets = (t: (key: string) => string) => [
+  { name: t("dash.adbudget.channel_facebook"), icon: "📘" },
+  { name: t("dash.adbudget.channel_google"), icon: "🔍" },
+  { name: t("dash.adbudget.channel_instagram"), icon: "📸" },
+  { name: t("dash.adbudget.channel_tiktok"), icon: "🎵" },
+  { name: t("dash.adbudget.channel_youtube"), icon: "▶️" },
+  { name: t("dash.adbudget.channel_linkedin"), icon: "💼" },
+  { name: t("dash.adbudget.channel_twitter"), icon: "🐦" },
+  { name: t("dash.adbudget.channel_other"), icon: "📣" },
+];
+
+const getPeriodLabels = (t: (key: string) => string): Record<string, string> => ({
+  monthly: t("dash.adbudget.period_monthly"),
+  weekly: t("dash.adbudget.period_weekly"),
+  custom: t("dash.adbudget.period_custom"),
+});
 
 interface Props { businessId?: string }
 
@@ -37,6 +55,7 @@ function LinkRow({ link, onUpdate, onDelete }: {
   onUpdate: (patch: Partial<AdLink> & { id: string; channel_id: string }) => void;
   onDelete: () => void;
 }) {
+  const { t } = useLanguage();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ ...link });
   const [copied, setCopied] = useState(false);
@@ -47,7 +66,7 @@ function LinkRow({ link, onUpdate, onDelete }: {
     navigator.clipboard.writeText(utmUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success("קישור UTM הועתק");
+    toast.success(t("dash.adbudget.link_copied_toast"));
   };
 
   const save = () => {
@@ -60,11 +79,11 @@ function LinkRow({ link, onUpdate, onDelete }: {
       <div className="border border-primary/30 rounded-lg p-3 space-y-2 bg-muted/30">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-xs">תווית</Label>
+            <Label className="text-xs">{t("dash.adbudget.label_field")}</Label>
             <Input value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} className="h-8 text-sm" />
           </div>
           <div>
-            <Label className="text-xs">URL יעד</Label>
+            <Label className="text-xs">{t("dash.adbudget.destination_url_field")}</Label>
             <Input value={form.destination_url} onChange={e => setForm(f => ({ ...f, destination_url: e.target.value }))} className="h-8 text-sm" dir="ltr" />
           </div>
         </div>
@@ -78,7 +97,7 @@ function LinkRow({ link, onUpdate, onDelete }: {
         </div>
         <div className="flex gap-2 justify-end">
           <Button size="sm" variant="ghost" onClick={() => setEditing(false)}><X className="h-4 w-4" /></Button>
-          <Button size="sm" onClick={save}><Save className="h-4 w-4 ml-1" /> שמור</Button>
+          <Button size="sm" onClick={save}><Save className="h-4 w-4 ml-1" /> {t("dash.adbudget.save_button")}</Button>
         </div>
       </div>
     );
@@ -90,7 +109,7 @@ function LinkRow({ link, onUpdate, onDelete }: {
         <p className="text-sm font-medium">{link.label}</p>
         <p className="text-xs text-muted-foreground truncate dir-ltr" dir="ltr">{utmUrl}</p>
       </div>
-      <span className="text-xs text-muted-foreground shrink-0">{link.clicks} קליקים</span>
+      <span className="text-xs text-muted-foreground shrink-0">{link.clicks} {t("dash.adbudget.clicks_label")}</span>
       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={copy}>
           {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
@@ -113,6 +132,7 @@ function LinkRow({ link, onUpdate, onDelete }: {
 function ChannelCard({ channel, businessId, onDelete }: {
   channel: AdChannel; businessId: string; onDelete: () => void;
 }) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(false);
   const [budgetForm, setBudgetForm] = useState({
@@ -130,6 +150,7 @@ function ChannelCard({ channel, businessId, onDelete }: {
   const updateLink = useUpdateLink();
   const createLink = useCreateLink();
 
+  const periodLabels = getPeriodLabels(t);
   const icon = CHANNEL_ICONS[channel.name] ?? channel.icon ?? "📣";
   const spent = 0; // could be wired to real ad spend data later
   const pct = channel.budget_amount > 0 ? Math.min((spent / channel.budget_amount) * 100, 100) : 0;
@@ -140,7 +161,7 @@ function ChannelCard({ channel, businessId, onDelete }: {
   };
 
   const addLink = () => {
-    if (!newLink.label || !newLink.destination_url) { toast.error("מלא תווית וURL"); return; }
+    if (!newLink.label || !newLink.destination_url) { toast.error(t("dash.adbudget.fill_label_url_error")); return; }
     createLink.mutate({ ...newLink, channel_id: channel.id, business_id: businessId, utm_term: null, is_active: true });
     setNewLink({ label: "", destination_url: "", utm_source: channel.name.toLowerCase(), utm_medium: "paid", utm_campaign: "", utm_content: "" });
     setShowAddLink(false);
@@ -155,13 +176,13 @@ function ChannelCard({ channel, businessId, onDelete }: {
           <p className="font-semibold">{channel.name}</p>
           <p className="text-xs text-muted-foreground">
             {channel.budget_amount > 0
-              ? `₪${channel.budget_amount.toLocaleString()} ${PERIOD_LABELS[channel.budget_period]}`
-              : "לא הוגדר תקציב"}
+              ? `₪${channel.budget_amount.toLocaleString()} ${periodLabels[channel.budget_period]}`
+              : t("dash.adbudget.no_budget_set")}
             {channel.budget_start_date && ` · ${channel.budget_start_date}`}
             {channel.budget_end_date && ` - ${channel.budget_end_date}`}
           </p>
         </div>
-        <Badge variant="secondary" className="text-xs">{links?.length ?? 0} קישורים</Badge>
+        <Badge variant="secondary" className="text-xs">{links?.length ?? 0} {t("dash.adbudget.links_count_label")}</Badge>
         <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={e => { e.stopPropagation(); onDelete(); }}>
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -174,31 +195,31 @@ function ChannelCard({ channel, businessId, onDelete }: {
           {editingBudget ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 border border-border rounded-lg bg-card">
               <div>
-                <Label className="text-xs">תקציב (₪)</Label>
+                <Label className="text-xs">{t("dash.adbudget.budget_amount_label")}</Label>
                 <Input type="number" value={budgetForm.budget_amount} onChange={e => setBudgetForm(f => ({ ...f, budget_amount: +e.target.value }))} className="h-8" />
               </div>
               <div>
-                <Label className="text-xs">תדירות</Label>
+                <Label className="text-xs">{t("dash.adbudget.budget_period_label")}</Label>
                 <Select value={budgetForm.budget_period} onValueChange={v => setBudgetForm(f => ({ ...f, budget_period: v as any }))}>
                   <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="monthly">חודשי</SelectItem>
-                    <SelectItem value="weekly">שבועי</SelectItem>
-                    <SelectItem value="custom">טווח מותאם</SelectItem>
+                    <SelectItem value="monthly">{t("dash.adbudget.period_monthly")}</SelectItem>
+                    <SelectItem value="weekly">{t("dash.adbudget.period_weekly")}</SelectItem>
+                    <SelectItem value="custom">{t("dash.adbudget.period_custom")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label className="text-xs">מתאריך</Label>
+                <Label className="text-xs">{t("dash.adbudget.start_date_label")}</Label>
                 <Input type="date" value={budgetForm.budget_start_date} onChange={e => setBudgetForm(f => ({ ...f, budget_start_date: e.target.value }))} className="h-8 text-xs" />
               </div>
               <div>
-                <Label className="text-xs">עד תאריך</Label>
+                <Label className="text-xs">{t("dash.adbudget.end_date_label")}</Label>
                 <Input type="date" value={budgetForm.budget_end_date} onChange={e => setBudgetForm(f => ({ ...f, budget_end_date: e.target.value }))} className="h-8 text-xs" />
               </div>
               <div className="col-span-full flex gap-2 justify-end">
-                <Button size="sm" variant="ghost" onClick={() => setEditingBudget(false)}>ביטול</Button>
-                <Button size="sm" onClick={saveBudget}><Save className="h-4 w-4 ml-1" /> שמור תקציב</Button>
+                <Button size="sm" variant="ghost" onClick={() => setEditingBudget(false)}>{t("dash.adbudget.cancel_button")}</Button>
+                <Button size="sm" onClick={saveBudget}><Save className="h-4 w-4 ml-1" /> {t("dash.adbudget.save_budget_button")}</Button>
               </div>
             </div>
           ) : (
@@ -207,7 +228,7 @@ function ChannelCard({ channel, businessId, onDelete }: {
                 <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
               </div>
               <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setEditingBudget(true)}>
-                <Pencil className="h-3 w-3 ml-1" /> עדכן תקציב
+                <Pencil className="h-3 w-3 ml-1" /> {t("dash.adbudget.update_budget_button")}
               </Button>
             </div>
           )}
@@ -229,11 +250,11 @@ function ChannelCard({ channel, businessId, onDelete }: {
             <div className="border border-dashed border-border rounded-lg p-3 space-y-2">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-xs">תווית (לדוג׳ "סרטון 1")</Label>
-                  <Input value={newLink.label} onChange={e => setNewLink(f => ({ ...f, label: e.target.value }))} className="h-8 text-sm" placeholder="סרטון 1" />
+                  <Label className="text-xs">{t("dash.adbudget.add_link_label_hint")}</Label>
+                  <Input value={newLink.label} onChange={e => setNewLink(f => ({ ...f, label: e.target.value }))} className="h-8 text-sm" placeholder={t("dash.adbudget.add_link_label_placeholder")} />
                 </div>
                 <div>
-                  <Label className="text-xs">URL יעד</Label>
+                  <Label className="text-xs">{t("dash.adbudget.destination_url_field")}</Label>
                   <Input value={newLink.destination_url} onChange={e => setNewLink(f => ({ ...f, destination_url: e.target.value }))} className="h-8 text-sm" dir="ltr" placeholder="https://..." />
                 </div>
               </div>
@@ -246,13 +267,13 @@ function ChannelCard({ channel, businessId, onDelete }: {
                 ))}
               </div>
               <div className="flex gap-2 justify-end">
-                <Button size="sm" variant="ghost" onClick={() => setShowAddLink(false)}>ביטול</Button>
-                <Button size="sm" onClick={addLink}><Plus className="h-4 w-4 ml-1" /> הוסף קישור</Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowAddLink(false)}>{t("dash.adbudget.cancel_button")}</Button>
+                <Button size="sm" onClick={addLink}><Plus className="h-4 w-4 ml-1" /> {t("dash.adbudget.add_link_button")}</Button>
               </div>
             </div>
           ) : (
             <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => setShowAddLink(true)}>
-              <Plus className="h-4 w-4 ml-1" /> הוסף קישור UTM
+              <Plus className="h-4 w-4 ml-1" /> {t("dash.adbudget.add_utm_link_button")}
             </Button>
           )}
         </div>
@@ -263,6 +284,7 @@ function ChannelCard({ channel, businessId, onDelete }: {
 
 // ── Main component ────────────────────────────────────────────────────────────
 const DashboardAdBudget = ({ businessId }: Props) => {
+  const { t } = useLanguage();
   const { data: channels, isLoading } = useAdChannels(businessId);
   const createChannel = useCreateChannel();
   const deleteChannel = useDeleteChannel();
@@ -270,12 +292,14 @@ const DashboardAdBudget = ({ businessId }: Props) => {
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState("");
 
+  const channelPresets = getChannelPresets(t);
+
   const add = () => {
     if (!newName.trim() || !businessId) return;
     createChannel.mutate({
       business_id: businessId,
       name: newName.trim(),
-      icon: newIcon || CHANNEL_ICONS[newName.trim()] || "📣",
+      icon: newIcon || channelPresets.find(p => p.name === newName.trim())?.icon || "📣",
       budget_amount: 0,
       budget_currency: "ILS",
       budget_period: "monthly",
@@ -292,10 +316,10 @@ const DashboardAdBudget = ({ businessId }: Props) => {
     <div className="space-y-4" dir="rtl">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold flex items-center gap-2">
-          <Megaphone className="h-5 w-5 text-primary" /> ניהול תקציב פרסום
+          <Megaphone className="h-5 w-5 text-primary" /> {t("dash.adbudget.title")}
         </h2>
         <Button size="sm" onClick={() => setShowAdd(true)} className="gap-1">
-          <Plus className="h-4 w-4" /> ערוץ חדש
+          <Plus className="h-4 w-4" /> {t("dash.adbudget.new_channel_button")}
         </Button>
       </div>
 
@@ -303,26 +327,26 @@ const DashboardAdBudget = ({ businessId }: Props) => {
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent dir="rtl" className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>הוסף ערוץ פרסום</DialogTitle>
+            <DialogTitle>{t("dash.adbudget.add_channel_dialog_title")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>שם הערוץ</Label>
-              <Select onValueChange={v => { setNewName(v); setNewIcon(CHANNEL_ICONS[v] ?? "📣"); }}>
-                <SelectTrigger><SelectValue placeholder="בחר ערוץ..." /></SelectTrigger>
+              <Label>{t("dash.adbudget.channel_name_label")}</Label>
+              <Select onValueChange={v => { setNewName(v); setNewIcon(channelPresets.find(p => p.name === v)?.icon ?? "📣"); }}>
+                <SelectTrigger><SelectValue placeholder={t("dash.adbudget.select_channel_placeholder")} /></SelectTrigger>
                 <SelectContent>
-                  {Object.entries(CHANNEL_ICONS).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v} {k}</SelectItem>
+                  {channelPresets.map(p => (
+                    <SelectItem key={p.name} value={p.name}>{p.icon} {p.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground mt-1">או הכנס ידנית:</p>
-              <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="שם ערוץ מותאם" className="mt-1" />
+              <p className="text-xs text-muted-foreground mt-1">{t("dash.adbudget.manual_entry_hint")}</p>
+              <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder={t("dash.adbudget.custom_channel_placeholder")} className="mt-1" />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowAdd(false)}>ביטול</Button>
-            <Button onClick={add} disabled={!newName.trim()}>הוסף</Button>
+            <Button variant="ghost" onClick={() => setShowAdd(false)}>{t("dash.adbudget.cancel_button")}</Button>
+            <Button onClick={add} disabled={!newName.trim()}>{t("dash.adbudget.add_button")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -332,8 +356,8 @@ const DashboardAdBudget = ({ businessId }: Props) => {
       ) : (channels ?? []).length === 0 ? (
         <div className="text-center py-16 border-2 border-dashed border-border rounded-xl">
           <Megaphone className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground mb-4">עדיין לא הגדרת ערוצי פרסום</p>
-          <Button onClick={() => setShowAdd(true)}><Plus className="h-4 w-4 ml-1" /> הוסף ערוץ ראשון</Button>
+          <p className="text-muted-foreground mb-4">{t("dash.adbudget.empty_title")}</p>
+          <Button onClick={() => setShowAdd(true)}><Plus className="h-4 w-4 ml-1" /> {t("dash.adbudget.empty_cta")}</Button>
         </div>
       ) : (
         <div className="space-y-3">

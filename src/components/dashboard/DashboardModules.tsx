@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import {
   getEnabledModules, getBusinessType, MODULES, type ModuleKey, type BusinessType,
 } from "@/lib/businessModules";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
  * "המודולים שלי" - the dashboard module marketplace. A business_type sets a
@@ -32,13 +33,13 @@ type Live = {
   desc: string;
 };
 
-const LIVE: Live[] = [
-  { key: "commerce",  icon: ShoppingBag,   color: "#0b9e77", title: "חנות מוצרים",      desc: "קטלוג, עגלת קניות, הזמנות וסליקה. למכירת מוצרים פיזיים או דיגיטליים." },
-  { key: "booking",   icon: CalendarClock, color: "#1785c2", title: "יומן ותורים",      desc: "לקוחות קובעים תור מהאתר, יומן חודשי מסונכרן Google, שירותים ושעות." },
-  { key: "listings",  icon: Building2,     color: "#6d4bd0", title: "לוח נכסים ולידים",  desc: "נכסים/פריטים עם סינון, וכל פנייה נכנסת ל-CRM כליד עם מעקב." },
-  { key: "donations", icon: Heart,         color: "#c0392b", title: "תרומות",           desc: "תרומה חד-פעמית או חודשית, קמפיינים עם יעד, וסעיף 46." },
-  { key: "synagogue", icon: Landmark,      color: "#c07d12", title: "בית כנסת",         desc: "עליות ונדרים, מקומות קבועים וזמני תפילה." },
-  { key: "gallery",   icon: Images,        color: "#0891b2", title: "גלריה ותיק עבודות", desc: "תצוגת תמונות ועבודות מקצועיות בעמוד החנות — לצלמים, מעצבים, קוסמטיקאיות ובעלי מקצוע." },
+const buildLive = (t: (key: string) => string): Live[] => [
+  { key: "commerce",  icon: ShoppingBag,   color: "#0b9e77", title: t("dash.modules.live_commerce_title"),  desc: t("dash.modules.live_commerce_desc") },
+  { key: "booking",   icon: CalendarClock, color: "#1785c2", title: t("dash.modules.live_booking_title"),   desc: t("dash.modules.live_booking_desc") },
+  { key: "listings",  icon: Building2,     color: "#6d4bd0", title: t("dash.modules.live_listings_title"),  desc: t("dash.modules.live_listings_desc") },
+  { key: "donations", icon: Heart,         color: "#c0392b", title: t("dash.modules.live_donations_title"), desc: t("dash.modules.live_donations_desc") },
+  { key: "synagogue", icon: Landmark,      color: "#c07d12", title: t("dash.modules.live_synagogue_title"), desc: t("dash.modules.live_synagogue_desc") },
+  { key: "gallery",   icon: Images,        color: "#0891b2", title: t("dash.modules.live_gallery_title"),   desc: t("dash.modules.live_gallery_desc") },
 ];
 
 /** Which LIVE module keys make sense to offer per business type. */
@@ -60,9 +61,9 @@ type SoonItem = {
 };
 
 // Phase-2 modules - shown as an invitation, not yet toggleable.
-const SOON: SoonItem[] = [
-  { icon: Hotel,         color: "#6d4bd0", title: "חדרים / יחידות אירוח", desc: "יחידות עם זמינות בלוח, מחיר ללילה והזמנה - לצימרים ואירוח.", types: ["vacation", "services"] },
-  { icon: ClipboardList, color: "#c07d12", title: "טופס לידים עצמאי",     desc: "\"השאירו פרטים\" - נכנס ישר ל-CRM.", types: ["products", "nonprofit", "synagogue"] },
+const buildSoon = (t: (key: string) => string): SoonItem[] => [
+  { icon: Hotel,         color: "#6d4bd0", title: t("dash.modules.soon_rooms_title"), desc: t("dash.modules.soon_rooms_desc"), types: ["vacation", "services"] },
+  { icon: ClipboardList, color: "#c07d12", title: t("dash.modules.soon_leads_title"), desc: t("dash.modules.soon_leads_desc"), types: ["products", "nonprofit", "synagogue"] },
 ];
 
 /** The module that is the core identity of each business type. Disabling it shows a warning. */
@@ -75,22 +76,26 @@ const PRIMARY_MODULE: Record<BusinessType, ModuleKey> = {
   vacation:   "commerce",
 };
 
-const PRIMARY_WARNING: Partial<Record<ModuleKey, string>> = {
-  commerce:  "כיבוי חנות מוצרים יסתיר את החנות מהאתר לחלוטין - הלקוחות לא יוכלו להזמין.",
-  booking:   "כיבוי יומן ותורים יסיר את אפשרות קביעת התור מהאתר - לקוחות לא יוכלו לקבוע.",
-  listings:  "כיבוי לוח הנכסים יסתיר את כל הנכסים מהאתר וימנע קבלת לידים חדשים.",
-  donations: "כיבוי מודול התרומות יסגור את אפשרות התרומה באתר - לא ניתן יהיה לקבל תרומות.",
-};
+const buildPrimaryWarning = (t: (key: string) => string): Partial<Record<ModuleKey, string>> => ({
+  commerce:  t("dash.modules.warning_commerce"),
+  booking:   t("dash.modules.warning_booking"),
+  listings:  t("dash.modules.warning_listings"),
+  donations: t("dash.modules.warning_donations"),
+});
 
 const fade = (d = 0) => ({ initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: d } });
 
 const DashboardModules = ({ business }: Props) => {
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const [pending, setPending] = useState<ModuleKey | null>(null);
   const [warnKey, setWarnKey] = useState<ModuleKey | null>(null);
   const current = getEnabledModules(business as { business_type?: BusinessType } | null);
   const bType = getBusinessType(business as { business_type?: BusinessType } | null);
   const allowedKeys = ALLOWED_LIVE[bType] ?? Object.keys(MODULES) as ModuleKey[];
+  const LIVE = buildLive(t);
+  const SOON = buildSoon(t);
+  const PRIMARY_WARNING = buildPrimaryWarning(t);
   const visibleLive = LIVE.filter((m) => allowedKeys.includes(m.key));
   const visibleSoon = SOON.filter((m) => !m.types || m.types.includes(bType));
 
@@ -107,16 +112,16 @@ const DashboardModules = ({ business }: Props) => {
       qc.invalidateQueries({ queryKey: ["my-business"] });
       qc.invalidateQueries({ queryKey: ["business"] });
     },
-    onError: () => toast.error("לא הצלחנו לעדכן את המודולים. נסו שוב."),
+    onError: () => toast.error(t("dash.modules.update_error")),
     onSettled: () => setPending(null),
   });
 
   const doToggle = (key: ModuleKey) => {
     const on = current.includes(key);
     const next = on ? current.filter((k) => k !== key) : [...current, key];
-    if (next.length === 0) { toast.error("צריך להשאיר לפחות מודול אחד פעיל."); return; }
+    if (next.length === 0) { toast.error(t("dash.modules.min_one_required")); return; }
     setPending(key);
-    save.mutate(next, { onSuccess: () => toast.success(on ? `${MODULES[key].label} כובה` : `${MODULES[key].label} הופעל`) });
+    save.mutate(next, { onSuccess: () => toast.success(`${MODULES[key].label} ${on ? t("dash.modules.toggle_off_suffix") : t("dash.modules.toggle_on_suffix")}`) });
   };
 
   const toggle = (key: ModuleKey) => {
@@ -136,8 +141,8 @@ const DashboardModules = ({ business }: Props) => {
         <div className="relative z-10 flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center shrink-0"><Blocks className="w-6 h-6" /></div>
           <div>
-            <h1 className="text-2xl font-bold leading-tight">המודולים שלי</h1>
-            <p className="text-white/80 text-sm mt-0.5">הרכיבו את האתר בדיוק לפי מה שהעסק צריך - הדליקו והכבו יכולות בקליק.</p>
+            <h1 className="text-2xl font-bold leading-tight">{t("dash.modules.hero_title")}</h1>
+            <p className="text-white/80 text-sm mt-0.5">{t("dash.modules.hero_subtitle")}</p>
           </div>
         </div>
       </motion.div>
@@ -159,7 +164,7 @@ const DashboardModules = ({ business }: Props) => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold text-foreground">{m.title}</h3>
-                    {on && <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${m.color}1f`, color: m.color }}><Check className="w-3 h-3" /> פעיל</span>}
+                    {on && <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${m.color}1f`, color: m.color }}><Check className="w-3 h-3" /> {t("dash.modules.active_badge")}</span>}
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed mt-1">{m.desc}</p>
                 </div>
@@ -171,7 +176,7 @@ const DashboardModules = ({ business }: Props) => {
                   aria-checked={on}
                   className={`relative w-12 h-7 rounded-full shrink-0 transition-colors disabled:opacity-60 ${on ? "" : "bg-muted"}`}
                   style={on ? { background: m.color } : undefined}
-                  title={on ? "כבה" : "הדלק"}
+                  title={on ? t("dash.modules.toggle_off_title") : t("dash.modules.toggle_on_title")}
                 >
                   <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all flex items-center justify-center ${on ? "right-1" : "right-6"}`}>
                     {busy && <Loader2 className="w-3 h-3 animate-spin" style={{ color: m.color }} />}
@@ -186,7 +191,7 @@ const DashboardModules = ({ business }: Props) => {
       {/* Coming soon */}
       <div>
         <div className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground bg-muted px-4 py-1.5 rounded-full mb-3">
-          <Sparkles className="w-4 h-4" /> בקרוב - מודולים נוספים בפיתוח
+          <Sparkles className="w-4 h-4" /> {t("dash.modules.soon_section_label")}
         </div>
         <div className="grid sm:grid-cols-3 gap-3">
           {visibleSoon.map((m) => {
@@ -198,7 +203,7 @@ const DashboardModules = ({ business }: Props) => {
                 </div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-foreground text-sm">{m.title}</h3>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">בקרוב</span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{t("dash.modules.soon_badge")}</span>
                 </div>
                 <p className="text-xs text-muted-foreground leading-snug mt-1">{m.desc}</p>
               </div>
@@ -208,7 +213,7 @@ const DashboardModules = ({ business }: Props) => {
       </div>
 
       <p className="text-xs text-muted-foreground text-center">
-        כשמדליקים מודול - הכלי שלו מופיע אוטומטית בתפריט הדשבורד ובאתר הציבורי. אפשר לשנות בכל רגע.
+        {t("dash.modules.footer_note")}
       </p>
 
       {/* Warning dialog for primary module disable */}
@@ -226,12 +231,12 @@ const DashboardModules = ({ business }: Props) => {
               <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5 text-destructive" />
               </div>
-              <h3 className="font-bold text-base">כיבוי מודול ראשי</h3>
+              <h3 className="font-bold text-base">{t("dash.modules.warning_dialog_title")}</h3>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               {PRIMARY_WARNING[warnKey]}
               <br /><br />
-              בטוחים שרוצים לכבות?
+              {t("dash.modules.warning_confirm_text")}
             </p>
             <div className="flex gap-2">
               <Button
@@ -239,10 +244,10 @@ const DashboardModules = ({ business }: Props) => {
                 className="flex-1"
                 onClick={() => { doToggle(warnKey); setWarnKey(null); }}
               >
-                כבה בכל זאת
+                {t("dash.modules.warning_confirm_button")}
               </Button>
               <Button variant="outline" className="flex-1" onClick={() => setWarnKey(null)}>
-                ביטול
+                {t("dash.modules.cancel_button")}
               </Button>
             </div>
           </div>

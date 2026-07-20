@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Lightbulb, TrendingDown, Eye, ShoppingCart, CreditCard, CheckCircle2 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
  * Insights: a simple conversion funnel (visits -> add to cart -> checkout ->
@@ -12,14 +13,16 @@ interface Props {
   businessId?: string;
 }
 
-const RANGES = [
-  { label: "7 ימים", days: 7 },
-  { label: "30 ימים", days: 30 },
-  { label: "90 ימים", days: 90 },
+const getRanges = (t: (key: string) => string) => [
+  { label: t("dash.insights.range_7d"), days: 7 },
+  { label: t("dash.insights.range_30d"), days: 30 },
+  { label: t("dash.insights.range_90d"), days: 90 },
 ];
 
 const DashboardInsights = ({ businessId }: Props) => {
+  const { t } = useLanguage();
   const [days, setDays] = useState(30);
+  const RANGES = getRanges(t);
 
   const { data, isLoading } = useQuery({
     queryKey: ["insights", businessId, days],
@@ -58,28 +61,28 @@ const DashboardInsights = ({ businessId }: Props) => {
 
   const pct = (n: number, base: number) => (base > 0 ? Math.round((n / base) * 100) : 0);
   const funnel = [
-    { label: "מבקרים", value: visits, icon: Eye, ofVisits: 100 },
-    { label: "הוסיפו לעגלה", value: added, icon: ShoppingCart, ofVisits: pct(added, visits) },
-    { label: "התחילו תשלום", value: checkout, icon: CreditCard, ofVisits: pct(checkout, visits) },
-    { label: "רכשו", value: purchased, icon: CheckCircle2, ofVisits: pct(purchased, visits) },
+    { label: t("dash.insights.funnel_visitors"), value: visits, icon: Eye, ofVisits: 100 },
+    { label: t("dash.insights.funnel_added_to_cart"), value: added, icon: ShoppingCart, ofVisits: pct(added, visits) },
+    { label: t("dash.insights.funnel_began_checkout"), value: checkout, icon: CreditCard, ofVisits: pct(checkout, visits) },
+    { label: t("dash.insights.funnel_purchased"), value: purchased, icon: CheckCircle2, ofVisits: pct(purchased, visits) },
   ];
 
   // Plain-language insights
   const insights: { tone: "good" | "warn"; text: string }[] = [];
   if (visits === 0) {
-    insights.push({ tone: "warn", text: "אין עדיין תנועה לאתר בתקופה זו. שתפו את הקישור (וואטסאפ/רשתות) או שקלו פרסום ממומן. ראו גם 'מקורות הגעה'." });
+    insights.push({ tone: "warn", text: t("dash.insights.no_traffic") });
   } else {
     if (added > 0 && purchased / added < 0.5) {
-      insights.push({ tone: "warn", text: `נטישת עגלה גבוהה: ${pct(added - purchased, added)}% מהמוסיפים לעגלה לא השלימו רכישה. נסו משלוח חינם מעל סכום מסוים, קופון לרכישה ראשונה, או הפחתת שלבים בקופה.` });
+      insights.push({ tone: "warn", text: `${t("dash.insights.cart_abandonment_prefix")} ${pct(added - purchased, added)}${t("dash.insights.cart_abandonment_suffix")}` });
     }
     if (pct(added, visits) < 10) {
-      insights.push({ tone: "warn", text: `רק ${pct(added, visits)}% מהמבקרים מוסיפים לעגלה. שווה לשפר תמונות מוצר, תיאורים ומחירים, ולהבליט "הוסף לסל".` });
+      insights.push({ tone: "warn", text: `${t("dash.insights.low_add_to_cart_prefix")} ${pct(added, visits)}${t("dash.insights.low_add_to_cart_suffix")}` });
     }
     if (purchased > 0 && pct(purchased, visits) >= 2) {
-      insights.push({ tone: "good", text: `יחס המרה יפה: ${pct(purchased, visits)}% מהמבקרים רכשו. המשיכו להביא תנועה איכותית!` });
+      insights.push({ tone: "good", text: `${t("dash.insights.good_conversion_prefix")} ${pct(purchased, visits)}${t("dash.insights.good_conversion_suffix")}` });
     }
     if (purchased === 0 && added > 0) {
-      insights.push({ tone: "warn", text: "יש עניין (הוספות לעגלה) אבל אין רכישות. ודאו שהסליקה מחוברת ושאין תקלה בקופה." });
+      insights.push({ tone: "warn", text: t("dash.insights.interest_no_purchase") });
     }
   }
 
@@ -88,9 +91,9 @@ const DashboardInsights = ({ businessId }: Props) => {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Lightbulb className="w-6 h-6 text-primary" /> תובנות
+            <Lightbulb className="w-6 h-6 text-primary" /> {t("dash.insights.title")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">מסע הלקוח באתר, ואיפה אפשר להשתפר.</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("dash.insights.subtitle")}</p>
         </div>
         <div className="flex gap-1 bg-muted rounded-lg p-1">
           {RANGES.map((r) => (
@@ -104,9 +107,9 @@ const DashboardInsights = ({ businessId }: Props) => {
 
       {/* Funnel */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <h3 className="font-semibold text-foreground mb-4">משפך המרה</h3>
+        <h3 className="font-semibold text-foreground mb-4">{t("dash.insights.funnel_title")}</h3>
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">טוען...</p>
+          <p className="text-sm text-muted-foreground">{t("dash.insights.loading")}</p>
         ) : (
           <div className="space-y-3">
             {funnel.map((step) => (
@@ -126,11 +129,11 @@ const DashboardInsights = ({ businessId }: Props) => {
 
       {/* Insights */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><TrendingDown className="w-5 h-5 text-primary" /> המלצות לשיפור</h3>
+        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><TrendingDown className="w-5 h-5 text-primary" /> {t("dash.insights.recommendations_title")}</h3>
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">טוען...</p>
+          <p className="text-sm text-muted-foreground">{t("dash.insights.loading")}</p>
         ) : insights.length === 0 ? (
-          <p className="text-sm text-muted-foreground">אסוף עוד נתונים (תנועה ורכישות) כדי לקבל המלצות מותאמות.</p>
+          <p className="text-sm text-muted-foreground">{t("dash.insights.empty_recommendations")}</p>
         ) : (
           <div className="space-y-2.5">
             {insights.map((ins, i) => (
@@ -143,7 +146,7 @@ const DashboardInsights = ({ businessId }: Props) => {
       </div>
 
       <p className="text-xs text-muted-foreground text-center">
-        הנתונים נאספים מרגע שהאתר באוויר. ככל שתהיה יותר תנועה - התובנות מדויקות יותר.
+        {t("dash.insights.footer_note")}
       </p>
     </div>
   );

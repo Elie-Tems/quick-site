@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Booking {
   id: string;
@@ -15,7 +16,18 @@ interface Props {
   businessId: string | undefined;
 }
 
+const getDayLabels = (t: (key: string) => string): string[] => [
+  t("dash.availability.day_sun"),
+  t("dash.availability.day_mon"),
+  t("dash.availability.day_tue"),
+  t("dash.availability.day_wed"),
+  t("dash.availability.day_thu"),
+  t("dash.availability.day_fri"),
+  t("dash.availability.day_sat"),
+];
+
 export default function DashboardAvailabilityCalendar({ businessId }: Props) {
+  const { t } = useLanguage();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [month, setMonth] = useState(() => {
     const d = new Date();
@@ -67,8 +79,8 @@ export default function DashboardAvailabilityCalendar({ businessId }: Props) {
       <div className="rounded-2xl bg-gradient-to-l from-violet-500/15 to-indigo-500/5 border border-violet-500/20 p-5 mb-5 flex items-center gap-4">
         <div className="text-4xl">📅</div>
         <div>
-          <h1 className="text-lg font-bold text-foreground">יומן זמינות</h1>
-          <p className="text-sm text-muted-foreground">הזמנות לפי תאריכים - תצוגה בלבד</p>
+          <h1 className="text-lg font-bold text-foreground">{t("dash.availability.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dash.availability.subtitle")}</p>
         </div>
       </div>
 
@@ -87,7 +99,7 @@ export default function DashboardAvailabilityCalendar({ businessId }: Props) {
       <div className="rounded-2xl border border-border overflow-hidden">
         {/* Day headers - Sun..Sat */}
         <div className="grid grid-cols-7 border-b border-border bg-muted/30">
-          {["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"].map((d) => (
+          {getDayLabels(t).map((d) => (
             <div key={d} className="p-2 text-center text-xs font-medium text-muted-foreground">{d}</div>
           ))}
         </div>
@@ -114,7 +126,7 @@ export default function DashboardAvailabilityCalendar({ businessId }: Props) {
                     key={b.id}
                     className="mt-0.5 rounded px-1 py-px text-[10px] bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 truncate"
                   >
-                    {b.unit_name ?? b.customer_name ?? "הזמנה"}
+                    {b.unit_name ?? b.customer_name ?? t("dash.availability.booking_fallback")}
                   </div>
                 ))}
               </div>
@@ -124,7 +136,7 @@ export default function DashboardAvailabilityCalendar({ businessId }: Props) {
       </div>
 
       <p className="text-xs text-muted-foreground mt-3 text-center">
-        ירוק = תפוס. לפרטי הזמנה - עבור לסעיף הזמנות לינה.
+        {t("dash.availability.footer_note")}
       </p>
     </div>
   );

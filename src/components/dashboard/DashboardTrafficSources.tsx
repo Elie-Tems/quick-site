@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Radar, Users, Globe } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
  * Traffic sources: where the merchant's visitors come from. Built from page_views
@@ -12,39 +13,43 @@ interface Props {
   businessId?: string;
 }
 
-const RANGES = [
-  { label: "7 ימים", days: 7 },
-  { label: "30 ימים", days: 30 },
-  { label: "90 ימים", days: 90 },
+type TFn = (key: string) => string;
+
+const getRanges = (t: TFn) => [
+  { label: t("dash.traffic.range_7d"), days: 7 },
+  { label: t("dash.traffic.range_30d"), days: 30 },
+  { label: t("dash.traffic.range_90d"), days: 90 },
 ];
 
-function categorize(referrer: string | null, utm: string | null): string {
+function categorize(referrer: string | null, utm: string | null, t: TFn): string {
   if (utm) {
     const map: Record<string, string> = {
-      store_credit: 'קרדיט "נבנה ע"י Siango"',
-      email: "מייל",
-      referral: "הפניה",
-      whatsapp: "וואטסאפ",
+      store_credit: t("dash.traffic.source_store_credit"),
+      email: t("dash.traffic.source_email"),
+      referral: t("dash.traffic.source_referral"),
+      whatsapp: t("dash.traffic.source_whatsapp"),
     };
     return map[utm] || utm;
   }
   const r = (referrer || "").toLowerCase();
-  if (!r) return "כניסה ישירה";
-  if (r.includes("google")) return "גוגל";
-  if (r.includes("whatsapp") || r.includes("wa.me")) return "וואטסאפ";
-  if (r.includes("instagram")) return "אינסטגרם";
-  if (r.includes("facebook") || r.includes("fb.")) return "פייסבוק";
-  if (r.includes("tiktok")) return "טיקטוק";
-  if (r.includes("siango")) return "סיאנגו";
+  if (!r) return t("dash.traffic.source_direct");
+  if (r.includes("google")) return t("dash.traffic.source_google");
+  if (r.includes("whatsapp") || r.includes("wa.me")) return t("dash.traffic.source_whatsapp");
+  if (r.includes("instagram")) return t("dash.traffic.source_instagram");
+  if (r.includes("facebook") || r.includes("fb.")) return t("dash.traffic.source_facebook");
+  if (r.includes("tiktok")) return t("dash.traffic.source_tiktok");
+  if (r.includes("siango")) return t("dash.traffic.source_siango");
   try {
     return new URL(referrer!).hostname.replace(/^www\./, "");
   } catch {
-    return "אחר";
+    return t("dash.traffic.source_other");
   }
 }
 
 const DashboardTrafficSources = ({ businessId }: Props) => {
+  const { t } = useLanguage();
   const [days, setDays] = useState(30);
+  const RANGES = getRanges(t);
 
   const { data, isLoading } = useQuery({
     queryKey: ["traffic-sources", businessId, days],
@@ -64,7 +69,7 @@ const DashboardTrafficSources = ({ businessId }: Props) => {
       const counts: Record<string, number> = {};
       const visitors = new Set<string>();
       list.forEach((pv) => {
-        const c = categorize(pv.referrer, pv.utm_source);
+        const c = categorize(pv.referrer, pv.utm_source, t);
         counts[c] = (counts[c] || 0) + 1;
         if (pv.visitor_id) visitors.add(pv.visitor_id);
       });
@@ -80,9 +85,9 @@ const DashboardTrafficSources = ({ businessId }: Props) => {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Radar className="w-6 h-6 text-primary" /> מקורות הגעה
+            <Radar className="w-6 h-6 text-primary" /> {t("dash.traffic.title")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">מאיפה המבקרים מגיעים לאתר שלך.</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("dash.traffic.subtitle")}</p>
         </div>
         <div className="flex gap-1 bg-muted rounded-lg p-1">
           {RANGES.map((r) => (
@@ -102,22 +107,22 @@ const DashboardTrafficSources = ({ businessId }: Props) => {
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Globe className="w-4 h-4" /> כניסות</div>
+          <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Globe className="w-4 h-4" /> {t("dash.traffic.visits_label")}</div>
           <div className="text-2xl font-bold text-foreground">{total}</div>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Users className="w-4 h-4" /> מבקרים ייחודיים</div>
+          <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Users className="w-4 h-4" /> {t("dash.traffic.unique_visitors_label")}</div>
           <div className="text-2xl font-bold text-foreground">{data?.visitors || 0}</div>
         </div>
       </div>
 
       {/* Breakdown */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <h3 className="font-semibold text-foreground mb-4">פילוח לפי מקור</h3>
+        <h3 className="font-semibold text-foreground mb-4">{t("dash.traffic.breakdown_title")}</h3>
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">טוען...</p>
+          <p className="text-sm text-muted-foreground">{t("dash.traffic.loading")}</p>
         ) : !data?.sources.length ? (
-          <p className="text-sm text-muted-foreground">אין עדיין נתוני תנועה לתקופה זו.</p>
+          <p className="text-sm text-muted-foreground">{t("dash.traffic.empty_state")}</p>
         ) : (
           <div className="space-y-3">
             {data.sources.map(([name, count]) => {
@@ -139,7 +144,7 @@ const DashboardTrafficSources = ({ businessId }: Props) => {
       </div>
 
       <p className="text-xs text-muted-foreground text-center">
-        טיפ: לינקים מהמיילים ומהקרדיט באתרי הלקוחות מתויגים אוטומטית כדי שתדע מה עובד.
+        {t("dash.traffic.tip")}
       </p>
     </div>
   );
