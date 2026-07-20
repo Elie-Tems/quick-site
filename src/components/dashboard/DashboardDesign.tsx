@@ -8,6 +8,7 @@ import { getBusinessType } from "@/lib/businessModules";
 import { STORE_FONTS, loadStoreFonts } from "@/lib/storeFonts";
 import { Check, Palette, Type, ImagePlus, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DashboardDesignProps {
   businessId: string | undefined;
@@ -16,14 +17,14 @@ interface DashboardDesignProps {
 }
 
 const PALETTE_PRESETS = [
-  { name: "סגול", primary: "#7c3aed" },
-  { name: "כחול", primary: "#2563eb" },
-  { name: "ירוק", primary: "#16a34a" },
-  { name: "כתום", primary: "#ea580c" },
-  { name: "ורוד", primary: "#db2777" },
-  { name: "ציאן", primary: "#0891b2" },
-  { name: "שחור", primary: "#1a1a1a" },
-  { name: "חום", primary: "#92400e" },
+  { key: "purple", primary: "#7c3aed" },
+  { key: "blue", primary: "#2563eb" },
+  { key: "green", primary: "#16a34a" },
+  { key: "orange", primary: "#ea580c" },
+  { key: "pink", primary: "#db2777" },
+  { key: "cyan", primary: "#0891b2" },
+  { key: "black", primary: "#1a1a1a" },
+  { key: "brown", primary: "#92400e" },
 ];
 
 // Realistic mini-store thumbnail: looks like an actual storefront so merchants
@@ -110,6 +111,7 @@ function TemplateThumb({ t }: { t: StoreTemplate }) {
 }
 
 export default function DashboardDesign({ businessId, currentTemplateId, businessSlug }: DashboardDesignProps) {
+  const { t } = useLanguage();
   const [selectedTemplate, setSelectedTemplate] = useState<StoreTemplateId>(
     (currentTemplateId && storeTemplates[currentTemplateId as StoreTemplateId]
       ? (currentTemplateId as StoreTemplateId)
@@ -142,9 +144,9 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
     if (!businessId) return;
     try {
       await updateBusiness.mutateAsync({ id: businessId, font_heading: fontHeading || null, font_body: fontBody || null } as any);
-      toast.success("הפונטים עודכנו! מתעדכן בחנות שלך.");
+      toast.success(t("dash.design.toast_fonts_updated"));
       setHasUnsavedChanges(false);
-    } catch { toast.error("שגיאה בשמירת הפונטים"); }
+    } catch { toast.error(t("dash.design.toast_fonts_error")); }
   };
 
   const { data: biz } = useMyBusiness();
@@ -185,11 +187,11 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
     const file = e.target.files?.[0];
     if (!file || !businessId) return;
     if (!file.type.startsWith("image/")) {
-      toast.error("יש להעלות קובץ תמונה בלבד (JPG, PNG, WEBP)");
+      toast.error(t("dash.design.toast_image_type_error"));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("גודל הקובץ המקסימלי הוא 5MB");
+      toast.error(t("dash.design.toast_image_size_error"));
       return;
     }
     setIsUploadingHero(true);
@@ -202,9 +204,9 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
       const { data } = supabase.storage.from("business-assets").getPublicUrl(filePath);
       setHeroImageUrl(data.publicUrl);
       await updateBusiness.mutateAsync({ id: businessId, hero_image_url: data.publicUrl } as any);
-      toast.success("תמונת הבאנר עודכנה!");
+      toast.success(t("dash.design.toast_hero_updated"));
     } catch (err: any) {
-      toast.error(err.message || "שגיאה בהעלאה");
+      toast.error(err.message || t("dash.design.toast_upload_error"));
     } finally {
       setIsUploadingHero(false);
       if (heroImageInputRef.current) heroImageInputRef.current.value = "";
@@ -213,7 +215,7 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
 
   const handleSaveTemplate = async () => {
     if (!businessId) {
-      toast.error('לא נמצא מזהה עסק');
+      toast.error(t("dash.design.toast_no_business_id"));
       return;
     }
 
@@ -222,11 +224,11 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
         id: businessId,
         template_id: selectedTemplate,
       });
-      toast.success('התבנית עודכנה בהצלחה!');
+      toast.success(t("dash.design.toast_template_updated"));
       setHasUnsavedChanges(false);
     } catch (error) {
       console.error('Error updating template:', error);
-      toast.error('שגיאה בעדכון התבנית');
+      toast.error(t("dash.design.toast_template_error"));
     }
   };
 
@@ -254,17 +256,17 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
           <div>
             <h1 className="text-base font-semibold text-foreground flex items-center gap-2">
               <Palette className="h-5 w-5" />
-              עיצוב החנות
+              {t("dash.design.heading")}
             </h1>
             <p className="text-xs text-muted-foreground mt-0.5">
-              בחרו תבנית, צבעים ופונטים
+              {t("dash.design.subtitle")}
             </p>
           </div>
 
           {/* Save button */}
           {(selectedTemplate !== currentTemplateId || hasUnsavedChanges) && (
             <Button className="w-full" onClick={handleSaveTemplate} disabled={updateBusiness.isPending}>
-              {updateBusiness.isPending ? 'שומר...' : 'שמרו שינויים'}
+              {updateBusiness.isPending ? t("dash.design.saving") : t("dash.design.save_changes")}
             </Button>
           )}
 
@@ -287,7 +289,7 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
 
           {/* Templates Grid */}
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">תבנית</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">{t("dash.design.template_label")}</p>
             <div className="grid grid-cols-2 gap-2">
               {templateList.map((template) => {
                 const isSelected = selectedTemplate === template.id;
@@ -315,7 +317,7 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
                           {template.name}
                           {isCurrent && (
                             <span className="mr-1 text-[9px] bg-primary text-primary-foreground px-1 py-0.5 rounded-full">
-                              פעיל
+                              {t("dash.design.badge_active")}
                             </span>
                           )}
                         </h3>
@@ -341,13 +343,13 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
 
           {/* ── Palette presets + custom color picker ── */}
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">צבע ראשי</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">{t("dash.design.primary_color_label")}</p>
             <div className="flex flex-wrap gap-2 mb-3">
               {PALETTE_PRESETS.map((p) => (
                 <button
-                  key={p.name}
+                  key={p.key}
                   type="button"
-                  title={p.name}
+                  title={t(`dash.design.color_${p.key}`)}
                   onClick={() => { setPrimaryColor(p.primary); setHasUnsavedChanges(true); }}
                   className={`w-7 h-7 rounded-full border-2 transition-all ${primaryColor === p.primary ? "border-foreground scale-110" : "border-transparent hover:scale-105"}`}
                   style={{ backgroundColor: p.primary }}
@@ -356,7 +358,7 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
             </div>
             {/* Color wheel + hex input */}
             <div className="flex items-center gap-2">
-              <label className="relative cursor-pointer" title="בחרו צבע מותאם אישית">
+              <label className="relative cursor-pointer" title={t("dash.design.custom_color_title")}>
                 <input
                   type="color"
                   value={primaryColor || "#16a34a"}
@@ -366,7 +368,7 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
                 <div
                   className="w-8 h-8 rounded-full border-2 border-border flex items-center justify-center text-[10px] font-bold text-white shadow-sm hover:scale-105 transition-transform"
                   style={{ background: `conic-gradient(red, yellow, lime, cyan, blue, magenta, red)` }}
-                  title="בחרו צבע"
+                  title={t("dash.design.pick_color_title")}
                 />
               </label>
               <input
@@ -391,23 +393,26 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
           {/* ── Fonts ── */}
           <div className="border-t border-border pt-4">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5"><Type className="h-4 w-4" /> פונטים</h3>
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5"><Type className="h-4 w-4" /> {t("dash.design.fonts_heading")}</h3>
               {fontsChanged && (
-                <Button size="sm" onClick={saveFonts} disabled={updateBusiness.isPending}>{updateBusiness.isPending ? "שומר..." : "שמור"}</Button>
+                <Button size="sm" onClick={saveFonts} disabled={updateBusiness.isPending}>{updateBusiness.isPending ? t("dash.design.saving") : t("dash.design.save")}</Button>
               )}
             </div>
 
             {/* Live font preview */}
             <div className="rounded-lg border border-border bg-background p-3 mb-3 text-center">
-              <div className="text-base font-bold text-foreground mb-0.5" style={{ fontFamily: STORE_FONTS.find(f => f.id === fontHeading)?.family }}>כותרת החנות</div>
-              <div className="text-xs text-muted-foreground" style={{ fontFamily: STORE_FONTS.find(f => f.id === fontBody)?.family }}>טקסט רגיל ותיאורי מוצרים</div>
+              <div className="text-base font-bold text-foreground mb-0.5" style={{ fontFamily: STORE_FONTS.find(f => f.id === fontHeading)?.family }}>{t("dash.design.font_preview_heading")}</div>
+              <div className="text-xs text-muted-foreground" style={{ fontFamily: STORE_FONTS.find(f => f.id === fontBody)?.family }}>{t("dash.design.font_preview_body")}</div>
             </div>
 
-            {([["כותרות", fontHeading, setFontHeading], ["טקסט (גוף)", fontBody, setFontBody]] as const).map(([label, val, set]) => (
+            {([
+              { label: t("dash.design.font_headings_label"), val: fontHeading, set: setFontHeading },
+              { label: t("dash.design.font_body_label"), val: fontBody, set: setFontBody },
+            ] as const).map(({ label, val, set }) => (
               <div key={label} className="mb-3">
                 <div className="text-xs font-medium text-foreground mb-1.5">{label}</div>
                 <div className="flex flex-wrap gap-1.5">
-                  <button onClick={() => { set(""); setHasUnsavedChanges(true); }} className={`px-2 py-1.5 rounded-md border text-xs transition-colors ${!val ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"}`}>ברירת מחדל</button>
+                  <button onClick={() => { set(""); setHasUnsavedChanges(true); }} className={`px-2 py-1.5 rounded-md border text-xs transition-colors ${!val ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"}`}>{t("dash.design.font_default")}</button>
                   {STORE_FONTS.map((f) => (
                     <button key={f.id} onClick={() => { set(f.id); setHasUnsavedChanges(true); }} style={{ fontFamily: f.family }}
                       className={`px-2 py-1.5 rounded-md border text-xs transition-colors ${val === f.id ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"}`}>
@@ -424,10 +429,10 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
             <div>
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
                 <ImagePlus className="h-4 w-4" />
-                תמונת רקע ראשית
+                {t("dash.design.hero_heading")}
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                תמונה בחלק העליון של החנות
+                {t("dash.design.hero_subtitle")}
               </p>
             </div>
 
@@ -441,9 +446,9 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
                     if (!businessId) return;
                     try {
                       await updateBusiness.mutateAsync({ id: businessId, hero_image_url: null } as any);
-                      toast.success("תמונת הבאנר הוסרה");
+                      toast.success(t("dash.design.toast_hero_removed"));
                     } catch (err: any) {
-                      toast.error(err.message || "שגיאה בהסרת התמונה");
+                      toast.error(err.message || t("dash.design.toast_hero_remove_error"));
                     }
                   }}
                   className="absolute top-1.5 left-1.5 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
@@ -474,12 +479,12 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
                   {isUploadingHero ? (
                     <>
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      מעלה...
+                      {t("dash.design.uploading")}
                     </>
                   ) : (
                     <>
                       <ImagePlus className="h-3.5 w-3.5" />
-                      העלה מהמחשב
+                      {t("dash.design.upload_from_computer")}
                     </>
                   )}
                 </Button>
@@ -490,7 +495,7 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
                   type="url"
                   value={heroImageUrl}
                   onChange={(e) => setHeroImageUrl(e.target.value)}
-                  placeholder="או הדבק URL"
+                  placeholder={t("dash.design.hero_url_placeholder")}
                   dir="ltr"
                   className="flex-1 h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-sm"
                 />
@@ -503,13 +508,13 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
                     if (!businessId) return;
                     try {
                       await updateBusiness.mutateAsync({ id: businessId, hero_image_url: heroImageUrl || null } as any);
-                      toast.success("תמונת הבאנר עודכנה!");
+                      toast.success(t("dash.design.toast_hero_updated"));
                     } catch (err: any) {
-                      toast.error(err.message || "שגיאה בשמירה");
+                      toast.error(err.message || t("dash.design.toast_hero_save_error"));
                     }
                   }}
                 >
-                  שמור
+                  {t("dash.design.save")}
                 </Button>
               </div>
             </div>
@@ -517,10 +522,10 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
 
           {/* Info tip */}
           <div className="bg-muted/30 rounded-lg p-3 text-xs text-muted-foreground">
-            <p className="font-medium text-foreground mb-1">💡 טיפ:</p>
+            <p className="font-medium text-foreground mb-1">💡 {t("dash.design.tip_label")}</p>
             <ul className="space-y-0.5 mr-3">
-              <li>• ניתן להחליף תבנית בכל עת</li>
-              <li>• השינויים ישפיעו על החנות הציבורית</li>
+              <li>• {t("dash.design.tip_1")}</li>
+              <li>• {t("dash.design.tip_2")}</li>
             </ul>
           </div>
         </div>
@@ -530,19 +535,19 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
       <div className="flex-1 flex flex-col bg-muted/20">
         {/* Theme toggle bar */}
         <div className="flex items-center gap-2 border-b border-border px-4 py-2 bg-card shrink-0">
-          <span className="text-xs text-muted-foreground">תצוגה חיה של האתר שלך</span>
+          <span className="text-xs text-muted-foreground">{t("dash.design.live_preview_label")}</span>
           <div className="flex gap-1 mr-auto">
             <button
               onClick={() => setPreviewTheme("light")}
               className={`rounded px-2 py-1 text-xs transition-colors ${previewTheme === "light" ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/50"}`}
             >
-              ☀️ בהיר
+              ☀️ {t("dash.design.theme_light")}
             </button>
             <button
               onClick={() => setPreviewTheme("dark")}
               className={`rounded px-2 py-1 text-xs transition-colors ${previewTheme === "dark" ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/50"}`}
             >
-              🌙 כהה
+              🌙 {t("dash.design.theme_dark")}
             </button>
           </div>
         </div>
@@ -550,7 +555,7 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
           ref={iframeRef}
           src={storeUrl}
           className="flex-1 w-full border-0"
-          title="תצוגה חיה"
+          title={t("dash.design.iframe_title")}
         />
       </div>
     </div>

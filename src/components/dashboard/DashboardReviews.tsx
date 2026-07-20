@@ -7,6 +7,7 @@ import { useUpdateBusiness } from "@/hooks/useBusiness";
 import UpgradeCheckoutModal from "./upgrades/UpgradeCheckoutModal";
 import { REVIEWS_ADDON_PRICE_ILS } from "@/lib/publishPaymentConfig";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
  * Google Business reviews add-on (₪14/mo). The merchant finds their business by
@@ -36,6 +37,7 @@ const Stars = ({ n }: { n: number }) => (
 );
 
 const DashboardReviews = ({ businessId }: Props) => {
+  const { t } = useLanguage();
   const updateBusiness = useUpdateBusiness();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Candidate[]>([]);
@@ -85,7 +87,7 @@ const DashboardReviews = ({ businessId }: Props) => {
   const startPayment = () => {
     if (!businessId) return;
     if (!reviewsConfigured) {
-      toast.error("התכונה בהקמה - חיבור הביקורות לגוגל טרם הופעל. אל דאגה, לא חויבתם.");
+      toast.error(t("dash.reviews.not_configured_toast"));
       return;
     }
     setShowCheckout(true);
@@ -100,11 +102,11 @@ const DashboardReviews = ({ businessId }: Props) => {
     });
     setSearching(false);
     if (error || !data?.ok) {
-      toast.error("החיפוש נכשל. נסו שם מלא יותר (כולל עיר).");
+      toast.error(t("dash.reviews.search_failed_toast"));
       return;
     }
     setResults(data.results || []);
-    if (!data.results?.length) toast.info("לא נמצא עסק תואם. נסו שם + עיר.");
+    if (!data.results?.length) toast.info(t("dash.reviews.no_match_toast"));
   };
 
   const pick = async (c: Candidate) => {
@@ -116,12 +118,12 @@ const DashboardReviews = ({ businessId }: Props) => {
         body: { action: "refresh", placeId: c.placeId },
       });
       if (error || !data?.ok) throw new Error("refresh failed");
-      toast.success("העסק חובר! הביקורות יוצגו בחנות.");
+      toast.success(t("dash.reviews.connected_toast"));
       setResults([]);
       setQuery("");
       refetch();
     } catch {
-      toast.error("שגיאה בחיבור העסק");
+      toast.error(t("dash.reviews.connect_error_toast"));
     } finally {
       setBusy(false);
     }
@@ -131,9 +133,9 @@ const DashboardReviews = ({ businessId }: Props) => {
     setBusy(true);
     const { data, error } = await supabase.functions.invoke("google-reviews", { body: { action: "refresh" } });
     setBusy(false);
-    if (error || !data?.ok) toast.error("רענון נכשל");
+    if (error || !data?.ok) toast.error(t("dash.reviews.refresh_failed_toast"));
     else {
-      toast.success("הביקורות עודכנו");
+      toast.success(t("dash.reviews.refreshed_toast"));
       refetch();
     }
   };
@@ -152,10 +154,10 @@ const DashboardReviews = ({ businessId }: Props) => {
     <div className="space-y-6" dir="rtl">
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Star className="w-6 h-6 text-amber-400 fill-amber-400" /> ביקורות Google בחנות
+          <Star className="w-6 h-6 text-amber-400 fill-amber-400" /> {t("dash.reviews.title")}
         </h1>
         <p className="text-muted-foreground mt-1">
-          חברו את כרטיס Google Business שלכם - הדירוג והביקורות יוצגו יפה בדף הבית של החנות ובונים אמון.
+          {t("dash.reviews.subtitle")}
         </p>
       </div>
 
@@ -170,32 +172,32 @@ const DashboardReviews = ({ businessId }: Props) => {
               <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-green-400/60" />
               <div className="flex-1 mx-3 h-5 rounded bg-background text-[10px] text-muted-foreground flex items-center px-2">
-                החנות שלך · siango.app
+                {t("dash.reviews.demo_browser_label")} · siango.app
               </div>
               <span className="text-[10px] font-semibold text-muted-foreground bg-background rounded px-2 py-0.5 whitespace-nowrap">
-                הדגמה
+                {t("dash.reviews.demo_badge")}
               </span>
             </div>
 
             <div className="p-5 space-y-4" dir="rtl">
               {/* section header */}
               <div className="text-center">
-                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">מה אומרים עלינו</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">{t("dash.reviews.demo_section_label")}</p>
                 <div className="flex items-center justify-center gap-2">
                   <div className="flex">
                     {[1,2,3,4,5].map(i => <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />)}
                   </div>
                   <span className="font-bold text-foreground text-lg">4.9</span>
-                  <span className="text-sm text-muted-foreground">(127 ביקורות בגוגל)</span>
+                  <span className="text-sm text-muted-foreground">{t("dash.reviews.demo_review_count")}</span>
                 </div>
               </div>
 
               {/* mock review cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
-                  { name: "דנה כ.", text: "שירות מדהים, המוצרים הגיעו מהר ובאריזה יפה. ממליצה בחום!", stars: 5 },
-                  { name: "יוסי מ.", text: "קניתי כבר פעמיים ובכל פעם חוויה מצוינת. האיכות גבוהה והמחיר הוגן.", stars: 5 },
-                  { name: "רונית ש.", text: "המוצר בדיוק כמו בתמונה. שירות לקוחות זמין ונעים, תודה!", stars: 5 },
+                  { name: t("dash.reviews.demo_reviewer1_name"), text: t("dash.reviews.demo_reviewer1_text"), stars: 5 },
+                  { name: t("dash.reviews.demo_reviewer2_name"), text: t("dash.reviews.demo_reviewer2_text"), stars: 5 },
+                  { name: t("dash.reviews.demo_reviewer3_name"), text: t("dash.reviews.demo_reviewer3_text"), stars: 5 },
                 ].map((r, i) => (
                   <div key={i} className="rounded-xl border border-border bg-background p-3 space-y-2">
                     <div className="flex items-center gap-2">
@@ -222,30 +224,30 @@ const DashboardReviews = ({ businessId }: Props) => {
           {/* paywall card */}
           <div className="rounded-2xl border border-amber-400/30 bg-amber-400/5 p-6 flex flex-col sm:flex-row items-center gap-6">
             <div className="flex-1 text-right space-y-2">
-              <h2 className="text-lg font-bold text-foreground">הביקורות שלכם בגוגל - ישר בחנות</h2>
+              <h2 className="text-lg font-bold text-foreground">{t("dash.reviews.paywall_title")}</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                מחברים את כרטיס Google Business שלכם ואנחנו מציגים את הדירוג + הביקורות בדף הבית של החנות.<br />
-                כל מה שצריך: <b>שם העסק</b>. אנחנו מוצאים אתכם ומחברים תוך רגע.
+                {t("dash.reviews.paywall_desc_line1")}<br />
+                {t("dash.reviews.paywall_desc_prefix")} <b>{t("dash.reviews.paywall_desc_business_name")}</b>{t("dash.reviews.paywall_desc_suffix")}
               </p>
               <p className="text-xs text-muted-foreground">
-                אין לכם עדיין כרטיס בגוגל?{" "}
+                {t("dash.reviews.no_google_account")}{" "}
                 <a href="https://www.google.com/business/" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                  פתחו Google Business חינם (5 דקות)
+                  {t("dash.reviews.open_google_business_link")}
                 </a>
               </p>
             </div>
             <div className="text-center shrink-0 space-y-3">
               <div>
                 <div className="text-3xl font-extrabold text-foreground">₪{REVIEWS_ADDON_PRICE_ILS}</div>
-                <div className="text-xs text-muted-foreground">לחודש + מע"מ</div>
+                <div className="text-xs text-muted-foreground">{t("dash.reviews.per_month_vat")}</div>
               </div>
               <button onClick={startPayment} disabled={!reviewsConfigured || busy}
                 className="inline-flex items-center gap-2 rounded-xl bg-amber-500 text-white font-bold px-6 h-11 hover:bg-amber-600 transition-colors whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed">
-                <Star className="w-4 h-4 fill-white" /> {reviewsConfigured ? "הפעל עכשיו" : "בקרוב"}
+                <Star className="w-4 h-4 fill-white" /> {reviewsConfigured ? t("dash.reviews.activate_now") : t("dash.reviews.coming_soon")}
               </button>
               {!reviewsConfigured && (
                 <p className="text-xs text-muted-foreground max-w-[12rem]">
-                  חיבור הביקורות לגוגל בהקמה - יופעל בקרוב.
+                  {t("dash.reviews.setup_pending_note")}
                 </p>
               )}
             </div>
@@ -255,20 +257,20 @@ const DashboardReviews = ({ businessId }: Props) => {
         /* Paid, not connected yet - find the business by name */
         <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
           <div className="inline-flex items-center gap-2 text-sm text-primary bg-primary/10 rounded-full px-3 py-1">
-            <Check className="w-4 h-4" /> השדרוג פעיל - חברו את העסק שלכם
+            <Check className="w-4 h-4" /> {t("dash.reviews.upgrade_active_banner")}
           </div>
-          <p className="text-sm text-muted-foreground">הקלידו את שם העסק שלכם (מומלץ להוסיף עיר), ונמצא אותו בגוגל:</p>
+          <p className="text-sm text-muted-foreground">{t("dash.reviews.search_instructions")}</p>
           <div className="flex gap-2">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && doSearch()}
-              placeholder="לדוגמה: פלאפל הזהב, רמת גן"
+              placeholder={t("dash.reviews.search_placeholder")}
               className="flex-1 h-11 px-4 rounded-xl bg-background border border-border focus:border-primary focus:outline-none"
             />
             <button onClick={doSearch} disabled={searching}
               className="inline-flex items-center gap-1.5 h-11 px-5 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 disabled:opacity-50">
-              {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} חיפוש
+              {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} {t("dash.reviews.search_button")}
             </button>
           </div>
           {results.map((c) => (
@@ -282,7 +284,7 @@ const DashboardReviews = ({ businessId }: Props) => {
               </div>
               <button onClick={() => pick(c)} disabled={busy}
                 className="shrink-0 inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm hover:opacity-90 disabled:opacity-50">
-                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} זה אני
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {t("dash.reviews.this_is_me_button")}
               </button>
             </div>
           ))}
@@ -292,24 +294,24 @@ const DashboardReviews = ({ businessId }: Props) => {
         <div className="space-y-5">
           <div className="rounded-2xl border border-border bg-card p-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="text-sm text-muted-foreground">מחובר לעסק</div>
+              <div className="text-sm text-muted-foreground">{t("dash.reviews.connected_to_business")}</div>
               <div className="font-bold text-foreground">{data?.google_business_name}</div>
               {cache?.rating != null && (
-                <div className="flex items-center gap-2 mt-1"><Stars n={cache.rating} /><span className="text-sm text-muted-foreground">{cache.rating} · {cache.total} ביקורות</span></div>
+                <div className="flex items-center gap-2 mt-1"><Stars n={cache.rating} /><span className="text-sm text-muted-foreground">{cache.rating} · {cache.total} {t("dash.reviews.reviews_count_suffix")}</span></div>
               )}
             </div>
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input type="checkbox" checked={showOnStore} onChange={(e) => toggleShow(e.target.checked)} className="accent-primary" />
-                הצג בחנות
+                {t("dash.reviews.show_on_store")}
               </label>
               <button onClick={refresh} disabled={busy}
                 className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-sm hover:bg-muted disabled:opacity-50">
-                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} רענון
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} {t("dash.reviews.refresh_button")}
               </button>
               <button onClick={() => updateBusiness.mutateAsync({ id: businessId!, google_place_id: null } as any).then(() => refetch())}
                 className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-sm hover:bg-muted">
-                החלפת עסק
+                {t("dash.reviews.switch_business")}
               </button>
             </div>
           </div>
@@ -329,14 +331,14 @@ const DashboardReviews = ({ businessId }: Props) => {
           </div>
           <a href="https://business.google.com/" target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-            <ExternalLink className="w-4 h-4" /> ניהול כרטיס Google Business
+            <ExternalLink className="w-4 h-4" /> {t("dash.reviews.manage_google_business")}
           </a>
         </div>
       )}
       <UpgradeCheckoutModal
         open={showCheckout}
         onClose={() => { setShowCheckout(false); refetch(); }}
-        items={[{ addon: "reviews", title: "ביקורות Google", netIls: 14, color: "#e8820e" }]}
+        items={[{ addon: "reviews", title: t("dash.reviews.modal_item_title"), netIls: 14, color: "#e8820e" }]}
         businessId={businessId}
       />
     </div>

@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   MessageCircle, Check, Users, Megaphone, Settings as SettingsIcon,
   Plus, Upload, Loader2, BadgeCheck, ShieldCheck, Bell,
@@ -27,6 +28,7 @@ const fade = (d = 0) => ({ initial: { opacity: 0, y: 12 }, animate: { opacity: 1
  * analytics, message templates, and an AI service bot. BUILD-ONLY (flag-gated).
  */
 const DashboardWhatsApp = ({ businessId, forceConnected, platformBot }: Props) => {
+  const { t } = useLanguage();
   const [tab, setTab] = useState<Tab>("chat");
   const forced = forceConnected || platformBot;
 
@@ -46,8 +48,8 @@ const DashboardWhatsApp = ({ businessId, forceConnected, platformBot }: Props) =
   if (isLoading) return <div className="container max-w-5xl mx-auto px-4 py-16 text-center" dir="rtl"><Loader2 className="w-7 h-7 animate-spin mx-auto" style={{ color: WA }} /></div>;
 
   const tabs: [Tab, string, any][] = [
-    ["chat", "צ'אט", MessagesSquare], ["contacts", "רשימת תפוצה", Users], ["campaigns", "קמפיינים", Megaphone],
-    ["templates", "תבניות", FileText], ["bot", "בוט AI", Bot], ["settings", "הגדרות", SettingsIcon],
+    ["chat", t("dash.whatsapp.tabs.chat"), MessagesSquare], ["contacts", t("dash.whatsapp.tabs.contacts"), Users], ["campaigns", t("dash.whatsapp.tabs.campaigns"), Megaphone],
+    ["templates", t("dash.whatsapp.tabs.templates"), FileText], ["bot", t("dash.whatsapp.tabs.bot"), Bot], ["settings", t("dash.whatsapp.tabs.settings"), SettingsIcon],
   ];
 
   return (
@@ -58,8 +60,8 @@ const DashboardWhatsApp = ({ businessId, forceConnected, platformBot }: Props) =
             <MessageCircle className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-[28px] font-bold tracking-tight text-foreground">{platformBot ? "הבוט של Siango" : "וואטסאפ עסקי"}</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{platformBot ? "ניהול הבוט והשיחות מול הסוחרים - צ'אט, בוט, תבניות והכל." : "הערוץ שכל לקוח ישראלי כבר נמצא בו - עכשיו עובד בשבילכם."}</p>
+            <h1 className="text-[28px] font-bold tracking-tight text-foreground">{platformBot ? t("dash.whatsapp.title_bot") : t("dash.whatsapp.title_business")}</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">{platformBot ? t("dash.whatsapp.subtitle_bot") : t("dash.whatsapp.subtitle_business")}</p>
           </div>
         </motion.div>
 
@@ -69,7 +71,7 @@ const DashboardWhatsApp = ({ businessId, forceConnected, platformBot }: Props) =
           <>
             <motion.div {...fade(0.05)} className="flex items-center gap-3 rounded-2xl border px-5 py-4 backdrop-blur-sm" style={{ borderColor: `${WA}40`, background: `${WA}0d` }}>
               <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: `${WA}22` }}><BadgeCheck className="h-5 w-5" style={{ color: WA }} /></div>
-              <div className="text-sm"><span className="font-semibold text-foreground">מחובר ופעיל</span>{shownAccount?.phone_number && <span className="text-muted-foreground"> · <span dir="ltr" className="font-medium">{shownAccount.phone_number}</span></span>}</div>
+              <div className="text-sm"><span className="font-semibold text-foreground">{t("dash.whatsapp.connected_active")}</span>{shownAccount?.phone_number && <span className="text-muted-foreground"> · <span dir="ltr" className="font-medium">{shownAccount.phone_number}</span></span>}</div>
             </motion.div>
 
             <motion.div {...fade(0.1)} className="flex gap-1.5 p-1.5 rounded-2xl bg-muted/60 backdrop-blur w-full overflow-x-auto">
@@ -98,39 +100,40 @@ const DashboardWhatsApp = ({ businessId, forceConnected, platformBot }: Props) =
 
 /* ---------- Guidance: what to prepare + sells it ---------- */
 const GuidanceScreen = () => {
+  const { t } = useLanguage();
   const [connecting, setConnecting] = useState(false);
   const [showLimits, setShowLimits] = useState(false);
 
   const connect = async () => {
-    if (!import.meta.env.VITE_META_APP_ID) { toast.info("החיבור לוואטסאפ ייפתח כאן ברגע שנשלים את ההגדרה מול Meta. תכף תכף 🙏"); return; }
+    if (!import.meta.env.VITE_META_APP_ID) { toast.info(t("dash.whatsapp.guide.connect_soon_toast")); return; }
     setConnecting(true);
-    try { toast.info("פותח את חלון החיבור של Meta..."); } finally { setConnecting(false); }
+    try { toast.info(t("dash.whatsapp.guide.opening_meta_toast")); } finally { setConnecting(false); }
   };
 
   const benefits = [
-    { icon: Bell, title: "התראות אוטומטיות", desc: "הזמנה אושרה, נשלחה, בדרך - הלקוח מקבל עדכון בוואטסאפ בלי שתעשו כלום.", grad: "from-emerald-400/15 to-teal-400/10" },
-    { icon: Megaphone, title: "דיוור שיווקי", desc: "מבצע חדש? שלחו לכל רשימת התפוצה בלחיצה - לאנשים שכבר אוהבים אתכם.", grad: "from-green-400/15 to-emerald-400/10" },
-    { icon: Bot, title: "בוט שירות חכם", desc: "בוט AI שעונה ללקוחות 24/7 לפי ההנחיות שלכם - אנחנו נעזור לחדד אותו.", grad: "from-teal-400/15 to-cyan-400/10", badge: "AI" },
-    { icon: ImageIcon, title: "ניהול חנות מהוואטסאפ", desc: "שולחים תמונת מוצר + כיתוב לבוט - והוא מוסיף אותו לחנות. בלי מחשב.", grad: "from-lime-400/15 to-green-400/10", badge: "בלעדי" },
+    { icon: Bell, title: t("dash.whatsapp.guide.benefit1_title"), desc: t("dash.whatsapp.guide.benefit1_desc"), grad: "from-emerald-400/15 to-teal-400/10" },
+    { icon: Megaphone, title: t("dash.whatsapp.guide.benefit2_title"), desc: t("dash.whatsapp.guide.benefit2_desc"), grad: "from-green-400/15 to-emerald-400/10" },
+    { icon: Bot, title: t("dash.whatsapp.guide.benefit3_title"), desc: t("dash.whatsapp.guide.benefit3_desc"), grad: "from-teal-400/15 to-cyan-400/10", badge: "AI" },
+    { icon: ImageIcon, title: t("dash.whatsapp.guide.benefit4_title"), desc: t("dash.whatsapp.guide.benefit4_desc"), grad: "from-lime-400/15 to-green-400/10", badge: t("dash.whatsapp.guide.benefit4_badge") },
   ];
   const prepare = [
-    { icon: Smartphone, title: "מספר טלפון ייעודי", desc: "מספר פנוי שיכול לקבל SMS/שיחה (לא חסום במענה קולי, ולא רשום כבר בוואטסאפ). אין לכם? אפשר להזמין מאיתנו מספר מוכן (למטה)." },
-    { icon: Facebook, title: "פייסבוק + חשבון עסקי ב-Meta", desc: "החיבור דרך Meta Business Manager (חינם). אין לכם פייסבוק? פתחו חשבון ב-facebook.com. אנחנו מלווים בפתיחת החשבון העסקי." },
-    { icon: FileText, title: "פרטי העסק + כתובת", desc: "שם העסק, כתובת ופרטי קשר - לרישום ולאימות מול Meta. אפשר להתחיל מיד; אימות עסק מלא (לתקרות שליחה גבוהות) נעשה בהמשך ולוקח ~1-2 שבועות אצל Meta." },
+    { icon: Smartphone, title: t("dash.whatsapp.guide.prepare1_title"), desc: t("dash.whatsapp.guide.prepare1_desc") },
+    { icon: Facebook, title: t("dash.whatsapp.guide.prepare2_title"), desc: t("dash.whatsapp.guide.prepare2_desc") },
+    { icon: FileText, title: t("dash.whatsapp.guide.prepare3_title"), desc: t("dash.whatsapp.guide.prepare3_desc") },
   ];
   const steps = [
-    { title: "מתחברים לפייסבוק", desc: 'לוחצים "חברו וואטסאפ" ומתחברים לחשבון ה-Meta שלכם, ומאשרים ל-Siango לנהל את חשבון הוואטסאפ העסקי.' },
-    { title: "בוחרים חשבון עסקי", desc: "יוצרים או בוחרים חשבון עסקי ב-Meta, ואז חשבון WhatsApp Business. אין לכם? נוצר תוך כדי, בלי כאב ראש." },
-    { title: "שם תצוגה וקטגוריה", desc: "מגדירים את השם שהלקוח יראה בוואטסאפ ואת קטגוריית העסק. שם נקי וברור עובר אישור מהר יותר." },
-    { title: "מאמתים את המספר", desc: "מקבלים קוד ב-SMS למספר, מזינים אותו, וזהו - המספר מאומת ומחובר." },
-    { title: "מתחילים לעבוד", desc: "שולחים ומקבלים הודעות. אימות עסק מלא של Meta (לתקרות שליחה גבוהות) מתקבל תוך ~1-2 שבועות." },
+    { title: t("dash.whatsapp.guide.step1_title"), desc: t("dash.whatsapp.guide.step1_desc") },
+    { title: t("dash.whatsapp.guide.step2_title"), desc: t("dash.whatsapp.guide.step2_desc") },
+    { title: t("dash.whatsapp.guide.step3_title"), desc: t("dash.whatsapp.guide.step3_desc") },
+    { title: t("dash.whatsapp.guide.step4_title"), desc: t("dash.whatsapp.guide.step4_desc") },
+    { title: t("dash.whatsapp.guide.step5_title"), desc: t("dash.whatsapp.guide.step5_desc") },
   ];
   const limits = [
-    "המספר שמתחבר יוצא מאפליקציית וואטסאפ הרגילה (לכן מספר ייעודי).",
-    "שיווק נשלח רק למי שאישר לקבל (opt-in) - שומר עליכם מול החוק.",
-    "תבניות הודעות שיווקיות מאושרות מראש ע\"י Meta (אנחנו מטפלים בזה).",
-    "להודעת שיווק יש עלות קטנה; התראות שירות לרוב חינם.",
-    "מכסת השליחה מתחילה נמוכה וגדלה אוטומטית עם הזמן (מדיניות Meta).",
+    t("dash.whatsapp.guide.limit1"),
+    t("dash.whatsapp.guide.limit2"),
+    t("dash.whatsapp.guide.limit3"),
+    t("dash.whatsapp.guide.limit4"),
+    t("dash.whatsapp.guide.limit5"),
   ];
 
   return (
@@ -139,19 +142,19 @@ const GuidanceScreen = () => {
         {/* subtle classic texture - a single faint diagonal sheen, no neon glow */}
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "linear-gradient(135deg, #fff 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 text-xs font-medium tracking-wide text-white/70 uppercase mb-5" style={{ letterSpacing: "0.12em" }}>וואטסאפ עסקי · Siango</div>
-          <h2 className="text-3xl md:text-[40px] font-bold leading-[1.15]">הערוץ שבו הלקוחות שלכם<br/>כבר מחכים לכם</h2>
-          <p className="mt-4 text-white/80 text-base leading-relaxed max-w-xl">עדכוני הזמנה, תזכורות ומבצעים - ישירות לוואטסאפ של הלקוח, אוטומטית. ובוט שירות שעונה במקומכם, מסביב לשעון.</p>
+          <div className="inline-flex items-center gap-2 text-xs font-medium tracking-wide text-white/70 uppercase mb-5" style={{ letterSpacing: "0.12em" }}>{t("dash.whatsapp.guide.hero_eyebrow")}</div>
+          <h2 className="text-3xl md:text-[40px] font-bold leading-[1.15]">{t("dash.whatsapp.guide.hero_title_1")}<br/>{t("dash.whatsapp.guide.hero_title_2")}</h2>
+          <p className="mt-4 text-white/80 text-base leading-relaxed max-w-xl">{t("dash.whatsapp.guide.hero_desc")}</p>
           <button onClick={connect} disabled={connecting} className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white text-[#075E54] font-semibold px-7 py-3.5 hover:bg-white/95 active:scale-[0.98] transition-all disabled:opacity-60">
-            {connecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <MessageCircle className="w-5 h-5" />} חברו וואטסאפ <ArrowLeft className="w-4 h-4" />
+            {connecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <MessageCircle className="w-5 h-5" />} {t("dash.whatsapp.guide.hero_cta")} <ArrowLeft className="w-4 h-4" />
           </button>
         </div>
       </motion.div>
 
       {/* What to prepare BEFORE connecting */}
       <motion.div {...fade(0.1)} className="rounded-3xl border-2 border-dashed p-6" style={{ borderColor: `${WA}55` }}>
-        <h3 className="font-bold text-foreground text-lg mb-1 flex items-center gap-2"><CheckCheck className="w-5 h-5" style={{ color: WA }} /> מה צריך להכין לפני שמתחילים</h3>
-        <p className="text-sm text-muted-foreground mb-4">2 דקות הכנה ואתם מוכנים. הנה הרשימה:</p>
+        <h3 className="font-bold text-foreground text-lg mb-1 flex items-center gap-2"><CheckCheck className="w-5 h-5" style={{ color: WA }} /> {t("dash.whatsapp.guide.prepare_heading")}</h3>
+        <p className="text-sm text-muted-foreground mb-4">{t("dash.whatsapp.guide.prepare_sub")}</p>
         <div className="grid sm:grid-cols-3 gap-4">
           {prepare.map((p, i) => {
             const Icon = p.icon;
@@ -170,14 +173,14 @@ const GuidanceScreen = () => {
       <motion.div {...fade(0.11)} className="rounded-2xl border border-amber-300/60 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/5 p-5 flex items-start gap-3">
         <Smartphone className="w-5 h-5 mt-0.5 shrink-0 text-amber-600" />
         <div className="text-sm">
-          <b className="text-foreground">חשוב לפני שמתחילים:</b> המספר שתחברו <b className="text-foreground">לא יכול להיות רשום כרגע בוואטסאפ</b> (רגיל או עסקי). אם יש עליו וואטסאפ - מוחקים אותו קודם באפליקציה (הגדרות ← חשבון ← מחיקת החשבון), או פשוט משתמשים במספר פנוי חדש. זו הסיבה הנפוצה ביותר לתקלה ברישום.
+          <b className="text-foreground">{t("dash.whatsapp.guide.warning_label")}</b> {t("dash.whatsapp.guide.warning_prefix")} <b className="text-foreground">{t("dash.whatsapp.guide.warning_bold")}</b>{t("dash.whatsapp.guide.warning_suffix")}
         </div>
       </motion.div>
 
       {/* How connecting works - step by step */}
       <motion.div {...fade(0.12)} className="rounded-3xl border border-border bg-card p-6">
-        <h3 className="font-bold text-foreground text-lg mb-1 flex items-center gap-2"><MessageCircle className="w-5 h-5" style={{ color: DEEP }} /> איך מתבצע החיבור</h3>
-        <p className="text-sm text-muted-foreground mb-5">5 שלבים קצרים, ואנחנו מלווים בכל אחד:</p>
+        <h3 className="font-bold text-foreground text-lg mb-1 flex items-center gap-2"><MessageCircle className="w-5 h-5" style={{ color: DEEP }} /> {t("dash.whatsapp.guide.how_heading")}</h3>
+        <p className="text-sm text-muted-foreground mb-5">{t("dash.whatsapp.guide.how_sub")}</p>
         <div className="space-y-3">
           {steps.map((s, i) => (
             <div key={i} className="flex items-start gap-3.5">
@@ -194,20 +197,20 @@ const GuidanceScreen = () => {
       {/* Pricing + number ordering */}
       <div className="grid md:grid-cols-2 gap-4">
         <motion.div {...fade(0.12)} className="rounded-3xl border border-border bg-card p-6">
-          <h3 className="font-bold text-foreground text-lg mb-3 flex items-center gap-2"><Coins className="w-5 h-5" style={{ color: WA }} /> כמה זה עולה</h3>
+          <h3 className="font-bold text-foreground text-lg mb-3 flex items-center gap-2"><Coins className="w-5 h-5" style={{ color: WA }} /> {t("dash.whatsapp.guide.pricing_heading")}</h3>
           <div className="space-y-2.5 text-sm">
-            <div className="flex items-baseline justify-between"><span className="text-muted-foreground">הקמה חד-פעמית</span><span className="font-extrabold text-foreground text-lg">₪190</span></div>
-            <div className="flex items-baseline justify-between"><span className="text-muted-foreground">מנוי חודשי</span><span className="font-extrabold text-foreground text-lg">₪89<span className="text-xs font-normal text-muted-foreground">/חודש</span></span></div>
-            <div className="flex items-baseline justify-between pt-1 border-t border-border"><span className="text-muted-foreground">הודעות שיווק</span><span className="font-medium text-foreground">לפי שימוש (~₪0.26 להודעה)</span></div>
-            <p className="text-xs text-muted-foreground pt-1">התראות שירות ללקוח - לרוב חינם. ללא התחייבות, אפשר לבטל בכל עת. המחירים אינם כוללים מע"מ.</p>
+            <div className="flex items-baseline justify-between"><span className="text-muted-foreground">{t("dash.whatsapp.guide.pricing_setup")}</span><span className="font-extrabold text-foreground text-lg">₪190</span></div>
+            <div className="flex items-baseline justify-between"><span className="text-muted-foreground">{t("dash.whatsapp.guide.pricing_monthly")}</span><span className="font-extrabold text-foreground text-lg">₪89<span className="text-xs font-normal text-muted-foreground">{t("dash.whatsapp.guide.pricing_per_month")}</span></span></div>
+            <div className="flex items-baseline justify-between pt-1 border-t border-border"><span className="text-muted-foreground">{t("dash.whatsapp.guide.pricing_marketing_msgs")}</span><span className="font-medium text-foreground">{t("dash.whatsapp.guide.pricing_usage")}</span></div>
+            <p className="text-xs text-muted-foreground pt-1">{t("dash.whatsapp.guide.pricing_note")}</p>
           </div>
         </motion.div>
 
         <motion.div {...fade(0.16)} className="rounded-3xl border p-6 relative overflow-hidden" style={{ borderColor: `${WA}40`, background: `${WA}08` }}>
-          <div className="flex items-center gap-2 mb-2"><Smartphone className="w-5 h-5" style={{ color: "#0f8c6e" }} /><h3 className="font-bold text-foreground text-lg">אין לכם מספר פנוי?</h3></div>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-4">נספק לכם <b className="text-foreground">מספר וואטסאפ מוכן</b> ייעודי לעסק - בלי להוציא SIM נוסף. תוספת חודשית קטנה, ואנחנו מטפלים בהכל.</p>
-          <button onClick={() => toast.info("נרשמה בקשה למספר מוכן - ניצור קשר להשלמה 🙏")} className="rounded-2xl px-5 py-2.5 text-sm font-bold text-white inline-flex items-center gap-2 shadow-sm hover:scale-[1.02] transition-transform" style={{ background: WA }}>
-            <Plus className="w-4 h-4" /> הזמנת מספר מוכן · ₪19/חודש + מע"מ
+          <div className="flex items-center gap-2 mb-2"><Smartphone className="w-5 h-5" style={{ color: "#0f8c6e" }} /><h3 className="font-bold text-foreground text-lg">{t("dash.whatsapp.guide.number_heading")}</h3></div>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-4">{t("dash.whatsapp.guide.number_prefix")} <b className="text-foreground">{t("dash.whatsapp.guide.number_bold")}</b> {t("dash.whatsapp.guide.number_suffix")}</p>
+          <button onClick={() => toast.info(t("dash.whatsapp.guide.number_toast"))} className="rounded-2xl px-5 py-2.5 text-sm font-bold text-white inline-flex items-center gap-2 shadow-sm hover:scale-[1.02] transition-transform" style={{ background: WA }}>
+            <Plus className="w-4 h-4" /> {t("dash.whatsapp.guide.number_cta")}
           </button>
         </motion.div>
       </div>
@@ -230,7 +233,7 @@ const GuidanceScreen = () => {
 
       <motion.div {...fade(0.45)} className="rounded-3xl border border-border bg-card/60 backdrop-blur overflow-hidden">
         <button onClick={() => setShowLimits((s) => !s)} className="w-full flex items-center justify-between gap-3 px-6 py-4 text-right">
-          <div className="flex items-center gap-2.5"><ShieldCheck className="w-5 h-5 text-primary" /><span className="font-semibold text-foreground">שקיפות מלאה - מה שכדאי לדעת לפני שמחברים</span></div>
+          <div className="flex items-center gap-2.5"><ShieldCheck className="w-5 h-5 text-primary" /><span className="font-semibold text-foreground">{t("dash.whatsapp.guide.transparency_heading")}</span></div>
           <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${showLimits ? "rotate-180" : ""}`} />
         </button>
         {showLimits && (
@@ -245,6 +248,7 @@ const GuidanceScreen = () => {
 
 /* ---------- Chat inbox ---------- */
 const ChatTab = ({ businessId, preview }: { businessId?: string; preview?: boolean }) => {
+  const { t } = useLanguage();
   const [active, setActive] = useState(0);
   const sample = [
     { name: "דנה כהן", phone: "+972 50-111-2222", unread: 2, msgs: [
@@ -271,7 +275,7 @@ const ChatTab = ({ businessId, preview }: { businessId?: string; preview?: boole
     if (!f) return;
     const isVideo = f.type.startsWith("video");
     const maxMb = isVideo ? 16 : 5;
-    if (f.size > maxMb * 1024 * 1024) { toast.error(`קובץ גדול מדי. מקסימום ${isVideo ? "וידאו 16MB" : "תמונה 5MB"}.`); e.target.value = ""; return; }
+    if (f.size > maxMb * 1024 * 1024) { toast.error(`${t("dash.whatsapp.chat.file_too_big_prefix")} ${isVideo ? t("dash.whatsapp.chat.file_too_big_video") : t("dash.whatsapp.chat.file_too_big_image")}.`); e.target.value = ""; return; }
     setAttached(f.name);
   };
 
@@ -310,9 +314,9 @@ const ChatTab = ({ businessId, preview }: { businessId?: string; preview?: boole
           {attached && <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5"><Paperclip className="w-3 h-3" /> {attached} <button onClick={() => setAttached(null)} className="text-muted-foreground hover:text-foreground">✕</button></div>}
           <div className="flex items-center gap-2 pb-3">
             <input ref={fileRef} type="file" accept="image/*,video/*" className="hidden" onChange={pickFile} />
-            <button onClick={() => fileRef.current?.click()} title="צרף תמונה/וידאו" className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 shrink-0"><Paperclip className="w-4.5 h-4.5" /></button>
-            <input value={reply} onChange={(e) => setReply(e.target.value)} placeholder="כתבו תשובה..." className="flex-1 rounded-full border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
-            <button onClick={() => { if (reply.trim() || attached) { toast.success("נשלח ✓ (בתצוגה מקדימה)"); setReply(""); setAttached(null); } }} className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0" style={{ background: WA }}><Send className="w-4 h-4" /></button>
+            <button onClick={() => fileRef.current?.click()} title={t("dash.whatsapp.chat.attach_tooltip")} className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 shrink-0"><Paperclip className="w-4.5 h-4.5" /></button>
+            <input value={reply} onChange={(e) => setReply(e.target.value)} placeholder={t("dash.whatsapp.chat.reply_placeholder")} className="flex-1 rounded-full border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
+            <button onClick={() => { if (reply.trim() || attached) { toast.success(t("dash.whatsapp.chat.sent_preview_toast")); setReply(""); setAttached(null); } }} className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0" style={{ background: WA }}><Send className="w-4 h-4" /></button>
           </div>
         </div>
       </div>
@@ -322,6 +326,7 @@ const ChatTab = ({ businessId, preview }: { businessId?: string; preview?: boole
 
 /* ---------- Contacts ---------- */
 const ContactsTab = ({ businessId, preview }: { businessId?: string; preview?: boolean }) => {
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const [phone, setPhone] = useState(""); const [name, setName] = useState("");
   const [importText, setImportText] = useState(""); const [showImport, setShowImport] = useState(false); const [importConsent, setImportConsent] = useState(false);
@@ -343,30 +348,30 @@ const ContactsTab = ({ businessId, preview }: { businessId?: string; preview?: b
     if (!phone.trim() || !businessId) return;
     const { error } = await (supabase as any).from("whatsapp_contacts").upsert({ business_id: businessId, phone: phone.trim(), name: name.trim() || null, opt_in_source: "manual", source: "manual" }, { onConflict: "business_id,phone" });
     if (error) return toast.error(error.message);
-    setPhone(""); setName(""); refresh(); toast.success("נוסף ✓");
+    setPhone(""); setName(""); refresh(); toast.success(t("dash.whatsapp.contacts.added_toast"));
   };
   const toggleOptIn = async (c: Contact) => { if (preview) return; await (supabase as any).from("whatsapp_contacts").update({ opted_in: !c.opted_in, opt_in_at: !c.opted_in ? new Date().toISOString() : null }).eq("id", c.id); refresh(); };
-  const parseNumbers = (t: string) => t.split(/[\n,;]+/).map((s) => s.trim()).filter((s) => /\d{6,}/.test(s));
+  const parseNumbers = (raw: string) => raw.split(/[\n,;]+/).map((s) => s.trim()).filter((s) => /\d{6,}/.test(s));
   const doImport = async () => {
-    if (preview) { toast.info("בתצוגה מקדימה לא מיובא בפועל 🙂"); return; }
+    if (preview) { toast.info(t("dash.whatsapp.contacts.preview_no_import_toast")); return; }
     if (!businessId) return;
-    if (!importConsent) return toast.error("צריך לאשר שכל אנשי הקשר הסכימו לקבל דיוור");
+    if (!importConsent) return toast.error(t("dash.whatsapp.contacts.consent_required_toast"));
     const rows = parseNumbers(importText);
-    if (!rows.length) return toast.error("לא זוהו מספרים");
+    if (!rows.length) return toast.error(t("dash.whatsapp.contacts.no_numbers_toast"));
     // The merchant attested consent -> mark as opted-in for marketing.
     const { error } = await (supabase as any).from("whatsapp_contacts").upsert(rows.map((phone) => ({ business_id: businessId, phone, opted_in: true, opt_in_at: new Date().toISOString(), opt_in_source: "import-consent", source: "import" })), { onConflict: "business_id,phone", ignoreDuplicates: false });
     if (error) return toast.error(error.message);
-    setImportText(""); setShowImport(false); setImportConsent(false); refresh(); toast.success(`יובאו ${rows.length} אנשי קשר (מאושרים) ✓`);
+    setImportText(""); setShowImport(false); setImportConsent(false); refresh(); toast.success(`${t("dash.whatsapp.contacts.import_success_prefix")} ${rows.length} ${t("dash.whatsapp.contacts.import_success_suffix")}`);
   };
   // Upload a suppression / unsubscribe list: mark these numbers as opted-out.
   const doUnsubImport = async () => {
-    if (preview) { toast.info("בתצוגה מקדימה לא מיובא בפועל 🙂"); return; }
+    if (preview) { toast.info(t("dash.whatsapp.contacts.preview_no_import_toast")); return; }
     if (!businessId) return;
     const rows = parseNumbers(unsubText);
-    if (!rows.length) return toast.error("לא זוהו מספרים");
+    if (!rows.length) return toast.error(t("dash.whatsapp.contacts.no_numbers_toast"));
     const { error } = await (supabase as any).from("whatsapp_contacts").upsert(rows.map((phone) => ({ business_id: businessId, phone, opted_in: false, opt_in_source: "unsubscribe-list", source: "unsubscribe" })), { onConflict: "business_id,phone", ignoreDuplicates: false });
     if (error) return toast.error(error.message);
-    setUnsubText(""); setShowUnsub(false); refresh(); toast.success(`${rows.length} מספרים סומנו כהוסרו ✓`);
+    setUnsubText(""); setShowUnsub(false); refresh(); toast.success(`${rows.length} ${t("dash.whatsapp.contacts.unsub_success_suffix")}`);
   };
 
   const total = contacts?.length || 0;
@@ -377,61 +382,61 @@ const ContactsTab = ({ businessId, preview }: { businessId?: string; preview?: b
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-3 gap-3">
-        <StatChip label="אנשי קשר" value={total} icon={Users} />
-        <StatChip label="מאושרים" value={optedIn} icon={CheckCheck} accent />
-        <StatChip label="הוסרו" value={total - optedIn} icon={Users} />
+        <StatChip label={t("dash.whatsapp.contacts.stat_total")} value={total} icon={Users} />
+        <StatChip label={t("dash.whatsapp.contacts.stat_opted_in")} value={optedIn} icon={CheckCheck} accent />
+        <StatChip label={t("dash.whatsapp.contacts.stat_removed")} value={total - optedIn} icon={Users} />
       </div>
       <div className="flex gap-1.5 p-1 rounded-xl bg-muted/60 w-fit">
-        {([["all", "הכל"], ["in", "מאושרים"], ["out", "הסרות"]] as const).map(([id, label]) => (
+        {([["all", t("dash.whatsapp.contacts.filter_all")], ["in", t("dash.whatsapp.contacts.filter_in")], ["out", t("dash.whatsapp.contacts.filter_out")]] as const).map(([id, label]) => (
           <button key={id} onClick={() => setFilter(id)} className={`px-3 py-1.5 rounded-lg text-sm transition-all ${filter === id ? "bg-background shadow-sm font-medium text-foreground" : "text-muted-foreground"}`}>{label}</button>
         ))}
       </div>
 
       <div className="rounded-3xl border border-border bg-card p-5 space-y-3">
         <div className="flex flex-wrap gap-2">
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="מספר טלפון" dir="ltr" className="flex-1 min-w-[150px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="שם (לא חובה)" className="flex-1 min-w-[130px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
-          <button onClick={add} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform" style={{ background: WA }}><Plus className="w-4 h-4" /> הוסף</button>
-          <button onClick={() => { setShowImport((s) => !s); setShowUnsub(false); }} className="rounded-xl border border-border px-4 py-2.5 text-sm flex items-center gap-1.5 hover:bg-muted/50"><Upload className="w-4 h-4" /> ייבוא רשימה</button>
-          <button onClick={() => { setShowUnsub((s) => !s); setShowImport(false); }} className="rounded-xl border border-border px-4 py-2.5 text-sm flex items-center gap-1.5 hover:bg-muted/50"><X className="w-4 h-4" /> רשימת הסרה</button>
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("dash.whatsapp.contacts.phone_placeholder")} dir="ltr" className="flex-1 min-w-[150px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("dash.whatsapp.contacts.name_placeholder")} className="flex-1 min-w-[130px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
+          <button onClick={add} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform" style={{ background: WA }}><Plus className="w-4 h-4" /> {t("dash.whatsapp.contacts.add_btn")}</button>
+          <button onClick={() => { setShowImport((s) => !s); setShowUnsub(false); }} className="rounded-xl border border-border px-4 py-2.5 text-sm flex items-center gap-1.5 hover:bg-muted/50"><Upload className="w-4 h-4" /> {t("dash.whatsapp.contacts.import_btn")}</button>
+          <button onClick={() => { setShowUnsub((s) => !s); setShowImport(false); }} className="rounded-xl border border-border px-4 py-2.5 text-sm flex items-center gap-1.5 hover:bg-muted/50"><X className="w-4 h-4" /> {t("dash.whatsapp.contacts.unsub_btn")}</button>
         </div>
         {showImport && (
           <div className="space-y-3 rounded-2xl bg-muted/40 p-4">
             <div className="flex items-start gap-2 text-xs text-muted-foreground">
               <FileSpreadsheet className="w-4 h-4 mt-0.5 shrink-0" style={{ color: WA }} />
               <div>
-                <b className="text-foreground">איך מייבאים:</b> פתחו את הקובץ (Excel/Google Sheets), העתיקו את עמודת המספרים והדביקו כאן (מספר בכל שורה או מופרדים בפסיק).<br/>
-                פורמט: <span dir="ltr">050-1234567</span> או <span dir="ltr">+972501234567</span>. כפילויות מסוננות.
+                <b className="text-foreground">{t("dash.whatsapp.contacts.import_how_label")}</b> {t("dash.whatsapp.contacts.import_how_desc")}<br/>
+                {t("dash.whatsapp.contacts.import_format_prefix")} <span dir="ltr">050-1234567</span> {t("dash.whatsapp.contacts.import_or")} <span dir="ltr">+972501234567</span>. {t("dash.whatsapp.contacts.import_duplicates_note")}
               </div>
             </div>
             <textarea value={importText} onChange={(e) => setImportText(e.target.value)} rows={4} dir="ltr" placeholder={"050-1234567\n052-7654321\n+972541112222"} className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm" />
             <label className="flex items-start gap-2 cursor-pointer text-xs text-foreground bg-amber-50/60 dark:bg-amber-500/5 border border-amber-200/60 dark:border-amber-500/20 rounded-xl p-3">
               <input type="checkbox" checked={importConsent} onChange={(e) => setImportConsent(e.target.checked)} className="mt-0.5 w-4 h-4 accent-amber-500" />
-              <span>אני מאשר/ת ש<b>כל אנשי הקשר שאני מעלה נתנו את הסכמתם לקבל ממני דיוור</b> בוואטסאפ (לפי חוק הספאם). באחריותי לוודא זאת.</span>
+              <span>{t("dash.whatsapp.contacts.consent_prefix")}<b>{t("dash.whatsapp.contacts.consent_bold")}</b>{t("dash.whatsapp.contacts.consent_suffix")}</span>
             </label>
-            <button onClick={doImport} disabled={!importConsent} className="rounded-xl text-white px-5 py-2.5 text-sm font-semibold disabled:opacity-50" style={{ background: WA }}>ייבא רשימה</button>
+            <button onClick={doImport} disabled={!importConsent} className="rounded-xl text-white px-5 py-2.5 text-sm font-semibold disabled:opacity-50" style={{ background: WA }}>{t("dash.whatsapp.contacts.import_submit_btn")}</button>
           </div>
         )}
         {showUnsub && (
           <div className="space-y-3 rounded-2xl bg-muted/40 p-4">
             <div className="flex items-start gap-2 text-xs text-muted-foreground">
               <X className="w-4 h-4 mt-0.5 shrink-0 text-red-500" />
-              <div><b className="text-foreground">העלאת רשימת הסרה:</b> הדביקו מספרים שלא רוצים שיקבלו דיוור (למשל מי שביקש להסיר במקום אחר). הם יסומנו אוטומטית כ"הוסרו" ולא יקבלו שיווק.</div>
+              <div><b className="text-foreground">{t("dash.whatsapp.contacts.unsub_label")}</b> {t("dash.whatsapp.contacts.unsub_desc")}</div>
             </div>
             <textarea value={unsubText} onChange={(e) => setUnsubText(e.target.value)} rows={4} dir="ltr" placeholder={"050-1234567\n052-7654321"} className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm" />
-            <button onClick={doUnsubImport} className="rounded-xl text-white px-5 py-2.5 text-sm font-semibold bg-red-500 hover:bg-red-600">סמן כהוסרו</button>
+            <button onClick={doUnsubImport} className="rounded-xl text-white px-5 py-2.5 text-sm font-semibold bg-red-500 hover:bg-red-600">{t("dash.whatsapp.contacts.unsub_submit_btn")}</button>
           </div>
         )}
       </div>
 
       <div className="rounded-3xl border border-border bg-card divide-y divide-border overflow-hidden">
-        {shown.length === 0 ? (<p className="text-sm text-muted-foreground p-8 text-center">{total === 0 ? "עדיין אין אנשי קשר. הוסיפו או ייבאו למעלה." : "אין אנשי קשר בקטגוריה זו."}</p>) : shown.map((c) => (
+        {shown.length === 0 ? (<p className="text-sm text-muted-foreground p-8 text-center">{total === 0 ? t("dash.whatsapp.contacts.empty_none") : t("dash.whatsapp.contacts.empty_filtered")}</p>) : shown.map((c) => (
           <div key={c.id} className="flex items-center justify-between gap-3 p-4 hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ background: `linear-gradient(135deg, ${WA}, #0f8c6e)` }}>{(c.name || c.phone).replace(/\D/g, "").slice(-2)}</div>
               <div className="min-w-0"><div className="text-sm font-medium text-foreground truncate">{c.name || <span dir="ltr">{c.phone}</span>}</div>{c.name && <div className="text-xs text-muted-foreground" dir="ltr">{c.phone}</div>}</div>
             </div>
-            <button onClick={() => toggleOptIn(c)} className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-colors ${c.opted_in ? "text-[#0f8c6e]" : "bg-muted text-muted-foreground"}`} style={c.opted_in ? { background: `${WA}1f` } : undefined}>{c.opted_in ? "מאושר ✓" : "ללא אישור"}</button>
+            <button onClick={() => toggleOptIn(c)} className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-colors ${c.opted_in ? "text-[#0f8c6e]" : "bg-muted text-muted-foreground"}`} style={c.opted_in ? { background: `${WA}1f` } : undefined}>{c.opted_in ? t("dash.whatsapp.contacts.opted_in_badge") : t("dash.whatsapp.contacts.opted_out_badge")}</button>
           </div>
         ))}
       </div>
@@ -441,6 +446,7 @@ const ContactsTab = ({ businessId, preview }: { businessId?: string; preview?: b
 
 /* ---------- Campaigns + analytics ---------- */
 const CampaignsTab = ({ businessId, preview }: { businessId?: string; preview?: boolean }) => {
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const [name, setName] = useState(""); const [tag, setTag] = useState(""); const [templateId, setTemplateId] = useState(""); const [sending, setSending] = useState<string | null>(null);
 
@@ -464,54 +470,54 @@ const CampaignsTab = ({ businessId, preview }: { businessId?: string; preview?: 
 
   const create = async () => {
     if (!name.trim() || !businessId) return;
-    if (!templateId) return toast.error("בחרו תבנית מאושרת לקמפיין");
+    if (!templateId) return toast.error(t("dash.whatsapp.campaigns.template_required_toast"));
     const { error } = await (supabase as any).from("whatsapp_campaigns").insert({ business_id: businessId, name: name.trim(), audience_tag: tag.trim() || null, template_id: templateId, status: "draft" });
     if (error) return toast.error(error.message);
-    setName(""); setTag(""); setTemplateId(""); refresh(); toast.success("קמפיין נוצר (טיוטה) ✓");
+    setName(""); setTag(""); setTemplateId(""); refresh(); toast.success(t("dash.whatsapp.campaigns.created_toast"));
   };
   const send = async (id: string) => {
-    if (preview) { toast.info("בתצוגה מקדימה לא נשלח בפועל 🙂"); return; }
+    if (preview) { toast.info(t("dash.whatsapp.campaigns.preview_no_send_toast")); return; }
     setSending(id);
-    try { const { data, error } = await supabase.functions.invoke("whatsapp-broadcast", { body: { campaignId: id } }); if (error) throw error; if (data?.skipped) toast.info(data.reason === "twilio not configured" ? "השליחה תופעל אחרי חיבור הספק." : "צריך תבנית מאושרת לפני שליחה."); else toast.success(`נשלח ל-${data?.sent || 0} אנשי קשר ✓`); refresh(); } catch (e) { toast.error(e instanceof Error ? e.message : "שגיאה"); } finally { setSending(null); }
+    try { const { data, error } = await supabase.functions.invoke("whatsapp-broadcast", { body: { campaignId: id } }); if (error) throw error; if (data?.skipped) toast.info(data.reason === "twilio not configured" ? t("dash.whatsapp.campaigns.provider_pending_toast") : t("dash.whatsapp.campaigns.template_needed_toast")); else toast.success(`${t("dash.whatsapp.campaigns.sent_prefix")}${data?.sent || 0} ${t("dash.whatsapp.campaigns.sent_suffix")}`); refresh(); } catch (e) { toast.error(e instanceof Error ? e.message : t("dash.whatsapp.common.error_generic")); } finally { setSending(null); }
   };
 
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border border-border bg-card p-5 flex flex-wrap gap-2">
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="שם הקמפיין" className="flex-1 min-w-[170px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
-        <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="קהל לפי תגית (ריק = כל המאושרים)" className="flex-1 min-w-[170px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("dash.whatsapp.campaigns.name_placeholder")} className="flex-1 min-w-[170px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
+        <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder={t("dash.whatsapp.campaigns.tag_placeholder")} className="flex-1 min-w-[170px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none" />
         <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} disabled={approvedTemplates.length === 0} className="flex-1 min-w-[170px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none disabled:opacity-50">
-          <option value="">{approvedTemplates.length === 0 ? "אין תבנית מאושרת - צרו תבנית קודם" : "בחרו תבנית מאושרת"}</option>
-          {approvedTemplates.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
+          <option value="">{approvedTemplates.length === 0 ? t("dash.whatsapp.campaigns.no_template_option") : t("dash.whatsapp.campaigns.choose_template_option")}</option>
+          {approvedTemplates.map((tpl) => (<option key={tpl.id} value={tpl.id}>{tpl.name}</option>))}
         </select>
-        <button onClick={create} disabled={!name.trim() || !templateId} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:hover:scale-100" style={{ background: WA }}><Plus className="w-4 h-4" /> צור קמפיין</button>
+        <button onClick={create} disabled={!name.trim() || !templateId} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:hover:scale-100" style={{ background: WA }}><Plus className="w-4 h-4" /> {t("dash.whatsapp.campaigns.create_btn")}</button>
       </div>
-      {approvedTemplates.length === 0 && <p className="text-xs text-amber-600 -mt-3">כדי לשלוח דיוור צריך קודם תבנית מאושרת ע"י Meta. עברו ללשונית "תבניות", צרו תבנית ושלחו לאישור.</p>}
+      {approvedTemplates.length === 0 && <p className="text-xs text-amber-600 -mt-3">{t("dash.whatsapp.campaigns.need_template_note")}</p>}
 
       <div className="space-y-3">
-        {(campaigns || []).length === 0 ? (<p className="text-sm text-muted-foreground p-8 text-center rounded-3xl border border-border bg-card">אין עדיין קמפיינים.</p>) : (campaigns || []).map((c) => {
+        {(campaigns || []).length === 0 ? (<p className="text-sm text-muted-foreground p-8 text-center rounded-3xl border border-border bg-card">{t("dash.whatsapp.campaigns.empty")}</p>) : (campaigns || []).map((c) => {
           const dlvPct = c.sent_count ? Math.round((c.delivered_count / c.sent_count) * 100) : 0;
           const readPct = c.sent_count ? Math.round((c.read_count / c.sent_count) * 100) : 0;
           return (
             <div key={c.id} className="rounded-3xl border border-border bg-card p-5">
               <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0"><div className="font-semibold text-foreground">{c.name}</div><div className="text-xs text-muted-foreground mt-0.5">{c.audience_tag ? `קהל: ${c.audience_tag}` : "כל המאושרים"} · <span className={c.status === "sent" ? "" : "text-amber-600"}>{c.status === "sent" ? "נשלח" : c.status === "draft" ? "טיוטה" : c.status}</span></div></div>
+                <div className="min-w-0"><div className="font-semibold text-foreground">{c.name}</div><div className="text-xs text-muted-foreground mt-0.5">{c.audience_tag ? `${t("dash.whatsapp.campaigns.audience_prefix")} ${c.audience_tag}` : t("dash.whatsapp.campaigns.audience_all")} · <span className={c.status === "sent" ? "" : "text-amber-600"}>{c.status === "sent" ? t("dash.whatsapp.campaigns.status_sent") : c.status === "draft" ? t("dash.whatsapp.campaigns.status_draft") : c.status}</span></div></div>
                 {(c.status === "draft" || c.status === "scheduled") ? (
-                  <button onClick={() => send(c.id)} disabled={sending === c.id || !c.template_id} title={!c.template_id ? "צריך תבנית מאושרת כדי לשלוח" : undefined} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 disabled:opacity-50 shadow-sm hover:scale-[1.02] transition-transform disabled:hover:scale-100" style={{ background: WA }}>{sending === c.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} שלח</button>
-                ) : (<span className="text-xs font-medium px-3 py-1.5 rounded-full" style={{ background: `${WA}1f`, color: "#0f8c6e" }}>הסתיים</span>)}
+                  <button onClick={() => send(c.id)} disabled={sending === c.id || !c.template_id} title={!c.template_id ? t("dash.whatsapp.campaigns.send_disabled_tooltip") : undefined} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 disabled:opacity-50 shadow-sm hover:scale-[1.02] transition-transform disabled:hover:scale-100" style={{ background: WA }}>{sending === c.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} {t("dash.whatsapp.campaigns.send_btn")}</button>
+                ) : (<span className="text-xs font-medium px-3 py-1.5 rounded-full" style={{ background: `${WA}1f`, color: "#0f8c6e" }}>{t("dash.whatsapp.campaigns.finished_badge")}</span>)}
               </div>
               {c.status === "sent" && (
                 <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-border">
-                  <AnalyticBox label="נשלחו" value={c.sent_count} sub="100%" icon={Send} />
-                  <AnalyticBox label="נמסרו" value={c.delivered_count} sub={`${dlvPct}%`} icon={Check} />
-                  <AnalyticBox label="נפתחו" value={c.read_count} sub={`${readPct}%`} icon={Eye} accent />
+                  <AnalyticBox label={t("dash.whatsapp.campaigns.stat_sent")} value={c.sent_count} sub="100%" icon={Send} />
+                  <AnalyticBox label={t("dash.whatsapp.campaigns.stat_delivered")} value={c.delivered_count} sub={`${dlvPct}%`} icon={Check} />
+                  <AnalyticBox label={t("dash.whatsapp.campaigns.stat_read")} value={c.read_count} sub={`${readPct}%`} icon={Eye} accent />
                 </div>
               )}
             </div>
           );
         })}
       </div>
-      <p className="text-xs text-muted-foreground">דיוור נשלח רק לאנשי קשר שאישרו (opt-in). אחוז הפתיחה מתעדכן בזמן אמת לפי אישורי הקריאה של וואטסאפ.</p>
+      <p className="text-xs text-muted-foreground">{t("dash.whatsapp.campaigns.footer_note")}</p>
     </div>
   );
 };
@@ -519,6 +525,7 @@ const CampaignsTab = ({ businessId, preview }: { businessId?: string; preview?: 
 /* ---------- Templates ---------- */
 interface TplButton { type: "quick_reply" | "url" | "call"; text: string; value?: string }
 const TemplatesTab = ({ businessId, preview }: { businessId?: string; preview?: boolean }) => {
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const [name, setName] = useState(""); const [category, setCategory] = useState("marketing");
   const [header, setHeader] = useState(""); const [body, setBody] = useState(""); const [footer, setFooter] = useState("");
@@ -540,17 +547,17 @@ const TemplatesTab = ({ businessId, preview }: { businessId?: string; preview?: 
   const removeButton = (i: number) => setButtons(buttons.filter((_, idx) => idx !== i));
 
   const create = async () => {
-    if (preview) { toast.info("בתצוגה מקדימה לא נשמר בפועל 🙂"); return; }
+    if (preview) { toast.info(t("dash.whatsapp.templates.preview_no_save_toast")); return; }
     if (!name.trim() || !body.trim() || !businessId) return;
     const { error } = await (supabase as any).from("whatsapp_templates").insert({ business_id: businessId, name: name.trim(), category, header_text: header.trim() || null, body: body.trim(), footer_text: footer.trim() || null, buttons, status: "draft" });
     if (error) return toast.error(error.message);
-    setName(""); setHeader(""); setBody(""); setFooter(""); setButtons([]); refresh(); toast.success("התבנית נשמרה ותישלח לאישור Meta ✓");
+    setName(""); setHeader(""); setBody(""); setFooter(""); setButtons([]); refresh(); toast.success(t("dash.whatsapp.templates.saved_toast"));
   };
 
   const statusBadge = (s: string) => {
     const map: Record<string, { label: string; cls: string }> = {
-      approved: { label: "אושר ✓", cls: "text-[#0f8c6e]" }, pending: { label: "ממתין לאישור", cls: "text-amber-600 bg-amber-500/10" },
-      rejected: { label: "נדחה", cls: "text-red-600 bg-red-500/10" }, draft: { label: "טיוטה", cls: "text-muted-foreground bg-muted" },
+      approved: { label: t("dash.whatsapp.templates.status_approved"), cls: "text-[#0f8c6e]" }, pending: { label: t("dash.whatsapp.templates.status_pending"), cls: "text-amber-600 bg-amber-500/10" },
+      rejected: { label: t("dash.whatsapp.templates.status_rejected"), cls: "text-red-600 bg-red-500/10" }, draft: { label: t("dash.whatsapp.templates.status_draft"), cls: "text-muted-foreground bg-muted" },
     };
     const m = map[s] || map.draft;
     return <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${m.cls}`} style={s === "approved" ? { background: `${WA}1f` } : undefined}>{m.label}</span>;
@@ -562,16 +569,16 @@ const TemplatesTab = ({ businessId, preview }: { businessId?: string; preview?: 
   ];
 
   // WhatsApp-style live preview bubble
-  const bubble = (t: { header_text?: string; body: string; footer_text?: string; buttons?: TplButton[] }) => (
+  const bubble = (tpl: { header_text?: string; body: string; footer_text?: string; buttons?: TplButton[] }) => (
     <div className="rounded-2xl rounded-bl-sm bg-[#e8fce4] border border-[#cdeec4] p-3 max-w-sm text-right" dir="rtl">
-      {t.header_text && <div className="font-bold text-foreground text-sm mb-1">{t.header_text}</div>}
-      <div className="text-sm text-foreground whitespace-pre-wrap">{t.body || "תוכן ההודעה..."}</div>
-      {t.footer_text && <div className="text-[11px] text-muted-foreground mt-1.5">{t.footer_text}</div>}
-      {!!t.buttons?.length && (
+      {tpl.header_text && <div className="font-bold text-foreground text-sm mb-1">{tpl.header_text}</div>}
+      <div className="text-sm text-foreground whitespace-pre-wrap">{tpl.body || t("dash.whatsapp.templates.bubble_placeholder")}</div>
+      {tpl.footer_text && <div className="text-[11px] text-muted-foreground mt-1.5">{tpl.footer_text}</div>}
+      {!!tpl.buttons?.length && (
         <div className="mt-2 pt-2 border-t border-[#cdeec4] space-y-1">
-          {t.buttons.map((b, i) => (
+          {tpl.buttons.map((b, i) => (
             <div key={i} className="text-center text-sm font-medium py-1.5 rounded-lg" style={{ color: "#0a7", background: "#fff" }}>
-              {b.type === "url" ? "🔗 " : b.type === "call" ? "📞 " : ""}{b.text || "כפתור"}
+              {b.type === "url" ? "🔗 " : b.type === "call" ? "📞 " : ""}{b.text || t("dash.whatsapp.templates.bubble_button_fallback")}
             </div>
           ))}
         </div>
@@ -584,10 +591,10 @@ const TemplatesTab = ({ businessId, preview }: { businessId?: string; preview?: 
       <div className="grid lg:grid-cols-[1fr_320px] gap-5 items-start">
         {/* Editor */}
         <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-          <h3 className="font-semibold text-foreground flex items-center gap-2"><FileText className="w-4 h-4" style={{ color: DEEP }} /> בניית תבנית</h3>
+          <h3 className="font-semibold text-foreground flex items-center gap-2"><FileText className="w-4 h-4" style={{ color: DEEP }} /> {t("dash.whatsapp.templates.editor_heading")}</h3>
 
           <div>
-            <div className="text-xs text-muted-foreground mb-2">התחל מתבנית מוכנה:</div>
+            <div className="text-xs text-muted-foreground mb-2">{t("dash.whatsapp.templates.starters_label")}</div>
             <div className="flex flex-wrap gap-2">
               {starters.map((s, i) => (
                 <button key={i} onClick={() => { setName(s.name); setCategory(s.category); setHeader(s.header); setBody(s.body); setFooter(s.footer); setButtons(s.buttons); }} className="text-xs rounded-lg border border-border bg-background px-3 py-1.5 text-foreground hover:border-foreground/30 transition-colors">{s.name}</button>
@@ -596,31 +603,31 @@ const TemplatesTab = ({ businessId, preview }: { businessId?: string; preview?: 
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="שם התבנית" className="flex-1 min-w-[160px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm" />
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("dash.whatsapp.templates.name_placeholder")} className="flex-1 min-w-[160px] rounded-xl border border-border bg-background px-4 py-2.5 text-sm" />
             <select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm">
-              <option value="marketing">שיווק</option><option value="utility">שירות / עדכון</option>
+              <option value="marketing">{t("dash.whatsapp.templates.category_marketing_option")}</option><option value="utility">{t("dash.whatsapp.templates.category_service_option")}</option>
             </select>
           </div>
 
-          <div><label className="text-xs font-medium text-muted-foreground">כותרת (אופציונלי)</label>
-            <input value={header} onChange={(e) => setHeader(e.target.value)} placeholder="כותרת ההודעה" className="w-full mt-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm" /></div>
-          <div><label className="text-xs font-medium text-muted-foreground">תוכן *</label>
-            <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} placeholder="תוכן ההודעה. משתנים: {{1}} שם, {{2}} מספר..." className="w-full mt-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm" /></div>
-          <div><label className="text-xs font-medium text-muted-foreground">פוטר (אופציונלי)</label>
-            <input value={footer} onChange={(e) => setFooter(e.target.value)} placeholder='למשל: "להסרה השב/י הסר"' className="w-full mt-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm" /></div>
+          <div><label className="text-xs font-medium text-muted-foreground">{t("dash.whatsapp.templates.header_label")}</label>
+            <input value={header} onChange={(e) => setHeader(e.target.value)} placeholder={t("dash.whatsapp.templates.header_placeholder")} className="w-full mt-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm" /></div>
+          <div><label className="text-xs font-medium text-muted-foreground">{t("dash.whatsapp.templates.body_label")}</label>
+            <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} placeholder={t("dash.whatsapp.templates.body_placeholder")} className="w-full mt-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm" /></div>
+          <div><label className="text-xs font-medium text-muted-foreground">{t("dash.whatsapp.templates.footer_label")}</label>
+            <input value={footer} onChange={(e) => setFooter(e.target.value)} placeholder={t("dash.whatsapp.templates.footer_placeholder")} className="w-full mt-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm" /></div>
 
           {/* Buttons builder */}
           <div>
-            <div className="flex items-center justify-between mb-2"><label className="text-xs font-medium text-muted-foreground">כפתורים (עד 3)</label>
-              {buttons.length < 3 && <button onClick={addButton} className="text-xs font-medium inline-flex items-center gap-1" style={{ color: DEEP }}><Plus className="w-3 h-3" /> הוסף כפתור</button>}</div>
+            <div className="flex items-center justify-between mb-2"><label className="text-xs font-medium text-muted-foreground">{t("dash.whatsapp.templates.buttons_label")}</label>
+              {buttons.length < 3 && <button onClick={addButton} className="text-xs font-medium inline-flex items-center gap-1" style={{ color: DEEP }}><Plus className="w-3 h-3" /> {t("dash.whatsapp.templates.add_button_btn")}</button>}</div>
             <div className="space-y-2">
               {buttons.map((b, i) => (
                 <div key={i} className="flex flex-wrap gap-2 items-center bg-muted/30 rounded-lg p-2">
                   <select value={b.type} onChange={(e) => updateButton(i, { type: e.target.value as any })} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
-                    <option value="url">קישור</option><option value="call">חיוג</option><option value="quick_reply">תשובה מהירה</option>
+                    <option value="url">{t("dash.whatsapp.templates.button_type_url")}</option><option value="call">{t("dash.whatsapp.templates.button_type_call")}</option><option value="quick_reply">{t("dash.whatsapp.templates.button_type_quick_reply")}</option>
                   </select>
-                  <input value={b.text} onChange={(e) => updateButton(i, { text: e.target.value })} placeholder="טקסט הכפתור" className="flex-1 min-w-[100px] rounded-lg border border-border bg-background px-3 py-1.5 text-xs" />
-                  {b.type !== "quick_reply" && <input value={b.value || ""} onChange={(e) => updateButton(i, { value: e.target.value })} dir="ltr" placeholder={b.type === "call" ? "מספר טלפון" : "https://"} className="flex-1 min-w-[120px] rounded-lg border border-border bg-background px-3 py-1.5 text-xs" />}
+                  <input value={b.text} onChange={(e) => updateButton(i, { text: e.target.value })} placeholder={t("dash.whatsapp.templates.button_text_placeholder")} className="flex-1 min-w-[100px] rounded-lg border border-border bg-background px-3 py-1.5 text-xs" />
+                  {b.type !== "quick_reply" && <input value={b.value || ""} onChange={(e) => updateButton(i, { value: e.target.value })} dir="ltr" placeholder={b.type === "call" ? t("dash.whatsapp.templates.button_phone_placeholder") : "https://"} className="flex-1 min-w-[120px] rounded-lg border border-border bg-background px-3 py-1.5 text-xs" />}
                   <button onClick={() => removeButton(i)} className="text-muted-foreground hover:text-destructive text-xs">✕</button>
                 </div>
               ))}
@@ -629,26 +636,26 @@ const TemplatesTab = ({ businessId, preview }: { businessId?: string; preview?: 
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground rounded-lg bg-muted/30 p-3">
             <ImageIcon className="w-4 h-4 shrink-0" style={{ color: DEEP }} />
-            <span>אפשר גם כותרת מדיה - <b className="text-foreground">תמונה 5MB</b> / <b className="text-foreground">וידאו 16MB</b> / מסמך 100MB.</span>
+            <span>{t("dash.whatsapp.templates.media_note_prefix")} <b className="text-foreground">{t("dash.whatsapp.templates.media_image")}</b> / <b className="text-foreground">{t("dash.whatsapp.templates.media_video")}</b> / {t("dash.whatsapp.templates.media_doc")}</span>
           </div>
-          <button onClick={create} className="w-full rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center justify-center gap-1.5" style={{ background: DEEP }}><Plus className="w-4 h-4" /> שמור ושלח לאישור Meta</button>
+          <button onClick={create} className="w-full rounded-xl px-5 py-2.5 text-sm font-semibold text-white flex items-center justify-center gap-1.5" style={{ background: DEEP }}><Plus className="w-4 h-4" /> {t("dash.whatsapp.templates.save_btn")}</button>
         </div>
 
         {/* Live preview */}
         <div className="lg:sticky lg:top-6">
-          <div className="text-xs text-muted-foreground mb-2">תצוגה מקדימה:</div>
+          <div className="text-xs text-muted-foreground mb-2">{t("dash.whatsapp.templates.preview_label")}</div>
           <div className="rounded-2xl p-4" style={{ background: "#d9dbd5" }}>{bubble({ header_text: header, body, footer_text: footer, buttons })}</div>
         </div>
       </div>
 
       <div className="space-y-3">
-        {templates.length === 0 ? (<p className="text-sm text-muted-foreground p-8 text-center rounded-2xl border border-border bg-card">אין עדיין תבניות.</p>) : templates.map((t: any) => (
-          <div key={t.id} className="rounded-2xl border border-border bg-card p-5">
+        {templates.length === 0 ? (<p className="text-sm text-muted-foreground p-8 text-center rounded-2xl border border-border bg-card">{t("dash.whatsapp.templates.empty")}</p>) : templates.map((tpl: any) => (
+          <div key={tpl.id} className="rounded-2xl border border-border bg-card p-5">
             <div className="flex items-center justify-between gap-3 mb-3">
-              <div className="flex items-center gap-2"><span className="font-semibold text-foreground">{t.name}</span><span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{t.category === "marketing" ? "שיווק" : "שירות"}</span></div>
-              {statusBadge(t.status)}
+              <div className="flex items-center gap-2"><span className="font-semibold text-foreground">{tpl.name}</span><span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{tpl.category === "marketing" ? t("dash.whatsapp.templates.category_marketing_badge") : t("dash.whatsapp.templates.category_service_badge")}</span></div>
+              {statusBadge(tpl.status)}
             </div>
-            {bubble(t)}
+            {bubble(tpl)}
           </div>
         ))}
       </div>
@@ -658,6 +665,7 @@ const TemplatesTab = ({ businessId, preview }: { businessId?: string; preview?: 
 
 /* ---------- AI service bot (classic look + voice prompt) ---------- */
 const BotTab = ({ account, preview }: { account: Account | null; preview?: boolean }) => {
+  const { t } = useLanguage();
   const [enabled, setEnabled] = useState(account?.bot_enabled ?? false);
   const [prompt, setPrompt] = useState(account?.bot_prompt ?? "");
   const [saving, setSaving] = useState(false);
@@ -674,18 +682,18 @@ const BotTab = ({ account, preview }: { account: Account | null; preview?: boole
   // Send the prompt (typed text or recorded audio) to our agent, which turns it
   // into a professional bot instruction. Build-only: graceful in preview.
   const refine = async (audioBase64?: string) => {
-    if (preview) { toast.info("שכלול חכם של ההנחיה יופעל כשנעלה לאוויר 🙂"); return; }
+    if (preview) { toast.info(t("dash.whatsapp.bot.refine_pending_toast")); return; }
     setProcessing(true);
     try {
       const { data, error } = await supabase.functions.invoke("whatsapp-bot-prompt", { body: audioBase64 ? { audio: audioBase64 } : { text: prompt } });
       if (error) throw error;
-      if (data?.prompt) { setPrompt(data.prompt); toast.success("ההנחיה שוכללה ✓"); }
-      else toast.info("השכלול יופעל בקרוב.");
-    } catch { toast.info("השכלול יופעל כשנחבר את המנוע."); } finally { setProcessing(false); }
+      if (data?.prompt) { setPrompt(data.prompt); toast.success(t("dash.whatsapp.bot.refined_toast")); }
+      else toast.info(t("dash.whatsapp.bot.refine_soon_toast"));
+    } catch { toast.info(t("dash.whatsapp.bot.refine_engine_toast")); } finally { setProcessing(false); }
   };
 
   const startRec = async () => {
-    if (preview) { toast.info("הקלטה תופעל כשנעלה לאוויר 🎙️"); return; }
+    if (preview) { toast.info(t("dash.whatsapp.bot.record_pending_toast")); return; }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mr = new MediaRecorder(stream);
@@ -698,14 +706,14 @@ const BotTab = ({ account, preview }: { account: Account | null; preview?: boole
         await refine(b64);
       };
       mediaRef.current = mr; mr.start(); setRecording(true);
-    } catch { toast.error("לא ניתן לגשת למיקרופון"); }
+    } catch { toast.error(t("dash.whatsapp.bot.mic_error_toast")); }
   };
   const stopRec = () => { mediaRef.current?.stop(); setRecording(false); };
 
   const save = async () => {
-    if (preview || !account || account.id === "preview") { toast.success("נשמר ✓ (בתצוגה מקדימה)"); return; }
+    if (preview || !account || account.id === "preview") { toast.success(t("dash.whatsapp.common.saved_preview_toast")); return; }
     setSaving(true);
-    try { await (supabase as any).from("whatsapp_accounts").update({ bot_enabled: enabled, bot_prompt: prompt, updated_at: new Date().toISOString() }).eq("id", account.id); toast.success("הבוט עודכן ✓"); } catch { toast.error("שגיאה"); } finally { setSaving(false); }
+    try { await (supabase as any).from("whatsapp_accounts").update({ bot_enabled: enabled, bot_prompt: prompt, updated_at: new Date().toISOString() }).eq("id", account.id); toast.success(t("dash.whatsapp.bot.updated_toast")); } catch { toast.error(t("dash.whatsapp.common.error_generic")); } finally { setSaving(false); }
   };
 
   return (
@@ -714,15 +722,15 @@ const BotTab = ({ account, preview }: { account: Account | null; preview?: boole
         <div className="flex items-start gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center"><Bot className="w-6 h-6" /></div>
           <div>
-            <h3 className="font-semibold text-lg">בוט שירות חכם</h3>
-            <p className="text-sm text-white/80 mt-1 leading-relaxed max-w-lg">תארו במילים שלכם איך הבוט צריך לענות - בכתב או בהקלטה קולית. הסוכן שלנו ינסח את זה להנחיה מקצועית, והבוט יענה ללקוחות 24/7.</p>
+            <h3 className="font-semibold text-lg">{t("dash.whatsapp.bot.heading")}</h3>
+            <p className="text-sm text-white/80 mt-1 leading-relaxed max-w-lg">{t("dash.whatsapp.bot.desc")}</p>
           </div>
         </div>
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 space-y-5">
         <div className="flex items-center justify-between">
-          <div><div className="font-semibold text-foreground">הפעלת הבוט</div><div className="text-xs text-muted-foreground">כשהבוט פעיל, הוא עונה ללקוחות לפי ההנחיה.</div></div>
+          <div><div className="font-semibold text-foreground">{t("dash.whatsapp.bot.enable_label")}</div><div className="text-xs text-muted-foreground">{t("dash.whatsapp.bot.enable_desc")}</div></div>
           <button onClick={() => setEnabled((e) => !e)} className={`relative w-12 h-7 rounded-full transition-colors ${enabled ? "" : "bg-muted"}`} style={enabled ? { background: DEEP } : undefined}>
             <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${enabled ? "right-1" : "right-6"}`} />
           </button>
@@ -730,22 +738,22 @@ const BotTab = ({ account, preview }: { account: Account | null; preview?: boole
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-foreground">ההנחיה לבוט</label>
+            <label className="text-sm font-medium text-foreground">{t("dash.whatsapp.bot.prompt_label")}</label>
             <div className="flex items-center gap-2">
               <button onClick={recording ? stopRec : startRec} className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-1.5 border transition-colors ${recording ? "border-red-300 text-red-600 bg-red-50" : "border-border text-foreground hover:bg-muted/50"}`}>
-                <Mic className="w-3.5 h-3.5" /> {recording ? "עצור הקלטה" : "הקלטה קולית"}
+                <Mic className="w-3.5 h-3.5" /> {recording ? t("dash.whatsapp.bot.stop_recording_btn") : t("dash.whatsapp.bot.start_recording_btn")}
               </button>
               <button onClick={() => refine()} disabled={processing || !prompt.trim()} className="inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-1.5 text-white disabled:opacity-50" style={{ background: DEEP }}>
-                {processing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />} שכלל עם AI
+                {processing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />} {t("dash.whatsapp.bot.refine_btn")}
               </button>
             </div>
           </div>
-          <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={5} placeholder="לדוגמה: ענה בנימוס וקצר. שעות פתיחה א'-ה' 9-18. משלוח חינם מעל ₪200. אם לא יודע - הפנה לבעלים." className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:ring-2 focus:ring-[#075E54]/20 focus:border-[#075E54] focus:outline-none" />
-          {recording && <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" /> מקליט... דברו ולחצו "עצור" כשתסיימו, ונהפוך את זה להנחיה מקצועית.</p>}
+          <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={5} placeholder={t("dash.whatsapp.bot.prompt_placeholder")} className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:ring-2 focus:ring-[#075E54]/20 focus:border-[#075E54] focus:outline-none" />
+          {recording && <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" /> {t("dash.whatsapp.bot.recording_note")}</p>}
         </div>
 
         <div>
-          <div className="text-xs text-muted-foreground mb-2">דוגמאות (לחצו לשימוש):</div>
+          <div className="text-xs text-muted-foreground mb-2">{t("dash.whatsapp.bot.examples_label")}</div>
           <div className="space-y-2">
             {examples.map((ex, i) => (
               <button key={i} onClick={() => setPrompt(ex)} className="w-full text-right text-xs text-muted-foreground bg-muted/30 hover:bg-muted/60 rounded-lg p-3 transition-colors leading-relaxed">{ex}</button>
@@ -754,7 +762,7 @@ const BotTab = ({ account, preview }: { account: Account | null; preview?: boole
         </div>
 
         <button onClick={save} disabled={saving} className="w-full rounded-xl py-3 text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ background: DEEP }}>
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} שמירת הבוט
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {t("dash.whatsapp.bot.save_btn")}
         </button>
       </div>
     </div>
@@ -763,6 +771,7 @@ const BotTab = ({ account, preview }: { account: Account | null; preview?: boole
 
 /* ---------- Settings ---------- */
 const SettingsTab = ({ account, businessId, preview }: { account: Account | null; businessId?: string; preview?: boolean }) => {
+  const { t } = useLanguage();
   // Initialize from the account row - these map to whatsapp_accounts columns that
   // the DB order trigger reads. Default ON when the column hasn't been set yet.
   const [notif, setNotif] = useState({
@@ -777,32 +786,32 @@ const SettingsTab = ({ account, businessId, preview }: { account: Account | null
     </button>
   );
   const save = async () => {
-    if (preview || !businessId || account?.id === "preview") { toast.success("נשמר ✓ (בתצוגה מקדימה)"); return; }
+    if (preview || !businessId || account?.id === "preview") { toast.success(t("dash.whatsapp.common.saved_preview_toast")); return; }
     setSaving(true);
     try {
       await (supabase as any).from("whatsapp_accounts").update({ notify_new_order: notif.order, notify_shipping: notif.shipping, notify_reminders: notif.reminders, updated_at: new Date().toISOString() }).eq("business_id", businessId);
-      toast.success("ההגדרות נשמרו ✓");
-    } catch { toast.error("שגיאה"); } finally { setSaving(false); }
+      toast.success(t("dash.whatsapp.settings.saved_toast"));
+    } catch { toast.error(t("dash.whatsapp.common.error_generic")); } finally { setSaving(false); }
   };
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border border-border bg-card p-6 space-y-4 text-sm">
-        {[["מספר מחובר", account?.phone_number, true], ["שם תצוגה", account?.display_name, false], ["מכסת שליחה", account?.messaging_limit ? String(account.messaging_limit) : "—", false]].map(([label, value, ltr], i) => (
+        {[[t("dash.whatsapp.settings.connected_number_label"), account?.phone_number, true], [t("dash.whatsapp.settings.display_name_label"), account?.display_name, false], [t("dash.whatsapp.settings.messaging_limit_label"), account?.messaging_limit ? String(account.messaging_limit) : "—", false]].map(([label, value, ltr], i) => (
           <div key={i} className="flex justify-between items-center pb-3 border-b border-border last:border-0 last:pb-0">
             <span className="text-muted-foreground">{label as string}</span><span dir={ltr ? "ltr" : "rtl"} className="font-semibold text-foreground">{(value as string) || "-"}</span>
           </div>
         ))}
       </div>
       <div className="rounded-3xl border border-border bg-card p-6 space-y-4">
-        <h3 className="font-semibold text-foreground flex items-center gap-2"><Bell className="w-4 h-4" style={{ color: WA }} /> אילו אירועים שולחים וואטסאפ אוטומטי</h3>
-        {[["הזמנה חדשה", "order"], ["עדכון משלוח", "shipping"], ["תזכורות (תורים)", "reminders"]].map(([label, key]) => (
+        <h3 className="font-semibold text-foreground flex items-center gap-2"><Bell className="w-4 h-4" style={{ color: WA }} /> {t("dash.whatsapp.settings.events_heading")}</h3>
+        {[[t("dash.whatsapp.settings.event_order"), "order"], [t("dash.whatsapp.settings.event_shipping"), "shipping"], [t("dash.whatsapp.settings.event_reminders"), "reminders"]].map(([label, key]) => (
           <div key={key} className="flex items-center justify-between">
             <span className="text-sm text-foreground">{label}</span>
             <Toggle on={(notif as any)[key]} onClick={() => setNotif((n) => ({ ...n, [key as string]: !(n as any)[key as string] }))} />
           </div>
         ))}
         <button onClick={save} disabled={saving} className="w-full rounded-xl py-3 text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ background: WA }}>
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} שמירת ההגדרות
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {t("dash.whatsapp.settings.save_btn")}
         </button>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUpdateBusiness } from "@/hooks/useBusiness";
 import { TAGS_ADDON_PRICE_ILS } from "@/lib/publishPaymentConfig";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
  * "Marketing tags" add-on (one-time ₪149 + VAT): the merchant pastes their own
@@ -27,15 +28,16 @@ type TrackingRow = {
   tracking_custom_head: string | null;
 };
 
-const FIELDS: { key: keyof TrackingRow; label: string; placeholder: string; hint: string; dir?: "ltr" }[] = [
-  { key: "tracking_gtm_id", label: "Google Tag Manager", placeholder: "GTM-XXXXXXX", hint: "מנהל התגים של גוגל - מומלץ, מנהל את כל שאר התגים במקום אחד.", dir: "ltr" },
-  { key: "tracking_ga4_id", label: "Google Analytics 4", placeholder: "G-XXXXXXXXXX", hint: "מזהה מדידה של GA4.", dir: "ltr" },
-  { key: "tracking_meta_pixel", label: "Meta / Facebook Pixel", placeholder: "123456789012345", hint: "מזהה הפיקסל של פייסבוק/אינסטגרם (ספרות בלבד).", dir: "ltr" },
-  { key: "tracking_google_ads", label: "Google Ads", placeholder: "AW-XXXXXXXXX", hint: "מזהה המרות של Google Ads.", dir: "ltr" },
-  { key: "tracking_tiktok_pixel", label: "TikTok Pixel", placeholder: "CXXXXXXXXXXXXXXXXX", hint: "מזהה הפיקסל של טיקטוק.", dir: "ltr" },
+const FIELDS: { key: keyof TrackingRow; label: string; placeholder: string; hintKey: string; dir?: "ltr" }[] = [
+  { key: "tracking_gtm_id", label: "Google Tag Manager", placeholder: "GTM-XXXXXXX", hintKey: "dash.tracking.hint_gtm", dir: "ltr" },
+  { key: "tracking_ga4_id", label: "Google Analytics 4", placeholder: "G-XXXXXXXXXX", hintKey: "dash.tracking.hint_ga4", dir: "ltr" },
+  { key: "tracking_meta_pixel", label: "Meta / Facebook Pixel", placeholder: "123456789012345", hintKey: "dash.tracking.hint_meta", dir: "ltr" },
+  { key: "tracking_google_ads", label: "Google Ads", placeholder: "AW-XXXXXXXXX", hintKey: "dash.tracking.hint_google_ads", dir: "ltr" },
+  { key: "tracking_tiktok_pixel", label: "TikTok Pixel", placeholder: "CXXXXXXXXXXXXXXXXX", hintKey: "dash.tracking.hint_tiktok", dir: "ltr" },
 ];
 
 const DashboardTracking = ({ businessId }: Props) => {
+  const { t } = useLanguage();
   const updateBusiness = useUpdateBusiness();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<Partial<TrackingRow>>({});
@@ -74,10 +76,10 @@ const DashboardTracking = ({ businessId }: Props) => {
         tracking_tiktok_pixel: form.tracking_tiktok_pixel?.trim() || null,
         tracking_custom_head: form.tracking_custom_head?.trim() || null,
       } as any);
-      toast.success("התגים נשמרו! מתעדכן בחנות שלך.");
+      toast.success(t("dash.tracking.toast_saved"));
       refetch();
     } catch {
-      toast.error("שגיאה בשמירת התגים");
+      toast.error(t("dash.tracking.toast_save_error"));
     }
   };
 
@@ -97,18 +99,18 @@ const DashboardTracking = ({ businessId }: Props) => {
       });
       if (error) throw error;
       if (data?.ok) {
-        toast.success("התשלום בוצע! חשבונית נשלחה למייל. הזינו את מזהי התגים למטה.");
+        toast.success(t("dash.tracking.toast_paid"));
         refetch();
         queryClient.invalidateQueries({ queryKey: ["biz-tracking", businessId] });
       } else if (data?.needsCard) {
-        toast.error(data.message || "אין כרטיס שמור. יש לפרסם אתר (מנוי) כדי לשמור כרטיס תחילה.");
+        toast.error(data.message || t("dash.tracking.toast_no_card"));
       } else if (data?.declined) {
-        toast.error(data.error || "התשלום נדחה. בדקו את הכרטיס ונסו שוב.");
+        toast.error(data.error || t("dash.tracking.toast_declined"));
       } else {
-        toast.error(data?.error || "לא הצלחנו להשלים את הרכישה. נסו שוב.");
+        toast.error(data?.error || t("dash.tracking.toast_generic_error"));
       }
     } catch {
-      toast.error("אירעה תקלה בתקשורת. נסו שוב.");
+      toast.error(t("dash.tracking.toast_comm_error"));
     } finally {
       setPaying(false);
     }
@@ -126,11 +128,10 @@ const DashboardTracking = ({ businessId }: Props) => {
     <div className="space-y-6" dir="rtl">
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-primary" /> תגי שיווק ומעקב
+          <BarChart3 className="w-6 h-6 text-primary" /> {t("dash.tracking.title")}
         </h1>
         <p className="text-muted-foreground mt-1">
-          חברו את כלי הפרסום שלכם לחנות - Google Tag Manager, פיקסל של פייסבוק/מטא, Google Ads, טיקטוק ועוד.
-          כך תוכלו למדוד קמפיינים, לבנות קהלי ריטרגטינג ולמטב פרסום.
+          {t("dash.tracking.subtitle")}
         </p>
       </div>
 
@@ -144,27 +145,26 @@ const DashboardTracking = ({ businessId }: Props) => {
           <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Lock className="w-7 h-7 text-primary" />
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-2">דעו מאיפה מגיעים הלקוחות שלכם</h2>
+          <h2 className="text-xl font-bold text-foreground mb-2">{t("dash.tracking.paywall_title")}</h2>
           <p className="text-muted-foreground max-w-lg mx-auto mb-6">
-            כשמישהו קונה בחנות - תוכלו לראות אם הגיע/ה מגוגל, מפייסבוק, מטיקטוק, או ישירות.
-            בלי המידע הזה, מפרסמים בעיוורון. תשלום חד-פעמי, בלי מתכנת.
+            {t("dash.tracking.paywall_desc")}
           </p>
           <div className="flex flex-col items-center gap-1 mb-6">
             <div className="text-4xl font-extrabold text-foreground">
-              ₪{TAGS_ADDON_PRICE_ILS} <span className="text-base font-medium text-muted-foreground">+ מע"מ</span>
+              ₪{TAGS_ADDON_PRICE_ILS} <span className="text-base font-medium text-muted-foreground">+ {t("dash.tracking.vat_short")}</span>
             </div>
-            <div className="text-sm text-muted-foreground">תשלום חד-פעמי · גישה לכל החיים</div>
+            <div className="text-sm text-muted-foreground">{t("dash.tracking.one_time_lifetime")}</div>
           </div>
           <ul className="text-sm text-foreground/90 max-w-md mx-auto space-y-2 mb-7 text-right">
             {[
-              "גוגל - ראה כמה מהמודעות הגיעו לרכישה בפועל",
-              "פייסבוק/אינסטגרם - בנה קהל של מי שביקר בחנות",
-              "טיקטוק, Google Ads וכל כלי פרסום אחר",
-              "מקום אחד לכולם - בלי לגעת בקוד",
-              "מדידת המרות וריטרגטינג אוטומטי",
-            ].map((t) => (
-              <li key={t} className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-primary shrink-0" /> {t}
+              t("dash.tracking.benefit_google"),
+              t("dash.tracking.benefit_meta"),
+              t("dash.tracking.benefit_other"),
+              t("dash.tracking.benefit_onestop"),
+              t("dash.tracking.benefit_conversion"),
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-primary shrink-0" /> {item}
               </li>
             ))}
           </ul>
@@ -174,22 +174,20 @@ const DashboardTracking = ({ businessId }: Props) => {
             className="inline-flex items-center gap-2 rounded-2xl bg-primary text-primary-foreground font-bold px-8 h-12 hover:opacity-90 transition-opacity disabled:opacity-60"
           >
             {paying ? <Loader2 className="w-5 h-5 animate-spin" /> : <Crown className="w-5 h-5" />}
-            {paying ? "מחייב..." : `שדרגו עכשיו · ₪${TAGS_ADDON_PRICE_ILS} + מע"מ`}
+            {paying ? t("dash.tracking.charging") : `${t("dash.tracking.upgrade_now")} · ₪${TAGS_ADDON_PRICE_ILS} + ${t("dash.tracking.vat_short")}`}
           </button>
         </motion.div>
       ) : (
         /* Active - the form */
         <div className="space-y-5">
           <div className="inline-flex items-center gap-2 text-sm text-primary bg-primary/10 rounded-full px-3 py-1">
-            <Check className="w-4 h-4" /> השדרוג פעיל - הזינו את המזהים והם יוזרקו לחנות
+            <Check className="w-4 h-4" /> {t("dash.tracking.active_badge")}
           </div>
 
           <div className="rounded-2xl border border-amber-400/40 bg-amber-400/10 p-4 text-sm text-amber-800 dark:text-amber-200">
-            <p className="font-semibold mb-1">איך בודקים שזה עובד?</p>
+            <p className="font-semibold mb-1">{t("dash.tracking.howto_title")}</p>
             <p className="leading-relaxed">
-              התגים נטענים בחנות רק אחרי שהגולש/ת מאשר/ת עוגיות שיווקיות (חוק המידע - הבחירה נשמרת בדפדפן).
-              כדי לבדוק: פתחו את החנות בגלישה פרטית, אשרו את כל העוגיות בבאנר, ואז בדקו ב-Google Tag Manager
-              (מצב Preview) או ב-Meta Events Manager (Test Events) שהאירועים מגיעים.
+              {t("dash.tracking.howto_desc")}
             </p>
           </div>
 
@@ -205,25 +203,25 @@ const DashboardTracking = ({ businessId }: Props) => {
                   className="w-full h-11 px-3 rounded-xl bg-background border border-border text-foreground focus:border-primary focus:outline-none"
                   style={f.dir === "ltr" ? { textAlign: "left" } : undefined}
                 />
-                <p className="text-xs text-muted-foreground mt-1.5">{f.hint}</p>
+                <p className="text-xs text-muted-foreground mt-1.5">{t(f.hintKey)}</p>
               </div>
             ))}
           </div>
 
           {/* Custom head code (advanced) */}
           <div className="rounded-2xl border border-border bg-card p-4">
-            <label className="block text-sm font-semibold text-foreground mb-1">קוד מותאם אישית (מתקדם)</label>
+            <label className="block text-sm font-semibold text-foreground mb-1">{t("dash.tracking.custom_head_label")}</label>
             <textarea
               value={form.tracking_custom_head || ""}
               onChange={(e) => setForm((s) => ({ ...s, tracking_custom_head: e.target.value }))}
-              placeholder={'<!-- כל תג/סקריפט אחר שתרצו, יוזרק ל-<head> של החנות -->'}
+              placeholder={`<!-- ${t("dash.tracking.custom_head_placeholder")} -->`}
               rows={4}
               dir="ltr"
               className="w-full px-3 py-2 rounded-xl bg-background border border-border text-foreground text-sm font-mono focus:border-primary focus:outline-none"
               style={{ textAlign: "left" }}
             />
             <p className="text-xs text-muted-foreground mt-1.5">
-              לכל תג אחר (לינקדאין, פינטרסט, סנאפצ'אט וכו'). הקוד מוזרק כפי שהוא - הזינו רק קוד ממקור שאתם סומכים עליו.
+              {t("dash.tracking.custom_head_hint")}
             </p>
           </div>
 
@@ -234,7 +232,7 @@ const DashboardTracking = ({ businessId }: Props) => {
               className="inline-flex items-center gap-2 rounded-2xl bg-primary text-primary-foreground font-bold px-7 h-12 hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {updateBusiness.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              שמירת התגים
+              {t("dash.tracking.save_button")}
             </button>
             <a
               href="https://tagmanager.google.com/"
@@ -242,7 +240,7 @@ const DashboardTracking = ({ businessId }: Props) => {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
             >
-              <ExternalLink className="w-4 h-4" /> פתיחת Google Tag Manager
+              <ExternalLink className="w-4 h-4" /> {t("dash.tracking.open_gtm")}
             </a>
           </div>
         </div>

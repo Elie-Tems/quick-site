@@ -8,12 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Megaphone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const DashboardStoreTexts = () => {
   const { data: biz } = useMyBusiness();
   const updateBusiness = useUpdateBusiness();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const [heroTitle, setHeroTitle] = useState("");
   const [heroBadge, setHeroBadge] = useState("");
@@ -60,20 +62,20 @@ const DashboardStoreTexts = () => {
           : null,
       } as any);
       await queryClient.invalidateQueries({ queryKey: ["my-business"] });
-      toast({ title: "נשמר בהצלחה", description: "הטקסטים עודכנו בחנות שלך" });
+      toast({ title: t("dash.storetexts.toast_saved_title"), description: t("dash.storetexts.toast_saved_desc") });
     } catch (err: any) {
-      toast({ title: "שגיאה בשמירה", description: err.message || "נסה שוב", variant: "destructive" });
+      toast({ title: t("dash.storetexts.toast_error_title"), description: err.message || t("dash.storetexts.toast_error_desc"), variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
   };
 
   const primaryColor = (biz as any)?.primary_color ?? "#7c3aed";
-  const businessName = biz?.name ?? "שם החנות";
+  const businessName = biz?.name ?? t("dash.storetexts.default_store_name");
 
   return (
     <div className="p-4 md:p-6 space-y-6 w-full" dir="rtl">
-      <h1 className="text-2xl font-semibold text-foreground">טקסטים בחנות</h1>
+      <h1 className="text-2xl font-semibold text-foreground">{t("dash.storetexts.page_title")}</h1>
 
       {/* Live mini preview */}
       <div
@@ -90,7 +92,7 @@ const DashboardStoreTexts = () => {
             </span>
           ) : (
             <span className="self-start text-xs px-3 py-1 rounded-full text-white/40 border border-white/20">
-              תג (badge)
+              {t("dash.storetexts.preview_badge_placeholder")}
             </span>
           )}
 
@@ -105,7 +107,7 @@ const DashboardStoreTexts = () => {
             style={{ background: "rgba(255,255,255,0.25)" }}
           >
             {useCtaText && ctaText ? ctaText : (
-              <span className="text-white/60">לקולקציה</span>
+              <span className="text-white/60">{t("dash.storetexts.preview_cta_placeholder")}</span>
             )}
           </button>
 
@@ -117,9 +119,9 @@ const DashboardStoreTexts = () => {
             </div>
           ) : (
             <div className="flex gap-3 text-xs text-white/30">
-              <span>יתרון 1</span>
-              <span>יתרון 2</span>
-              <span>יתרון 3</span>
+              <span>{t("dash.storetexts.preview_benefit_1")}</span>
+              <span>{t("dash.storetexts.preview_benefit_2")}</span>
+              <span>{t("dash.storetexts.preview_benefit_3")}</span>
             </div>
           )}
         </div>
@@ -130,10 +132,10 @@ const DashboardStoreTexts = () => {
         {/* Hero Title */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="heroTitle">כותרת ראשית (Hero)</Label>
+            <Label htmlFor="heroTitle">{t("dash.storetexts.hero_title_label")}</Label>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                {useHeroTitle ? "מופעל" : "ללא כותרת מותאמת"}
+                {useHeroTitle ? t("dash.storetexts.status_enabled") : t("dash.storetexts.hero_title_status_off")}
               </span>
               <Switch checked={useHeroTitle} onCheckedChange={setUseHeroTitle} />
             </div>
@@ -145,16 +147,16 @@ const DashboardStoreTexts = () => {
             placeholder={businessName}
             disabled={!useHeroTitle}
           />
-          <p className="text-xs text-muted-foreground">הכותרת הגדולה בראש החנות. השאר ריק להצגת שם העסק</p>
+          <p className="text-xs text-muted-foreground">{t("dash.storetexts.hero_title_help")}</p>
         </div>
 
         {/* Hero Badge */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="heroBadge">תג / Badge</Label>
+            <Label htmlFor="heroBadge">{t("dash.storetexts.hero_badge_label")}</Label>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                {useHeroBadge ? "מופעל" : "ללא תג"}
+                {useHeroBadge ? t("dash.storetexts.status_enabled") : t("dash.storetexts.hero_badge_status_off")}
               </span>
               <Switch checked={useHeroBadge} onCheckedChange={setUseHeroBadge} />
             </div>
@@ -163,10 +165,10 @@ const DashboardStoreTexts = () => {
             id="heroBadge"
             value={heroBadge}
             onChange={(e) => setHeroBadge(e.target.value)}
-            placeholder="חדש בחנות"
+            placeholder={t("dash.storetexts.hero_badge_placeholder")}
             disabled={!useHeroBadge}
           />
-          <p className="text-xs text-muted-foreground">תג קטן שמופיע מעל הכותרת הראשית</p>
+          <p className="text-xs text-muted-foreground">{t("dash.storetexts.hero_badge_help")}</p>
         </div>
 
         {/* Promo Text */}
@@ -174,11 +176,11 @@ const DashboardStoreTexts = () => {
           <div className="flex items-center justify-between">
             <Label htmlFor="promoText" className="flex items-center gap-2">
               <Megaphone className="h-4 w-4" />
-              טקסט פרומו (באנר עליון)
+              {t("dash.storetexts.promo_text_label")}
             </Label>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                {usePromoText ? "מופעל" : "ללא פרומו"}
+                {usePromoText ? t("dash.storetexts.status_enabled") : t("dash.storetexts.promo_text_status_off")}
               </span>
               <Switch checked={usePromoText} onCheckedChange={setUsePromoText} />
             </div>
@@ -187,20 +189,20 @@ const DashboardStoreTexts = () => {
             id="promoText"
             value={promoText}
             onChange={(e) => setPromoText(e.target.value)}
-            placeholder="משלוח חינם בהזמנה מעל ₪199 ⭐ הנחה 10% לנרשמים חדשים"
+            placeholder={t("dash.storetexts.promo_text_placeholder")}
             rows={2}
             disabled={!usePromoText}
           />
-          <p className="text-xs text-muted-foreground">הודעה שמופיעה בפס בראש החנות</p>
+          <p className="text-xs text-muted-foreground">{t("dash.storetexts.promo_text_help")}</p>
         </div>
 
         {/* CTA Text */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="ctaText">טקסט כפתור ראשי (CTA)</Label>
+            <Label htmlFor="ctaText">{t("dash.storetexts.cta_text_label")}</Label>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                {useCtaText ? "מופעל" : "טקסט דיפולטי"}
+                {useCtaText ? t("dash.storetexts.status_enabled") : t("dash.storetexts.cta_text_status_off")}
               </span>
               <Switch checked={useCtaText} onCheckedChange={setUseCtaText} />
             </div>
@@ -209,25 +211,25 @@ const DashboardStoreTexts = () => {
             id="ctaText"
             value={ctaText}
             onChange={(e) => setCtaText(e.target.value)}
-            placeholder="לקולקציה"
+            placeholder={t("dash.storetexts.preview_cta_placeholder")}
             disabled={!useCtaText}
           />
-          <p className="text-xs text-muted-foreground">הטקסט בכפתור הראשי שמוביל למוצרים</p>
+          <p className="text-xs text-muted-foreground">{t("dash.storetexts.cta_text_help")}</p>
         </div>
 
         {/* Hero Benefits */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>פס מידע מתחת לבאנר</Label>
+            <Label>{t("dash.storetexts.benefits_label")}</Label>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                {useHeroBenefits ? "מופעל" : "מוסתר"}
+                {useHeroBenefits ? t("dash.storetexts.status_enabled") : t("dash.storetexts.benefits_status_off")}
               </span>
               <Switch checked={useHeroBenefits} onCheckedChange={setUseHeroBenefits} />
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            עד 3 שורות שמופיעות מתחת ל-Hero (למשל: משלוח חינם, החזרות, תשלום מאובטח).
+            {t("dash.storetexts.benefits_help")}
           </p>
           {[0, 1, 2].map((i) => (
             <Input
@@ -240,10 +242,10 @@ const DashboardStoreTexts = () => {
               }}
               placeholder={
                 i === 0
-                  ? "🚚 משלוח חינם מעל ₪199"
+                  ? t("dash.storetexts.benefit_placeholder_1")
                   : i === 1
-                  ? "↩️ החלפה והחזרה עד 14 יום"
-                  : "💳 תשלום מאובטח"
+                  ? t("dash.storetexts.benefit_placeholder_2")
+                  : t("dash.storetexts.benefit_placeholder_3")
               }
               disabled={!useHeroBenefits}
             />
@@ -253,7 +255,7 @@ const DashboardStoreTexts = () => {
 
       <Button size="lg" className="w-full gap-2" onClick={handleSave} disabled={isSaving}>
         {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-        שמרו שינויים
+        {t("dash.storetexts.save_button")}
       </Button>
     </div>
   );
