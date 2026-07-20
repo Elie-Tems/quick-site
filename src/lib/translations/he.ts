@@ -580,6 +580,11 @@ const he: Record<string, string> = {
   'ob.hrs.custom_sub': 'הגדרת שעות פתיחה לכל יום',
   'ob.hrs.always_confirm': '✓ הזמנות מתקבלות בכל שעה, כל ימות השבוע. אפשר תמיד לשנות בלוח הניהול.',
   'ob.hrs.apply_weekdays': 'החל את שעות יום ראשון על ימי החול',
+  // Onboarding · store preview panel (fallback chrome)
+  'spv.biz_fallback': 'שם העסק שלכם',
+  'spv.tagline_fallback': 'ברוכים הבאים לחנות שלנו',
+  'spv.demo_cat': 'מוצרים',
+  'spv.product': 'מוצר',
   'example.homepro.tag': 'בעלי מקצוע',
   'example.nonprofit.title': 'עמותה',
   'example.nonprofit.tag': 'תרומות',

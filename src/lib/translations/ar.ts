@@ -580,6 +580,11 @@ const ar: Record<string, string> = {
   'ob.hrs.custom_sub': 'تحديد ساعات العمل لكل يوم',
   'ob.hrs.always_confirm': '✓ الطلبات تُستقبل في أي وقت، كل أيام الأسبوع. يمكنك تغيير ذلك من لوحة التحكم.',
   'ob.hrs.apply_weekdays': 'طبّق ساعات الأحد على أيام الأسبوع',
+  // Onboarding · store preview panel (fallback chrome)
+  'spv.biz_fallback': 'اسم نشاطك',
+  'spv.tagline_fallback': 'مرحبًا بكم في متجرنا',
+  'spv.demo_cat': 'منتجات',
+  'spv.product': 'منتج',
   'example.homepro.tag': 'حرفيون',
   'example.nonprofit.title': 'منظمة',
   'example.nonprofit.tag': 'تبرعات',

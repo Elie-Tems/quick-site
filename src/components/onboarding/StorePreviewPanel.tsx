@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useRef, useState } from 'react';
 import { OnboardingData } from '@/pages/Onboarding';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { buildTemplate, type StoreLayoutId } from '@/lib/storeTemplates';
 import { type ColorPaletteId } from '@/lib/colorPalettes';
 import { ClassicLayout, ServiceLayout, PropertyLayout, MarketLayout, BoutiqueLayout, BeautySpaLayout, HomeProLayout, CharityLayout } from '@/components/storefront/layouts';
@@ -65,6 +66,7 @@ interface Props {
 }
 
 const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Props) => {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
 
@@ -97,7 +99,9 @@ const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Pr
       const demo = DEMO_BY_CATEGORY[cat] ?? DEMO_BY_CATEGORY.default;
       return Array.from({ length: 6 }, (_, idx) => ({
         id: `demo-${idx}`,
-        name: demo.names[idx] ?? `מוצר ${idx + 1}`,
+        // Category-specific demo names stay as-is; the generic/default set is
+        // localized so a foreign merchant's empty preview reads in their language.
+        name: (cat !== 'default' && demo.names[idx]) ? demo.names[idx] : `${t('spv.product')} ${idx + 1}`,
         price: demo.prices[idx] ?? '99',
         description: '',
         imageUrl: getFallbackImage(cat, idx),
@@ -129,7 +133,8 @@ const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Pr
     });
     // Revoke on next memo run
     return Object.assign(result, { _blobs: blobUrls });
-  }, [data.products, data.businessCategory]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.products, data.businessCategory, t]);
 
   useEffect(() => {
     const blobs = (products as any)._blobs as string[] | undefined;
@@ -162,11 +167,11 @@ const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Pr
   }, [template, effectivePrimaryColor]);
 
   const layoutProps: StorefrontLayoutProps = {
-    businessName: data.businessName || 'שם העסק שלכם',
+    businessName: data.businessName || t('spv.biz_fallback'),
     businessSlug: 'preview',
     logoUrl,
     phone: data.phone || '',
-    tagline: data.tagline || data.extractedBranding?.suggestedTagline || 'ברוכים הבאים לחנות שלנו',
+    tagline: data.tagline || data.extractedBranding?.suggestedTagline || t('spv.tagline_fallback'),
     heroTitle: data.heroTitle,
     aboutText: data.aboutText,
     heroBenefits: data.heroBenefits,
@@ -177,7 +182,7 @@ const StorePreviewPanel = ({ data, layoutId, paletteId, fullscreen = false }: Pr
     products,
     categories: data.productCategories.length
       ? data.productCategories.map(c => ({ id: c.id, name: c.name }))
-      : [{ id: 'demo-cat', name: 'מוצרים' }],
+      : [{ id: 'demo-cat', name: t('spv.demo_cat') }],
     selectedCategoryId: null,
     onSelectCategory: NOOP,
     banners: [],

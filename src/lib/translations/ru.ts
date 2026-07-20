@@ -580,6 +580,11 @@ const ru: Record<string, string> = {
   'ob.hrs.custom_sub': 'Задайте часы работы на каждый день',
   'ob.hrs.always_confirm': '✓ Заказы принимаются в любое время, каждый день. Это всегда можно изменить в панели управления.',
   'ob.hrs.apply_weekdays': 'Применить часы воскресенья к будням',
+  // Onboarding · store preview panel (fallback chrome)
+  'spv.biz_fallback': 'Название вашего бизнеса',
+  'spv.tagline_fallback': 'Добро пожаловать в наш магазин',
+  'spv.demo_cat': 'Товары',
+  'spv.product': 'Товар',
   'example.homepro.tag': 'Мастера',
   'example.nonprofit.title': 'НКО',
   'example.nonprofit.tag': 'Пожертвования',

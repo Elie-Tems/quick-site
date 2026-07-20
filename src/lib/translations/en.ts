@@ -580,6 +580,11 @@ const en: Record<string, string> = {
   'ob.hrs.custom_sub': 'Set opening hours per day',
   'ob.hrs.always_confirm': '✓ Orders accepted any time, every day. You can always change this from the dashboard.',
   'ob.hrs.apply_weekdays': "Apply Sunday's hours to weekdays",
+  // Onboarding · store preview panel (fallback chrome)
+  'spv.biz_fallback': 'Your business name',
+  'spv.tagline_fallback': 'Welcome to our store',
+  'spv.demo_cat': 'Products',
+  'spv.product': 'Product',
   'example.homepro.tag': 'Tradespeople',
   'example.nonprofit.title': 'Nonprofit',
   'example.nonprofit.tag': 'Donations',
