@@ -1,5 +1,6 @@
 import { ArrowRight, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { CartItem } from "./FloatingCart";
 
 interface StoreCartPageProps {
@@ -19,6 +20,7 @@ const StoreCartPage = ({
   onBack,
   hasPayment = false,
 }: StoreCartPageProps) => {
+  const { t } = useLanguage();
   const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -40,18 +42,18 @@ const StoreCartPage = ({
             className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors mb-12"
           >
             <ArrowRight className="h-3.5 w-3.5" />
-            חזרה לחנות
+            {t("store.cart.backToStore")}
           </button>
 
           <div className="border-t border-foreground/10 pt-16 pb-24 text-center">
             <ShoppingBag className="h-8 w-8 text-muted-foreground/20 mx-auto mb-6" />
-            <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-muted-foreground mb-3">הסל ריק</p>
-            <p className="text-sm text-muted-foreground/60 mb-8">הוסף מוצרים מהחנות כדי להמשיך</p>
+            <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-muted-foreground mb-3">{t("store.cart.emptyTitle")}</p>
+            <p className="text-sm text-muted-foreground/60 mb-8">{t("store.cart.emptySubtitle")}</p>
             <button
               onClick={onBack}
               className="text-[10px] font-bold tracking-[0.25em] uppercase border border-foreground/20 px-6 py-2.5 hover:border-foreground hover:bg-foreground hover:text-background transition-all"
             >
-              חזרה לחנות
+              {t("store.cart.backToStore")}
             </button>
           </div>
         </div>
@@ -69,16 +71,16 @@ const StoreCartPage = ({
           className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors mb-10"
         >
           <ArrowRight className="h-3.5 w-3.5" />
-          חזרה לחנות
+          {t("store.cart.backToStore")}
         </button>
 
         {/* ── Header ── */}
         <div className="flex items-baseline justify-between border-b border-foreground/10 pb-4 mb-8">
           <h1 className="text-sm font-bold tracking-[0.2em] uppercase text-foreground">
-            סל הקניות
+            {t("store.cart.title")}
           </h1>
           <span className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground">
-            {totalItems} פריטים
+            {totalItems} {t("store.cart.itemsCount")}
           </span>
         </div>
 
@@ -123,7 +125,7 @@ const StoreCartPage = ({
                   <button
                     onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity - 1)}
                     className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
-                    aria-label="הפחת"
+                    aria-label={t("store.cart.decreaseQty")}
                   >
                     <Minus className="h-3 w-3" />
                   </button>
@@ -133,7 +135,7 @@ const StoreCartPage = ({
                   <button
                     onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity + 1)}
                     className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
-                    aria-label="הוסף"
+                    aria-label={t("store.cart.increaseQty")}
                   >
                     <Plus className="h-3 w-3" />
                   </button>
@@ -147,7 +149,7 @@ const StoreCartPage = ({
                 </span>
                 <button
                   onClick={() => onRemove(item.cartLineId ?? item.id)}
-                  aria-label="הסר מהסל"
+                  aria-label={t("store.cart.removeItem")}
                   className="text-muted-foreground/40 hover:text-foreground transition-colors mt-auto"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -162,7 +164,7 @@ const StoreCartPage = ({
           {/* Subtotals row */}
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground">
-              סה״כ לתשלום
+              {t("store.cart.totalToPay")}
             </span>
             <span className="text-lg font-bold text-foreground tabular-nums">
               {formatPrice(totalPrice)}
@@ -174,7 +176,7 @@ const StoreCartPage = ({
             onClick={onCheckout}
             className="w-full bg-foreground text-background py-4 text-[11px] font-bold tracking-[0.25em] uppercase hover:bg-foreground/85 active:bg-foreground/75 transition-colors"
           >
-            {hasPayment ? "המשך לתשלום ←" : "שלח הזמנה ←"}
+            {hasPayment ? t("store.cart.continueToPayment") : t("store.cart.sendOrder")}
           </button>
 
           {/* Continue shopping */}
@@ -183,7 +185,7 @@ const StoreCartPage = ({
               onClick={onBack}
               className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
             >
-              המשך בקניות
+              {t("store.cart.continueShopping")}
             </button>
           </div>
         </div>

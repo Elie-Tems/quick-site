@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { databaseDisclosure } from "@/lib/email/compliance";
 import { ShoppingBag, ArrowRight, Ticket, X, Loader2, ChevronDown } from "lucide-react";
 import { useValidateCoupon, type Coupon } from "@/hooks/useCoupons";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { CartItem } from "./FloatingCart";
 
 interface CheckoutData {
@@ -34,6 +35,7 @@ interface StoreCheckoutProps {
 }
 
 const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, deliveryMode, deliveryFee, onSubmit, onBack, onIdentify }: StoreCheckoutProps) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<CheckoutData>({
     fullName: '', phone: '', email: '', notes: '', deliveryAddress: '',
   });
@@ -62,15 +64,15 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
 
   const validate = (): boolean => {
     const newErrors: Partial<CheckoutData> = {};
-    if (!formData.fullName.trim()) newErrors.fullName = 'שם מלא ושם עסק חייבים להיות שדות חובה';
-    else if (formData.fullName.length < 2) newErrors.fullName = 'שם מלא חייב להכיל לפחות 2 תווים';
-    if (!formData.phone.trim()) newErrors.phone = 'מספר טלפון הוא שדה חובה';
+    if (!formData.fullName.trim()) newErrors.fullName = t('store.checkout.error_fullname_required');
+    else if (formData.fullName.length < 2) newErrors.fullName = t('store.checkout.error_fullname_min_length');
+    if (!formData.phone.trim()) newErrors.phone = t('store.checkout.error_phone_required');
     // Accept Israeli local (0XXXXXXXX) AND international (+972XXXXXXXX / 972XXXXXXXX).
-    else if (!/^(0\d{8,9}|\+?972\d{8,9})$/.test(formData.phone.replace(/[-\s()]/g, ''))) newErrors.phone = 'מספר טלפון לא תקין';
-    if (!formData.email.trim()) newErrors.email = 'כתובת אימייל היא שדה חובה';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'כתובת אימייל לא תקינה';
+    else if (!/^(0\d{8,9}|\+?972\d{8,9})$/.test(formData.phone.replace(/[-\s()]/g, ''))) newErrors.phone = t('store.checkout.error_phone_invalid');
+    if (!formData.email.trim()) newErrors.email = t('store.checkout.error_email_required');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = t('store.checkout.error_email_invalid');
     if (deliveryMode === 'pickup_and_delivery' && deliveryMethod === 'delivery') {
-      if (!formData.deliveryAddress?.trim()) newErrors.deliveryAddress = 'יש להזין כתובת למשלוח';
+      if (!formData.deliveryAddress?.trim()) newErrors.deliveryAddress = t('store.checkout.error_delivery_address_required');
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -100,7 +102,7 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
             business_id: businessId,
             email,
             source: 'checkout',
-            disclosure_text: databaseDisclosure(businessName || 'העסק'),
+            disclosure_text: databaseDisclosure(businessName || t('store.checkout.the_business')),
           } as any)
           .then(({ error }) => { if (error) console.warn('consent insert failed:', error.message); });
         supabase.functions
@@ -126,7 +128,7 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
       const result = await validateCoupon.mutateAsync({ code: couponCode, businessId, orderTotal: subtotal });
       setAppliedCoupon(result);
     } catch (error: any) {
-      setCouponError(error.message || "קוד קופון לא תקין");
+      setCouponError(error.message || t('store.checkout.coupon_invalid_default'));
     }
   };
 
@@ -148,15 +150,15 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
       <div className="fixed inset-0 z-50 bg-gradient-to-b from-muted/30 to-background overflow-y-auto" dir="rtl">
         <div className="container max-w-3xl py-8 px-4 md:px-6">
 
-          <button onClick={onBack} className="inline-flex items-center gap-1.5 rounded-full bg-card border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:shadow-sm transition-all mb-6" aria-label="חזרה לחנות">
-            <ArrowRight className="h-4 w-4" /> חזרה לחנות
+          <button onClick={onBack} className="inline-flex items-center gap-1.5 rounded-full bg-card border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:shadow-sm transition-all mb-6" aria-label={t('store.checkout.back_to_store')}>
+            <ArrowRight className="h-4 w-4" /> {t('store.checkout.back_to_store')}
           </button>
 
           <div className="flex items-center gap-3 mb-7">
             <div className="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center"><ShoppingBag className="h-5 w-5 text-primary" /></div>
             <div>
-              <h1 className="text-2xl font-extrabold text-foreground leading-tight">השלמת הזמנה</h1>
-              <p className="text-sm text-muted-foreground">עוד כמה פרטים ואנחנו על זה 🚀</p>
+              <h1 className="text-2xl font-extrabold text-foreground leading-tight">{t('store.checkout.title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('store.checkout.subtitle')}</p>
             </div>
           </div>
 
@@ -173,12 +175,12 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
 
             {/* ── Details card ── */}
             <div className="bg-card border border-border rounded-3xl shadow-sm p-6 space-y-5">
-              <h2 className="font-bold text-foreground text-lg">הפרטים שלך</h2>
+              <h2 className="font-bold text-foreground text-lg">{t('store.checkout.details_heading')}</h2>
 
               {([
-                { id: 'fullName', label: 'שם מלא', type: 'text', placeholder: 'איך קוראים לך?', autoComplete: 'name', dir: undefined, ref: firstFieldRef },
-                { id: 'phone', label: 'טלפון', type: 'tel', placeholder: '050-0000000', autoComplete: 'tel', dir: 'ltr' as const, ref: undefined },
-                { id: 'email', label: 'אימייל', type: 'email', placeholder: 'email@example.com', autoComplete: 'email', dir: 'ltr' as const, ref: undefined },
+                { id: 'fullName', label: t('store.checkout.field_fullname_label'), type: 'text', placeholder: t('store.checkout.field_fullname_placeholder'), autoComplete: 'name', dir: undefined, ref: firstFieldRef },
+                { id: 'phone', label: t('store.checkout.field_phone_label'), type: 'tel', placeholder: '050-0000000', autoComplete: 'tel', dir: 'ltr' as const, ref: undefined },
+                { id: 'email', label: t('store.checkout.field_email_label'), type: 'email', placeholder: 'email@example.com', autoComplete: 'email', dir: 'ltr' as const, ref: undefined },
               ] as any[]).map(({ id, label, type, placeholder, autoComplete, dir, ref }) => (
                 <div key={id}>
                   <label htmlFor={id} className={lbl}>{label} *</label>
@@ -194,14 +196,14 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
                   className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronDown className={`h-4 w-4 transition-transform ${showNotes ? 'rotate-180' : ''}`} />
-                  הוסף הערה להזמנה
+                  {t('store.checkout.add_note_toggle')}
                 </button>
                 {showNotes && (
                   <Textarea
                     id="notes"
                     value={formData.notes}
                     onChange={(e) => handleChange('notes', e.target.value)}
-                    placeholder="משהו שכדאי שנדע? (אופציונלי)"
+                    placeholder={t('store.checkout.note_placeholder')}
                     rows={3}
                     className="mt-2 rounded-xl border-border bg-background px-4 py-3 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary resize-none"
                   />
@@ -210,20 +212,20 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
 
               {deliveryMode === 'pickup_and_delivery' && (
                 <div className="space-y-3">
-                  <label className={lbl}>אופן אספקה</label>
+                  <label className={lbl}>{t('store.checkout.delivery_method_label')}</label>
                   <div className="grid grid-cols-2 gap-2.5">
                     {(['pickup', 'delivery'] as const).map((method) => (
                       <button key={method} type="button" onClick={() => setDeliveryMethod(method)}
                         className={`py-3 rounded-xl text-sm font-semibold border-2 transition-all ${deliveryMethod === method ? 'border-primary bg-primary/5 text-foreground' : 'border-border text-muted-foreground hover:border-primary/40'}`}>
-                        {method === 'pickup' ? '🏬 איסוף עצמי' : '🚚 משלוח'}
+                        {method === 'pickup' ? `🏬 ${t('store.checkout.delivery_method_pickup')}` : `🚚 ${t('store.checkout.delivery_method_delivery')}`}
                       </button>
                     ))}
                   </div>
-                  {deliveryMethod === 'delivery' && shippingCost > 0 && <p className="text-xs text-muted-foreground">עלות משלוח: {formatPrice(shippingCost)}</p>}
+                  {deliveryMethod === 'delivery' && shippingCost > 0 && <p className="text-xs text-muted-foreground">{t('store.checkout.shipping_cost_label')} {formatPrice(shippingCost)}</p>}
                   {deliveryMethod === 'delivery' && (
                     <div>
-                      <label htmlFor="deliveryAddress" className={lbl}>כתובת למשלוח *</label>
-                      <Input id="deliveryAddress" value={formData.deliveryAddress || ''} onChange={(e) => handleChange('deliveryAddress', e.target.value)} placeholder="רחוב, מספר בית, עיר" autoComplete="street-address" className={fieldCls(errors.deliveryAddress)} />
+                      <label htmlFor="deliveryAddress" className={lbl}>{t('store.checkout.delivery_address_label')} *</label>
+                      <Input id="deliveryAddress" value={formData.deliveryAddress || ''} onChange={(e) => handleChange('deliveryAddress', e.target.value)} placeholder={t('store.checkout.delivery_address_placeholder')} autoComplete="street-address" className={fieldCls(errors.deliveryAddress)} />
                       {errors.deliveryAddress && <p className="text-xs text-destructive mt-1" role="alert">{errors.deliveryAddress}</p>}
                     </div>
                   )}
@@ -232,8 +234,8 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
 
               <label className="flex items-start gap-2.5 cursor-pointer text-sm text-foreground/80">
                 <input type="checkbox" checked={marketingConsent} onChange={(e) => setMarketingConsent(e.target.checked)} className="mt-0.5 w-4 h-4 flex-shrink-0 accent-primary" />
-                <span>אני מאשר/ת לקבל עדכונים והצעות בדוא"ל מ{businessName || 'העסק'}. ניתן להסיר בכל עת.
-                  <span className="block text-xs text-muted-foreground mt-1">{databaseDisclosure(businessName || 'העסק')}</span>
+                <span>{t('store.checkout.marketing_consent_prefix')}{businessName || t('store.checkout.the_business')}. {t('store.checkout.marketing_consent_suffix')}
+                  <span className="block text-xs text-muted-foreground mt-1">{databaseDisclosure(businessName || t('store.checkout.the_business'))}</span>
                 </span>
               </label>
               <FormConsentNotice />
@@ -241,7 +243,7 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
 
             {/* ── Sticky summary card ── */}
             <div className="bg-card border border-border rounded-3xl shadow-lg p-6 md:sticky md:top-6 space-y-4">
-              <div className="flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" /><h2 className="font-bold text-foreground">סיכום הזמנה</h2></div>
+              <div className="flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" /><h2 className="font-bold text-foreground">{t('store.checkout.order_summary_heading')}</h2></div>
 
               <ul className="space-y-2.5 max-h-48 overflow-y-auto pl-1">
                 {items.map((item) => (
@@ -261,9 +263,9 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
                 ) : (
                   <div className="space-y-1.5">
                     <div className="flex gap-2">
-                      <Input placeholder="קוד קופון" value={couponCode} onChange={(e) => setCouponCode(e.target.value.toUpperCase())} dir="ltr" className="rounded-xl border-border bg-background h-11 text-sm focus-visible:ring-2 focus-visible:ring-primary/30" />
+                      <Input placeholder={t('store.checkout.coupon_placeholder')} value={couponCode} onChange={(e) => setCouponCode(e.target.value.toUpperCase())} dir="ltr" className="rounded-xl border-border bg-background h-11 text-sm focus-visible:ring-2 focus-visible:ring-primary/30" />
                       <button type="button" onClick={handleApplyCoupon} disabled={validateCoupon.isPending || !couponCode.trim()} className="px-4 rounded-xl bg-muted text-sm font-semibold text-foreground hover:bg-muted/70 disabled:opacity-40 transition-colors whitespace-nowrap">
-                        {validateCoupon.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "הפעל"}
+                        {validateCoupon.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('store.checkout.coupon_apply_button')}
                       </button>
                     </div>
                     {couponError && <p className="text-xs text-destructive">{couponError}</p>}
@@ -272,20 +274,20 @@ const StoreCheckout = ({ items, hasPayment = false, businessId, businessName, de
               </div>
 
               <div className="space-y-2 border-t border-border pt-4 text-sm">
-                <div className="flex items-center justify-between text-muted-foreground"><span>סכום ביניים</span><span className="tabular-nums">{formatPrice(subtotal)}</span></div>
-                {discount > 0 && <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400"><span>הנחה</span><span className="tabular-nums">-{formatPrice(discount)}</span></div>}
-                {shippingCost > 0 && <div className="flex items-center justify-between text-muted-foreground"><span>משלוח</span><span className="tabular-nums">{formatPrice(shippingCost)}</span></div>}
+                <div className="flex items-center justify-between text-muted-foreground"><span>{t('store.checkout.subtotal_label')}</span><span className="tabular-nums">{formatPrice(subtotal)}</span></div>
+                {discount > 0 && <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400"><span>{t('store.checkout.discount_label')}</span><span className="tabular-nums">-{formatPrice(discount)}</span></div>}
+                {shippingCost > 0 && <div className="flex items-center justify-between text-muted-foreground"><span>{t('store.checkout.shipping_label')}</span><span className="tabular-nums">{formatPrice(shippingCost)}</span></div>}
                 <div className="flex items-center justify-between pt-2 border-t border-border">
-                  <span className="font-bold text-foreground">סה״כ לתשלום</span>
+                  <span className="font-bold text-foreground">{t('store.checkout.total_label')}</span>
                   <span className="text-2xl font-extrabold text-foreground tabular-nums">{formatPrice(totalPrice)}</span>
                 </div>
               </div>
 
               <button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}
                 className="w-full rounded-2xl bg-primary text-primary-foreground py-4 text-base font-bold hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-transform shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
-                {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <>{hasPayment ? `לתשלום מאובטח · ${formatPrice(totalPrice)}` : 'שליחת הזמנה'}<ShoppingBag className="h-5 w-5" /></>}
+                {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <>{hasPayment ? `${t('store.checkout.pay_button_secure')} · ${formatPrice(totalPrice)}` : t('store.checkout.submit_order_button')}<ShoppingBag className="h-5 w-5" /></>}
               </button>
-              <p className="text-[11px] text-center text-muted-foreground">בלחיצה על הכפתור את/ה מאשר/ת את ההזמנה.</p>
+              <p className="text-[11px] text-center text-muted-foreground">{t('store.checkout.submit_disclaimer')}</p>
             </div>
           </form>
 

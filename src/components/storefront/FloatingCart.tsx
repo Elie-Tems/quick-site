@@ -2,6 +2,7 @@ import { ShoppingCart, X, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import type { Product } from "./StoreProducts";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface CartItem extends Product {
   quantity: number;
@@ -25,8 +26,9 @@ const FloatingCart = ({
   onUpdateQuantity, 
   onRemove, 
   onCheckout,
-  hasPayment = false 
+  hasPayment = false
 }: FloatingCartProps) => {
+  const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -54,10 +56,11 @@ const FloatingCart = ({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 border-b border-border flex items-center justify-between">
-              <h3 className="font-semibold text-lg">סל הקניות</h3>
-              <button 
+              <h3 className="font-semibold text-lg">{t("store.floatingcart.title")}</h3>
+              <button
                 onClick={() => setIsExpanded(false)}
                 className="p-2 hover:bg-muted rounded-lg transition-colors"
+                aria-label={t("store.floatingcart.close")}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -91,6 +94,7 @@ const FloatingCart = ({
                     <button
                       onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity - 1)}
                       className="w-8 h-8 rounded-lg bg-background border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                      aria-label={t("store.floatingcart.decreaseQuantity")}
                     >
                       <Minus className="h-4 w-4" />
                     </button>
@@ -98,6 +102,7 @@ const FloatingCart = ({
                     <button
                       onClick={() => onUpdateQuantity(item.cartLineId ?? item.id, item.quantity + 1)}
                       className="w-8 h-8 rounded-lg bg-background border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                      aria-label={t("store.floatingcart.increaseQuantity")}
                     >
                       <Plus className="h-4 w-4" />
                     </button>
@@ -107,6 +112,7 @@ const FloatingCart = ({
                   <button
                     onClick={() => onRemove(item.cartLineId ?? item.id)}
                     className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+                    aria-label={t("store.floatingcart.removeItem")}
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -117,7 +123,7 @@ const FloatingCart = ({
             {/* Checkout */}
             <div className="p-4 border-t border-border bg-muted/30">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-muted-foreground">סה״כ לתשלום</span>
+                <span className="text-muted-foreground">{t("store.floatingcart.totalToPay")}</span>
                 <span className="text-xl font-bold">{formatPrice(totalPrice)}</span>
               </div>
               <button
@@ -127,7 +133,7 @@ const FloatingCart = ({
                 }}
                 className="w-full bg-foreground text-background py-4 text-[11px] font-bold tracking-[0.25em] uppercase hover:bg-foreground/85 active:bg-foreground/75 transition-colors"
               >
-                {hasPayment ? 'המשך לתשלום ←' : 'שלח הזמנה ←'}
+                {hasPayment ? t("store.floatingcart.continueToPayment") : t("store.floatingcart.sendOrderCta")}
               </button>
             </div>
           </div>
@@ -138,6 +144,7 @@ const FloatingCart = ({
       <button
         onClick={() => setIsExpanded(true)}
         className="fixed bottom-4 left-4 right-4 z-30 bg-foreground text-background rounded-xl shadow-glow p-4 flex items-center justify-between hover:bg-foreground/85 active:bg-foreground/75 transition-colors md:left-auto md:right-4 md:w-auto md:min-w-[280px]"
+        aria-label={t("store.floatingcart.openCart")}
       >
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -146,7 +153,7 @@ const FloatingCart = ({
               {totalItems}
             </span>
           </div>
-          <span className="font-medium">{hasPayment ? 'לתשלום' : 'שלח הזמנה'}</span>
+          <span className="font-medium">{hasPayment ? t("store.floatingcart.toPayment") : t("store.floatingcart.sendOrder")}</span>
         </div>
         <span className="font-bold text-lg">{formatPrice(totalPrice)}</span>
       </button>

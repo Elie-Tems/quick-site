@@ -1,6 +1,7 @@
 import { ShoppingBag, Menu, X, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { BusinessCategory } from "@/lib/categoryConfig";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface StoreCategoryItem {
   id: string;
@@ -45,6 +46,7 @@ const StoreHeader = ({
   onNavigateToCart,
   onNavigateHome,
 }: StoreHeaderProps) => {
+  const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -70,7 +72,7 @@ const StoreHeader = ({
   const categories =
     realCategories.length > 0
       ? [
-          { id: null as string | null, name: "הכל", action: () => { onSelectCategory!(null); scrollToProducts(); } },
+          { id: null as string | null, name: t("store.header.allCategories"), action: () => { onSelectCategory!(null); scrollToProducts(); } },
           ...realCategories.map((c) => ({
             id: c.id as string | null,
             name: c.name,
@@ -137,7 +139,7 @@ const StoreHeader = ({
               <button
                 className="lg:hidden flex items-center justify-center w-8 h-8 text-foreground"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label={mobileMenuOpen ? "סגור תפריט" : "פתח תפריט"}
+                aria-label={mobileMenuOpen ? t("store.closeMenu") : t("store.openMenu")}
               >
                 {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
               </button>
@@ -182,7 +184,7 @@ const StoreHeader = ({
                     onClick={onScrollToAbout}
                     className="text-[11px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors relative group"
                   >
-                    אודות
+                    {t("store.header.about")}
                     <span className="absolute -bottom-0.5 right-0 h-px bg-foreground transition-all duration-300 group-hover:w-full w-0" />
                   </button>
                 )}
@@ -193,7 +195,7 @@ const StoreHeader = ({
                 {onNavigateToFavorites && (
                   <button
                     onClick={onNavigateToFavorites}
-                    aria-label="מועדפים"
+                    aria-label={t("store.header.favorites")}
                     className="relative text-foreground hover:text-foreground/70 transition-colors"
                   >
                     <Heart
@@ -209,7 +211,7 @@ const StoreHeader = ({
                 {onNavigateToCart && (
                   <button
                     onClick={onNavigateToCart}
-                    aria-label="סל קניות"
+                    aria-label={t("store.header.cart")}
                     className="relative text-foreground hover:text-foreground/70 transition-colors"
                   >
                     <ShoppingBag className="h-[18px] w-[18px]" />
@@ -289,7 +291,7 @@ const StoreHeader = ({
                 onClick={() => { onScrollToAbout(); setMobileMenuOpen(false); }}
                 className="block w-full text-right py-4 text-sm font-bold tracking-[0.15em] uppercase text-foreground hover:text-muted-foreground transition-colors"
               >
-                אודות
+                {t("store.header.about")}
               </button>
             )}
           </nav>
@@ -302,7 +304,7 @@ const StoreHeader = ({
                 className="flex-1 flex items-center justify-center gap-2 border border-foreground/15 py-3 text-[10px] font-bold tracking-[0.15em] uppercase hover:border-foreground transition-colors"
               >
                 <Heart className={`h-3.5 w-3.5 ${favoritesCount > 0 ? "fill-red-500 text-red-500" : ""}`} />
-                מועדפים{favoritesCount > 0 ? ` (${favoritesCount})` : ""}
+                {t("store.header.favorites")}{favoritesCount > 0 ? ` (${favoritesCount})` : ""}
               </button>
             )}
             {onNavigateToCart && (
@@ -311,7 +313,7 @@ const StoreHeader = ({
                 className="flex-1 flex items-center justify-center gap-2 bg-foreground text-background py-3 text-[10px] font-bold tracking-[0.15em] uppercase hover:bg-foreground/85 transition-colors"
               >
                 <ShoppingBag className="h-3.5 w-3.5" />
-                סל קניות{cartItemsCount > 0 ? ` (${cartItemsCount})` : ""}
+                {t("store.header.cart")}{cartItemsCount > 0 ? ` (${cartItemsCount})` : ""}
               </button>
             )}
           </div>

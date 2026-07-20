@@ -3,6 +3,7 @@ import { X, Heart, Package, ShoppingBag, ChevronLeft, ChevronRight } from "lucid
 import { Button } from "@/components/ui/button";
 import type { Product } from "./StoreProducts";
 import { useProductVariants } from "@/hooks/useProductVariants";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type SelectedVariant = { id: string; color: string | null; size: string | null; price_override: number | null };
 
@@ -25,6 +26,7 @@ const ProductDetailModal = ({
   isFavorite = false,
   onToggleFavorite,
 }: ProductDetailModalProps) => {
+  const { t } = useLanguage();
   const [activeIdx, setActiveIdx] = useState(0);
   const { data: variants = [] } = useProductVariants(product?.id);
   const [selColor, setSelColor] = useState<string | null>(null);
@@ -76,6 +78,7 @@ const ProductDetailModal = ({
         {/* Close Button */}
         <button
           onClick={onClose}
+          aria-label={t("store.productmodal.closeAriaLabel")}
           className="absolute top-4 left-4 z-10 w-10 h-10 bg-background/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors shadow-lg"
         >
           <X className="h-5 w-5 text-foreground" />
@@ -85,6 +88,7 @@ const ProductDetailModal = ({
         {onToggleFavorite && (
           <button
             onClick={() => onToggleFavorite(product.id)}
+            aria-label={isFavorite ? t("store.productmodal.removeFromWishlistAriaLabel") : t("store.productmodal.addToWishlistAriaLabel")}
             className="absolute top-4 right-4 z-10 w-10 h-10 bg-background/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors shadow-lg"
           >
             <Heart
@@ -118,12 +122,14 @@ const ProductDetailModal = ({
                 <>
                   <button
                     onClick={() => setActiveIdx(i => (i - 1 + allImages.length) % allImages.length)}
+                    aria-label={t("store.productmodal.prevImageAriaLabel")}
                     className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background/80 backdrop-blur flex items-center justify-center shadow hover:bg-background transition-colors"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setActiveIdx(i => (i + 1) % allImages.length)}
+                    aria-label={t("store.productmodal.nextImageAriaLabel")}
                     className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background/80 backdrop-blur flex items-center justify-center shadow hover:bg-background transition-colors"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -135,17 +141,17 @@ const ProductDetailModal = ({
               <div className="absolute top-4 right-4 flex flex-col gap-2">
                 {product.isHot && (
                   <span className="bg-orange-500 text-white text-xs font-bold tracking-wider uppercase px-3 py-1.5 shadow-lg">
-                    חם
+                    {t("store.productmodal.badgeHot")}
                   </span>
                 )}
                 {product.isNew && (
                   <span className="bg-foreground text-background text-xs font-bold tracking-wider uppercase px-3 py-1.5 shadow-lg">
-                    חדש
+                    {t("store.productmodal.badgeNew")}
                   </span>
                 )}
                 {product.isSale && (
                   <span className="bg-red-500 text-white text-xs font-bold tracking-wider uppercase px-3 py-1.5 shadow-lg">
-                    מבצע
+                    {t("store.productmodal.badgeSale")}
                   </span>
                 )}
               </div>
@@ -158,6 +164,7 @@ const ProductDetailModal = ({
                   <button
                     key={i}
                     onClick={() => setActiveIdx(i)}
+                    aria-label={`${t("store.productmodal.thumbnailAriaLabel")} ${i + 1}`}
                     className={`shrink-0 w-14 h-14 rounded-md overflow-hidden border-2 transition-colors ${
                       i === activeIdx ? "border-primary" : "border-transparent hover:border-border"
                     }`}
@@ -183,7 +190,7 @@ const ProductDetailModal = ({
 
             {product.sku && (
               <p className="text-sm text-muted-foreground mb-4">
-                מק"ט: {product.sku}
+                {t("store.productmodal.skuLabel")} {product.sku}
               </p>
             )}
 
@@ -203,7 +210,7 @@ const ProductDetailModal = ({
             {product.description && (
               <div className="mb-6">
                 <h3 className="text-sm font-bold tracking-wider uppercase text-foreground mb-2">
-                  תיאור
+                  {t("store.productmodal.descriptionHeading")}
                 </h3>
                 <p className="text-base text-muted-foreground leading-relaxed">
                   {product.description}
@@ -214,7 +221,7 @@ const ProductDetailModal = ({
             {product.custom_fields && product.custom_fields.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-bold tracking-wider uppercase text-foreground mb-3">
-                  פרטים נוספים
+                  {t("store.productmodal.additionalDetailsHeading")}
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
                   {product.custom_fields.map((field) => (
@@ -237,7 +244,7 @@ const ProductDetailModal = ({
             {/* Variant picker (colors / sizes) */}
             {colors.length > 0 && (
               <div className="mb-4">
-                <h3 className="text-sm font-bold text-foreground mb-2">צבע{selColor ? `: ${selColor}` : ""}</h3>
+                <h3 className="text-sm font-bold text-foreground mb-2">{t("store.productmodal.colorLabel")}{selColor ? `: ${selColor}` : ""}</h3>
                 <div className="flex flex-wrap gap-2">
                   {colors.map((c) => {
                     const out = colorStock(c.name) <= 0;
@@ -247,7 +254,7 @@ const ProductDetailModal = ({
                         type="button"
                         disabled={out}
                         onClick={() => { setSelColor(c.name); }}
-                        title={out ? `${c.name} - אזל` : c.name}
+                        title={out ? `${c.name} - ${t("store.productmodal.outOfStockSuffix")}` : c.name}
                         className={`w-9 h-9 rounded-full border-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed ${selColor === c.name ? "border-primary scale-110" : "border-border hover:border-primary/50"}`}
                         style={{ background: c.hex || "#ccc" }}
                       />
@@ -258,7 +265,7 @@ const ProductDetailModal = ({
             )}
             {sizes.length > 0 && (
               <div className="mb-4">
-                <h3 className="text-sm font-bold text-foreground mb-2">מידה{selSize ? `: ${selSize}` : ""}</h3>
+                <h3 className="text-sm font-bold text-foreground mb-2">{t("store.productmodal.sizeLabel")}{selSize ? `: ${selSize}` : ""}</h3>
                 <div className="flex flex-wrap gap-2">
                   {sizes.map((s) => {
                     const out = sizeStock(s) <= 0;
@@ -278,7 +285,7 @@ const ProductDetailModal = ({
               </div>
             )}
             {selectedVariant && selStock > 0 && selStock <= 5 && (
-              <p className="text-xs text-amber-600 mb-2">נותרו {selStock} במלאי</p>
+              <p className="text-xs text-amber-600 mb-2">{t("store.productmodal.stockRemainingPrefix")} {selStock} {t("store.productmodal.stockRemainingSuffix")}</p>
             )}
 
             {onAddToCart && (
@@ -293,7 +300,9 @@ const ProductDetailModal = ({
                   size="lg"
                 >
                   <ShoppingBag className="h-5 w-5" />
-                  {needsColor || needsSize ? "בחרו צבע ומידה" : (hasVariants && selStock <= 0 ? "אזל מהמלאי" : "הוסף לסל")}
+                  {needsColor || needsSize
+                    ? t("store.productmodal.selectColorAndSize")
+                    : (hasVariants && selStock <= 0 ? t("store.productmodal.outOfStock") : t("store.productmodal.addToCart"))}
                 </Button>
               </div>
             )}

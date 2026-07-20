@@ -1,4 +1,5 @@
 import { Phone, Mail } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StoreFooterProps {
   businessName: string;
@@ -12,6 +13,7 @@ interface StoreFooterProps {
 }
 
 const StoreFooter = ({ businessName, phone, email, storeSlug, showOrders = true }: StoreFooterProps) => {
+  const { t } = useLanguage();
   return (
     <footer dir="rtl" className="border-t border-foreground/10 bg-background pb-24 md:pb-0">
       <div className="container px-4 md:px-6">
@@ -53,26 +55,26 @@ const StoreFooter = ({ businessName, phone, email, storeSlug, showOrders = true 
                     href={`/store/${storeSlug}/about`}
                     className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    אודות
+                    {t("store.footer.about")}
                   </a>
                   <a
                     href={`/store/${storeSlug}/terms`}
                     className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    תקנון
+                    {t("store.footer.terms")}
                   </a>
                   <a
                     href={`/store/${storeSlug}/privacy`}
                     className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    מדיניות פרטיות
+                    {t("store.footer.privacy")}
                   </a>
                   {showOrders && (
                     <a
                       href={`/store/${storeSlug}/my-orders`}
                       className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      ההזמנות שלי
+                      {t("store.footer.myOrders")}
                     </a>
                   )}
                 </>
@@ -94,7 +96,7 @@ const StoreFooter = ({ businessName, phone, email, storeSlug, showOrders = true 
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-foreground/[0.03] px-4 py-2 hover:bg-foreground/[0.06] transition-colors"
           >
-            <span className="text-[11px] font-medium tracking-wide text-muted-foreground">נוצר באהבה ע״י</span>
+            <span className="text-[11px] font-medium tracking-wide text-muted-foreground">{t("store.footer.madeWithLove")}</span>
             <span className="text-[13px] font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">siango</span>
           </a>
         </div>
