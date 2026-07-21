@@ -109,38 +109,68 @@ Deno.serve(async (req) => {
     .maybeSingle();
   const priced = priceDomain(check.data.costUsd, cfg || {});
 
-  const sessionToken = crypto.randomUUID();
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+  const domainFull = `${name}.${extension}`;
 
-  const { data: order, error: insErr } = await admin
+  // Idempotency: reuse an existing pending/failed order for the SAME
+  // business+domain instead of always inserting a new one. Without this, a
+  // double-click or client retry creates a fresh order each time, and since
+  // the Cardcom idempotency key below is derived from the order's own id
+  // (domain:${order.id}), each attempt gets a DIFFERENT key - Cardcom's own
+  // dedup never catches it, so the merchant's card can be charged twice for
+  // one domain. "paid"/"registered" orders are never reused - that domain is
+  // already bought.
+  const { data: existingOrder } = await admin
     .from("domain_orders")
-    .insert({
-      business_id: businessId,
-      user_id: user.id,
-      domain: `${name}.${extension}`,
-      extension,
-      price_ils: priced.customerIls,
-      cost_usd: check.data.costUsd,
-      status: "pending",
-      session_token: sessionToken,
-      auto_renew: body.autoRenew !== false,
-      reg_name: reg.name,
-      reg_email: reg.email,
-      reg_phone: reg.phone,
-      reg_address: reg.address,
-      reg_city: reg.city,
-      reg_zip: reg.zip,
-      reg_country: "IL",
-      consent_at: new Date().toISOString(),
-      consent_ip: ip,
-      consent_version: body.consentVersion,
-    })
     .select("id")
-    .single();
+    .eq("business_id", businessId)
+    .eq("domain", domainFull)
+    .in("status", ["pending", "failed"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-  if (insErr || !order) {
-    console.error("domain_orders insert failed:", insErr);
-    return json({ ok: false, error: "לא הצלחנו ליצור את ההזמנה" }, 500);
+  const orderRow = {
+    business_id: businessId,
+    user_id: user.id,
+    domain: domainFull,
+    extension,
+    price_ils: priced.customerIls,
+    cost_usd: check.data.costUsd,
+    status: "pending",
+    auto_renew: body.autoRenew !== false,
+    reg_name: reg.name,
+    reg_email: reg.email,
+    reg_phone: reg.phone,
+    reg_address: reg.address,
+    reg_city: reg.city,
+    reg_zip: reg.zip,
+    reg_country: "IL",
+    consent_at: new Date().toISOString(),
+    consent_ip: ip,
+    consent_version: body.consentVersion,
+  };
+
+  let order: { id: string };
+  if (existingOrder) {
+    const { error: updErr } = await admin.from("domain_orders").update(orderRow).eq("id", existingOrder.id);
+    if (updErr) {
+      console.error("domain_orders reuse-update failed:", updErr);
+      return json({ ok: false, error: "לא הצלחנו ליצור את ההזמנה" }, 500);
+    }
+    order = existingOrder;
+  } else {
+    const sessionToken = crypto.randomUUID();
+    const { data: newOrder, error: insErr } = await admin
+      .from("domain_orders")
+      .insert({ ...orderRow, session_token: sessionToken })
+      .select("id")
+      .single();
+    if (insErr || !newOrder) {
+      console.error("domain_orders insert failed:", insErr);
+      return json({ ok: false, error: "לא הצלחנו ליצור את ההזמנה" }, 500);
+    }
+    order = newOrder;
   }
 
   // The merchant's saved Cardcom token + card expiry (captured on the publish sub).
@@ -161,10 +191,21 @@ Deno.serve(async (req) => {
   const amount = gross(priced.customerIls);
   const idem = `domain:${order.id}`;
   const isTest = Deno.env.get("BILLING_TEST_MODE") === "true";
-  await admin.from("billing_charges").insert({
+  const chargeRow = {
     user_id: user.id, business_id: businessId, amount_ils: amount, status: "pending",
     is_test: isTest, idempotency_key: idem, payment_description: `רכישת דומיין ${name}.${extension}`,
-  });
+  };
+  // Insert-or-update rather than a bare insert: idem is now stable across
+  // retries for the same order (see the order-reuse fix above), so a retry
+  // would otherwise crash on the idempotency_key unique constraint. The
+  // actual charge below is still safe to re-send - Cardcom de-dupes on the
+  // same externalUniqId, so a genuinely-completed charge can't double.
+  const { data: existingCharge } = await admin.from("billing_charges").select("status").eq("idempotency_key", idem).maybeSingle();
+  if (existingCharge) {
+    await admin.from("billing_charges").update(chargeRow).eq("idempotency_key", idem);
+  } else {
+    await admin.from("billing_charges").insert(chargeRow);
+  }
 
   const charge = await chargeToken({
     token: ccTokenId, expMMYY: toMMYY(expMonth, expYear), amountIls: amount, externalUniqId: idem,

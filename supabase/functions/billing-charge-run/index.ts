@@ -17,6 +17,13 @@ const RETRY_DAYS = 2;        // reschedule a failed charge this many days out
 const MAX_FAILURES = 3;      // consecutive failures before marking past_due
 const ADMIN_EMAILS = ["moti4384@gmail.com", "furmand713@gmail.com"];
 
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204 });
 
@@ -24,7 +31,7 @@ serve(async (req) => {
   if (!cronSecret) {
     return new Response(JSON.stringify({ error: "server misconfigured: CRON_SECRET not set" }), { status: 500 });
   }
-  if (req.headers.get("x-cron-secret") !== cronSecret) {
+  if (!safeEqual(req.headers.get("x-cron-secret") ?? "", cronSecret)) {
     return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
   }
 

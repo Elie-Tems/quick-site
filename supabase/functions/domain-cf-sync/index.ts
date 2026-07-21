@@ -21,11 +21,18 @@ const ADMIN_EMAILS = ["moti4384@gmail.com", "furmand713@gmail.com"];
 const FREE_HOSTNAME_LIMIT = 100;
 const ALERT_THRESHOLDS = [80, 90, 95, 99, 100];
 
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204 });
 
   const cronSecret = Deno.env.get("CRON_SECRET");
-  if (cronSecret && req.headers.get("x-cron-secret") !== cronSecret) {
+  if (cronSecret && !safeEqual(req.headers.get("x-cron-secret") ?? "", cronSecret)) {
     return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
   }
 
