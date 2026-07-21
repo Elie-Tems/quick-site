@@ -7,6 +7,7 @@ import { sendViaResend } from "../_shared/email/resend.ts";
 import { emailItemsTable } from "../_shared/email/rtlEmail.ts";
 import { sendLifecycleEmail } from "../_shared/email/lifecycle.ts";
 import { newOrderMerchant } from "../_shared/email/platformEmails.ts";
+import { checkRateLimit, rateLimitedResponse } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,6 +36,9 @@ interface ReqBody {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+
+  const rl = await checkRateLimit(req, "orders-create");
+  if (!rl.allowed) return rateLimitedResponse(rl.retryAfter);
 
   let body: ReqBody;
   try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
