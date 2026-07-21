@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { hebrewToSlug } from "@/lib/utils";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, Store, Building2, Phone, Package, Rocket, Check, ArrowLeft, Clock, CreditCard, Globe, Image, Wand2, Loader2 } from "lucide-react";
@@ -324,7 +325,7 @@ const Onboarding = () => {
         ? latestData.productCategories.slice()
         : categoryConfig.categories.map((name, idx) => ({ id: `config-${idx}-${name}`, name, description: undefined }));
 
-      const slug = latestData.businessName.toLowerCase().replace(/\s+/g, "-").replace(/[^֐-׿a-z0-9-]/g, "");
+      const slug = hebrewToSlug(latestData.businessName);
 
       const result = await createBusiness.mutateAsync({
         businessName: latestData.businessName,
