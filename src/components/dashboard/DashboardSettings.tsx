@@ -172,6 +172,7 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
   const { data: isAdmin } = useIsAdmin();
   const { t } = useLanguage();
   const [formData, setFormData] = useState(settings);
+  const [slugError, setSlugError] = useState<string | null>(null);
 
   // Re-sync when the parent reloads business data (e.g. after save)
   useEffect(() => {
@@ -219,6 +220,15 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
         description: t("dash.settings.error_missing_business_id"),
         variant: "destructive",
       });
+      return;
+    }
+
+    if (slugError) {
+      toast({ title: "כתובת החנות אינה תקינה", description: slugError, variant: "destructive" });
+      return;
+    }
+    if (formData.slug && (formData.slug.length < 2 || /[^a-z0-9-]/.test(formData.slug))) {
+      toast({ title: "כתובת החנות אינה תקינה", description: "מותר רק אותיות אנגליות, מספרים ומקף", variant: "destructive" });
       return;
     }
     
@@ -354,24 +364,42 @@ const DashboardSettings = ({ settings, onSettingsChange, businessType }: Dashboa
               <div className="space-y-2">
                 <Label htmlFor="slug">{t("dash.settings.field_store_url")}</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">siango.app/store/</span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">siango.app/</span>
                   <Input
                     id="slug"
                     dir="ltr"
                     value={formData.slug || ""}
                     onChange={(e) => {
-                      const cleaned = e.target.value
-                        .toLowerCase()
+                      const raw = e.target.value.toLowerCase();
+                      const cleaned = raw
                         .replace(/\s+/g, "-")
                         .replace(/[^a-z0-9-]/g, "")
                         .replace(/-{2,}/g, "-");
                       setFormData({ ...formData, slug: cleaned });
+                      if (cleaned.length < 2) {
+                        setSlugError("כתובת החנות חייבת להכיל לפחות 2 תווים");
+                      } else if (cleaned !== raw.replace(/\s+/g, "-").replace(/-{2,}/g, "-")) {
+                        setSlugError("מותר להשתמש רק באותיות אנגליות, מספרים ומקף (-)");
+                      } else {
+                        setSlugError(null);
+                      }
                     }}
                     placeholder="my-store"
-                    className="font-mono text-sm"
+                    className={`font-mono text-sm ${slugError ? "border-destructive focus-visible:ring-destructive" : ""}`}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">{t("dash.settings.field_store_url_help")}</p>
+                {slugError ? (
+                  <p className="text-xs text-destructive">{slugError}</p>
+                ) : (
+                  <>
+                    <p className="text-xs text-muted-foreground">{t("dash.settings.field_store_url_help")}</p>
+                    {formData.slug !== settings.slug && (
+                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                        ⚠️ שינוי הכתובת ישבור קישורים ישנים שכבר שיתפת
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
 
               {/* Shabbat mode - auto-close the store on Shabbat/Yom Tov */}
