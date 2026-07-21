@@ -678,26 +678,29 @@ export const subscriptionCancelled = (c: PlatformCtx): BuiltEmail => {
 export const newOrderMerchant = (c: PlatformCtx): BuiltEmail => {
   const lang = c.lang || "he";
   const dir = dirForLang(lang);
+  // amt = HTML version (with <span dir="ltr">) for email body only.
+  // amtTxt = plain text for subject/preview lines.
   const amt = c.amountIls ? ils(c.amountIls) : "";
+  const amtTxt = c.amountIls ? `₪${Number(c.amountIls).toLocaleString("he-IL")}` : "";
   const b = bizL(c, lang);
   const T = {
-    he: { subject: amt ? `💰 הידד! נכנסה הזמנה על ${amt}` : "💰 הידד! נכנסה הזמנה חדשה", preview: amt ? `${amt} בדרך אליכם` : "הרגע של ריקוד קטן בכיסא",
+    he: { subject: amtTxt ? `💰 הידד! נכנסה הזמנה על ${amtTxt}` : "💰 הידד! נכנסה הזמנה חדשה", preview: amtTxt ? `${amtTxt} בדרך אליכם` : "הרגע של ריקוד קטן בכיסא",
       h1: amt ? `${amt} בדרך אליכם! 🎉` : "הזמנה חדשה נחתה! 🎉",
       p1: `${hiL(c, lang)}מישהו בדיוק קנה אצלכם${amt ? ` בסך ${amt}` : ""} ב-${b}. זה הרגע שבו מותר לעשות ריקוד קטן בכיסא - מגיע לכם. 💃`,
       hl: "📦 כל הפרטים (מה הוזמן, פרטי הלקוח, כתובת) מחכים לכם בדשבורד.", btn: "לצפייה בהזמנה" },
-    en: { subject: amt ? `💰 Woohoo! An order for ${amt} came in` : "💰 Woohoo! A new order came in", preview: amt ? `${amt} on its way to you` : "Time for a little chair dance",
+    en: { subject: amtTxt ? `💰 Woohoo! An order for ${amtTxt} came in` : "💰 Woohoo! A new order came in", preview: amtTxt ? `${amtTxt} on its way to you` : "Time for a little chair dance",
       h1: amt ? `${amt} on its way to you! 🎉` : "A new order landed! 🎉",
       p1: `${hiL(c, lang)}Someone just bought from you${amt ? ` for ${amt}` : ""} at ${b}. This is the moment for a little chair dance - you've earned it. 💃`,
       hl: "📦 All the details (what was ordered, customer info, address) are waiting in your dashboard.", btn: "View the order" },
-    ar: { subject: amt ? `💰 مرحى! وصل طلب بقيمة ${amt}` : "💰 مرحى! وصل طلب جديد", preview: amt ? `${amt} في طريقها إليك` : "حان وقت رقصة صغيرة",
+    ar: { subject: amtTxt ? `💰 مرحى! وصل طلب بقيمة ${amtTxt}` : "💰 مرحى! وصل طلب جديد", preview: amtTxt ? `${amtTxt} في طريقها إليك` : "حان وقت رقصة صغيرة",
       h1: amt ? `${amt} في طريقها إليك! 🎉` : "وصل طلب جديد! 🎉",
       p1: `${hiL(c, lang)}اشترى أحدهم منك للتو${amt ? ` بمبلغ ${amt}` : ""} في ${b}. هذه لحظة تستحق رقصة صغيرة - تستحقها. 💃`,
       hl: "📦 كل التفاصيل (ما تم طلبه، بيانات العميل، العنوان) بانتظارك في لوحة التحكم.", btn: "عرض الطلب" },
-    fr: { subject: amt ? `💰 Youpi ! Une commande de ${amt} est arrivée` : "💰 Youpi ! Une nouvelle commande", preview: amt ? `${amt} en route vers vous` : "Le moment d'une petite danse",
+    fr: { subject: amtTxt ? `💰 Youpi ! Une commande de ${amtTxt} est arrivée` : "💰 Youpi ! Une nouvelle commande", preview: amtTxt ? `${amtTxt} en route vers vous` : "Le moment d'une petite danse",
       h1: amt ? `${amt} en route vers vous ! 🎉` : "Une nouvelle commande ! 🎉",
       p1: `${hiL(c, lang)}Quelqu'un vient d'acheter chez vous${amt ? ` pour ${amt}` : ""} sur ${b}. C'est le moment d'une petite danse sur la chaise - vous l'avez mérité. 💃`,
       hl: "📦 Tous les détails (commande, infos client, adresse) vous attendent dans le tableau de bord.", btn: "Voir la commande" },
-    ru: { subject: amt ? `💰 Ура! Поступил заказ на ${amt}` : "💰 Ура! Поступил новый заказ", preview: amt ? `${amt} уже в пути к вам` : "Время для маленького танца",
+    ru: { subject: amtTxt ? `💰 Ура! Поступил заказ на ${amtTxt}` : "💰 Ура! Поступил новый заказ", preview: amtTxt ? `${amtTxt} уже в пути к вам` : "Время для маленького танца",
       h1: amt ? `${amt} уже в пути к вам! 🎉` : "Поступил новый заказ! 🎉",
       p1: `${hiL(c, lang)}Кто-то только что купил у вас${amt ? ` на ${amt}` : ""} в ${b}. Самое время для маленького танца на стуле - вы это заслужили. 💃`,
       hl: "📦 Все детали (что заказано, данные клиента, адрес) ждут вас в панели управления.", btn: "Посмотреть заказ" },
