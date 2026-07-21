@@ -86,7 +86,6 @@ const PreviewEmail = lazy(() => import("./pages/PreviewEmail"));
 const OnboardingCompleteGate = lazy(() => import("./pages/OnboardingCompleteGate"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const StoreLegalPage = lazy(() => import("./pages/StoreLegalPage"));
-const StoreUnsubscribe = lazy(() => import("./pages/StoreUnsubscribe"));
 const PlatformUnsubscribe = lazy(() => import("./pages/PlatformUnsubscribe"));
 
 // Sane React Query defaults. The bare `new QueryClient()` used the library
