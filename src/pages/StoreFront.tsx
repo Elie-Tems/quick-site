@@ -832,7 +832,7 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
   }
 
   // Generate store URL
-  const storeUrl = `https://${import.meta.env.VITE_WEBSITE_URL}/store/${slug}`;
+  const storeUrl = `https://${import.meta.env.VITE_WEBSITE_URL}/${slug}`;
 
   // Transform products for SEO component
   const seoProducts = storeProducts.map(p => ({

@@ -42,10 +42,10 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
     .replace(/\s+/g, "-")
     .replace(/[^\u0590-\u05ffa-z0-9-]/g, "");
   
-  const siteUrl = `https://${import.meta.env.VITE_WEBSITE_URL}/store/${businessSlug}`;
+  const siteUrl = `https://${import.meta.env.VITE_WEBSITE_URL}/${businessSlug}`;
 
   const handleCopyUrl = () => {
-    navigator.clipboard.writeText(`https://${import.meta.env.VITE_WEBSITE_URL}/store/${businessSlug}`);
+    navigator.clipboard.writeText(`https://${import.meta.env.VITE_WEBSITE_URL}/${businessSlug}`);
     toast({
       title: t("ob.pub.copy_title"),
       description: t("ob.pub.copy_desc"),

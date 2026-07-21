@@ -52,26 +52,26 @@ const StoreFooter = ({ businessName, phone, email, storeSlug, showOrders = true 
               {storeSlug && (
                 <>
                   <a
-                    href={`/store/${storeSlug}/about`}
+                    href={`/${storeSlug}/about`}
                     className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {t("store.footer.about")}
                   </a>
                   <a
-                    href={`/store/${storeSlug}/terms`}
+                    href={`/${storeSlug}/terms`}
                     className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {t("store.footer.terms")}
                   </a>
                   <a
-                    href={`/store/${storeSlug}/privacy`}
+                    href={`/${storeSlug}/privacy`}
                     className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {t("store.footer.privacy")}
                   </a>
                   {showOrders && (
                     <a
-                      href={`/store/${storeSlug}/my-orders`}
+                      href={`/${storeSlug}/my-orders`}
                       className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {t("store.footer.myOrders")}

@@ -395,7 +395,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
 
   const aboutLabels = ABOUT_LABELS[businessType] ?? ABOUT_LABELS.products;
   const storeUrl = business?.slug
-    ? `${window.location.origin}/store/${business.slug}`
+    ? `${window.location.origin}/${business.slug}`
     : null;
 
   if (!businessId) return (

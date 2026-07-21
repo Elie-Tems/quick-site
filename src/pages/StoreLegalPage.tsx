@@ -53,7 +53,7 @@ const StoreLegalPage = ({ docType, slugOverride }: { docType: LegalDocType; slug
       : buildDefaultDocument(docType).map((s) => ({ ...s, body: injectBusinessDetails(s.body, details) }));
 
   const docTitle = LEGAL_DOC_TITLES[docType];
-  const storeHome = slugOverride ? "/" : `/store/${business.slug}`;
+  const storeHome = slugOverride ? "/" : `/${business.slug}`;
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">

@@ -92,8 +92,8 @@ const OnboardingComplete = ({ data }: OnboardingCompleteProps) => {
   const businessSlug = rawSlug || "my-store";
 
   // Use internal store route instead of external URL
-  const storeUrl = `/store/${businessSlug}`;
-  const displayUrl = `https://${import.meta.env.VITE_WEBSITE_URL}/store/${businessSlug}`;
+  const storeUrl = `/${businessSlug}`;
+  const displayUrl = `https://${import.meta.env.VITE_WEBSITE_URL}/${businessSlug}`;
   const shareText = `${t("oc.share_text")}\n${displayUrl}`;
 
   const handleViewStore = () => {

@@ -63,7 +63,7 @@ const DashboardPreview = ({ settings, products, banners, categories, storeSlug }
   const deviceSizes = useMemo(() => getDeviceSizes(t), [t]);
 
   const useIframe = (device === "mobile" || device === "tablet") && Boolean(storeSlug);
-  const iframeSrc = typeof window !== "undefined" && storeSlug ? `${window.location.origin}/store/${storeSlug}?preview=true` : "";
+  const iframeSrc = typeof window !== "undefined" && storeSlug ? `${window.location.origin}/${storeSlug}?preview=true` : "";
 
   // Generate dynamic CSS variables for the brand color
   const brandStyles = useMemo(() => {
@@ -176,7 +176,7 @@ const DashboardPreview = ({ settings, products, banners, categories, storeSlug }
             className="gap-2"
           >
             <a
-              href={storeSlug ? `/store/${storeSlug}` : "/store"}
+              href={storeSlug ? `/${storeSlug}` : "/"}
               target="_blank"
               rel="noopener noreferrer"
             >

@@ -516,7 +516,7 @@ const PublishPayment = () => {
 
   // ── Success screen: shown after successful publish ──────────────────────
   if (publishedSlug !== null) {
-    const storeUrl = `${window.location.origin}/store/${publishedSlug}`;
+    const storeUrl = `${window.location.origin}/${publishedSlug}`;
     const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&color=000000&bgcolor=ffffff&data=${encodeURIComponent(storeUrl)}`;
     const waText = encodeURIComponent(`היי! בניתי אתר חנות חדש בכמה דקות 🛍️\nאפשר לראות ולהזמין מוצרים כאן:\n${storeUrl}\nמה דעתכם? 😊`);
     return (

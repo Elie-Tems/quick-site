@@ -31,6 +31,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const StoreAboutPage = lazy(() => import("./pages/StoreAboutPage"));
+const StoreUnsubscribe = lazy(() => import("./pages/StoreUnsubscribe"));
 const SynagogueScreen = lazy(() => import("./pages/SynagogueScreen"));
 const SynagogueSite = lazy(() => import("./pages/SynagogueSite"));
 const MyOrders = lazy(() => import("./pages/MyOrders"));
@@ -280,6 +281,7 @@ const App = () => {
                   <Route path="/:slug/about" element={<StoreAboutPage />} />
                   <Route path="/:slug/terms" element={<StoreLegalPage docType="terms" />} />
                   <Route path="/:slug/privacy" element={<StoreLegalPage docType="privacy" />} />
+                  <Route path="/:slug/unsubscribe" element={<StoreUnsubscribe />} />
                   <Route path="/:slug/my-orders" element={<MyOrders />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />

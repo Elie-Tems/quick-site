@@ -965,7 +965,7 @@ const Dashboard = () => {
       <div className="min-h-screen bg-muted/30">
         <DashboardHeader
           businessName={settings.name}
-          siteUrl={business?.slug ? `/store/${business.slug}` : "/store"}
+          siteUrl={business?.slug ? `/${business.slug}` : "/"}
           merchantLogoUrl={(business as any)?.logo_url || undefined}
           onNavigate={goToView}
         />

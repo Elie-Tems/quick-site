@@ -23,7 +23,7 @@ export async function generateSitemapXml(): Promise<string> {
 
   const storeUrls = (businesses ?? []).flatMap((b) => [
     {
-      loc: `${BASE_URL}/store/${b.slug}`,
+      loc: `${BASE_URL}/${b.slug}`,
       lastmod: b.updated_at?.slice(0, 10),
       priority: "0.8",
       changefreq: "daily",

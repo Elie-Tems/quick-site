@@ -35,7 +35,7 @@ export const databaseDisclosure = (businessName: string): string =>
 /** Build the merchant's one-click unsubscribe URL for a recipient (matches the
  *  public unsubscribe page, which reads ?email= to auto-remove on load). */
 export const buildUnsubscribeUrl = (siteUrl: string, slug: string, email: string): string =>
-  `${siteUrl.replace(/\/$/, "")}/store/${slug}/unsubscribe?email=${encodeURIComponent(email)}`;
+  `${siteUrl.replace(/\/$/, "")}/${slug}/unsubscribe?email=${encodeURIComponent(email)}`;
 
 /** Compliance checklist - surface in the merchant UI before enabling campaigns. */
 export const COMPLIANCE_CHECKLIST: { id: string; label: string }[] = [

@@ -148,7 +148,7 @@ const DashboardLegal = ({ business }: { business?: BusinessLike }) => {
         </Button>
         {business?.slug && (
           <a
-            href={`/store/${business.slug}/${activeDoc}`}
+            href={`/${business.slug}/${activeDoc}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"

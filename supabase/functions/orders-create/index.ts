@@ -173,23 +173,27 @@ Deno.serve(async (req) => {
   const shipping = isDelivery ? Number(business.delivery_fee ?? 0) : 0;
   const totalPrice = Math.max(0, subtotal - discount + shipping);
 
-  const { data: order, error: orderErr } = await admin.from("orders").insert({
+  // Build insert conditionally — columns added outside migrations may not be in
+  // PostgREST's schema cache on older projects; omit null optional columns to be safe.
+  const orderInsert: Record<string, unknown> = {
     business_id: businessId,
     customer_name: customer.fullName,
     customer_phone: customer.phone,
     customer_email: customer.email,
     notes: body.notes || null,
     total_price: totalPrice,
-    delivery_method: body.deliveryMethod ?? null,
-    delivery_fee: isDelivery ? shipping : null,
-    delivery_address: isDelivery ? (body.deliveryAddress || null) : null,
     status: "pending",
-    payment_status: "not_required",
-    coupon_id: couponId,
-    discount_amount: discount > 0 ? discount : null,
-  }).select("id, total_price").single();
+  };
+  if (body.deliveryMethod) orderInsert.delivery_method = body.deliveryMethod;
+  if (isDelivery) { orderInsert.delivery_fee = shipping; orderInsert.delivery_address = body.deliveryAddress || null; }
+  if (couponId) orderInsert.coupon_id = couponId;
+  if (discount > 0) orderInsert.discount_amount = discount;
+  // payment_status added in payplus migration — include only if expected to exist
+  try { orderInsert.payment_status = "not_required"; } catch { /* ignore */ }
 
-  if (orderErr || !order) return json({ error: "Could not create order" }, 500);
+  const { data: order, error: orderErr } = await admin.from("orders").insert(orderInsert).select("id, total_price").single();
+
+  if (orderErr || !order) return json({ error: "Could not create order", detail: orderErr?.message, code: orderErr?.code }, 500);
 
   const { error: itemsErr } = await admin.from("order_items").insert(
     orderItems.map((it) => ({ ...it, order_id: order.id }))

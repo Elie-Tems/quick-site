@@ -54,9 +54,9 @@ const StoreAboutPage = ({ slugOverride }: { slugOverride?: string } = {}) => {
 
   const storeSlug = (business.slug as string) || slug || "";
 
-  const goToStoreHome = () => { if (storeSlug) navigate(`/store/${storeSlug}`); };
-  const goToStoreProducts = () => { if (storeSlug) navigate(`/store/${storeSlug}#products`); };
-  const handleSelectCategory = (_categoryId: string | null) => { if (storeSlug) navigate(`/store/${storeSlug}#products`); };
+  const goToStoreHome = () => { if (storeSlug) navigate(`/${storeSlug}`); };
+  const goToStoreProducts = () => { if (storeSlug) navigate(`/${storeSlug}#products`); };
+  const handleSelectCategory = (_categoryId: string | null) => { if (storeSlug) navigate(`/${storeSlug}#products`); };
 
   const hasContact = contactText || business.phone || business.email || (business as any).address;
 

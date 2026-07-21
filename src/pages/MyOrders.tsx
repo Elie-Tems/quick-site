@@ -53,7 +53,7 @@ const MyOrders = ({ slugOverride }: MyOrdersProps) => {
     setPhase("sent");
   };
 
-  const storeHref = slugOverride ? "/" : `/store/${slug}`;
+  const storeHref = slugOverride ? "/" : `/${slug}`;
 
   return (
     <div dir="rtl" className="min-h-screen bg-background text-foreground" style={{ fontFamily: "Heebo, Arial, sans-serif" }}>
@@ -100,7 +100,7 @@ const MyOrders = ({ slugOverride }: MyOrdersProps) => {
           <div className="rounded-xl border border-border p-5 mt-4">
             <p className="text-sm font-medium">הקישור אינו תקף או שפג תוקפו</p>
             <p className="text-xs text-muted-foreground mt-1">קישורי הצפייה בתוקף ל-30 דקות. אפשר לבקש קישור חדש:</p>
-            <Link to={slugOverride ? "/my-orders" : `/store/${slug}/my-orders`} className="text-sm font-medium hover:underline mt-2 inline-block" style={{ color: storeColor }}>בקשת קישור חדש</Link>
+            <Link to={slugOverride ? "/my-orders" : `/${slug}/my-orders`} className="text-sm font-medium hover:underline mt-2 inline-block" style={{ color: storeColor }}>בקשת קישור חדש</Link>
           </div>
         )}
 

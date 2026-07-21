@@ -83,8 +83,8 @@ const PaymentApprovalKit = () => {
             {/* Direct links to legal pages */}
             <div className="flex flex-wrap gap-2 mb-3">
               {[
-                { href: `/store/${slug}/terms`, label: "תקנון" },
-                { href: `/store/${slug}/privacy`, label: "מדיניות פרטיות" },
+                { href: `/${slug}/terms`, label: "תקנון" },
+                { href: `/${slug}/privacy`, label: "מדיניות פרטיות" },
                 { href: siteUrl, label: "צפייה באתר" },
               ].map((l) => (
                 <a key={l.label} href={l.href} target="_blank" rel="noreferrer"
