@@ -29,7 +29,14 @@ Deno.serve(async (req) => {
   // (proxy/edge quirk) we log and continue - the single-use token is the real lock.
   const ip = callerIp(req);
   const ipKnown = ip !== "unknown";
-  if (ipKnown && !NEDARIM_CALLBACK_IPS.includes(ip)) {
+  // Always log the caller IP so the first real CallBack reveals exactly what Nedarim
+  // sends through Supabase's edge (in case a new/proxy IP needs allowlisting).
+  console.log("nedarim-webhook: caller IP", ip);
+  // Allowlist can be extended via a secret (comma-separated) without a code change,
+  // in case Nedarim's forwarded IP through Supabase differs from the published pair.
+  const extraIps = (Deno.env.get("NEDARIM_CALLBACK_IPS_EXTRA") || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const allowedIps = [...NEDARIM_CALLBACK_IPS, ...extraIps];
+  if (ipKnown && !allowedIps.includes(ip)) {
     console.error("nedarim-webhook: rejected foreign source IP", ip);
     return json({ error: "Forbidden" }, 403);
   }
