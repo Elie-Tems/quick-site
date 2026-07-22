@@ -1,75 +1,69 @@
-// Nedarim Plus (נדרים פלוס) integration - SCAFFOLD, not yet wired live.
+// Nedarim Plus (נדרים פלוס) - server-side helpers for the iframe integration.
 //
-// Why it's separate from the PaymentProvider registry: Nedarim Plus is NOT a
-// redirect/hosted-page gateway like PayPlus. It works through an EMBEDDED IFRAME
-// (matara.pro/nedarimplus): the storefront embeds their iframe, calls
-// PostNedarim('FinishTransaction', {...}) to charge, and reads the result via a
-// window 'message' event (ReadPostMessage). Saving a card / recurring (הוראת קבע)
-// needs an `ApiValid` value issued by Nedarim Plus per mosad. So it doesn't fit the
-// server-side createPaymentPage() shape and is intentionally left OUT of registry.ts
-// until a real nonprofit connects and we run a live test charge.
+// Nedarim Plus is NOT a redirect/hosted-page gateway, so it is intentionally NOT
+// in the PaymentProvider registry (which is createPaymentPage-shaped). It works
+// through an EMBEDDED IFRAME: the storefront (src/components/storefront/
+// NedarimCheckout.tsx + src/lib/nedarim.ts) posts `FinishTransaction2` to the
+// iframe and the iframe charges the card. The AUTHORITATIVE "paid" signal is the
+// server-to-server CallBack that Nedarim POSTs to our `nedarim-webhook` function;
+// this module parses/authenticates that CallBack.
 //
-// This module captures the request/response shapes + payload builders from their
-// public API docs (matara.pro/nedarimplus/ApiDocumentation.html) so the client-side
-// iframe wiring + a verify step can be built on top once we have test credentials.
-// MONEY CODE: nothing here is proven against production yet - do not enable blindly.
+// donation-create builds the pending transaction + hands the storefront the mosad,
+// ApiValid, our unique token (Param1) and the CallBack URL. See that function.
 
-/** Per-mosad credentials the nonprofit gets from Nedarim Plus. */
-export interface NedarimCredentials {
-  mosadId: string;          // מספר מוסד
-  apiValid?: string;        // required to save a card / set up הוראת קבע (issued by Nedarim Plus)
-  terminal?: string;        // מסוף / group, if the mosad uses more than one
+// Public iframe host (also the only allowed postMessage origin, client-side).
+export const NEDARIM_ORIGIN = "https://www.matara.pro";
+
+// Nedarim's CallBack is POSTed from these fixed source IPs (per their API docs).
+// The CallBack is NOT digitally signed, so authenticity rests on: (1) source IP,
+// (2) our unguessable single-use token echoed in Param1, (3) amount match.
+export const NEDARIM_CALLBACK_IPS = ["18.196.146.117", "18.194.219.73"];
+
+export interface NedarimCallback {
+  /** Our per-donation token (sent as Param1, echoed back). Null if absent. */
+  token: string | null;
+  /** Nedarim transaction id (ID on the iframe CallBack, TransactionId on the mosad IPN). */
+  transactionId: string | null;
+  /** true on a real successful charge. Nedarim only POSTs the CallBack on success,
+   *  but we still reject an explicit Error status defensively. */
+  approved: boolean;
+  /** Charged amount when the payload carries it (mosad-level IPN); 0 otherwise. */
+  amount: number;
+  /** Credit-company approval number (empty = temporary auth, not a real charge). */
+  confirmation: string | null;
+  lastNum: string | null;
 }
 
-export type NedarimTransactionType = "Ragil" | "HK"; // רגיל = one-time, HK = הוראת קבע (recurring)
-
-export interface NedarimChargeInput {
-  amount: number;           // in ILS
-  transactionType: NedarimTransactionType;
-  payments?: number;        // number of installments (תשלומים), default 1
-  donor: { name: string; email?: string; phone?: string; idNumber?: string };
-  comment?: string;         // e.g. campaign / dedication text
-  saveCard?: boolean;       // store the token for future הוראת קבע charges (needs apiValid)
-}
-
-// Fields the iframe's PostNedarim('FinishTransaction', payload) expects. Names follow
-// the Nedarim Plus DebitIframe docs; CONFIRM against the live account before enabling.
-export function buildIframePayload(creds: NedarimCredentials, o: NedarimChargeInput): Record<string, unknown> {
+// Parse the CallBack JSON. Handles both the per-transaction shape (Status/ID/
+// Confirmation/LastNum + Param1/Param2) and the richer mosad-level IPN shape
+// (TransactionId/Amount/...). Field names per the Nedarim Plus API docs.
+export function parseNedarimCallback(payload: any): NedarimCallback {
+  const p = payload ?? {};
+  const token = p.Param1 || p.Param2 || null;
+  const transactionId = p.ID != null ? String(p.ID) : (p.TransactionId != null ? String(p.TransactionId) : null);
+  const amountRaw = p.Amount ?? p.amount;
+  const amount = amountRaw != null && amountRaw !== "" ? Number(amountRaw) : 0;
+  const status = String(p.Status ?? "").toLowerCase();
+  const confirmation = p.Confirmation != null && String(p.Confirmation) !== "" ? String(p.Confirmation) : null;
+  // Success = not an explicit error. (Nedarim omits Status on the mosad IPN, which
+  // is sent only for successful transactions, so "no status" counts as success.)
+  const approved = status !== "error";
   return {
-    Mosad: creds.mosadId,
-    ApiValid: creds.apiValid ?? "",
-    PaymentType: o.transactionType,          // "Ragil" | "HK"
-    Amount: o.amount,
-    Tashlumim: o.payments ?? 1,
-    Zeout: o.donor.idNumber ?? "",           // ת"ז - needed for tax-credit reporting
-    FirstName: o.donor.name,
-    Email: o.donor.email ?? "",
-    Phone: o.donor.phone ?? "",
-    Groip: creds.terminal ?? "",
-    Comment: o.comment ?? "",
-    // A token/הוראת-קבע charge (recurring engine) uses the saved-card flow (ApiValid).
-    Tokef: o.saveCard ? "1" : "",
+    token,
+    transactionId,
+    approved,
+    amount: Number.isFinite(amount) ? amount : 0,
+    confirmation,
+    lastNum: p.LastNum != null ? String(p.LastNum) : null,
   };
 }
 
-/** Shape of the message posted back by the iframe (ReadPostMessage). */
-export interface NedarimTransactionResponse {
-  Status: "OK" | "Error" | string;
-  TransactionId?: string;
-  Token?: string;           // saved-card token for future הוראת קבע charges
-  Message?: string;
+// Extract the caller IP from the request (Supabase/Deno Deploy forwards it).
+export function callerIp(req: Request): string {
+  return (
+    req.headers.get("cf-connecting-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown"
+  );
 }
-
-export function parseTransactionResponse(raw: any): { ok: boolean; transactionId?: string; token?: string; error?: string } {
-  const r = (raw ?? {}) as NedarimTransactionResponse;
-  const ok = r.Status === "OK" && !!r.TransactionId;
-  return { ok, transactionId: r.TransactionId, token: r.Token, error: ok ? undefined : (r.Message || "nedarim_error") };
-}
-
-// Public iframe origin - used both to embed and to validate the postMessage source.
-export const NEDARIM_IFRAME_ORIGIN = "https://www.matara.pro";
-
-// NOTE: recurring (הוראת קבע) with Nedarim Plus can run on THEIR side once a card is
-// saved (PaymentType 'HK'), so the monthly charge doesn't need our own cron - the
-// platform bills and sends an IPN. Wire the IPN handler when enabling. Until then this
-// module is inert and the provider shows "בקרוב" in the UI.

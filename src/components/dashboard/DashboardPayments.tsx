@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CreditCard, ExternalLink, Mail, ShieldCheck, CircleCheck, Sparkles, ArrowRight, CheckCircle2, AlertTriangle, Pencil } from "lucide-react";
 import PayplusConnectForm from "@/components/payments/PayplusConnectForm";
 import IcountConnectForm from "@/components/payments/IcountConnectForm";
+import NedarimConnectForm from "@/components/payments/NedarimConnectForm";
 import PaymentApprovalKit from "@/components/payments/PaymentApprovalKit";
 import type { BusinessSettings } from "@/components/dashboard/DashboardSettings";
 import { PARTNER_LINKS } from "@/lib/partnerLinks";
@@ -26,13 +27,23 @@ const PROVIDERS = [
 ];
 
 // Providers with in-app automated checkout. Others show "coming soon".
-const CONNECTABLE = ["payplus", "icount"];
+const CONNECTABLE = ["payplus", "icount", "nedarimplus"];
+
+// Nedarim Plus is a donations gateway - only offered to nonprofits / synagogues.
+const DONATION_BUSINESS_TYPES = ["nonprofit", "synagogue"];
 
 const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
   const { t } = useLanguage();
   const { data: payplusCreds } = usePaymentCredentials(settings.id);
   const isConnected = !!(settings as any).payment_enabled || !!payplusCreds?.verified_at;
   const connectedProvider = (settings as any).payment_provider as string | undefined;
+
+  // Nonprofits / synagogues also get Nedarim Plus (donation gateway) as an option.
+  const bizType = (settings as any).business_type as string | undefined;
+  const showNedarim = !!bizType && DONATION_BUSINESS_TYPES.includes(bizType);
+  const visibleProviders = showNedarim
+    ? [...PROVIDERS, { id: "nedarimplus", name: "נדרים פלוס", domain: "matara.pro" }]
+    : PROVIDERS;
 
   // Progressive disclosure: one question at a time, so a non-technical merchant
   // isn't hit with a checklist + a wizard + 7 providers + API fields all at once.
@@ -46,7 +57,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
     else window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`${t("dash.payments.mailto_subject_prefix")} ${id}`)}`;
   };
 
-  const providerName = (id: string | null) => PROVIDERS.find((x) => x.id === id)?.name || "";
+  const providerName = (id: string | null) => visibleProviders.find((x) => x.id === id)?.name || "";
 
   return (
     <div className="p-4 md:p-6 max-w-xl" dir="rtl">
@@ -176,7 +187,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {PROVIDERS.map((p) => {
+            {visibleProviders.map((p) => {
               const canConnect = CONNECTABLE.includes(p.id);
               return (
                 <button
@@ -222,6 +233,13 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           {provider === "icount" && (
             settings.id
               ? <IcountConnectForm businessId={settings.id} />
+              : <p className="text-sm text-muted-foreground">{t("dash.payments.save_business_first")}</p>
+          )}
+
+          {/* Nedarim Plus donations: nonprofit/synagogue connects their own mosad. */}
+          {provider === "nedarimplus" && (
+            settings.id
+              ? <NedarimConnectForm businessId={settings.id} />
               : <p className="text-sm text-muted-foreground">{t("dash.payments.save_business_first")}</p>
           )}
 

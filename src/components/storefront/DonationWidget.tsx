@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useDonationCampaigns, useSection46Enabled } from "@/hooks/useDonations";
 import { useLanguage } from "@/contexts/LanguageContext";
+import NedarimCheckout from "./NedarimCheckout";
+import type { NedarimIframeParams } from "@/lib/nedarim";
 
 /**
  * Storefront donation widget. One-time gift with amount presets (the merchant's
@@ -28,6 +30,9 @@ const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; d
   const [anonymous, setAnonymous] = useState(false);
   const [campaignId, setCampaignId] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
+  // When the store's gateway is Nedarim Plus, donation-create returns iframe params
+  // instead of a redirect link; we render NedarimCheckout in place of the form.
+  const [nedarim, setNedarim] = useState<NedarimIframeParams | null>(null);
 
   const finalAmount = custom ? Number(custom) : amount;
 
@@ -48,9 +53,28 @@ const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; d
     });
     setLoading(false);
     if (error || (data as { error?: string })?.error) { toast.error(t("store.donation.toast_error")); return; }
-    if ((data as { paymentUrl?: string })?.paymentUrl) { window.location.href = (data as { paymentUrl: string }).paymentUrl; return; }
+    const d = data as { mode?: string; paymentUrl?: string; mosad?: string; apiValid?: string; token?: string; callbackUrl?: string; callbackMailError?: string };
+    if (d?.mode === "nedarim_iframe" && d.mosad && d.apiValid && d.token && d.callbackUrl) {
+      const campaignTitle = campaigns.find((c) => c.id === campaignId)?.title;
+      setNedarim({
+        mosad: d.mosad, apiValid: d.apiValid, token: d.token, callbackUrl: d.callbackUrl,
+        callbackMailError: d.callbackMailError,
+        amount: finalAmount, donor: { ...donor, idNumber: anonymous ? "" : donor.idNumber },
+        category: campaignTitle, comment: campaignTitle,
+      });
+      return;
+    }
+    if (d?.paymentUrl) { window.location.href = d.paymentUrl; return; }
     toast.success(t("store.donation.toast_thank_you"));
   };
+
+  if (nedarim) {
+    return (
+      <section className="max-w-5xl mx-auto px-4 py-8">
+        <NedarimCheckout params={nedarim} onCancel={() => setNedarim(null)} />
+      </section>
+    );
+  }
 
   return (
     <section className="max-w-5xl mx-auto px-4 py-8 grid lg:grid-cols-5 gap-6">

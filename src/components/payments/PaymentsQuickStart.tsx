@@ -14,7 +14,7 @@ interface Provider { id: string; name: string; domain: string; blurb: string; ur
 // Marked "בקרוב" - the integration is built server-side but stays off until a real
 // nonprofit connects and we run a live test charge (money = verify, never assume).
 const COMMUNITY_PROVIDERS: Provider[] = [
-  { id: "nedarimplus", name: "נדרים פלוס", domain: "nedarimplus.com", blurb: "סליקה + הוראת קבע לעמותות ובתי כנסת", url: "https://www.matara.pro/nedarimplus/", comingSoon: true },
+  { id: "nedarimplus", name: "נדרים פלוס", domain: "nedarimplus.com", blurb: "סליקה + הוראת קבע לעמותות ובתי כנסת", url: "https://www.matara.pro/nedarimplus/" },
   { id: "kehilot", name: "קהילות", domain: "kehilot.co.il", blurb: "ניהול קהילה + תשלומים", url: "#", comingSoon: true },
 ];
 

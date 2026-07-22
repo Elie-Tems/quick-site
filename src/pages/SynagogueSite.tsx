@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Clock, ScrollText } from "lucide-react";
+import NedarimCheckout from "@/components/storefront/NedarimCheckout";
+import type { NedarimIframeParams } from "@/lib/nedarim";
 
 /**
  * Public shul site (אתר בית הכנסת) + member self-service. Shows live prayer times +
@@ -24,6 +26,7 @@ const SynagogueSite = () => {
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [looking, setLooking] = useState(false);
   const [paying, setPaying] = useState<string | null>(null);
+  const [nedarim, setNedarim] = useState<NedarimIframeParams | null>(null);
 
   const loadTimes = useCallback(async () => {
     const { data } = await supabase.functions.invoke("synagogue-zmanim", { body: { slug } });
@@ -51,9 +54,19 @@ const SynagogueSite = () => {
       body: { businessId, amount: Number(p.amount), pledgeId: p.id, donor: { name: name || p.member_name, phone } },
     });
     setPaying(null);
-    const url = (data as any)?.paymentUrl;
-    if (error || !url) { alert("לא ניתן לפתוח תשלום כרגע"); return; }
-    window.location.href = url;
+    const d = data as any;
+    // Nedarim Plus: charge inside our embedded iframe instead of redirecting.
+    if (d?.mode === "nedarim_iframe" && d.mosad && d.apiValid && d.token && d.callbackUrl) {
+      setNedarim({
+        mosad: d.mosad, apiValid: d.apiValid, token: d.token, callbackUrl: d.callbackUrl,
+        callbackMailError: d.callbackMailError,
+        amount: Number(p.amount), donor: { name: name || p.member_name, phone },
+        category: p.label || p.pledge_type, comment: p.label || p.pledge_type,
+      });
+      return;
+    }
+    if (error || !d?.paymentUrl) { alert("לא ניתן לפתוח תשלום כרגע"); return; }
+    window.location.href = d.paymentUrl;
   };
 
   const zRow = (k: string, label: string) => (
@@ -62,6 +75,14 @@ const SynagogueSite = () => {
       <div className="text-base font-bold text-emerald-900">{z?.zmanim?.[k] ?? "--:--"}</div>
     </div>
   );
+
+  if (nedarim) {
+    return (
+      <div dir="rtl" className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-8">
+        <NedarimCheckout params={nedarim} onCancel={() => setNedarim(null)} />
+      </div>
+    );
+  }
 
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">

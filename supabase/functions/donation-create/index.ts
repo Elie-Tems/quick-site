@@ -14,6 +14,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getProvider } from "../_shared/payments/registry.ts";
+import { NEDARIM_ORIGIN } from "../_shared/payments/nedarimplus.ts";
 import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
@@ -69,6 +70,55 @@ Deno.serve(async (req) => {
   if (!business) return json({ error: "Organization not found" }, 404);
   if (!business.payment_enabled) {
     return json({ error: "Online donations are not enabled for this organization" }, 400);
+  }
+
+  // ── Nedarim Plus (נדרים פלוס): iframe gateway, not a hosted-page provider ──
+  // We don't ask for a payment link. Instead we create the pending donation and
+  // hand the storefront the mosad + ApiValid + a unique token + our CallBack URL;
+  // its embedded iframe charges the card and Nedarim POSTs the result to
+  // nedarim-webhook (server-authoritative). Kept out of the getProvider() path.
+  if ((business.payment_provider || "").toLowerCase() === "nedarimplus") {
+    const { data: ncreds } = await admin.from("payment_credentials")
+      .select("page_uid, config").eq("business_id", businessId).eq("provider", "nedarimplus").maybeSingle();
+    const nconf = (ncreds?.config ?? {}) as Record<string, unknown>;
+    const mosad = (ncreds?.page_uid || (nconf.mosad_id as string) || "").toString().trim();
+    const apiValid = ((nconf.api_valid as string) || "").toString().trim();
+    if (!mosad || !apiValid) return json({ error: "Donation payment is not configured" }, 400);
+
+    const dedupN = (donor.email || donor.phone || donor.name).trim().toLowerCase();
+    const { data: contactN, error: cErrN } = await admin.from("contacts")
+      .upsert({ business_id: businessId, name: donor.name, phone: donor.phone || null,
+        email: donor.email || null, source: "donation", dedup_key: dedupN },
+        { onConflict: "business_id,dedup_key" })
+      .select("id").single();
+    if (cErrN) return json({ error: "Could not save donor", detail: cErrN.message }, 500);
+
+    const section46N = business.section46_enabled === true;
+    const token = crypto.randomUUID();
+    const detailsN: Record<string, unknown> = {
+      recurring, frequency: recurring ? "monthly" : "once",
+      campaign_id: campaignId ?? null, section46_eligible: section46N,
+      pledge_id: body.pledgeId ?? null,
+      donor_name: donor.name, donor_email: donor.email ?? null, donor_phone: donor.phone ?? null,
+      donor_id_number: donor.anonymous ? null : (donor.idNumber ?? null),
+      donor_anonymous: !!donor.anonymous,
+      gateway: "nedarimplus", page_request_uid: token,
+    };
+    const { data: txnN, error: tErrN } = await admin.from("transactions").insert({
+      business_id: businessId, contact_id: contactN.id, kind: "donation",
+      amount, currency: "ILS", status: "pending", source_table: "donations", details: detailsN,
+    }).select("id").single();
+    if (tErrN || !txnN) return json({ error: "Could not create donation", detail: tErrN?.message }, 500);
+
+    return json({
+      ok: true, mode: "nedarim_iframe", transactionId: txnN.id,
+      mosad, apiValid, token, iframeOrigin: NEDARIM_ORIGIN,
+      callbackUrl: `${supabaseUrl}/functions/v1/nedarim-webhook`,
+      // Dev alert address if Nedarim can't deliver the CallBack (required by their
+      // test mosad; optional in production - falls back to the mosad's admins).
+      callbackMailError: Deno.env.get("NEDARIM_ALERT_EMAIL") || "",
+      recurring,
+    });
   }
 
   const provider = getProvider(business.payment_provider);

@@ -204,6 +204,10 @@ verify_jwt = false
 verify_jwt = false
 [functions.donation-callback]
 verify_jwt = false
+# Nedarim Plus server-to-server CallBack (IPN). Nedarim can't send a Supabase JWT;
+# authenticated by source IP + our unguessable single-use token.
+[functions.nedarim-webhook]
+verify_jwt = false
 # calendar-oauth-callback is Google's OAuth redirect (no JWT); authenticated by a
 # signed state. calendar-sync runs from cron (CRON_SECRET) or a merchant JWT.
 [functions.calendar-oauth-callback]
