@@ -22,25 +22,31 @@ export const NEDARIM_CALLBACK_IPS = ["18.196.146.117", "18.194.219.73"];
 export interface NedarimCallback {
   /** Our per-donation token (sent as Param1, echoed back). Null if absent. */
   token: string | null;
-  /** Nedarim transaction id (ID on the iframe CallBack, TransactionId on the mosad IPN). */
+  /** Nedarim id: transaction id for a one-time gift, KevaId for a standing order. */
   transactionId: string | null;
+  /** Standing-order (הוראת קבע / HK) id when this CallBack is a recurring setup. */
+  kevaId: string | null;
   /** true on a real successful charge. Nedarim only POSTs the CallBack on success,
    *  but we still reject an explicit Error status defensively. */
   approved: boolean;
   /** Charged amount when the payload carries it (mosad-level IPN); 0 otherwise. */
   amount: number;
-  /** Credit-company approval number (empty = temporary auth, not a real charge). */
+  /** Credit-company approval number (empty = temporary auth, not a real charge).
+   *  Absent for a הו"ק setup (no immediate charge) - use kevaId to confirm those. */
   confirmation: string | null;
   lastNum: string | null;
 }
 
-// Parse the CallBack JSON. Handles both the per-transaction shape (Status/ID/
-// Confirmation/LastNum + Param1/Param2) and the richer mosad-level IPN shape
-// (TransactionId/Amount/...). Field names per the Nedarim Plus API docs.
+// Parse the CallBack JSON. Handles the per-transaction shape (Status/ID/
+// Confirmation/LastNum + Param1/Param2), the הו"ק-setup shape (KevaId/Amount/
+// NextDate), and the richer mosad-level IPN (TransactionId/Amount/...). Field
+// names per the Nedarim Plus API docs.
 export function parseNedarimCallback(payload: any): NedarimCallback {
   const p = payload ?? {};
   const token = p.Param1 || p.Param2 || null;
-  const transactionId = p.ID != null ? String(p.ID) : (p.TransactionId != null ? String(p.TransactionId) : null);
+  const kevaId = p.KevaId != null && String(p.KevaId) !== "" ? String(p.KevaId) : null;
+  const transactionId = p.ID != null ? String(p.ID)
+    : (p.TransactionId != null ? String(p.TransactionId) : kevaId);
   const amountRaw = p.Amount ?? p.amount;
   const amount = amountRaw != null && amountRaw !== "" ? Number(amountRaw) : 0;
   const status = String(p.Status ?? "").toLowerCase();
@@ -51,6 +57,7 @@ export function parseNedarimCallback(payload: any): NedarimCallback {
   return {
     token,
     transactionId,
+    kevaId,
     approved,
     amount: Number.isFinite(amount) ? amount : 0,
     confirmation,

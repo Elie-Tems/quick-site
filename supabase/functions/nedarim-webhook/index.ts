@@ -60,9 +60,12 @@ Deno.serve(async (req) => {
 
   const now = new Date().toISOString();
 
-  // A CallBack is sent only for a successful charge; reject an explicit Error and a
-  // temporary auth (no confirmation number = not actually captured).
-  const approved = cb.approved && cb.confirmation !== null;
+  // A CallBack is sent only on success. For a ONE-TIME gift, require a credit
+  // confirmation number (a temporary auth with no confirmation isn't a real charge).
+  // For a RECURRING setup (הוראת קבע / HK) there is no immediate charge - success is
+  // the standing order being created, i.e. a KevaId/transaction id came back.
+  const isRecurring = !!(txn.details as { recurring?: boolean } | null)?.recurring;
+  const approved = cb.approved && (isRecurring ? cb.transactionId !== null : cb.confirmation !== null);
   if (!approved) {
     await admin.from("transactions").update({ status: "failed" }).eq("id", txn.id);
     return json({ ok: true, approved: false });
@@ -80,6 +83,7 @@ Deno.serve(async (req) => {
   const paidDetails: Record<string, unknown> = {
     ...(txn.details ?? {}),
     transaction_uid: cb.transactionId,
+    keva_id: cb.kevaId,            // standing-order id, for recurring gifts
     confirmation: cb.confirmation,
     last_num: cb.lastNum,
     paid_at: now,

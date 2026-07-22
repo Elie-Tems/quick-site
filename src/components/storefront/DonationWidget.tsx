@@ -33,6 +33,7 @@ const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; d
   // When the store's gateway is Nedarim Plus, donation-create returns iframe params
   // instead of a redirect link; we render NedarimCheckout in place of the form.
   const [nedarim, setNedarim] = useState<NedarimIframeParams | null>(null);
+  const [recurring, setRecurring] = useState(false); // monthly standing order (הו"ק)
 
   const finalAmount = custom ? Number(custom) : amount;
 
@@ -49,7 +50,7 @@ const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; d
     }
     setLoading(true);
     const { data, error } = await supabase.functions.invoke("donation-create", {
-      body: { businessId, amount: finalAmount, campaignId, donor: { ...donor, anonymous } },
+      body: { businessId, amount: finalAmount, campaignId, recurring, donor: { ...donor, anonymous } },
     });
     setLoading(false);
     if (error || (data as { error?: string })?.error) { toast.error(t("store.donation.toast_error")); return; }
@@ -60,7 +61,7 @@ const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; d
         mosad: d.mosad, apiValid: d.apiValid, token: d.token, callbackUrl: d.callbackUrl,
         callbackMailError: d.callbackMailError,
         amount: finalAmount, donor: { ...donor, idNumber: anonymous ? "" : donor.idNumber },
-        category: campaignTitle, comment: campaignTitle,
+        category: campaignTitle, comment: campaignTitle, recurring,
       });
       return;
     }
@@ -91,6 +92,22 @@ const DonationWidget = ({ businessId, donationAmounts }: { businessId: string; d
             ))}
           </div>
           <Input placeholder={t("store.donation.custom_amount_placeholder")} value={custom} onChange={(e) => setCustom(e.target.value)} className="mb-3" />
+
+          {/* Monthly recurring (הוראת קבע). Charged by the merchant's gateway each month. */}
+          <button
+            type="button"
+            onClick={() => setRecurring((r) => !r)}
+            aria-pressed={recurring}
+            className={`w-full flex items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 mb-3 text-right transition-colors ${recurring ? "border-primary bg-primary/5" : "border-border"}`}
+          >
+            <span>
+              <span className="block text-sm font-semibold text-foreground">תרומה חודשית קבועה</span>
+              <span className="block text-[11px] text-muted-foreground">חיוב אוטומטי בכל חודש · אפשר לבטל בכל עת</span>
+            </span>
+            <span className={`relative w-10 h-6 rounded-full shrink-0 transition-colors ${recurring ? "bg-primary" : "bg-muted"}`}>
+              <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${recurring ? "right-0.5" : "right-[1.125rem]"}`} />
+            </span>
+          </button>
 
           <div className="space-y-2 mb-4">
             <Input placeholder={t("store.donation.name_placeholder")} value={donor.name} onChange={(e) => setDonor({ ...donor, name: e.target.value })} />
