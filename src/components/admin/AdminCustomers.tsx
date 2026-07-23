@@ -328,22 +328,42 @@ const AdminCustomers = () => {
   const { data: customers, isLoading } = useQuery({
     queryKey: ["admin-customers"],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase
-        .from("profiles")
+      // Query from businesses (admin has full access) and join profile data.
+      // This ensures merchants who created a store appear even if their profile
+      // is hidden by RLS when querying profiles directly.
+      const { data: businesses, error } = await supabase
+        .from("businesses")
         .select(`
-          id, user_id, full_name, email, phone, created_at, onboarding_completed_at, status,
-          businesses (
-            id, name, slug, is_published, business_category, created_at
+          id, name, slug, is_published, business_category, created_at,
+          profiles (
+            id, user_id, full_name, email, phone, created_at, onboarding_completed_at, status
           )
         `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      return (profiles ?? []).map((p: any) => ({
-        ...p,
-        business: p.businesses?.[0] ?? null,
-      })) as CustomerRow[];
+      return (businesses ?? []).map((b: any) => {
+        const p = Array.isArray(b.profiles) ? (b.profiles[0] ?? {}) : (b.profiles ?? {});
+        return {
+          id: p.id ?? b.id,
+          user_id: p.user_id ?? "",
+          full_name: p.full_name ?? null,
+          email: p.email ?? b.email ?? null,
+          phone: p.phone ?? null,
+          created_at: p.created_at ?? b.created_at,
+          onboarding_completed_at: p.onboarding_completed_at ?? null,
+          status: p.status ?? null,
+          business: {
+            id: b.id,
+            name: b.name,
+            slug: b.slug,
+            is_published: b.is_published,
+            business_category: b.business_category,
+            created_at: b.created_at,
+          },
+        } as CustomerRow;
+      });
     },
   });
 
@@ -353,7 +373,7 @@ const AdminCustomers = () => {
     return (
       c.full_name?.toLowerCase().includes(s) ||
       c.email?.toLowerCase().includes(s) ||
-      c.business?.business_name?.toLowerCase().includes(s) ||
+      c.business?.name?.toLowerCase().includes(s) ||
       c.business?.slug?.toLowerCase().includes(s)
     );
   });
