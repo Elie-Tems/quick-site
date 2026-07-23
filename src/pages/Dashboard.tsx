@@ -33,7 +33,6 @@ import DashboardSubscription from "@/components/dashboard/DashboardSubscription"
 import DashboardAIImages from "@/components/dashboard/DashboardAIImages";
 import DashboardAIGeneratedImages from "@/components/dashboard/DashboardAIGeneratedImages";
 import DashboardVisualizationStudio from "@/components/dashboard/DashboardVisualizationStudio";
-import DashboardTour, { hasSeenTour } from "@/components/dashboard/DashboardTour";
 import DashboardShipping from "@/components/dashboard/DashboardShipping";
 import DashboardPayments from "@/components/dashboard/DashboardPayments";
 import DashboardUsage from "@/components/dashboard/DashboardUsage";
@@ -603,11 +602,6 @@ const Dashboard = () => {
     verticalModules.includes("listings") ? t("dash.verticals.listings") :
     verticalModules.includes("donations") ? t("dash.verticals.donations") : undefined;
 
-  // First-visit guided tour of the dashboard (shown once per merchant).
-  const [showTour, setShowTour] = useState(false);
-  useEffect(() => {
-    if (business?.id && !hasSeenTour()) setShowTour(true);
-  }, [business?.id]);
 
   // Show loading state
   // Show the loader until we have a DEFINITIVE businesses result. Includes the window
@@ -954,7 +948,6 @@ const Dashboard = () => {
   return (
     <ThemeProvider>
       <SEOHead title="לוח ניהול | סיאנגו" noindex={true} />
-      {showTour && <DashboardTour onClose={() => setShowTour(false)} />}
       <PostLaunchPopups
         businessId={business?.id}
         onNavigate={goToView}

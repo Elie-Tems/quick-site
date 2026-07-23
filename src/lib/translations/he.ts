@@ -1265,7 +1265,7 @@ const he: Record<string, string> = {
   'dash.content.loading': 'טוען...',
   'dash.content.page_title': 'תוכן האתר',
   'dash.content.view_store': 'ראו את החנות',
-  'dash.content.tab.hero': 'כותרת ראשית',
+  'dash.content.tab.hero': 'עמוד הבית',
   'dash.content.tab.labels': 'כותרות סקשנים',
   'dash.content.tab.rabbi': 'דבר הרב',
   'dash.content.tab.hosting': 'מדיניות אירוח',
