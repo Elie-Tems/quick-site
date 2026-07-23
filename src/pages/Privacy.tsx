@@ -4,11 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Shield, Database, Eye, UserCog, Mail } from 'lucide-react';
 
 const PrivacyPage = () => {
-  const currentDate = new Date().toLocaleDateString('he-IL', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const currentDate = 'יולי 2026';
 
   return (
     <>
@@ -89,12 +85,25 @@ const PrivacyPage = () => {
               </p>
               <ul className="space-y-2 text-muted-foreground">
                 <li><strong>Google Analytics:</strong> לניתוח תעבורת האתר ודפוסי שימוש.</li>
-                <li><strong>ספקי תשלום:</strong> לעיבוד תשלומים מאובטח (כגון iCredit, Cardcom, PayPal).</li>
+                <li><strong>ספקי סליקה ותשלום:</strong> לעיבוד תשלומים מאובטח — ביניהם PayPlus, CardCom, iCredit וספקים נוספים בהתאם לאמצעי התשלום שנבחר. פרטי כרטיס האשראי אינם נשמרים בשרתי החברה בשום שלב.</li>
                 <li><strong>WhatsApp:</strong> אם הופעלה אינטגרציה עם וואטסאפ עסקי.</li>
-                <li><strong>ספקי אירוח:</strong> לאחסון ואבטחת הנתונים.</li>
+                <li><strong>תשתית ואחסון:</strong> Supabase Inc. (ארה"ב) — שירות מסד הנתונים; Cloudflare Inc. (ארה"ב) — שירות אבטחה והגשת תוכן; Resend Inc. (ארה"ב) — משלוח הודעות דואר אלקטרוני. חברות אלה עומדות בתקני הגנת מידע בינלאומיים ומשמשות כ"מעבדים" בלבד — הן אינן רשאיות לעשות שימוש עצמאי במידע.</li>
+                <li><strong>שירותי בינה מלאכותית:</strong> כאשר הינכם משתמשים בכלי יצירת התוכן האוטומטי של הפלטפורמה, תוכן שהזנתם (כגון שם העסק, תיאור קצר, סוג העסק) עשוי להישלח לספק AI חיצוני לצורך עיבוד. אין שליחת נתונים אישיים מזהים של לקוחות קצה לשירות זה.</li>
               </ul>
               <p className="text-muted-foreground mt-4">
                 אנו לא מוכרים או משכירים את המידע האישי שלכם לצדדים שלישיים.
+              </p>
+            </section>
+
+            {/* End customers */}
+            <section>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">מידע על לקוחות עסקים המשתמשים בפלטפורמה</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                בעלי עסקים הפועלים באמצעות פלטפורמת סיאנגו אוספים מידע מלקוחותיהם (שם, טלפון, פרטי הזמנה) לשם מתן השירות.
+                מידע זה מאוחסן בשרתי החברה אך שייך לבעל העסק. החברה אינה עושה שימוש עצמאי במידע זה, אינה מוכרת אותו
+                ואינה חושפת אותו לצדדים שלישיים מלבד הצרכים הטכניים של אספקת השירות כמפורט לעיל.
+                לקוח קצה המבקש לממש זכויות לגבי המידע שלו מוזמן לפנות ישירות לעסק שאיתו התקשר, או אלינו בכתובת{' '}
+                <a href="mailto:office@siango.app" className="text-primary hover:underline" dir="ltr">office@siango.app</a>.
               </p>
             </section>
 
@@ -120,6 +129,7 @@ const PrivacyPage = () => {
                 <li><strong>זכות תיקון:</strong> לבקש תיקון מידע שגוי או לא מעודכן.</li>
                 <li><strong>זכות מחיקה:</strong> לבקש מחיקת המידע שלכם מהמערכת.</li>
                 <li><strong>זכות התנגדות:</strong> להתנגד לעיבוד המידע למטרות שיווק.</li>
+                <li><strong>זכות תלונה:</strong> אם סברתם כי זכויותיכם הופרו, תוכלו לפנות לרשות הגנת הפרטיות בישראל בכתובת <a href="https://www.gov.il/he/departments/the_privacy_protection_authority" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">gov.il/privacy</a>.</li>
               </ul>
             </section>
 
