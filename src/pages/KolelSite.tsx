@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Heart, BookOpen, Image, Phone, Mail, MapPin } from "lucide-react";
+import { Loader2, Heart, BookOpen, Image, Phone, Mail, MapPin, ScrollText, Newspaper } from "lucide-react";
 import DonationWidget from "@/components/storefront/DonationWidget";
 
 /**
@@ -9,6 +9,18 @@ import DonationWidget from "@/components/storefront/DonationWidget";
  * Shows: hero + story, about/rosh kolel word, gallery, Torah articles, donation CTA.
  * Route: /kolel/:slug
  */
+
+interface KolelFeatures {
+  rosh_message?: boolean;
+  gallery?: boolean;
+  shiurim?: boolean;
+  youtube_url?: string;
+  parasha?: boolean;
+  newsletter?: boolean;
+  newsletter_name?: string;
+  events?: boolean;
+  ask_rabbi?: boolean;
+}
 
 interface Biz {
   id: string;
@@ -23,6 +35,7 @@ interface Biz {
   address: string | null;
   content_sections: ContentSection[] | null;
   gallery_images: GalleryImage[] | null;
+  enabled_features: KolelFeatures | null;
 }
 
 interface ContentSection {
@@ -48,7 +61,7 @@ const KolelSite = () => {
     const load = async () => {
       const { data } = await (supabase as any)
         .from("businesses")
-        .select("id, name, tagline, about_text, logo, hero_image_url, primary_color, phone, email, address, content_sections, gallery_images")
+        .select("id, name, tagline, about_text, logo, hero_image_url, primary_color, phone, email, address, content_sections, gallery_images, enabled_features")
         .eq("slug", slug)
         .eq("is_published", true)
         .maybeSingle();
@@ -72,8 +85,14 @@ const KolelSite = () => {
   );
 
   const primary = biz.primary_color || "#5c4a2a";
+  const f = biz.enabled_features || {};
+  // If enabled_features is empty (old record / no features set), show everything by default
+  const noConfig = Object.keys(f).length === 0;
+  const show = (key: keyof KolelFeatures) => noConfig || !!f[key];
+
   const articles = (biz.content_sections || []).filter(s => s.type === "article" || !s.type);
   const gallery = biz.gallery_images || [];
+  const roshSection = (biz.content_sections || []).find(s => s.type === "rosh_message");
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans" dir="rtl">
@@ -102,7 +121,7 @@ const KolelSite = () => {
         </button>
       </section>
 
-      {/* About / Story */}
+      {/* About / Story — always shown */}
       {biz.about_text && (
         <section className="max-w-3xl mx-auto px-6 py-16">
           <h2 className="text-2xl font-bold text-stone-800 mb-5 flex items-center gap-2">
@@ -113,8 +132,23 @@ const KolelSite = () => {
         </section>
       )}
 
+      {/* Rosh message */}
+      {show("rosh_message") && roshSection && (
+        <section className="bg-stone-100 py-14 px-6">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
+              <ScrollText className="w-6 h-6" style={{ color: primary }} />
+              {roshSection.title || "דבר ראש הישיבה"}
+            </h2>
+            <blockquote className="text-stone-700 text-lg leading-relaxed whitespace-pre-line border-r-4 pr-5" style={{ borderColor: primary }}>
+              {roshSection.body}
+            </blockquote>
+          </div>
+        </section>
+      )}
+
       {/* Gallery */}
-      {gallery.length > 0 && (
+      {show("gallery") && gallery.length > 0 && (
         <section className="bg-stone-100 py-14 px-6">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-2xl font-bold text-stone-800 mb-8 flex items-center gap-2">
@@ -132,8 +166,55 @@ const KolelSite = () => {
         </section>
       )}
 
-      {/* Torah articles */}
-      {articles.length > 0 && (
+      {/* Shiurim / YouTube */}
+      {show("shiurim") && f.youtube_url && (
+        <section className="max-w-3xl mx-auto px-6 py-16">
+          <h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
+            <BookOpen className="w-6 h-6" style={{ color: primary }} />
+            שיעורי תורה
+          </h2>
+          <a
+            href={f.youtube_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white px-5 py-4 hover:shadow-md transition-shadow text-stone-800 font-medium"
+          >
+            <svg className="w-8 h-8 shrink-0" viewBox="0 0 24 24" fill="#FF0000"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1C4.5 20.5 12 20.5 12 20.5s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg>
+            לערוץ השיעורים שלנו ביוטיוב
+          </a>
+        </section>
+      )}
+
+      {/* Newsletter signup */}
+      {show("newsletter") && (
+        <section className="py-12 px-6" style={{ background: `${primary}0d` }}>
+          <div className="max-w-xl mx-auto text-center">
+            <Newspaper className="w-8 h-8 mx-auto mb-3" style={{ color: primary }} />
+            <h2 className="text-xl font-bold text-stone-800 mb-1">
+              {f.newsletter_name || "הירשמו לניוזלטר השבועי"}
+            </h2>
+            <p className="text-stone-500 text-sm mb-5">קבלו פרשת שבוע ועדכונים מהמוסד ישירות למייל</p>
+            <div className="flex gap-2 max-w-sm mx-auto">
+              <input
+                type="email"
+                placeholder="כתובת המייל שלך"
+                dir="ltr"
+                className="flex-1 h-10 px-3 rounded-lg border border-stone-300 text-sm focus:outline-none focus:ring-2 bg-white"
+                style={{ "--tw-ring-color": primary } as React.CSSProperties}
+              />
+              <button
+                className="px-4 py-2 rounded-lg text-white text-sm font-semibold shrink-0"
+                style={{ background: primary }}
+              >
+                הרשמה
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Torah articles / shiurim text */}
+      {show("shiurim") && articles.length > 0 && (
         <section className="max-w-3xl mx-auto px-6 py-16">
           <h2 className="text-2xl font-bold text-stone-800 mb-8 flex items-center gap-2">
             <BookOpen className="w-6 h-6" style={{ color: primary }} />

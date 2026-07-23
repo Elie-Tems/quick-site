@@ -240,6 +240,7 @@ export function useCreateBusiness() {
             // ברירות מחדל מפורשות לחלקים אופציונליים - כולם מכובים
             marquee_bar_enabled: false,
             hero_badge: null,
+            enabled_features: data.kolelFeatures ? JSON.parse(JSON.stringify(data.kolelFeatures)) : {},
           } as any)
           .select('id')
           .single();

@@ -8,6 +8,7 @@ import { AuroraBg, Card, PreviewLogo, PreviewThemeRoot, ThemeToggle } from "@/co
 import StepBusinessType from "@/components/onboarding/StepBusinessType";
 import StepIdentity from "@/components/onboarding/StepIdentity";
 import StepContentAI from "@/components/onboarding/StepContentAI";
+import StepKolelFeatures from "@/components/onboarding/StepKolelFeatures";
 import StepContact from "@/components/onboarding/StepContact";
 import StepProducts from "@/components/onboarding/StepProducts";
 import StepBannerUpload from "@/components/onboarding/StepBannerUpload";
@@ -141,6 +142,19 @@ export interface OnboardingData {
   aboutText?: string;
   heroBenefits?: string;
   promoText?: string;
+
+  // Kolel / synagogue optional site sections
+  kolelFeatures?: {
+    rosh_message: boolean;
+    gallery: boolean;
+    shiurim: boolean;
+    youtube_url?: string;
+    parasha: boolean;
+    newsletter: boolean;
+    newsletter_name?: string;
+    events: boolean;
+    ask_rabbi: boolean;
+  };
 
   // Step 6: Payments
   paymentProvider?: "payplus" | "icredit" | "cardcom" | "paypal" | null;
@@ -482,6 +496,9 @@ const Onboarding = () => {
       case 4:
         return <StepContact data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 5:
+        if (data.businessType === 'kolel' || data.businessType === 'synagogue') {
+          return <StepKolelFeatures data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+        }
         return <StepProducts data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       case 6:
         return <StepBannerUpload data={data} updateData={updateData} onNext={() => handleFinish(data)} onBack={prevStep} />;
