@@ -27,83 +27,111 @@ const PALETTE_PRESETS = [
   { key: "brown", primary: "#92400e" },
 ];
 
-// Realistic mini-store thumbnail: looks like an actual storefront so merchants
-// can understand the vibe at a glance without needing to imagine.
+// Layout type labels shown as a chip on each template card
+const LAYOUT_LABELS: Record<string, string> = {
+  'split': 'פיצול',
+  'centered': 'גרדיאנט',
+  'full-image': 'תמונה מלאה',
+};
+
+// Mini-store thumbnail: communicates layout structure + color palette clearly.
 function TemplateThumb({ t }: { t: StoreTemplate }) {
-  const { backgroundColor: bg, cardColor: card, primaryColor: primary, foregroundColor: fg, accentColor: accent, borderRadius } = t.theme;
+  const { backgroundColor: bg, cardColor: card, primaryColor: primary, foregroundColor: fg, accentColor: accent } = t.theme;
   const layout = t.heroStyle.layout;
-  // Scale down border-radius for the tiny preview
-  const r = parseInt(borderRadius) > 12 ? '6px' : parseInt(borderRadius) > 6 ? '3px' : parseInt(borderRadius) > 0 ? '2px' : '0px';
-  const productColors = [accent, primary, `${accent}99`];
+  const r = '3px';
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden" style={{ background: bg }}>
 
       {/* ── Navbar ── */}
-      <div className="flex items-center justify-between px-2 shrink-0" style={{ height: '14px', background: card, borderBottom: `1px solid ${fg}15` }}>
-        {/* Logo */}
-        <div className="h-2 w-8 rounded-sm" style={{ background: primary, borderRadius: '1px' }} />
-        {/* Nav links */}
+      <div className="flex items-center justify-between px-2 shrink-0" style={{ height: '12px', background: card, borderBottom: `1px solid ${fg}20` }}>
+        <div className="h-1.5 w-7 rounded-sm" style={{ background: primary }} />
         <div className="flex gap-1">
-          {[3, 4, 3].map((w, i) => (
-            <div key={i} className="h-1 rounded-sm" style={{ width: `${w * 2}px`, background: `${fg}28` }} />
+          {[6, 8, 5].map((w, i) => (
+            <div key={i} className="h-1 rounded-sm" style={{ width: `${w}px`, background: `${fg}30` }} />
           ))}
         </div>
-        {/* Cart icon placeholder */}
-        <div className="h-2.5 w-2.5 rounded-sm" style={{ background: `${fg}18` }} />
+        <div className="flex gap-1">
+          <div className="h-2 w-2 rounded-sm" style={{ background: `${fg}20` }} />
+          <div className="h-2 w-2 rounded-sm" style={{ background: `${fg}20` }} />
+        </div>
       </div>
 
       {/* ── Hero ── */}
       {layout === 'split' ? (
-        <div className="flex shrink-0" style={{ height: '54px' }}>
-          <div className="w-[46%] flex flex-col justify-center gap-0.5 px-2 shrink-0" style={{ background: primary }}>
-            <div className="h-1 rounded-sm bg-white/40" style={{ width: '55%' }} />
-            <div className="h-1.5 rounded-sm bg-white/85" style={{ width: '80%' }} />
-            <div className="h-2 mt-1 flex items-center px-1.5 rounded-sm" style={{ width: '50%', background: 'rgba(255,255,255,0.25)', borderRadius: r }}>
-              <div className="h-0.5 w-full rounded-sm bg-white/70" />
+        <div className="flex shrink-0" style={{ height: '58px' }}>
+          {/* Text side */}
+          <div className="flex flex-col justify-center gap-1 px-2 shrink-0" style={{ width: '48%', background: primary }}>
+            <div className="rounded-sm" style={{ height: '1.5px', width: '50%', background: 'rgba(255,255,255,0.45)' }} />
+            <div className="rounded-sm" style={{ height: '3px', width: '85%', background: 'rgba(255,255,255,0.9)' }} />
+            <div className="rounded-sm" style={{ height: '1.5px', width: '70%', background: 'rgba(255,255,255,0.5)' }} />
+            <div className="rounded-sm mt-1" style={{ height: '6px', width: '46%', background: 'rgba(255,255,255,0.28)', borderRadius: r }}>
+              <div className="h-full flex items-center justify-center">
+                <div className="rounded-sm" style={{ height: '1.5px', width: '60%', background: 'rgba(255,255,255,0.75)' }} />
+              </div>
             </div>
           </div>
-          <div className="flex-1" style={{ background: `linear-gradient(135deg, ${accent}cc 0%, ${primary}44 100%)` }} />
+          {/* Image side */}
+          <div className="flex-1 relative overflow-hidden">
+            <div className="absolute inset-0" style={{ background: `linear-gradient(140deg, ${accent}bb 0%, ${primary}55 60%, ${accent}33 100%)` }} />
+            {/* Simulated photo shapes */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="rounded" style={{ width: '55%', height: '70%', background: `${accent}40`, border: `1px solid ${accent}30` }} />
+            </div>
+          </div>
         </div>
       ) : layout === 'centered' ? (
-        <div className="shrink-0 flex flex-col items-center justify-center gap-0.5 px-2" style={{ height: '54px', background: `linear-gradient(160deg, ${primary}ee, ${accent}99)` }}>
-          <div className="h-1 rounded-sm bg-white/50" style={{ width: '40%' }} />
-          <div className="h-1.5 rounded-sm bg-white/90" style={{ width: '65%' }} />
-          <div className="h-2 mt-1 flex items-center justify-center px-2 rounded-full" style={{ width: '38%', background: 'rgba(255,255,255,0.3)' }}>
-            <div className="h-0.5 w-full rounded-sm bg-white/80" />
+        <div className="shrink-0 flex flex-col items-center justify-center gap-1 px-3" style={{ height: '58px', background: `linear-gradient(150deg, ${primary} 0%, ${accent}cc 100%)` }}>
+          <div className="rounded-sm" style={{ height: '1.5px', width: '35%', background: 'rgba(255,255,255,0.55)' }} />
+          <div className="rounded-sm" style={{ height: '3.5px', width: '70%', background: 'rgba(255,255,255,0.92)' }} />
+          <div className="rounded-sm" style={{ height: '1.5px', width: '55%', background: 'rgba(255,255,255,0.5)' }} />
+          <div className="rounded-full mt-1 flex items-center justify-center" style={{ height: '8px', width: '42%', background: 'rgba(255,255,255,0.25)' }}>
+            <div className="rounded-sm" style={{ height: '1.5px', width: '55%', background: 'rgba(255,255,255,0.8)' }} />
           </div>
         </div>
       ) : (
-        <div className="shrink-0 relative flex flex-col justify-end pb-2 px-2" style={{ height: '54px', background: `linear-gradient(135deg, ${primary}, ${accent})` }}>
-          <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${Math.min(t.heroStyle.overlayOpacity + 0.15, 0.6)})` }} />
-          <div className="relative flex flex-col gap-0.5" style={{ alignItems: t.heroStyle.textAlignment === 'center' ? 'center' : t.heroStyle.textAlignment === 'left' ? 'flex-start' : 'flex-end' }}>
-            <div className="h-1 rounded-sm bg-white/55" style={{ width: '40%' }} />
-            <div className="h-1.5 rounded-sm bg-white/90" style={{ width: '60%' }} />
+        /* full-image */
+        <div className="shrink-0 relative flex flex-col justify-end pb-2 px-2" style={{ height: '58px' }}>
+          <div className="absolute inset-0" style={{ background: `linear-gradient(150deg, ${accent}cc, ${primary}99)` }} />
+          <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${Math.min(t.heroStyle.overlayOpacity + 0.1, 0.55)})` }} />
+          <div className="relative flex flex-col gap-0.5" style={{ alignItems: t.heroStyle.textAlignment === 'center' ? 'center' : 'flex-end' }}>
+            <div className="rounded-sm" style={{ height: '1.5px', width: '38%', background: 'rgba(255,255,255,0.6)' }} />
+            <div className="rounded-sm" style={{ height: '3px', width: '62%', background: 'rgba(255,255,255,0.92)' }} />
+            <div className="rounded-sm mt-0.5" style={{ height: '5px', width: '35%', background: 'rgba(255,255,255,0.22)', borderRadius: r }}>
+              <div className="h-full flex items-center justify-center">
+                <div className="rounded-sm" style={{ height: '1.5px', width: '55%', background: 'rgba(255,255,255,0.7)' }} />
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── Products section ── */}
-      <div className="flex-1 overflow-hidden" style={{ background: bg, padding: '5px 5px 4px' }}>
-        {/* Section label */}
-        <div className="h-1 w-10 mb-1.5 rounded-sm" style={{ background: `${fg}22` }} />
-        <div className="grid grid-cols-3 gap-1" style={{ height: 'calc(100% - 10px)' }}>
-          {productColors.map((color, i) => (
-            <div key={i} className="flex flex-col overflow-hidden" style={{ background: card, borderRadius: r, border: `1px solid ${fg}10` }}>
-              {/* Product image area */}
-              <div className="flex-1" style={{ background: `linear-gradient(150deg, ${color}40, ${color}18)`, minHeight: '16px' }}>
-                {/* subtle product shape */}
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="rounded-sm" style={{ width: '55%', height: '55%', background: `${color}55` }} />
+      {/* ── Category tabs ── */}
+      <div className="flex gap-1.5 px-2 shrink-0" style={{ height: '10px', background: bg, borderBottom: `1px solid ${fg}12`, alignItems: 'flex-end', paddingBottom: '2px' }}>
+        {['הכל', 'חדש', 'מומלץ'].map((_, i) => (
+          <div key={i} className="rounded-sm" style={{ height: i === 0 ? '4px' : '3px', width: i === 0 ? '14px' : '10px', background: i === 0 ? primary : `${fg}22`, borderRadius: '1px' }} />
+        ))}
+      </div>
+
+      {/* ── Products grid ── */}
+      <div className="flex-1 overflow-hidden" style={{ background: bg, padding: '4px 4px 3px' }}>
+        <div className="grid grid-cols-3 gap-1 h-full">
+          {[0, 1, 2].map((i) => {
+            const imgColor = i === 0 ? accent : i === 1 ? primary : `${accent}bb`;
+            return (
+              <div key={i} className="flex flex-col overflow-hidden" style={{ background: card, borderRadius: r, border: `1px solid ${fg}12` }}>
+                {/* Image area with diagonal gradient to simulate photo */}
+                <div className="flex-1" style={{ background: `linear-gradient(135deg, ${imgColor}55 0%, ${imgColor}22 50%, ${imgColor}44 100%)`, minHeight: '14px', position: 'relative' }}>
+                  <div style={{ position: 'absolute', inset: '20%', background: `${imgColor}35`, borderRadius: '1px' }} />
+                </div>
+                {/* Product info lines */}
+                <div style={{ padding: '2px 3px 3px' }}>
+                  <div className="rounded-sm mb-0.5" style={{ height: '2px', width: '80%', background: `${fg}38` }} />
+                  <div className="rounded-sm" style={{ height: '1.5px', width: '45%', background: primary }} />
                 </div>
               </div>
-              {/* Product info */}
-              <div style={{ padding: '3px 4px 4px' }}>
-                <div className="rounded-sm mb-1" style={{ height: '2px', width: '78%', background: `${fg}35` }} />
-                <div className="rounded-sm" style={{ height: '2px', width: '44%', background: primary }} />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
@@ -157,6 +185,7 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
 
   const [primaryColor, setPrimaryColor] = useState("");
   const [previewTheme, setPreviewTheme] = useState<"light" | "dark">("light");
+  const [heroOnly, setHeroOnly] = useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
@@ -247,45 +276,33 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
   ];
   const storeUrl = businessSlug ? `${window.location.origin}/${businessSlug}?preview=1` : "about:blank";
 
+  const hasChanges = selectedTemplate !== currentTemplateId || hasUnsavedChanges;
+
   return (
     <div className="flex h-full overflow-hidden">
       {/* ── Left panel: controls ── */}
-      <div className="w-80 shrink-0 border-l border-border overflow-y-auto bg-card">
-        <div className="p-4 space-y-6">
-          {/* Header */}
-          <div>
-            <h1 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Palette className="h-5 w-5" />
-              {t("dash.design.heading")}
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {t("dash.design.subtitle")}
-            </p>
-          </div>
+      <div className="w-80 shrink-0 border-l border-border flex flex-col bg-card">
+        {/* Sticky header + save button */}
+        <div className="p-4 pb-3 border-b border-border shrink-0">
+          <h1 className="text-base font-semibold text-foreground flex items-center gap-2 mb-0.5">
+            <Palette className="h-5 w-5" />
+            {t("dash.design.heading")}
+          </h1>
+          <p className="text-xs text-muted-foreground mb-3">
+            {t("dash.design.subtitle")}
+          </p>
+          <Button
+            className="w-full"
+            onClick={handleSaveTemplate}
+            disabled={updateBusiness.isPending || !hasChanges}
+            variant={hasChanges ? "default" : "outline"}
+          >
+            {updateBusiness.isPending ? t("dash.design.saving") : t("dash.design.save_changes")}
+          </Button>
+        </div>
 
-          {/* Save button */}
-          {(selectedTemplate !== currentTemplateId || hasUnsavedChanges) && (
-            <Button className="w-full" onClick={handleSaveTemplate} disabled={updateBusiness.isPending}>
-              {updateBusiness.isPending ? t("dash.design.saving") : t("dash.design.save_changes")}
-            </Button>
-          )}
-
-          {/* Current Template Info */}
-          {currentTemplateId && (
-            <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {getTemplate(currentTemplateId as StoreTemplateId).name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {getTemplate(currentTemplateId as StoreTemplateId).description}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
 
           {/* Templates Grid */}
           <div>
@@ -294,15 +311,18 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
               {templateList.map((template) => {
                 const isSelected = selectedTemplate === template.id;
                 const isCurrent = currentTemplateId === template.id;
+                const layoutLabel = LAYOUT_LABELS[template.heroStyle.layout];
+                // Split "Name · Color" into two lines
+                const [layoutName, colorName] = template.name.split(' · ');
 
                 return (
                   <button
                     key={template.id}
                     onClick={() => { setSelectedTemplate(template.id); setHasUnsavedChanges(true); }}
-                    className={`relative group rounded-lg border-2 overflow-hidden transition-all hover:shadow-md ${
+                    className={`relative group rounded-xl border-2 overflow-hidden transition-all hover:shadow-md ${
                       isSelected
                         ? 'border-primary ring-2 ring-primary/20'
-                        : 'border-border hover:border-primary/50'
+                        : 'border-border hover:border-primary/40'
                     }`}
                   >
                     {/* Preview thumbnail */}
@@ -310,31 +330,30 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
                       <TemplateThumb t={template} />
                     </div>
 
-                    {/* Template Info */}
-                    <div className="p-1.5 bg-card">
-                      <div className="flex items-center justify-between gap-1">
-                        <h3 className="text-xs font-semibold text-foreground truncate">
-                          {template.name}
-                          {isCurrent && (
-                            <span className="mr-1 text-[9px] bg-primary text-primary-foreground px-1 py-0.5 rounded-full">
-                              {t("dash.design.badge_active")}
-                            </span>
-                          )}
-                        </h3>
-                        {isSelected && (
-                          <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center shrink-0">
-                            <Check className="h-2.5 w-2.5 text-primary-foreground" />
-                          </div>
-                        )}
-                      </div>
+                    {/* Layout type chip — overlaid on thumbnail */}
+                    <div className="absolute top-1.5 right-1.5">
+                      <span className="text-[8px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(0,0,0,0.45)', color: 'white', backdropFilter: 'blur(4px)' }}>
+                        {layoutLabel}
+                      </span>
                     </div>
 
-                    {/* Selection Indicator */}
-                    {isSelected && (
-                      <div className="absolute top-1.5 left-1.5 bg-primary text-primary-foreground rounded-full p-1">
-                        <Check className="h-2.5 w-2.5" />
+                    {/* Active/selected check */}
+                    {(isSelected || isCurrent) && (
+                      <div className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                        <Check className="h-3 w-3 text-primary-foreground" />
                       </div>
                     )}
+
+                    {/* Template name */}
+                    <div className="p-1.5 bg-card">
+                      <p className="text-[11px] font-semibold text-foreground leading-tight truncate">{layoutName}</p>
+                      {colorName && (
+                        <p className="text-[10px] text-muted-foreground truncate">{colorName}</p>
+                      )}
+                      {isCurrent && !isSelected && (
+                        <span className="text-[9px] text-primary font-medium">{t("dash.design.badge_active")}</span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
@@ -528,35 +547,82 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
               <li>• {t("dash.design.tip_2")}</li>
             </ul>
           </div>
-        </div>
+        </div>{/* end scrollable content */}
       </div>
 
       {/* ── Right panel: live iframe preview ── */}
       <div className="flex-1 flex flex-col bg-muted/20">
-        {/* Theme toggle bar */}
+        {/* Control bar */}
         <div className="flex items-center gap-2 border-b border-border px-4 py-2 bg-card shrink-0">
           <span className="text-xs text-muted-foreground">{t("dash.design.live_preview_label")}</span>
-          <div className="flex gap-1 mr-auto">
+          <div className="flex gap-1 mr-auto flex-wrap">
+            {/* Hero / Full toggle */}
+            <div className="flex rounded-md border border-border overflow-hidden">
+              <button
+                onClick={() => setHeroOnly(true)}
+                className={`px-2 py-1 text-xs transition-colors ${heroOnly ? "bg-primary text-primary-foreground font-medium" : "text-muted-foreground hover:bg-muted/50"}`}
+              >
+                כניסה לאתר
+              </button>
+              <button
+                onClick={() => setHeroOnly(false)}
+                className={`px-2 py-1 text-xs transition-colors ${!heroOnly ? "bg-primary text-primary-foreground font-medium" : "text-muted-foreground hover:bg-muted/50"}`}
+              >
+                כל הדף
+              </button>
+            </div>
+            {/* Light / Dark toggle */}
             <button
               onClick={() => setPreviewTheme("light")}
               className={`rounded px-2 py-1 text-xs transition-colors ${previewTheme === "light" ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/50"}`}
             >
-              ☀️ {t("dash.design.theme_light")}
+              ☀️
             </button>
             <button
               onClick={() => setPreviewTheme("dark")}
               className={`rounded px-2 py-1 text-xs transition-colors ${previewTheme === "dark" ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/50"}`}
             >
-              🌙 {t("dash.design.theme_dark")}
+              🌙
             </button>
           </div>
         </div>
-        <iframe
-          ref={iframeRef}
-          src={storeUrl}
-          className="flex-1 w-full border-0"
-          title={t("dash.design.iframe_title")}
-        />
+
+        {/* iframe wrapper — hero-only clips the top ~380px at 1:1 scale */}
+        <div className="flex-1 relative overflow-hidden">
+          <div
+            className="absolute inset-0"
+            style={heroOnly ? {
+              overflow: 'hidden',
+            } : {}}
+          >
+            <iframe
+              ref={iframeRef}
+              src={storeUrl}
+              title={t("dash.design.iframe_title")}
+              style={heroOnly ? {
+                width: '100%',
+                height: '100%',
+                border: 'none',
+                clipPath: 'inset(0 0 0 0)',
+              } : {
+                width: '100%',
+                height: '100%',
+                border: 'none',
+              }}
+            />
+            {/* In hero-only mode, a fade at the bottom signals more content below */}
+            {heroOnly && (
+              <div
+                className="absolute bottom-0 left-0 right-0 flex flex-col items-center justify-end pb-4 pointer-events-none"
+                style={{ height: '120px', background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.12))' }}
+              >
+                <span className="text-xs text-white/70 bg-black/30 px-3 py-1 rounded-full pointer-events-auto cursor-pointer select-none" onClick={() => setHeroOnly(false)}>
+                  לחץ לצפייה בכל הדף ↓
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
