@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   ShoppingBag, CalendarClock, Building2, Heart, Landmark,
-  Hotel, ClipboardList, Images, Check, Loader2, Blocks, Sparkles, Award, AlertTriangle, Bell,
+  Hotel, ClipboardList, Images, Check, Loader2, Blocks, Sparkles, Bell,
   FileText, HelpCircle, ArrowLeft,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +42,7 @@ const buildLive = (t: (key: string) => string): Live[] => [
   { key: "donations", icon: Heart,         color: "#c0392b", title: t("dash.modules.live_donations_title"), desc: t("dash.modules.live_donations_desc") },
   { key: "synagogue", icon: Landmark,      color: "#c07d12", title: t("dash.modules.live_synagogue_title"), desc: t("dash.modules.live_synagogue_desc") },
   { key: "gallery",   icon: Images,        color: "#0891b2", title: t("dash.modules.live_gallery_title"),   desc: t("dash.modules.live_gallery_desc") },
+  { key: "lodging",   icon: Hotel,         color: "#6d4bd0", title: "חדרים / יחידות אירוח",                 desc: "יחידות עם זמינות בלוח, מחיר ללילה והזמנה - לצימרים ואירוח." },
 ];
 
 /** Which LIVE module keys make sense to offer per business type. */
@@ -51,7 +52,7 @@ const ALLOWED_LIVE: Record<BusinessType, ModuleKey[]> = {
   realestate: ["listings", "booking", "gallery"],
   nonprofit:  ["donations", "commerce", "gallery"],
   synagogue:  ["donations", "synagogue", "gallery"],
-  vacation:   ["commerce", "booking", "gallery"],
+  vacation:   ["commerce", "booking", "gallery", "lodging"],
 };
 
 type SoonItem = {
@@ -69,11 +70,11 @@ const MODULE_NAV: Partial<Record<ModuleKey, string>> = {
   booking:   "booking",
   listings:  "products",
   donations: "content",
+  lodging:   "products",
 };
 
 // Phase-2 modules - shown as an invitation, not yet toggleable.
 const buildSoon = (t: (key: string) => string): SoonItem[] => [
-  { icon: Hotel,         color: "#6d4bd0", title: t("dash.modules.soon_rooms_title"),    desc: t("dash.modules.soon_rooms_desc"),    types: ["vacation", "services"] },
   { icon: ClipboardList, color: "#c07d12", title: t("dash.modules.soon_leads_title"),    desc: t("dash.modules.soon_leads_desc"),    types: ["products", "nonprofit", "synagogue"] },
   { icon: FileText,      color: "#059669", title: "מאמרים ותוכן",                         desc: "הוסף מאמרים, עדכונים ומדריכים שמחזקים את האמון של הלקוחות." },
   { icon: HelpCircle,    color: "#7c3aed", title: "שאלות נפוצות",                         desc: "ענה מראש על השאלות הנפוצות של הלקוחות ישירות באתר." },
@@ -86,7 +87,7 @@ const PRIMARY_MODULE: Record<BusinessType, ModuleKey> = {
   realestate: "listings",
   nonprofit:  "donations",
   synagogue:  "donations",
-  vacation:   "commerce",
+  vacation:   "lodging",
 };
 
 const buildPrimaryWarning = (t: (key: string) => string): Partial<Record<ModuleKey, string>> => ({

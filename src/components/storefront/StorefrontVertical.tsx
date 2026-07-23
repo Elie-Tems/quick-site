@@ -73,7 +73,7 @@ const StorefrontVertical = ({ business }: {
 
   return (
     <>
-      {isVacation && lodgingUnits.length > 0 && (
+      {isVacation && modules.includes("lodging") && lodgingUnits.length > 0 && (
         <LodgingWidget businessId={business.id} units={lodgingUnits} />
       )}
       {modules.includes("booking") && bookingServices.length > 0 && (

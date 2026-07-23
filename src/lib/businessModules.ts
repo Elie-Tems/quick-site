@@ -10,7 +10,7 @@
 
 export type BusinessType = "products" | "services" | "realestate" | "nonprofit" | "synagogue" | "kolel" | "vacation";
 
-export type ModuleKey = "commerce" | "booking" | "listings" | "donations" | "synagogue" | "gallery";
+export type ModuleKey = "commerce" | "booking" | "listings" | "donations" | "synagogue" | "gallery" | "lodging";
 
 export interface ModuleDef {
   key: ModuleKey;
@@ -27,6 +27,7 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
   donations: { key: "donations", label: "תרומות", description: "תרומה חד-פעמית/חוזרת וקמפיינים", transaction: "donation" },
   synagogue: { key: "synagogue", label: "בית כנסת", description: "עליות ונדרים, מקומות, זמני תפילה", transaction: "donation" },
   gallery: { key: "gallery", label: "גלריה ותיק עבודות", description: "תצוגת תמונות ועבודות בעמוד החנות", transaction: "order" },
+  lodging: { key: "lodging", label: "חדרים / יחידות אירוח", description: "יחידות עם הזמנה ותמחור ללילה", transaction: "booking" },
 };
 
 /**
@@ -41,7 +42,7 @@ export const DEFAULT_MODULES: Record<BusinessType, ModuleKey[]> = {
   nonprofit: ["donations"],
   synagogue: ["donations", "synagogue"],
   kolel: ["donations", "gallery"],
-  vacation: ["commerce", "gallery"],
+  vacation: ["commerce", "booking", "gallery", "lodging"],
 };
 
 /** Capabilities every business has regardless of type. */
