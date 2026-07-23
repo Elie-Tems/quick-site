@@ -21,6 +21,17 @@ class ErrorBoundary extends Component<Props, State> {
     // A stale-chunk crash (new deploy while this tab held the old index) isn't a
     // real bug - reload once to fetch the fresh build instead of reporting it.
     if (maybeReloadOnStaleChunk(error.message || "")) return;
+    // Navigation race conditions (e.g. lazy-loaded route first mount) can cause a
+    // one-off render crash that resolves on reload. Auto-reload once before showing
+    // the error screen so the user never has to click "רענון הדף" manually.
+    try {
+      const KEY = "siango_render_error_reloaded";
+      if (!sessionStorage.getItem(KEY)) {
+        sessionStorage.setItem(KEY, "1");
+        window.location.reload();
+        return;
+      }
+    } catch { /* ignore */ }
     reportError(error.message || "React render error", {
       kind: "react.boundary",
       stack: `${error.stack || ""}\n--- component stack ---\n${info.componentStack}`,
@@ -48,7 +59,7 @@ class ErrorBoundary extends Component<Props, State> {
               אירעה תקלה זמנית. נסו לרענן את הדף - אנחנו כבר יודעים על זה.
             </p>
             <button
-              onClick={() => { try { sessionStorage.removeItem("siango_chunk_reloaded"); } catch {} window.location.reload(); }}
+              onClick={() => { try { sessionStorage.removeItem("siango_chunk_reloaded"); sessionStorage.removeItem("siango_render_error_reloaded"); } catch {} window.location.reload(); }}
               style={{
                 padding: "0.75rem 1.5rem",
                 borderRadius: "0.5rem",
