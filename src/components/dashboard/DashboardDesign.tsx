@@ -304,62 +304,6 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
 
-          {/* Templates Grid */}
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">{t("dash.design.template_label")}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {templateList.map((template) => {
-                const isSelected = selectedTemplate === template.id;
-                const isCurrent = currentTemplateId === template.id;
-                const layoutLabel = LAYOUT_LABELS[template.heroStyle.layout];
-                // Split "Name · Color" into two lines
-                const [layoutName, colorName] = template.name.split(' · ');
-
-                return (
-                  <button
-                    key={template.id}
-                    onClick={() => { setSelectedTemplate(template.id); setHasUnsavedChanges(true); }}
-                    className={`relative group rounded-xl border-2 overflow-hidden transition-all hover:shadow-md ${
-                      isSelected
-                        ? 'border-primary ring-2 ring-primary/20'
-                        : 'border-border hover:border-primary/40'
-                    }`}
-                  >
-                    {/* Preview thumbnail */}
-                    <div className="aspect-[4/3] overflow-hidden">
-                      <TemplateThumb t={template} />
-                    </div>
-
-                    {/* Layout type chip — overlaid on thumbnail */}
-                    <div className="absolute top-1.5 right-1.5">
-                      <span className="text-[8px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(0,0,0,0.45)', color: 'white', backdropFilter: 'blur(4px)' }}>
-                        {layoutLabel}
-                      </span>
-                    </div>
-
-                    {/* Active/selected check */}
-                    {(isSelected || isCurrent) && (
-                      <div className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                        <Check className="h-3 w-3 text-primary-foreground" />
-                      </div>
-                    )}
-
-                    {/* Template name */}
-                    <div className="p-1.5 bg-card">
-                      <p className="text-[11px] font-semibold text-foreground leading-tight truncate">{layoutName}</p>
-                      {colorName && (
-                        <p className="text-[10px] text-muted-foreground truncate">{colorName}</p>
-                      )}
-                      {isCurrent && !isSelected && (
-                        <span className="text-[9px] text-primary font-medium">{t("dash.design.badge_active")}</span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* ── Palette presets + custom color picker ── */}
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">{t("dash.design.primary_color_label")}</p>
@@ -441,6 +385,54 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* ── Templates Grid ── */}
+          <div className="border-t border-border pt-4">
+            <p className="text-xs font-medium text-muted-foreground mb-2">{t("dash.design.template_label")}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {templateList.map((template) => {
+                const isSelected = selectedTemplate === template.id;
+                const isCurrent = currentTemplateId === template.id;
+                const layoutLabel = LAYOUT_LABELS[template.heroStyle.layout];
+                const [layoutName, colorName] = template.name.split(' · ');
+
+                return (
+                  <button
+                    key={template.id}
+                    onClick={() => { setSelectedTemplate(template.id); setHasUnsavedChanges(true); }}
+                    className={`relative group rounded-xl border-2 overflow-hidden transition-all hover:shadow-md ${
+                      isSelected
+                        ? 'border-primary ring-2 ring-primary/20'
+                        : 'border-border hover:border-primary/40'
+                    }`}
+                  >
+                    <div className="aspect-[4/3] overflow-hidden">
+                      <TemplateThumb t={template} />
+                    </div>
+                    <div className="absolute top-1.5 right-1.5">
+                      <span className="text-[8px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(0,0,0,0.45)', color: 'white', backdropFilter: 'blur(4px)' }}>
+                        {layoutLabel}
+                      </span>
+                    </div>
+                    {(isSelected || isCurrent) && (
+                      <div className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                        <Check className="h-3 w-3 text-primary-foreground" />
+                      </div>
+                    )}
+                    <div className="p-1.5 bg-card">
+                      <p className="text-[11px] font-semibold text-foreground leading-tight truncate">{layoutName}</p>
+                      {colorName && (
+                        <p className="text-[10px] text-muted-foreground truncate">{colorName}</p>
+                      )}
+                      {isCurrent && !isSelected && (
+                        <span className="text-[9px] text-primary font-medium">{t("dash.design.badge_active")}</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* ── Hero Image ── */}

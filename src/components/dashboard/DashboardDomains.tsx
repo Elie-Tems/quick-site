@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Globe, Search, Link2, Loader2, Plug } from "lucide-react";
+import { Globe, Search, Link2, Loader2, Plug, Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
 import DomainSearch from "@/components/domains/DomainSearch";
 import DomainPurchaseDialog from "@/components/domains/DomainPurchaseDialog";
 import ConnectOwnDomain from "@/components/domains/ConnectOwnDomain";
@@ -28,6 +28,9 @@ const DashboardDomains = ({ businessId }: Props) => {
   // Cloudflare custom-hostname setup (provision-custom-domain), e.g. if the
   // post-purchase auto-provision hadn't run or the connection got stuck.
   const [provisioning, setProvisioning] = useState<string | null>(null);
+  const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
+  const [cnameTargets, setCnameTargets] = useState<Record<string, string>>({});
+  const [copied, setCopied] = useState(false);
 
   const { data: biz } = useQuery({
     queryKey: ["domain-biz-prefill", businessId],
