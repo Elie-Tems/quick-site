@@ -103,7 +103,9 @@ const StorefrontVertical = ({ business }: {
           </div>
         </Section>
       )}
-      <StoreDifferentiation data={(business as any).differentiation} accent={accent} />
+      {modules.includes("differentiation") && (
+        <StoreDifferentiation data={(business as any).differentiation} accent={accent} />
+      )}
       {modules.includes("gallery") && (
         <StoreGallery
           images={(business as any).gallery_images?.images}

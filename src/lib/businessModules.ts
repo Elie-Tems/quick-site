@@ -10,7 +10,7 @@
 
 export type BusinessType = "products" | "services" | "realestate" | "nonprofit" | "synagogue" | "kolel" | "vacation";
 
-export type ModuleKey = "commerce" | "booking" | "listings" | "donations" | "synagogue" | "gallery" | "lodging";
+export type ModuleKey = "commerce" | "booking" | "listings" | "donations" | "synagogue" | "gallery" | "lodging" | "differentiation";
 
 export interface ModuleDef {
   key: ModuleKey;
@@ -28,6 +28,7 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
   synagogue: { key: "synagogue", label: "בית כנסת", description: "עליות ונדרים, מקומות, זמני תפילה", transaction: "donation" },
   gallery: { key: "gallery", label: "גלריה ותיק עבודות", description: "תצוגת תמונות ועבודות בעמוד החנות", transaction: "order" },
   lodging: { key: "lodging", label: "חדרים / יחידות אירוח", description: "יחידות עם הזמנה ותמחור ללילה", transaction: "booking" },
+  differentiation: { key: "differentiation", label: "בידול ויתרונות", description: "סקשן שמסביר למה לבחור בך - טקסט, יתרונות וצ'קמארקים", transaction: "order" },
 };
 
 /**
@@ -36,9 +37,9 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
  * sell products (creams, gift cards) alongside bookings.
  */
 export const DEFAULT_MODULES: Record<BusinessType, ModuleKey[]> = {
-  products: ["commerce"],
-  services: ["booking", "commerce", "gallery"],
-  realestate: ["listings", "gallery"],
+  products: ["commerce", "differentiation"],
+  services: ["booking", "commerce", "gallery", "differentiation"],
+  realestate: ["listings", "gallery", "differentiation"],
   nonprofit: ["donations"],
   synagogue: ["donations", "synagogue"],
   kolel: ["donations", "gallery"],
