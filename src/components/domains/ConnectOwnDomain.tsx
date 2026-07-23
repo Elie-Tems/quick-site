@@ -17,15 +17,38 @@ interface Props {
  * record at their own registrar. Everything else (Cloudflare connection, SSL,
  * billing) is automatic - see addon-subscribe's 'custom_domain' entry.
  */
+// Returns null if domain looks valid, or a Hebrew error string if not.
+function validateDomain(raw: string): string | null {
+  const v = raw.trim().toLowerCase();
+  if (!v) return null; // empty — no error shown until submit
+  if (/^https?:\/\//i.test(raw)) return 'הסר את "http://" — הכנס רק את שם הדומיין, למשל: shop.co.il';
+  if (v.startsWith("www.")) return 'אין צורך ב-www — הכנס רק shop.co.il';
+  if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(v))
+    return "כתובת דומיין לא תקינה — השתמש רק באותיות אנגליות, מספרים ונקודות (למשל: shop.co.il)";
+  if (!v.includes(".")) return "חסרה סיומת — למשל .co.il או .com";
+  const tld = v.split(".").pop() || "";
+  if (tld.length < 2) return "סיומת הדומיין קצרה מדי";
+  return null;
+}
+
 const ConnectOwnDomain = ({ businessId, onConnected }: Props) => {
   const [domain, setDomain] = useState("");
+  const [domainError, setDomainError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [cnameTarget, setCnameTarget] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const handleDomainChange = (val: string) => {
+    setDomain(val);
+    setDomainError(val.trim() ? validateDomain(val) : null);
+  };
+
   const connect = async () => {
     const value = domain.trim().toLowerCase();
     if (!value || !businessId) return;
+    const err = validateDomain(value);
+    if (err) { setDomainError(err); return; }
+    setDomainError(null);
     setSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke("addon-subscribe", {
@@ -101,23 +124,26 @@ const ConnectOwnDomain = ({ businessId, onConnected }: Props) => {
       <p className="text-sm text-muted-foreground">
         קניתם דומיין במקום אחר? אפשר לחבר אותו לחנות. {CUSTOM_DOMAIN_ADDON.description}
       </p>
-      <div className="flex gap-2">
-        <input
-          value={domain}
-          onChange={(e) => setDomain(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && connect()}
-          placeholder="shop.co.il"
-          dir="ltr"
-          className="flex-1 rounded-lg border border-border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/40"
-        />
-        <button
-          onClick={connect}
-          disabled={submitting || !domain.trim()}
-          className="rounded-lg bg-primary text-white px-4 py-2.5 text-sm font-medium flex items-center gap-1.5 disabled:opacity-50 shrink-0"
-        >
-          {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Crown className="w-4 h-4" />}
-          חבר · {withVat(CUSTOM_DOMAIN_ADDON.label)}/חודש
-        </button>
+      <div className="space-y-1.5">
+        <div className="flex gap-2">
+          <input
+            value={domain}
+            onChange={(e) => handleDomainChange(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && connect()}
+            placeholder="shop.co.il"
+            dir="ltr"
+            className={`flex-1 rounded-lg border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/40 ${domainError ? "border-destructive" : "border-border"}`}
+          />
+          <button
+            onClick={connect}
+            disabled={submitting || !domain.trim() || !!domainError}
+            className="rounded-lg bg-primary text-white px-4 py-2.5 text-sm font-medium flex items-center gap-1.5 disabled:opacity-50 shrink-0"
+          >
+            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Crown className="w-4 h-4" />}
+            חבר · {withVat(CUSTOM_DOMAIN_ADDON.label)}/חודש
+          </button>
+        </div>
+        {domainError && <p className="text-xs text-destructive" dir="rtl">{domainError}</p>}
       </div>
     </div>
   );
