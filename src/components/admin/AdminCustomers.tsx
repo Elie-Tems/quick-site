@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import {
   Search, ExternalLink, Mail, Phone, Globe,
   CheckCircle2, XCircle, Clock, ShoppingBag,
-  ChevronDown, ChevronUp, Eye, RotateCcw, StickyNote, Loader2, HeartPulse,
+  ChevronDown, ChevronUp, Eye, RotateCcw, StickyNote, Loader2, HeartPulse, Trash2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
@@ -76,7 +76,7 @@ function StatusBadge({ published }: { published: boolean | null }) {
   );
 }
 
-function CustomerCard({ c, onResetOnboarding }: { c: CustomerRow; onResetOnboarding: (id: string) => void }) {
+function CustomerCard({ c, onResetOnboarding, onDeleteUser }: { c: CustomerRow; onResetOnboarding: (id: string) => void; onDeleteUser: (userId: string, email: string | null) => void }) {
   const [expanded, setExpanded] = useState(false);
   const b = c.business;
   const stage = lifecycleStage(c);
@@ -231,6 +231,14 @@ function CustomerCard({ c, onResetOnboarding }: { c: CustomerRow; onResetOnboard
               >
                 <RotateCcw className="h-3.5 w-3.5" /> אפס onboarding
               </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs gap-1 text-red-700 border-red-300 hover:bg-red-50"
+                onClick={() => onDeleteUser(c.user_id, c.email)}
+              >
+                <Trash2 className="h-3.5 w-3.5" /> מחק משתמש
+              </Button>
             </div>
             {b?.orders_count !== undefined && (
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -294,6 +302,26 @@ const AdminCustomers = () => {
     } else {
       toast.success("ה-onboarding אופס - המשתמש יועבר לאשף בכניסה הבאה");
       queryClient.invalidateQueries({ queryKey: ["admin-customers"] });
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, email: string | null) => {
+    const label = email || userId;
+    if (!window.confirm(`למחוק לצמיתות את המשתמש "${label}"?\n\nפעולה זו תמחק את החשבון, הפרופיל והחנות ואינה הפיכה.`)) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { toast.error("אין session"); return; }
+    try {
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-delete-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ userId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      toast.success(`המשתמש "${label}" נמחק`);
+      queryClient.invalidateQueries({ queryKey: ["admin-customers"] });
+    } catch (e: any) {
+      toast.error("שגיאה במחיקה: " + e.message);
     }
   };
 
@@ -377,7 +405,7 @@ const AdminCustomers = () => {
           <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr_auto] gap-4 px-4 text-xs font-semibold text-muted-foreground uppercase">
             <span>לקוח</span><span>חנות</span><span>סטטוס</span><span>תוכנית</span><span>תאריך</span><span></span>
           </div>
-          {filtered.map(c => <CustomerCard key={c.id} c={c} onResetOnboarding={handleResetOnboarding} />)}
+          {filtered.map(c => <CustomerCard key={c.id} c={c} onResetOnboarding={handleResetOnboarding} onDeleteUser={handleDeleteUser} />)}
         </div>
       )}
     </div>
