@@ -94,8 +94,8 @@ const DashboardDomains = ({ businessId }: Props) => {
 
   const saveSlug = async () => {
     if (!businessId || !slugDraft) return;
-    if (slugDraft.length < 2 || /[^a-z0-9-]/.test(slugDraft)) {
-      setSlugError("מותר רק אותיות אנגליות, מספרים ומקף. לפחות 2 תווים.");
+    if (slugDraft.length < 2) {
+      setSlugError("לפחות 2 תווים.");
       return;
     }
     try {
@@ -151,7 +151,7 @@ const DashboardDomains = ({ businessId }: Props) => {
                   type="text"
                   value={slugDraft}
                   onChange={(e) => {
-                    const v = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/-{2,}/g, "-");
+                    const v = e.target.value.replace(/\s+/g, "-").replace(/-{2,}/g, "-");
                     setSlugDraft(v);
                     setSlugError(v.length < 2 ? "לפחות 2 תווים" : null);
                   }}
