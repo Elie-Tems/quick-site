@@ -1,4 +1,4 @@
-import { Lock, Crown, Check, Loader2 } from "lucide-react";
+import { Lock, Crown, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PremiumOverlayProps {
@@ -34,13 +34,13 @@ const PremiumOverlay = ({ locked, title, description, bullets, priceLabel, onUpg
             </h3>
             <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
             {bullets && bullets.length > 0 && (
-              <ul className="mt-3 grid sm:grid-cols-2 gap-1.5">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {bullets.map((b) => (
-                  <li key={b} className="flex items-center gap-1.5 text-sm text-foreground">
-                    <Check className="w-4 h-4 text-primary shrink-0" /> {b}
-                  </li>
+                  <span key={b} className="inline-block text-sm text-foreground bg-background/70 rounded-lg px-3 py-1.5 border border-border/50 leading-snug">
+                    {b}
+                  </span>
                 ))}
-              </ul>
+              </div>
             )}
             <div className="mt-4 flex items-center gap-3 flex-wrap">
               <button

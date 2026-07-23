@@ -13,7 +13,6 @@ import { StoreTemplateId, getTemplate } from "@/lib/storeTemplates";
 import { getCategoryConfig } from "@/lib/categoryConfig";
 import { getPublishFeeIls } from "@/lib/publishPaymentConfig";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { hebrewToSlug } from "@/lib/utils";
 
 interface StepPublishProps {
   data: OnboardingData;
@@ -38,10 +37,11 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
   const navigate = useNavigate();
   const createBusiness = useCreateBusiness();
 
-  const [editedSlug, setEditedSlug] = useState(() => hebrewToSlug(data.businessName));
-  const [slugEditing, setSlugEditing] = useState(false);
+  const businessSlug = data.businessName
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^֐-׿a-z0-9-]/g, "");
 
-  const businessSlug = editedSlug || hebrewToSlug(data.businessName);
   const siteUrl = `https://${import.meta.env.VITE_WEBSITE_URL}/${businessSlug}`;
 
   const handleCopyUrl = () => {
@@ -323,58 +323,20 @@ const StepPublish = ({ data, onNext, onBack, onGoToStep, onUpdateData, isPreview
 
       {/* URL Preview */}
       <div className="p-6 rounded-xl gradient-border bg-card space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-foreground">{t("oc.url_label")}</h3>
-          {!slugEditing && (
-            <button
-              onClick={() => setSlugEditing(true)}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Pencil className="w-3 h-3" />
-              {t("ob.pub.edit_slug") || "ערוך"}
-            </button>
-          )}
+        <h3 className="font-semibold text-foreground">{t("oc.url_label")}</h3>
+        <div className="flex items-center gap-3">
+          <div className="flex-1 p-3 rounded-lg bg-surface-1 font-mono text-sm text-foreground" dir="ltr">
+           {siteUrl}
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleCopyUrl}
+            className="shrink-0"
+          >
+            <Copy className="w-4 h-4" />
+          </Button>
         </div>
-        {slugEditing ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 rounded-lg border border-primary bg-surface-1 overflow-hidden" dir="ltr">
-              <span className="pl-3 text-sm text-muted-foreground whitespace-nowrap shrink-0">
-                {import.meta.env.VITE_WEBSITE_URL}/
-              </span>
-              <input
-                autoFocus
-                type="text"
-                value={editedSlug}
-                onChange={(e) => setEditedSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-"))}
-                className="flex-1 py-3 pr-3 bg-transparent font-mono text-sm text-foreground outline-none"
-                dir="ltr"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" onClick={() => setSlugEditing(false)} className="text-xs">
-                <Check className="w-3 h-3 mr-1" />
-                {t("ob.pub.slug_confirm") || "אשר"}
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => { setEditedSlug(hebrewToSlug(data.businessName)); setSlugEditing(false); }} className="text-xs text-muted-foreground">
-                {t("ob.pub.slug_reset") || "אפס"}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-3">
-            <div className="flex-1 p-3 rounded-lg bg-surface-1 font-mono text-sm text-foreground" dir="ltr">
-              {siteUrl}
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleCopyUrl}
-              className="shrink-0"
-            >
-              <Copy className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
         <p className="text-xs text-muted-foreground">
           {t("ob.pub.domain_hint")}
         </p>
