@@ -868,6 +868,8 @@ const he: Record<string, string> = {
   'dash.nav.viz_studio_short': 'הדמיות',
   'dash.nav.modules': 'יכולות ומודולים',
   'dash.nav.modules_short': 'מודולים',
+  'dash.nav.banners': 'באנרים',
+  'dash.nav.banners_short': 'באנרים',
   'dash.nav.coupons': 'קופונים',
   'dash.nav.campaigns': 'פרסום באתר',
   'dash.nav.discounts': 'מבצעים ומובילים',

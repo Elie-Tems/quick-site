@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2, FileText, CalendarClock, Layers, Mail, Blocks, CalendarDays, PenLine } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Image, ImagePlus, Settings, Eye, Ticket, Crown, Megaphone, Star, Info, Truck, CreditCard, Palette, ScrollText, Target, ChevronDown, Radar, Lightbulb, Globe, MessageCircle, AtSign, BarChart3, Users, Sparkles, Tag, Type, Heart, Building2, FileText, CalendarClock, Layers, Mail, Blocks, CalendarDays, PenLine, LayoutPanelTop } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { BusinessType } from "@/lib/businessModules";
@@ -134,6 +134,7 @@ const navItems: {
   { id: "modules", labelKey: "dash.nav.modules", shortLabelKey: "dash.nav.modules_short", icon: Blocks, group: "הגדרות" },
 
   // שיווק
+  { id: "banners", labelKey: "dash.nav.banners", shortLabelKey: "dash.nav.banners_short", icon: LayoutPanelTop, group: "שיווק" },
   { id: "coupons", labelKey: "dash.nav.coupons", icon: Ticket, group: "שיווק" },
   { id: "campaigns", labelKey: "dash.nav.campaigns", icon: Megaphone, group: "שיווק" },
   { id: "discounts", labelKey: "dash.nav.discounts", shortLabelKey: "dash.nav.discounts_short", icon: Tag, group: "שיווק" },
