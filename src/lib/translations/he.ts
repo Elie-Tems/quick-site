@@ -1370,6 +1370,7 @@ const he: Record<string, string> = {
   'dash.content.leadform.field_email': 'אימייל (אופציונלי)',
   'dash.content.leadform.field_message': 'הודעה חופשית (אופציונלי)',
   'dash.content.leadform.save': 'שמרו הגדרות טופס',
+  'dash.content.leadform.use_suggestion': 'השתמשו בהצעה',
   'dash.content.labels.title': 'כותרות סקשנים',
   'dash.content.labels.subtitle': 'דרסו את הכותרות הקבועות בתבנית. השאירו ריק כדי לשמור על ברירת המחדל.',
   'dash.content.labels.products_label': 'סקשן מוצרים / שירותים',

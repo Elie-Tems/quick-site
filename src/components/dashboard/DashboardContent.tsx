@@ -981,16 +981,42 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
 
             {leadFormEnabled && (
               <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <Label>{t("dash.content.leadform.heading_label")}</Label>
-                  <Input value={leadFormHeading} onChange={e => setLeadFormHeading(e.target.value)}
-                    placeholder={businessType === "realestate" ? t("dash.content.leadform.placeholder_realestate") : t("dash.content.leadform.placeholder_services")} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>{t("dash.content.leadform.subheading_label")}</Label>
-                  <Input value={leadFormSubheading} onChange={e => setLeadFormSubheading(e.target.value)}
-                    placeholder={t("dash.content.leadform.subheading_placeholder")} />
-                </div>
+                {(() => {
+                  const headingSuggestion = businessType === "realestate"
+                    ? t("dash.content.leadform.placeholder_realestate")
+                    : t("dash.content.leadform.placeholder_services");
+                  const subheadingSuggestion = t("dash.content.leadform.subheading_placeholder");
+                  return (
+                    <>
+                      <div className="space-y-1.5">
+                        <Label>{t("dash.content.leadform.heading_label")}</Label>
+                        <Input value={leadFormHeading} onChange={e => setLeadFormHeading(e.target.value)}
+                          placeholder={headingSuggestion} />
+                        {!leadFormHeading && (
+                          <button type="button"
+                            onClick={() => setLeadFormHeading(headingSuggestion)}
+                            className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors mt-1">
+                            <span className="inline-block w-4 h-px bg-primary/40" />
+                            {t("dash.content.leadform.use_suggestion")}: <span className="font-medium">{headingSuggestion}</span>
+                          </button>
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>{t("dash.content.leadform.subheading_label")}</Label>
+                        <Input value={leadFormSubheading} onChange={e => setLeadFormSubheading(e.target.value)}
+                          placeholder={subheadingSuggestion} />
+                        {!leadFormSubheading && (
+                          <button type="button"
+                            onClick={() => setLeadFormSubheading(subheadingSuggestion)}
+                            className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors mt-1">
+                            <span className="inline-block w-4 h-px bg-primary/40" />
+                            {t("dash.content.leadform.use_suggestion")}: <span className="font-medium">{subheadingSuggestion}</span>
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
                 <div className="rounded-xl bg-primary/5 border border-primary/20 p-3 text-xs text-muted-foreground space-y-1">
                   <p className="font-medium text-foreground">{t("dash.content.leadform.preview_title")}</p>
                   <p>• {t("dash.content.leadform.field_name")}</p>
