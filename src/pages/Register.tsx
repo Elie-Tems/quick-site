@@ -114,7 +114,7 @@ const Register = () => {
       // Store business name for onboarding
       localStorage.setItem("onboarding_business", formData.businessName);
       
-      const { error } = await signUp(formData.email, formData.password, {
+      const { error } = await signUp(formData.email.trim().toLowerCase(), formData.password, {
         full_name: formData.fullName,
         business_name: formData.businessName,
         referred_by: referralCode || undefined,
