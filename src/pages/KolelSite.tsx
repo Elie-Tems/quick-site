@@ -247,6 +247,84 @@ const KolelSite = () => {
         </div>
       </section>
 
+      {/* Parasha of the week */}
+      {show("parasha") && (
+        <section className="max-w-3xl mx-auto px-6 py-14">
+          <h2 className="text-2xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+            <ScrollText className="w-6 h-6" style={{ color: primary }} />
+            פרשת השבוע
+          </h2>
+          {(() => {
+            const parashaSection = (biz.content_sections || []).find((s: ContentSection) => s.type === "parasha");
+            const weeklyData = (biz as any).weekly_editor_data;
+            const parashaName = weeklyData?.parasha || parashaSection?.title;
+            const parashaNote = weeklyData?.parashaNote || parashaSection?.body;
+            if (!parashaName) return null;
+            return (
+              <div className="bg-white rounded-2xl border border-stone-200 p-6">
+                <p className="text-xl font-bold text-stone-800 mb-2">פרשת {parashaName}</p>
+                {parashaNote && <p className="text-stone-600 leading-relaxed">{parashaNote}</p>}
+              </div>
+            );
+          })()}
+        </section>
+      )}
+
+      {/* Events */}
+      {show("events") && (() => {
+        const eventSections = (biz.content_sections || []).filter((s: ContentSection) => s.type === "event");
+        if (eventSections.length === 0) return null;
+        return (
+          <section className="bg-stone-50 py-14 px-6">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
+                <Newspaper className="w-6 h-6" style={{ color: primary }} />
+                אירועים קרובים
+              </h2>
+              <div className="space-y-3">
+                {eventSections.map((ev: ContentSection) => (
+                  <div key={ev.id} className="bg-white rounded-xl border border-stone-200 px-5 py-4 flex gap-4 items-start">
+                    <div className="w-2 h-2 rounded-full mt-2 shrink-0" style={{ background: primary }} />
+                    <div>
+                      <p className="font-semibold text-stone-800">{ev.title}</p>
+                      {ev.body && <p className="text-stone-500 text-sm mt-0.5">{ev.body}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* Ask the rabbi */}
+      {show("ask_rabbi") && (
+        <section className="py-14 px-6" style={{ background: `${primary}0a` }}>
+          <div className="max-w-xl mx-auto text-center">
+            <BookOpen className="w-8 h-8 mx-auto mb-3" style={{ color: primary }} />
+            <h2 className="text-xl font-bold text-stone-800 mb-1">שאל את הרב</h2>
+            <p className="text-stone-500 text-sm mb-5">שאלות בהלכה ובאמונה - נשמח לענות</p>
+            <div className="bg-white rounded-2xl border border-stone-200 p-5 text-right">
+              <textarea
+                rows={3}
+                placeholder="כתוב את שאלתך כאן..."
+                className="w-full text-sm text-stone-700 bg-transparent resize-none focus:outline-none placeholder:text-stone-400"
+                dir="rtl"
+              />
+              <div className="flex justify-start mt-3">
+                <button
+                  className="px-5 py-2 rounded-lg text-white text-sm font-semibold"
+                  style={{ background: primary }}
+                  onClick={() => biz.email && window.open(`mailto:${biz.email}?subject=שאלה לרב`, "_blank")}
+                >
+                  שליחה
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Contact */}
       {(biz.phone || biz.email || biz.address) && (
         <section className="bg-stone-800 text-white py-10 px-6">

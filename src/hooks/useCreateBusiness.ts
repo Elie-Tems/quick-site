@@ -18,7 +18,7 @@ export interface CreateBusinessData {
   isReligiousAudience?: boolean;
   // Vertical chosen in StepBusinessType. Drives per-vertical modules
   // (src/lib/businessModules.ts) and the auto-selected storefront layout.
-  businessType?: "products" | "services" | "realestate" | "nonprofit" | "synagogue" | "vacation" | null;
+  businessType?: "products" | "services" | "realestate" | "nonprofit" | "synagogue" | "vacation" | "kolel" | null;
   businessSubType?: string | null;
 
   // Contact / social (collected in StepContact but previously not passed to DB)

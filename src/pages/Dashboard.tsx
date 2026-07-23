@@ -935,7 +935,11 @@ const Dashboard = () => {
       <div className="min-h-screen bg-muted/30">
         <DashboardHeader
           businessName={settings.name}
-          siteUrl={business?.slug ? `/${business.slug}` : "/"}
+          siteUrl={business?.slug ? (
+            getBusinessType(business) === 'kolel' ? `/kolel/${business.slug}` :
+            getBusinessType(business) === 'synagogue' ? `/shul/${business.slug}` :
+            `/store/${business.slug}`
+          ) : "/"}
           merchantLogoUrl={(business as any)?.logo_url || undefined}
           onNavigate={goToView}
         />

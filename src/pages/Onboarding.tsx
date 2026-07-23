@@ -372,7 +372,8 @@ const Onboarding = () => {
           id: p.id, name: p.name, description: p.description, price: p.price,
           image: p.image, imageUrl: p.imageUrl, categoryId: p.categoryId,
         })),
-      });
+        kolelFeatures: latestData.kolelFeatures,
+      } as any);
 
       const skipPublishPayment = import.meta.env.VITE_PUBLISH_SKIP_PAYMENT === "true";
       if (skipPublishPayment) {
