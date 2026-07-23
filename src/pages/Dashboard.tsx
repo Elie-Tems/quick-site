@@ -440,7 +440,6 @@ const Dashboard = () => {
       return; // a real error - let react-query retry; never treat as "no site"
     }
     if (businessSuccess && !business) {
-      console.log("✅ Business query succeeded with no site - redirecting to onboarding");
       navigate('/onboarding', { replace: true });
       return;
     }
@@ -764,7 +763,7 @@ const Dashboard = () => {
         if (getBusinessType(business) === 'realestate') {
           return <DashboardLeadsPipeline businessId={business?.id} />;
         }
-        return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} businessType={getBusinessType(business)} />;
+        return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} businessType={getBusinessType(business)} isLoading={ordersLoading} />;
       case 'customers':
       case 'profitability':
         return (

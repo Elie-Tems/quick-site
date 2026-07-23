@@ -21,6 +21,10 @@ export interface Order {
   items: OrderItem[];
   total: number;
   status: 'received' | 'pending_payment' | 'completed' | 'cancelled';
+  checkin_date?: string;
+  checkout_date?: string;
+  num_guests?: number;
+  unit_name?: string;
 }
 
 interface DashboardOrdersProps {
@@ -28,6 +32,7 @@ interface DashboardOrdersProps {
   onOrdersChange: (orders: Order[]) => void;
   onStatusChange?: (orderId: string, status: Order['status']) => void;
   businessType?: BusinessType;
+  isLoading?: boolean;
 }
 
 // Emoji per business type (not user-facing text, no translation needed)
@@ -131,7 +136,7 @@ const TYPE_ICON: Record<BusinessType, React.ComponentType<{ className?: string }
   vacation: ShoppingCart,
 };
 
-const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType = 'products' }: DashboardOrdersProps) => {
+const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType = 'products', isLoading = false }: DashboardOrdersProps) => {
   const { t } = useLanguage();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
@@ -305,14 +310,14 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
           </div>
 
           {/* Vacation booking details */}
-          {businessType === "vacation" && ((selectedOrder as any).checkin_date || (selectedOrder as any).checkout_date) && (
+          {businessType === "vacation" && (selectedOrder.checkin_date || selectedOrder.checkout_date) && (
             <div className="rounded-xl bg-muted/40 p-3 space-y-1 text-sm">
               <div className="flex gap-4 flex-wrap">
-                {(selectedOrder as any).checkin_date && <div><span className="text-muted-foreground">{t("dash.orders.checkin_label")} </span><b>{(selectedOrder as any).checkin_date}</b></div>}
-                {(selectedOrder as any).checkout_date && <div><span className="text-muted-foreground">{t("dash.orders.checkout_label")} </span><b>{(selectedOrder as any).checkout_date}</b></div>}
+                {selectedOrder.checkin_date && <div><span className="text-muted-foreground">{t("dash.orders.checkin_label")} </span><b>{selectedOrder.checkin_date}</b></div>}
+                {selectedOrder.checkout_date && <div><span className="text-muted-foreground">{t("dash.orders.checkout_label")} </span><b>{selectedOrder.checkout_date}</b></div>}
               </div>
-              {(selectedOrder as any).num_guests && <div><span className="text-muted-foreground">{t("dash.orders.guests_label")} </span><b>{(selectedOrder as any).num_guests}</b></div>}
-              {(selectedOrder as any).unit_name && <div><span className="text-muted-foreground">{t("dash.orders.unit_label")} </span><b>{(selectedOrder as any).unit_name}</b></div>}
+              {selectedOrder.num_guests && <div><span className="text-muted-foreground">{t("dash.orders.guests_label")} </span><b>{selectedOrder.num_guests}</b></div>}
+              {selectedOrder.unit_name && <div><span className="text-muted-foreground">{t("dash.orders.unit_label")} </span><b>{selectedOrder.unit_name}</b></div>}
             </div>
           )}
 
@@ -376,7 +381,13 @@ const DashboardOrders = ({ orders, onOrdersChange, onStatusChange, businessType 
         );
       })()}
 
-      {orders.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-20 bg-muted/40 rounded-xl animate-pulse" />
+          ))}
+        </div>
+      ) : orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center px-4">
           <div className="text-5xl mb-4">{(SECTION_CONFIG[businessType ?? "products"] ?? SECTION_CONFIG.products).emoji}</div>
           <p className="text-sm text-muted-foreground max-w-xs">
