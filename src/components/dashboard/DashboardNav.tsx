@@ -21,6 +21,7 @@ interface DashboardNavProps {
   /** התווית המדויקת למודול ("יומן ותורים" / "לידים ונכסים" / "תרומות") */
   verticalsLabel?: string;
   pendingBookingsCount?: number;
+  legalNotApproved?: boolean;
 }
 
 // Sidebar groups (desktop shows these as section headers). Order here = display
@@ -157,6 +158,7 @@ const DashboardNav = ({
   showVerticals = false,
   verticalsLabel,
   pendingBookingsCount = 0,
+  legalNotApproved = false,
 }: DashboardNavProps) => {
   const { t } = useLanguage();
   const typeConfig = TYPE_CONFIG[businessType] ?? {};
@@ -226,6 +228,9 @@ const DashboardNav = ({
                 </span>
               ) : (
                 <span className="text-xs whitespace-nowrap">{item.shortLabel || item.label}</span>
+              )}
+              {item.id === "legal" && legalNotApproved && (
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-amber-500 rounded-full" />
               )}
               {item.premium && (
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
@@ -299,6 +304,9 @@ const DashboardNav = ({
                       </span>
                     ) : (
                       <span className="truncate">{item.label}</span>
+                    )}
+                    {item.id === "legal" && legalNotApproved && (
+                      <span className="mr-auto w-2 h-2 bg-amber-500 rounded-full shrink-0" />
                     )}
                     {item.premium && (
                       <span className="mr-auto px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded">

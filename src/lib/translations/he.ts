@@ -1067,6 +1067,7 @@ const he: Record<string, string> = {
   'dash.home.type.products.add_products': 'הוסף את המוצרים שלך',
   'dash.home.todo_payments': 'חבר סליקה לקבלת תשלומים',
   'dash.home.todo_about': 'כתוב "אודות" בחנות',
+  'dash.home.todo_legal': 'אשר תקנון ומדיניות פרטיות',
   'dash.home.preview_title': 'האתר שלך במצב תצוגה מוקדמת',
   'dash.home.preview_desc': 'שדרג ל-69 ש"ח לחודש ללא התחייבות כדי שהחנות תעלה לאוויר',
   'dash.home.preview_upgrade_cta': 'שדרג עכשיו ←',

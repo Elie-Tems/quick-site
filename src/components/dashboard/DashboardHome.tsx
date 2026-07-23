@@ -1,4 +1,4 @@
-import { Eye, ChevronLeft, AlertTriangle, ShoppingCart, TrendingUp, Package, Users, CreditCard, FileText, ArrowLeft, Link2, Pencil } from "lucide-react";
+import { Eye, ChevronLeft, AlertTriangle, ShoppingCart, TrendingUp, Package, Users, CreditCard, FileText, ArrowLeft, Link2, Pencil, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DashboardView } from "./DashboardNav";
 import type { BusinessType } from "@/lib/businessModules";
@@ -69,7 +69,8 @@ const DashboardHome = ({
   };
   const lbl = typeLabels[businessType] ?? typeLabels.products;
 
-  const todos: { key: string; icon: typeof CreditCard; label: string; view: DashboardView; highlight: boolean }[] = [
+  const todos: { key: string; icon: typeof CreditCard; label: string; view: DashboardView; highlight: boolean; color?: string }[] = [
+    ...(!legalApprovedAt ? [{ key: 'legal', icon: ScrollText, label: t("dash.home.todo_legal"), view: 'legal' as DashboardView, highlight: true, color: 'amber' }] : []),
     ...(!stats.paymentEnabled ? [{ key: 'payments', icon: CreditCard, label: t("dash.home.todo_payments"), view: 'payments' as DashboardView, highlight: true }] : []),
     ...(!hasAbout ? [{ key: 'about', icon: FileText, label: t("dash.home.todo_about"), view: 'about' as DashboardView, highlight: false }] : []),
     ...(stats.totalProducts === 0 ? [{ key: 'products', icon: Package, label: lbl.addProducts, view: 'products' as DashboardView, highlight: false }] : []),
@@ -170,17 +171,26 @@ const DashboardHome = ({
                 key={todo.key}
                 onClick={() => onNavigate(todo.view)}
                 className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-right transition-colors ${
-                  todo.highlight
+                  todo.color === 'amber'
+                    ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/40 hover:bg-amber-100/70 dark:hover:bg-amber-950/50'
+                    : todo.highlight
                     ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-800/40 hover:bg-blue-100/70 dark:hover:bg-blue-950/50'
                     : 'bg-muted/40 hover:bg-muted/70 border border-transparent'
                 }`}
               >
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                  todo.highlight ? 'bg-blue-100 dark:bg-blue-900/50' : 'bg-background border border-border'
+                  todo.color === 'amber' ? 'bg-amber-100 dark:bg-amber-900/50'
+                    : todo.highlight ? 'bg-blue-100 dark:bg-blue-900/50' : 'bg-background border border-border'
                 }`}>
-                  <todo.icon className={`w-4 h-4 ${todo.highlight ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`} strokeWidth={1.8} />
+                  <todo.icon className={`w-4 h-4 ${
+                    todo.color === 'amber' ? 'text-amber-600 dark:text-amber-400'
+                      : todo.highlight ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'
+                  }`} strokeWidth={1.8} />
                 </div>
-                <span className={`text-sm font-medium flex-1 ${todo.highlight ? 'text-blue-700 dark:text-blue-300' : 'text-foreground'}`}>
+                <span className={`text-sm font-medium flex-1 ${
+                  todo.color === 'amber' ? 'text-amber-700 dark:text-amber-300'
+                    : todo.highlight ? 'text-blue-700 dark:text-blue-300' : 'text-foreground'
+                }`}>
                   {todo.label}
                 </span>
                 <ArrowLeft className="w-4 h-4 text-muted-foreground shrink-0" />

@@ -974,6 +974,7 @@ const Dashboard = () => {
             showVerticals={verticalModules.length > 0}
             verticalsLabel={verticalsLabel}
             pendingBookingsCount={pendingBookingsCount}
+            legalNotApproved={!(business as any)?.legal_approved_at}
           />
           
           <main className="flex-1 pb-20 md:pb-0">
