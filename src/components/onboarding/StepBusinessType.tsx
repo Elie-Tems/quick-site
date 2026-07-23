@@ -77,7 +77,7 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; titleKey: string; img: 
     { id: "consulting",    titleKey: "ob.bt.sub.consulting",    img: U("1552664730-d307ca884978") },
     { id: "photography",   titleKey: "ob.bt.sub.photography",   img: U("1516035069371-29a1b244cc32") },
     { id: "legal",         titleKey: "ob.bt.sub.legal",         img: U("1589829085413-56de8ae18c73") },
-    { id: "car-dealer",    titleKey: "ob.bt.sub.car-dealer",    img: U("1549317661-bd32c8ce0729") },
+    { id: "car-dealer",    titleKey: "ob.bt.sub.car-dealer",    img: U("1494976388531-d1058494cdd8") },
     { id: "barber",        titleKey: "ob.bt.sub.barber",        img: U("1503951914875-452162b0f3f1") },
     { id: "fitness",       titleKey: "ob.bt.sub.fitness",       img: U("1534438327276-14e5300c3a48") },
   ],
