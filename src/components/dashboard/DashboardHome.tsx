@@ -4,6 +4,7 @@ import type { DashboardView } from "./DashboardNav";
 import type { BusinessType } from "@/lib/businessModules";
 import ReferralBox from "./ReferralBox";
 import WowStrip from "./WowStrip";
+import DashboardAnalytics from "./DashboardAnalytics";
 import type { PopupId, PopupState } from "./PostLaunchPopups";
 import { TodayAppointmentsCard } from "./TodayAppointmentsCard";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -240,6 +241,9 @@ const DashboardHome = ({
 
       {/* 6. ReferralBox */}
       <ReferralBox />
+
+      {/* 7. Analytics */}
+      <DashboardAnalytics businessId={businessId} />
     </div>
   );
 };
