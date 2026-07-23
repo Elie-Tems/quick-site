@@ -673,7 +673,7 @@ const Dashboard = () => {
       case 'lifecycle-emails':
         return <LifecycleEmailsManager business={business as any} />;
       case 'modules':
-        return <DashboardModules business={business as any} />;
+        return <DashboardModules business={business as any} onNavigate={goToView} />;
       case 'products':
       case 'categories':
       case 'sales':

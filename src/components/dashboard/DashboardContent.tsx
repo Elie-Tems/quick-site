@@ -435,7 +435,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           ...(isTorahCenter ? [{ id: "rabbi" as ContentTab, label: t("dash.content.tab.rabbi"), icon: BookOpen }] : []),
           ...(businessType === "vacation" ? [{ id: "hosting" as ContentTab, label: t("dash.content.tab.hosting"), icon: FileText }] : []),
           ...(isDonationBased ? [{ id: "donations" as ContentTab, label: t("dash.content.tab.donations"), icon: Heart }] : []),
-          ...((businessType === "realestate" || businessType === "services") ? [{ id: "differentiation" as ContentTab, label: t("dash.content.tab.differentiation"), icon: Award }] : []),
+          ...(!isDonationBased && businessType !== "vacation" ? [{ id: "differentiation" as ContentTab, label: t("dash.content.tab.differentiation"), icon: Award }] : []),
           ...((businessType === "realestate" || businessType === "services" || businessType === "vacation" || (business as {enabled_modules?: string[] | null} | undefined)?.enabled_modules?.includes("gallery")) ? [{ id: "gallery" as ContentTab, label: t("dash.content.tab.gallery"), icon: Images }] : []),
           ...((businessType === "realestate" || businessType === "services") ? [{ id: "leadform" as ContentTab, label: t("dash.content.tab.leadform"), icon: ClipboardList }] : []),
         ]).map(({ id, label, icon: Icon }) => (

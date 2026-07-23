@@ -104,11 +104,13 @@ const StorefrontVertical = ({ business }: {
         </Section>
       )}
       <StoreDifferentiation data={(business as any).differentiation} accent={accent} />
-      <StoreGallery
-        images={(business as any).gallery_images?.images}
-        heading={(business as any).gallery_images?.heading}
-        accent={accent}
-      />
+      {modules.includes("gallery") && (
+        <StoreGallery
+          images={(business as any).gallery_images?.images}
+          heading={(business as any).gallery_images?.heading}
+          accent={accent}
+        />
+      )}
       {(business as any).lead_form_enabled && (
         <StoreLeadForm
           businessId={business.id}

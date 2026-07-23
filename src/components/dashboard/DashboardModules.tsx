@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import {
   ShoppingBag, CalendarClock, Building2, Heart, Landmark,
   Hotel, ClipboardList, Images, Check, Loader2, Blocks, Sparkles, Award, AlertTriangle, Bell,
+  FileText, HelpCircle, ArrowLeft,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -23,6 +24,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Props {
   business?: { id?: string; business_type?: string | null; enabled_modules?: string[] | null } | null;
+  onNavigate?: (view: string) => void;
 }
 
 type Live = {
@@ -60,10 +62,21 @@ type SoonItem = {
   types?: BusinessType[]; // if set, only show for these types
 };
 
+// Navigation target per module key — where to go to manage content
+const MODULE_NAV: Partial<Record<ModuleKey, string>> = {
+  gallery:   "content",
+  commerce:  "products",
+  booking:   "booking",
+  listings:  "products",
+  donations: "content",
+};
+
 // Phase-2 modules - shown as an invitation, not yet toggleable.
 const buildSoon = (t: (key: string) => string): SoonItem[] => [
-  { icon: Hotel,         color: "#6d4bd0", title: t("dash.modules.soon_rooms_title"), desc: t("dash.modules.soon_rooms_desc"), types: ["vacation", "services"] },
-  { icon: ClipboardList, color: "#c07d12", title: t("dash.modules.soon_leads_title"), desc: t("dash.modules.soon_leads_desc"), types: ["products", "nonprofit", "synagogue"] },
+  { icon: Hotel,         color: "#6d4bd0", title: t("dash.modules.soon_rooms_title"),    desc: t("dash.modules.soon_rooms_desc"),    types: ["vacation", "services"] },
+  { icon: ClipboardList, color: "#c07d12", title: t("dash.modules.soon_leads_title"),    desc: t("dash.modules.soon_leads_desc"),    types: ["products", "nonprofit", "synagogue"] },
+  { icon: FileText,      color: "#059669", title: "מאמרים ותוכן",                         desc: "הוסף מאמרים, עדכונים ומדריכים שמחזקים את האמון של הלקוחות." },
+  { icon: HelpCircle,    color: "#7c3aed", title: "שאלות נפוצות",                         desc: "ענה מראש על השאלות הנפוצות של הלקוחות ישירות באתר." },
 ];
 
 /** The module that is the core identity of each business type. Disabling it shows a warning. */
@@ -85,7 +98,7 @@ const buildPrimaryWarning = (t: (key: string) => string): Partial<Record<ModuleK
 
 const fade = (d = 0) => ({ initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: d } });
 
-const DashboardModules = ({ business }: Props) => {
+const DashboardModules = ({ business, onNavigate }: Props) => {
   const { t } = useLanguage();
   const qc = useQueryClient();
   const [pending, setPending] = useState<ModuleKey | null>(null);
@@ -173,6 +186,16 @@ const DashboardModules = ({ business }: Props) => {
                     {on && <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${m.color}1f`, color: m.color }}><Check className="w-3 h-3" /> {t("dash.modules.active_badge")}</span>}
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed mt-1">{m.desc}</p>
+                  {on && MODULE_NAV[m.key] && onNavigate && (
+                    <button
+                      onClick={() => onNavigate(MODULE_NAV[m.key]!)}
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                      style={{ color: m.color }}
+                    >
+                      ערוך תוכן
+                      <ArrowLeft className="w-3 h-3" />
+                    </button>
+                  )}
                 </div>
                 {/* Toggle */}
                 <button
