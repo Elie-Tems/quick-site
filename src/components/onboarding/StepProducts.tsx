@@ -1124,7 +1124,12 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
               <div className="flex-1 space-y-2">
                 <div className="grid grid-cols-[1fr_90px] gap-2">
                   <Input
-                    placeholder={t("ob.prod.q_name_ph")}
+                    placeholder={t(
+                      data.businessType === 'services' ? "ob.prod.q_name_ph_services" :
+                      data.businessType === 'nonprofit' ? "ob.prod.q_name_ph_nonprofit" :
+                      data.businessType === 'realestate' ? "ob.prod.q_name_ph_realestate" :
+                      "ob.prod.q_name_ph"
+                    )}
                     value={quickName}
                     onChange={e => setQuickName(e.target.value)}
                     onKeyDown={handleQuickKeyDown}
