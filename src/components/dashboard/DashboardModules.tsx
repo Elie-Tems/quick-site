@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   ShoppingBag, CalendarClock, Building2, Heart, Landmark,
-  Hotel, ClipboardList, Images, Check, Loader2, Blocks, Sparkles, Award, AlertTriangle,
+  Hotel, ClipboardList, Images, Check, Loader2, Blocks, Sparkles, Award, AlertTriangle, Bell,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -90,6 +90,12 @@ const DashboardModules = ({ business }: Props) => {
   const qc = useQueryClient();
   const [pending, setPending] = useState<ModuleKey | null>(null);
   const [warnKey, setWarnKey] = useState<ModuleKey | null>(null);
+  const [notified, setNotified] = useState<Set<string>>(new Set());
+
+  const handleNotify = (title: string) => {
+    setNotified(prev => new Set(prev).add(title));
+    toast.success(`נרשמת לרשימת ההמתנה עבור "${title}" — נעדכן אותך כשיהיה זמין`);
+  };
   const current = getEnabledModules(business as { business_type?: BusinessType } | null);
   const bType = getBusinessType(business as { business_type?: BusinessType } | null);
   const allowedKeys = ALLOWED_LIVE[bType] ?? Object.keys(MODULES) as ModuleKey[];
@@ -196,16 +202,33 @@ const DashboardModules = ({ business }: Props) => {
         <div className="grid sm:grid-cols-3 gap-3">
           {visibleSoon.map((m) => {
             const Icon = m.icon;
+            const isNotified = notified.has(m.title);
             return (
-              <div key={m.title} className="rounded-2xl border border-border bg-card/60 p-4 opacity-80">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-2" style={{ background: `${m.color}14` }}>
-                  <Icon className="w-5 h-5" style={{ color: m.color, opacity: 0.85 }} />
+              <div key={m.title} className="rounded-2xl border border-border bg-card/60 p-4 flex flex-col gap-3">
+                <div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-2" style={{ background: `${m.color}14` }}>
+                    <Icon className="w-5 h-5" style={{ color: m.color, opacity: 0.85 }} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-foreground text-sm">{m.title}</h3>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{t("dash.modules.soon_badge")}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug mt-1">{m.desc}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-foreground text-sm">{m.title}</h3>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{t("dash.modules.soon_badge")}</span>
-                </div>
-                <p className="text-xs text-muted-foreground leading-snug mt-1">{m.desc}</p>
+                <button
+                  onClick={() => !isNotified && handleNotify(m.title)}
+                  disabled={isNotified}
+                  className={`mt-auto flex items-center justify-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors w-full
+                    ${isNotified
+                      ? "bg-muted text-muted-foreground cursor-default"
+                      : "bg-muted hover:bg-muted/80 text-foreground cursor-pointer"
+                    }`}
+                >
+                  {isNotified
+                    ? <><Check className="w-3 h-3" /> נרשמת</>
+                    : <><Bell className="w-3 h-3" /> עדכנו אותי</>
+                  }
+                </button>
               </div>
             );
           })}
