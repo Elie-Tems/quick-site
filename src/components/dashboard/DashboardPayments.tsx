@@ -96,7 +96,7 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
           </div>
           <button
             type="button"
-            onClick={() => { setEditMode(true); setHasAccount(true); setProvider(connectedProvider ?? null); }}
+            onClick={() => { setEditMode(true); setProvider(connectedProvider ?? null); }}
             className="shrink-0 inline-flex items-center gap-1.5 text-xs text-[#3b6d11] hover:underline"
           >
             <Pencil className="w-3.5 h-3.5" /> {t("dash.payments.edit")}
@@ -124,16 +124,16 @@ const DashboardPayments = ({ settings }: DashboardPaymentsProps) => {
             <button
               type="button"
               onClick={() => setHasAccount(true)}
-              className="group text-right rounded-2xl border-2 border-[#639922] bg-[#eaf3de]/60 p-4 hover:bg-[#eaf3de] transition-colors"
+              className="group text-right rounded-2xl border border-border bg-card p-4 hover:border-[#639922]/50 hover:bg-[#eaf3de]/40 transition-colors"
             >
-              <CircleCheck className="w-6 h-6 text-[#3b6d11] mb-2" />
+              <CircleCheck className="w-6 h-6 text-muted-foreground mb-2 group-hover:text-[#3b6d11] transition-colors" />
               <p className="font-semibold text-foreground">{t("dash.payments.has_account_yes")}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{t("dash.payments.has_account_yes_desc")}</p>
             </button>
             <button
               type="button"
               onClick={() => setHasAccount(false)}
-              className="group text-right rounded-2xl border border-border bg-card p-4 hover:border-[#639922]/50 transition-colors"
+              className="group text-right rounded-2xl border border-border bg-card p-4 hover:border-[#639922]/50 hover:bg-[#eaf3de]/40 transition-colors"
             >
               <Sparkles className="w-6 h-6 text-muted-foreground mb-2" />
               <p className="font-semibold text-foreground">{t("dash.payments.has_account_no")}</p>
