@@ -37,6 +37,8 @@ import DashboardShipping from "@/components/dashboard/DashboardShipping";
 import DashboardPayments from "@/components/dashboard/DashboardPayments";
 import DashboardUsage from "@/components/dashboard/DashboardUsage";
 import DashboardAvailabilityCalendar from "@/components/dashboard/DashboardAvailabilityCalendar";
+import DashboardWeeklyEditor from "@/components/dashboard/DashboardWeeklyEditor";
+import DashboardWeeklyContent from "@/components/dashboard/DashboardWeeklyContent";
 import DashboardTrafficSources from "@/components/dashboard/DashboardTrafficSources";
 import DashboardInsights from "@/components/dashboard/DashboardInsights";
 import DashboardDomains from "@/components/dashboard/DashboardDomains";
@@ -912,6 +914,10 @@ const Dashboard = () => {
         );
       case 'availability':
         return <DashboardAvailabilityCalendar businessId={business?.id} />;
+      case 'weekly-editor':
+        return <DashboardWeeklyEditor businessId={business?.id} />;
+      case 'weekly-content':
+        return <DashboardWeeklyContent businessId={business?.id} />;
       default:
         return null;
     }
