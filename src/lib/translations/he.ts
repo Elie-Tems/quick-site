@@ -848,6 +848,7 @@ const he: Record<string, string> = {
   'dash.nav.grp.settings': 'הגדרות',
   'dash.nav.mgmt.nonprofit': 'ניהול תרומות',
   'dash.nav.mgmt.synagogue': 'ניהול בית הכנסת',
+  'dash.nav.mgmt.kolel': 'ניהול כולל / ישיבה',
   'dash.nav.mgmt.realestate': 'ניהול לידים',
   'dash.nav.mgmt.vacation': 'ניהול לינה',
   'dash.nav.home': 'סקירה כללית',

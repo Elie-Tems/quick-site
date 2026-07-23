@@ -34,6 +34,7 @@ const StoreAboutPage = lazy(() => import("./pages/StoreAboutPage"));
 const StoreUnsubscribe = lazy(() => import("./pages/StoreUnsubscribe"));
 const SynagogueScreen = lazy(() => import("./pages/SynagogueScreen"));
 const SynagogueSite = lazy(() => import("./pages/SynagogueSite"));
+const KolelSite = lazy(() => import("./pages/KolelSite"));
 const MyOrders = lazy(() => import("./pages/MyOrders"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -264,6 +265,7 @@ const App = () => {
                   {/* Public synagogue site + member self-service, and the display screen. */}
                   <Route path="/shul/:slug" element={<SynagogueSite />} />
                   <Route path="/shul/:slug/screen" element={<SynagogueScreen />} />
+                  <Route path="/kolel/:slug" element={<KolelSite />} />
                   <Route path="/unsubscribe" element={<PlatformUnsubscribe />} />
                   <Route path="/dashboard" element={<DashboardRoute />} />
                   <Route path="/manage-x7k9" element={<AdminDashboard />} />

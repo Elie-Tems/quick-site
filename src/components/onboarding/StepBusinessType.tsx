@@ -15,7 +15,7 @@ const SUB_TYPE_TO_CATEGORY: Record<string, BusinessCategory> = {
   legal: 'other', developer: 'other', 'car-dealer': 'automotive',
   charity: 'other', crowdfunding: 'other', community: 'other',
   education: 'other', social: 'other', animals: 'pets',
-  'torah-center': 'other', synagogue: 'other',
+  'torah-center': 'other', synagogue: 'other', 'kolel-yeshiva': 'other',
   // vacation is now a top-level BusinessType — no category mapping needed
 };
 
@@ -99,9 +99,10 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; titleKey: string; img: 
 const SHOW_INITIAL = 6;
 
 const LISTINGS_SUBTYPES = new Set(["broker", "developer", "commercial", "car-dealer"]);
-
-// A synagogue is a nonprofit that also gets the synagogue module.
 const SYNAGOGUE_SUBTYPES = new Set(["synagogue"]);
+const KOLEL_SUBTYPES = new Set(["kolel-yeshiva"]);
+// torah-center triggers a sub-sub picker (synagogue vs kolel) instead of advancing.
+const TORAH_CENTER_SUBTYPES = new Set(["torah-center"]);
 
 const ALL_SUBS_FLAT = (Object.entries(SUB_CATEGORIES) as [BusinessType, typeof SUB_CATEGORIES[BusinessType]][])
   .flatMap(([mainType, subs]) => subs.map(s => ({ ...s, mainType })));
@@ -170,6 +171,7 @@ const normalizeSearch = (s: string) => s.replace(/[״"]/g, '"').toLowerCase();
 const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
   const { t, dir } = useLanguage();
   const [activeMain, setActiveMain] = useState<BusinessType | null>(data.businessType ?? null);
+  const [torahCenterActive, setTorahCenterActive] = useState(false);
   const [search, setSearch] = useState("");
   const [showAll, setShowAll] = useState(false);
 
@@ -196,12 +198,18 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
   };
 
   const handleSubSelect = (subId: string) => {
+    if (TORAH_CENTER_SUBTYPES.has(subId)) {
+      updateData({ businessSubType: subId, businessCategory: 'other' });
+      setTorahCenterActive(true);
+      return;
+    }
     const effectiveSubType = subId === 'other' && activeMain ? `other-${activeMain}` : subId;
     updateData({
       businessSubType: effectiveSubType,
       businessCategory: SUB_TYPE_TO_CATEGORY[subId] || 'other',
       ...(LISTINGS_SUBTYPES.has(subId) ? { businessType: 'realestate' as BusinessType } : {}),
       ...(SYNAGOGUE_SUBTYPES.has(subId) ? { businessType: 'synagogue' as BusinessType } : {}),
+      ...(KOLEL_SUBTYPES.has(subId) ? { businessType: 'kolel' as BusinessType } : {}),
     });
     onNext();
   };
@@ -214,14 +222,46 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
     <div className="space-y-5">
       <div className="text-center">
         <h2 className="text-2xl font-display font-bold pv-strong mb-1">
-          {activeMain ? t("ob.bt.q_which_type") : t("ob.bt.q_what_business")}
+          {torahCenterActive ? "איזה סוג מרכז תורני?" : activeMain ? t("ob.bt.q_which_type") : t("ob.bt.q_what_business")}
         </h2>
         <p className="text-sm pv-muted">
-          {activeMain ? t("ob.bt.sub_hint") : t("ob.bt.main_hint")}
+          {torahCenterActive ? "בחר את הסוג המתאים לפונקציונליות הנכונה" : activeMain ? t("ob.bt.sub_hint") : t("ob.bt.main_hint")}
         </p>
       </div>
 
-      {!activeMain ? (
+      {torahCenterActive ? (
+        <div className="space-y-4">
+          <button
+            onClick={() => setTorahCenterActive(false)}
+            className="flex items-center gap-1.5 text-sm pv-muted hover:text-primary transition-colors"
+          >
+            <ArrowRight className={`w-4 h-4 ${dir === "ltr" ? "rotate-180" : ""}`} />
+            חזרה
+          </button>
+          <div className="grid grid-cols-2 gap-4">
+            <PhotoCard
+              img={U("1507003211169-0a1dd7228f2d")}
+              title="בית כנסת"
+              desc="עליות, נדרים, מקומות, זמני תפילה"
+              fallbackGradient={fallback(0)}
+              onClick={() => handleSubSelect("synagogue")}
+              height="240px"
+              textSize="xl"
+              dir={dir}
+            />
+            <PhotoCard
+              img={U("1524055988636-436cfa9e0201")}
+              title="כולל / ישיבה"
+              desc="תדמית, גלריה, תרומות, תוכן תורני"
+              fallbackGradient={fallback(2)}
+              onClick={() => handleSubSelect("kolel-yeshiva")}
+              height="240px"
+              textSize="xl"
+              dir={dir}
+            />
+          </div>
+        </div>
+      ) : !activeMain ? (
         <div className="space-y-4">
           <div className="relative">
             <Search className={`absolute ${searchIconSide} top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50 pointer-events-none`} />
@@ -334,7 +374,7 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
         </div>
       )}
 
-      {!activeMain && onBack && (
+      {!activeMain && !torahCenterActive && onBack && (
         <button
           onClick={onBack}
           className="w-full text-center text-sm pv-faint hover:pv-muted transition-colors py-1"
