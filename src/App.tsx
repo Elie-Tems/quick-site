@@ -152,7 +152,7 @@ const App = () => {
     try {
       if (window.top && window.top !== window.self) {
         const p = window.location.pathname;
-        const embeddable = p.startsWith("/store") || p.startsWith("/preview");
+        const embeddable = p.startsWith("/store") || p.startsWith("/preview") || new URLSearchParams(window.location.search).get("preview") === "1";
         if (!embeddable) window.top.location.replace(window.location.href);
       }
     } catch {

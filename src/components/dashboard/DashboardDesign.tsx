@@ -245,7 +245,7 @@ export default function DashboardDesign({ businessId, currentTemplateId, busines
     ...suitedLayouts.map((l) => buildTemplate(l.id, l.defaultPalette)),
     ...Object.values(storeTemplates),
   ];
-  const storeUrl = businessSlug ? `${window.location.origin}/${businessSlug}` : "about:blank";
+  const storeUrl = businessSlug ? `${window.location.origin}/${businessSlug}?preview=1` : "about:blank";
 
   return (
     <div className="flex h-full overflow-hidden">
