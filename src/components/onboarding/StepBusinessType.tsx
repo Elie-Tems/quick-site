@@ -254,7 +254,7 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {MAIN_CATEGORIES.map((cat, i) => (
                 <PhotoCard
                   key={cat.id}
