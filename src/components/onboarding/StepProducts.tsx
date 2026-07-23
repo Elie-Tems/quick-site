@@ -199,8 +199,15 @@ const DEMO_PRODUCTS_BY_CATEGORY: Partial<Record<BusinessCategory, DemoProduct[]>
   ],
 };
 
-// Business-type specific demo items (for realestate / nonprofit which are not product categories)
+// Business-type specific demo items (for realestate / nonprofit / services which are not product categories)
 const DEMO_BY_BUSINESS_TYPE: Record<string, DemoProduct[]> = {
+  services: [
+    { name: "פגישת ייעוץ ראשונית", price: 0, description: "שיחת היכרות של 30 דקות — נאבחן יחד את הצרכים ונראה איך אפשר לעזור.", imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80" },
+    { name: "ייעוץ נקודתי 60 דקות", price: 450, description: "פגישה ממוקדת לפתרון אתגר ספציפי — תוצאה ברורה בסוף הפגישה.", imageUrl: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=600&q=80" },
+    { name: "ליווי חודשי בסיסי", price: 1_500, description: "4 פגישות בחודש + זמינות בוואטסאפ לשאלות שוטפות.", imageUrl: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&q=80" },
+    { name: "חבילת בוסט עסקי", price: 3_500, description: "3 חודשי ליווי אינטנסיבי — אסטרטגיה, מדדים ותוכנית פעולה ברורה.", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80" },
+    { name: "סדנה קבוצתית", price: 800, description: "סדנה מעשית של 3 שעות לצוות — כלים, מתודולוגיות ותרגול מיידי.", imageUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80" },
+  ],
   realestate: [
     { name: "דירת 3 חדרים - תל אביב", price: 2_850_000, description: "דירה מרווחת בקומה 4, מרפסת שמש, חניה.", imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80" },
     { name: "פנטהאוז - רמת גן", price: 5_200_000, description: "פנטהאוז יוקרתי עם גג פרטי ונוף עירוני.", imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80" },
@@ -714,7 +721,7 @@ const StepProducts = ({ data, updateData, onNext, onBack }: StepProductsProps) =
   // zero products; their storefront's primary content is the booking/donation/
   // listing module instead.
   const handleContinue = () => {
-    if (data.products.length === 0 && data.businessType === "products") {
+    if (data.products.length === 0 && (data.businessType === "products" || data.businessType === "services")) {
       const now = Date.now();
       const demo = getDemoProducts(data.businessCategory, data.businessType).map((p, i) => ({
         id: `demo-${now}-${i}`,

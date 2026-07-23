@@ -3235,7 +3235,7 @@ const he: Record<string, string> = {
   'store.banners.prevBannerAriaLabel': 'הבאנר הקודם',
   'store.banners.goToBannerAriaLabel': 'עבור לבאנר',
   'store.about.heading': 'אודות {business}',
-  'store.about.filler_text': 'אנחנו מאמינים בשירות אישי, מקצועי ואמין. הצוות של {business} כאן בשבילכם בכל שאלה — מהפנייה הראשונה ועד לסיום השירות. נשמח להכיר, ליעץ ולעזור. פנו אלינו בכל עת.',
+  'store.about.filler_text': 'אנחנו מאמינים בשירות אישי, מקצועי ואמין. הצוות של {business} כאן בשבילכם בכל שאלה — מהפנייה הראשונה ועד לסיום השירות.\n\nאנחנו לא מציעים פתרונות מדף — כל לקוח מקבל מענה שנבנה בהתאם לצרכים הספציפיים שלו. הניסיון שצברנו מאפשר לנו לזהות במהירות מה באמת עובד.\n\nמוזמנים לפנות אלינו לשיחת היכרות ראשונית. נשמח לשמוע, לייעץ ולמצוא יחד את הדרך הנכונה עבורכם.',
   'store.products.sortDefault': 'ברירת מחדל',
   'store.products.sortPriceAsc': 'מחיר: נמוך לגבוה',
   'store.products.sortPriceDesc': 'מחיר: גבוה לנמוך',

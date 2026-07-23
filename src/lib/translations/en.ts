@@ -3230,7 +3230,7 @@ const en: Record<string, string> = {
   'store.banners.prevBannerAriaLabel': 'Previous banner',
   'store.banners.goToBannerAriaLabel': 'Go to banner',
   'store.about.heading': 'About {business}',
-  'store.about.filler_text': 'We believe in personal, professional, and reliable service. The {business} team is here for you with any question, from the first inquiry to the completion of service. We\'d love to get to know you, advise, and help - reach out anytime.',
+  'store.about.filler_text': 'We believe in personal, professional, and reliable service. The {business} team is here for you every step of the way — from the first inquiry to the completion of service.\n\nWe don\'t offer off-the-shelf solutions — every client receives a response built around their specific needs. Our experience allows us to quickly identify what truly works.\n\nFeel free to reach out for a free introductory call. We\'d love to hear about your goals and find the right path forward together.',
   'store.products.sortDefault': 'Default',
   'store.products.sortPriceAsc': 'Price: low to high',
   'store.products.sortPriceDesc': 'Price: high to low',
