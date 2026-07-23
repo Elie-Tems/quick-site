@@ -477,6 +477,26 @@ export function useCreateBusiness() {
         }
       }
       
+      // Send "site created" welcome email with dashboard + site links.
+      // Best-effort: never block business creation if the email fails.
+      try {
+        const siteUrl = `https://siango.app/store/${slug}`;
+        const dashboardUrl = "https://siango.app/dashboard";
+        await supabase.functions.invoke("send-platform-email", {
+          body: {
+            type: "siteReady",
+            to: data.email || user.email,
+            ctx: {
+              businessName: data.businessName,
+              siteUrl,
+              dashboardUrl,
+            },
+          },
+        });
+      } catch (e) {
+        console.error("Welcome email failed (non-fatal):", e);
+      }
+
       return { businessId, slug };
     },
     onSuccess: () => {
