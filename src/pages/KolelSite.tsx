@@ -61,7 +61,7 @@ const KolelSite = () => {
     const load = async () => {
       const { data } = await (supabase as any)
         .from("businesses")
-        .select("id, name, tagline, about_text, logo, hero_image_url, primary_color, phone, email, address, content_sections, gallery_images, enabled_features")
+        .select("id, name, tagline, about_text, logo, hero_image_url, primary_color, phone, email, address, content_sections, gallery_images, enabled_features, weekly_editor_data")
         .eq("slug", slug)
         .eq("is_published", true)
         .maybeSingle();
