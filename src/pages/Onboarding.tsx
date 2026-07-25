@@ -548,7 +548,9 @@ const Onboarding = () => {
                       >
                         {done ? <Check className="w-5 h-5" /> : <s.icon className="w-5 h-5" />}
                       </motion.div>
-                      <span className={`text-[11px] md:text-xs text-center ${on ? "text-primary font-medium" : "pv-muted"}`}>{t(s.labelKey)}</span>
+                      <span className={`text-[11px] md:text-xs text-center ${on ? "text-primary font-medium" : "pv-muted"}`}>
+                        {s.id === 5 && (data.businessType === 'kolel' || data.businessType === 'synagogue') ? 'הגדרות' : t(s.labelKey)}
+                      </span>
                     </div>
                   );
                 })}

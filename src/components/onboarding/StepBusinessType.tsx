@@ -66,7 +66,7 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; titleKey: string; img: 
     { id: "cosmetics",     titleKey: "ob.bt.sub.cosmetics",     img: U("1522335789203-aabd1fc54bc9") },
     { id: "pets",          titleKey: "ob.bt.sub.pets",          img: U("1548199973-03cce0bbc87b") },
     { id: "books",         titleKey: "ob.bt.sub.books",         img: U("1524995997946-a1c2e315a42f") },
-    { id: "flowers",       titleKey: "ob.bt.sub.flowers",       img: U("1490750967868-88338961fd3c") },
+    { id: "flowers",       titleKey: "ob.bt.sub.flowers",       img: U("1416879592639-f9e7ca70f0b2") },
   ],
   services: [
     { id: "broker",        titleKey: "ob.bt.sub.broker",        img: U("1582407947304-fd86f028f716") },
@@ -89,9 +89,9 @@ const SUB_CATEGORIES: Record<BusinessType, { id: string; titleKey: string; img: 
     { id: "synagogue",     titleKey: "ob.bt.sub.synagogue",     img: U("1507003211169-0a1dd7228f2d") },
     { id: "community",     titleKey: "ob.bt.sub.community",      img: U("1529156069898-49953e39b3ac") },
     { id: "education",     titleKey: "ob.bt.sub.education",      img: U("1580582932707-520aed937b7b") },
-    { id: "social",        titleKey: "ob.bt.sub.social",        img: U("1469571486292-0ba58a3f068b") },
+    { id: "social",        titleKey: "ob.bt.sub.social",        img: U("1593113616828-6f22bca04804") },
     { id: "animals",       titleKey: "ob.bt.sub.animals",       img: U("1548767797-d8c844163c4a") },
-    { id: "torah-center",  titleKey: "ob.bt.sub.torah-center",  img: U("1524055988636-436cfa9e0201") },
+    { id: "torah-center",  titleKey: "ob.bt.sub.torah-center",  img: U("1524995997946-a1c2e315a42f") },
   ],
   synagogue: [],
 };
@@ -250,7 +250,7 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
               dir={dir}
             />
             <PhotoCard
-              img={U("1524055988636-436cfa9e0201")}
+              img={U("1507003211169-0a1dd7228f2d")}
               title="כולל / ישיבה"
               desc="תדמית, גלריה, תרומות, תוכן תורני"
               fallbackGradient={fallback(2)}
