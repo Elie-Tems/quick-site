@@ -938,7 +938,7 @@ const Dashboard = () => {
           siteUrl={business?.slug ? (
             getBusinessType(business) === 'kolel' ? `/kolel/${business.slug}` :
             getBusinessType(business) === 'synagogue' ? `/shul/${business.slug}` :
-            `/store/${business.slug}`
+            `/${business.slug}`
           ) : "/"}
           merchantLogoUrl={(business as any)?.logo_url || undefined}
           onNavigate={goToView}

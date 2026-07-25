@@ -226,7 +226,7 @@ const DashboardHome = ({
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-amber-800 dark:text-amber-200">{t("dash.home.slug_warning_title")}</p>
             <p className="text-xs text-amber-700/80 dark:text-amber-300/70 mt-0.5 truncate" dir="ltr">
-              siango.app/store/{storeSlug}
+              siango.app/{storeSlug}
             </p>
           </div>
           <button

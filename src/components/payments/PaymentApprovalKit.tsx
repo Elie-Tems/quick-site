@@ -17,7 +17,7 @@ const PaymentApprovalKit = () => {
   if (!biz) return null;
 
   const slug = biz.slug;
-  const siteUrl = `${SITE_BASE}/store/${slug}`;
+  const siteUrl = `${SITE_BASE}/${slug}`;
   const published = !!biz.is_published;
 
   const checks = [
