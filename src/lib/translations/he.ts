@@ -428,6 +428,7 @@ const he: Record<string, string> = {
   'ob.bt.sub.car-dealer': 'רכב / מכירת רכבים',
   'ob.bt.sub.barber': 'מספרה / ספר',
   'ob.bt.sub.fitness': 'כושר / פילאטיס',
+  'ob.bt.sub.marketing': 'שיווק / פרסום',
   'ob.bt.sub.charity': 'תרומות כלליות',
   'ob.bt.sub.crowdfunding': 'גיוס המונים',
   'ob.bt.sub.synagogue': 'מרכז תורני / קהילה',
