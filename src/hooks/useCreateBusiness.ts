@@ -480,7 +480,7 @@ export function useCreateBusiness() {
       // Send "site created" welcome email with dashboard + site links.
       // Best-effort: never block business creation if the email fails.
       try {
-        const siteUrl = `https://siango.app/store/${slug}`;
+        const siteUrl = `https://siango.app/${slug}`;
         const dashboardUrl = "https://siango.app/dashboard";
         await supabase.functions.invoke("send-platform-email", {
           body: {
