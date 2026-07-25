@@ -369,7 +369,7 @@ const StepBusinessType = ({ data, updateData, onNext, onBack }: Props) => {
               className="mt-1 w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-colors"
               style={{ background: "var(--color-primary, #22c55e)", color: "#fff" }}
             >
-              {t("ob.bt.other")}
+              {t(["products","services","nonprofit","vacation"].includes(activeMain ?? "") ? `ob.bt.other.${activeMain}` : "ob.bt.other")}
             </button>
           )}
         </div>
