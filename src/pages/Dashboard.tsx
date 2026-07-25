@@ -39,6 +39,7 @@ import DashboardUsage from "@/components/dashboard/DashboardUsage";
 import DashboardAvailabilityCalendar from "@/components/dashboard/DashboardAvailabilityCalendar";
 import DashboardWeeklyEditor from "@/components/dashboard/DashboardWeeklyEditor";
 import DashboardWeeklyContent from "@/components/dashboard/DashboardWeeklyContent";
+import SynagogueScheduleManager from "@/components/dashboard/SynagogueScheduleManager";
 import DashboardTrafficSources from "@/components/dashboard/DashboardTrafficSources";
 import DashboardInsights from "@/components/dashboard/DashboardInsights";
 import DashboardDomains from "@/components/dashboard/DashboardDomains";
@@ -918,6 +919,8 @@ const Dashboard = () => {
         return <DashboardWeeklyEditor businessId={business?.id} />;
       case 'weekly-content':
         return <DashboardWeeklyContent businessId={business?.id} />;
+      case 'synagogue-schedule':
+        return <SynagogueScheduleManager businessId={business?.id} />;
       default:
         return null;
     }

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import type { BusinessType } from "@/lib/businessModules";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails' | 'modules' | 'availability' | 'weekly-editor' | 'weekly-content';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails' | 'modules' | 'availability' | 'weekly-editor' | 'weekly-content' | 'synagogue-schedule';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -81,6 +81,7 @@ const TYPE_CONFIG: Record<BusinessType, {
     },
     extraNavItems: [
       { id: "weekly-editor" as DashboardView, labelKey: "dash.nav.weekly_editor", shortLabelKey: "dash.nav.weekly_editor_short", icon: CalendarDays, group: "ניהול" as const },
+      { id: "synagogue-schedule" as DashboardView, labelKey: "dash.nav.synagogue_schedule", shortLabelKey: "dash.nav.synagogue_schedule_short", icon: CalendarClock, group: "ניהול" as const },
     ],
   },
   kolel: {

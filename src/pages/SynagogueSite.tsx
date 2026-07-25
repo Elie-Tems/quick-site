@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Clock, ScrollText, Heart, Phone, Mail, MapPin, Image } from "lucide-react";
+import { Loader2, Clock, ScrollText, Heart, Phone, Mail, MapPin, Image, CalendarDays } from "lucide-react";
 import NedarimCheckout from "@/components/storefront/NedarimCheckout";
 import DonationWidget from "@/components/storefront/DonationWidget";
 import type { NedarimIframeParams } from "@/lib/nedarim";
@@ -12,7 +12,8 @@ import type { NedarimIframeParams } from "@/lib/nedarim";
  * Route: /shul/:slug
  */
 
-interface Zman { name: string; city: string | null; nusach: string | null; hebrewDate: string | null; parsha: string | null; zmanim: Record<string, string | null>; prayerTimes: Record<string, string>; }
+interface ShulEvent { id: string; title: string; date: string; time?: string; description?: string }
+interface Zman { name: string; city: string | null; nusach: string | null; hebrewDate: string | null; parsha: string | null; zmanim: Record<string, string | null>; prayerTimes: Record<string, string>; events?: ShulEvent[] }
 interface Pledge { id: string; member_name: string; pledge_type: string; label: string | null; amount: number; }
 
 interface Biz {
@@ -207,6 +208,36 @@ const SynagogueSite = () => {
                   <img src={img.url} alt={img.caption || ""} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Upcoming events */}
+      {z?.events && z.events.length > 0 && (
+        <section className="max-w-3xl mx-auto px-6 py-10">
+          <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-2 font-bold text-stone-800 mb-4 text-xl">
+              <CalendarDays className="w-5 h-5" style={{ color: primary }} />
+              אירועים קרובים
+            </div>
+            <div className="space-y-3">
+              {z.events.map(ev => {
+                const fmtDate = (() => { try { return new Date(ev.date + "T12:00:00").toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" }); } catch { return ev.date; } })();
+                return (
+                  <div key={ev.id} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: `${primary}0d`, border: `1px solid ${primary}25` }}>
+                    <div className="shrink-0 text-center w-12">
+                      <div className="text-xs font-medium" style={{ color: `${primary}99` }}>{fmtDate.split(" ")[0]}</div>
+                      <div className="text-xl font-extrabold leading-none" style={{ color: primary }}>{new Date(ev.date + "T12:00:00").getDate()}</div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-stone-800 text-sm">{ev.title}</p>
+                      {ev.time && <p className="text-xs text-stone-500 mt-0.5">{ev.time}</p>}
+                      {ev.description && <p className="text-xs text-stone-500 mt-0.5">{ev.description}</p>}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>

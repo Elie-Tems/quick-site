@@ -66,6 +66,14 @@ Deno.serve(async (req) => {
     if (hRes.ok) { const h = await hRes.json(); hebrewDate = h?.hebrew ?? null; parsha = (h?.events ?? []).find((e: string) => e?.startsWith("Parashat")) ?? null; }
   } catch (_e) { /* ignore */ }
 
+  const today = `${gy}-${String(gm).padStart(2, "0")}-${String(gd).padStart(2, "0")}`;
+  const upcomingEvents = Array.isArray(s?.events)
+    ? (s.events as { id: string; title: string; date: string; time?: string; description?: string }[])
+        .filter(e => e.date >= today)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 10)
+    : [];
+
   return json({
     name: biz.name,
     slug: biz.slug,
@@ -77,5 +85,6 @@ Deno.serve(async (req) => {
     prayerTimes: s?.prayer_times ?? {},
     parnas: s?.parnas ?? null,
     announcements: s?.announcements ?? null,
+    events: upcomingEvents,
   });
 });

@@ -917,6 +917,8 @@ const he: Record<string, string> = {
   'dash.nav.ov.kolel_products_short': 'שיעורים',
   'dash.nav.weekly_editor': 'עריכה שבועית',
   'dash.nav.weekly_editor_short': 'שבועי',
+  'dash.nav.synagogue_schedule': 'זמני תפילה ואירועים',
+  'dash.nav.synagogue_schedule_short': 'לוח זמנים',
   'dash.nav.weekly_content': 'תוכן שבועי',
   'dash.nav.weekly_content_short': 'שבועי',
   'dash.nav.view_site': 'צפה באתר',
