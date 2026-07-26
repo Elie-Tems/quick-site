@@ -81,20 +81,27 @@ const Dashboard = () => {
   // Check for new referral rewards and show toast
   useReferralRewardNotification();
   
-  const [currentView, setCurrentView] = useState<DashboardView>('home');
+  const [currentView, setCurrentView] = useState<DashboardView>(() => {
+    const saved = sessionStorage.getItem('dashboard_view');
+    return (saved as DashboardView) || 'home';
+  });
   // Lightweight navigation history so every drill-in screen (e.g. an add-on demo
   // opened from "תוספות וכלים") has a working "חזרה" button. User navigation goes
   // through `goToView`; internal tab-redirects keep using setCurrentView directly
   // so they don't pollute the back stack.
   const [viewHistory, setViewHistory] = useState<DashboardView[]>([]);
+  const navigateTo = (v: DashboardView) => {
+    sessionStorage.setItem('dashboard_view', v);
+    setCurrentView(v);
+  };
   const goToView = (v: DashboardView) => {
     setViewHistory((h) => (currentView !== v ? [...h, currentView] : h));
-    setCurrentView(v);
+    navigateTo(v);
   };
   const goBack = () => {
     setViewHistory((h) => {
       if (!h.length) return h;
-      setCurrentView(h[h.length - 1]);
+      navigateTo(h[h.length - 1]);
       return h.slice(0, -1);
     });
   };
@@ -117,8 +124,8 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase.functions.invoke("addon-subscribe", { body: { addon, businessId: business.id } });
       if (error) { toast.error(await edgeErrorMessage(error, "לא הצלחנו להפעיל כרגע. נסו שוב עוד רגע.")); return; }
-      if (data?.needsSubscription) { toast.error(data.message || "צריך מנוי פרסום פעיל כדי להוסיף תוספת."); setCurrentView('subscription'); return; }
-      if (data?.needsCard) { toast.error(data.message || "אין כרטיס שמור. יש לפרסם אתר תחילה."); setCurrentView('subscription'); return; }
+      if (data?.needsSubscription) { toast.error(data.message || "צריך מנוי פרסום פעיל כדי להוסיף תוספת."); navigateTo('subscription'); return; }
+      if (data?.needsCard) { toast.error(data.message || "אין כרטיס שמור. יש לפרסם אתר תחילה."); navigateTo('subscription'); return; }
       if (data?.declined) { toast.error(data.error || "התשלום נדחה. בדקו את הכרטיס ונסו שוב."); return; }
       if (!data?.ok) throw new Error(data?.error || "failed");
       const label = addon === "crm" ? "CRM" : "אנליטיקה";
@@ -242,9 +249,9 @@ const Dashboard = () => {
   const [analyticsTab, setAnalyticsTab] = useState<'insights' | 'traffic' | 'ad-budget'>('insights');
   // Redirect legacy nav targets into the matching hub tab.
   useEffect(() => {
-    if (currentView === 'categories') { setProductsTab('categories'); setCurrentView('products'); }
-    else if (currentView === 'traffic') { setAnalyticsTab('traffic'); setCurrentView('insights'); }
-    else if (currentView === 'ad-budget') { setAnalyticsTab('ad-budget'); setCurrentView('insights'); }
+    if (currentView === 'categories') { setProductsTab('categories'); navigateTo('products'); }
+    else if (currentView === 'traffic') { setAnalyticsTab('traffic'); navigateTo('insights'); }
+    else if (currentView === 'ad-budget') { setAnalyticsTab('ad-budget'); navigateTo('insights'); }
   }, [currentView]);
 
   // Handle sale updates
@@ -709,8 +716,8 @@ const Dashboard = () => {
                 onProductsChange={handleProductsChange}
                 businessId={business?.id}
                 categories={productCategories}
-                onNavigateToAI={() => setCurrentView('ai-images')}
-                onNavigateToSubscription={() => setCurrentView('subscription')}
+                onNavigateToAI={() => navigateTo('ai-images')}
+                onNavigateToSubscription={() => navigateTo('subscription')}
                 initialCategoryFilterId={productsCategoryFilter}
                 onNavigateToCategories={() => setProductsTab('categories')}
                 businessType={getBusinessType(business)}
@@ -777,7 +784,7 @@ const Dashboard = () => {
         return (
           <DashboardCampaigns 
             businessId={business?.id}
-            onNavigateToSubscription={() => setCurrentView('subscription')}
+            onNavigateToSubscription={() => navigateTo('subscription')}
           />
         );
       case 'coupons':
@@ -786,8 +793,8 @@ const Dashboard = () => {
         return (
           <DashboardAIImages
             businessId={business?.id}
-            onNavigateToSubscription={() => setCurrentView('subscription')}
-            onNavigateToProducts={() => setCurrentView('products')}
+            onNavigateToSubscription={() => navigateTo('subscription')}
+            onNavigateToProducts={() => navigateTo('products')}
           />
         );
       case 'ai-generated-images':
@@ -838,7 +845,7 @@ const Dashboard = () => {
       case 'whatsapp':
         return <DashboardWhatsApp businessId={business?.id} />;
       case 'email':
-        return <DashboardEmail businessId={business?.id} onGoToDomains={() => setCurrentView('domains')} />;
+        return <DashboardEmail businessId={business?.id} onGoToDomains={() => navigateTo('domains')} />;
       case 'upgrades':
         return <DashboardUpgrades onNavigate={goToView} business={business as any} />;
       case 'tracking':
@@ -883,7 +890,7 @@ const Dashboard = () => {
             banners={banners}
             onBannersChange={handleBannersChange}
             businessId={business?.id}
-            onNavigateToSubscription={() => setCurrentView('subscription')}
+            onNavigateToSubscription={() => navigateTo('subscription')}
           />
         );
       case 'settings':
@@ -963,7 +970,7 @@ const Dashboard = () => {
           />
           
           <main className="flex-1 pb-20 md:pb-0">
-            <SubscriptionAlert onManage={() => setCurrentView('subscription')} />
+            <SubscriptionAlert onManage={() => navigateTo('subscription')} />
             {viewHistory.length > 0 && (
               <div className="px-4 pt-4 -mb-2">
                 <button
