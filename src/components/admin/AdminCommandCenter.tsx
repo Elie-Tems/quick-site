@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   UserPlus, Globe, CreditCard, ShoppingCart, TrendingUp, Building2,
   Users, AlertTriangle, Wallet, XCircle, Activity, BadgeDollarSign,
-  ExternalLink, RefreshCw, Loader2, ChevronLeft,
+  ExternalLink, RefreshCw, Loader2, ChevronLeft, CheckCircle2,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useCommandCenter } from "@/hooks/useCommandCenter";
@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import AdminActivityFeed from "./AdminActivityFeed";
 
 const fmt = (n: number) => n.toLocaleString("he-IL");
 const ils = (n: number) => `₪${fmt(Math.round(n))}`;
@@ -234,22 +235,23 @@ function CancellationsModal() {
 
 // --- Main Component ---
 
-const AdminCommandCenter = () => {
+const AdminCommandCenter = ({ onNavigate }: { onNavigate: (area: string) => void }) => {
   const { data, isLoading } = useCommandCenter();
   const t = data?.today;
   const k = data?.kpis;
   const a = data?.alerts;
 
-  const [activeModal, setActiveModal] = useState<"balance" | "domains" | "cancellations" | null>(null);
+  const delta = (today: number, yesterday: number): ReactNode => {
+    if (yesterday === 0 && today === 0) return <span className="text-muted-foreground">= אתמול</span>;
+    if (yesterday === 0) return <span className="text-green-600">↑ מאתמול</span>;
+    const diff = today - yesterday;
+    if (diff === 0) return <span className="text-muted-foreground">= אתמול</span>;
+    return diff > 0
+      ? <span className="text-green-600">↑{diff} מאתמול</span>
+      : <span className="text-destructive">↓{Math.abs(diff)} מאתמול</span>;
+  };
 
-  const pulse = [
-    { label: "נרשמו היום", value: t?.signups, icon: UserPlus, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "פורסמו היום", value: t?.published, icon: Globe, color: "text-violet-500", bg: "bg-violet-500/10" },
-    { label: "מנויים חדשים", value: t?.newSubscribers, icon: CreditCard, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "הזמנות היום", value: t?.orders, icon: ShoppingCart, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { label: "מחזור חנויות היום", value: t ? ils(t.gmv) : undefined, icon: BadgeDollarSign, color: "text-green-600", bg: "bg-green-600/10" },
-    { label: "דומיינים חדשים", value: t?.newDomains, icon: Globe, color: "text-cyan-500", bg: "bg-cyan-500/10" },
-  ];
+  const [activeModal, setActiveModal] = useState<"balance" | "domains" | "cancellations" | "paymentErrors" | "unpublished" | null>(null);
 
   const kpis = [
     { label: "הכנסה חודשית", value: k ? ils(k.mrr) : undefined, icon: TrendingUp },
@@ -260,32 +262,49 @@ const AdminCommandCenter = () => {
   ];
 
   const alerts: {
-    key: "balance" | "domains" | "cancellations";
+    key: "balance" | "domains" | "cancellations" | "paymentErrors" | "unpublished";
     label: string;
     icon: typeof AlertTriangle;
+    severity: "danger" | "warning";
+    onClickOverride?: () => void;
   }[] = [];
-  if (a?.lowDomainBalance) alerts.push({ key: "balance", label: `יתרת Openprovider נמוכה: ${a.lowDomainBalance.currency} ${a.lowDomainBalance.balance} - כדאי לטעון`, icon: Wallet });
-  if (a?.failedDomainOrders) alerts.push({ key: "domains", label: `${a.failedDomainOrders} רכישות דומיין נכשלו וממתינות לטיפול`, icon: AlertTriangle });
-  if (a?.pendingCancellations) alerts.push({ key: "cancellations", label: `${a.pendingCancellations} מנויים סימנו ביטול עתידי`, icon: XCircle });
+
+  if (a?.lowDomainBalance)
+    alerts.push({ key: "balance", label: `יתרת Openprovider נמוכה: ${a.lowDomainBalance.currency} ${a.lowDomainBalance.balance} — כדאי לטעון`, icon: Wallet, severity: "danger" });
+  if (a?.failedDomainOrders)
+    alerts.push({ key: "domains", label: `${a.failedDomainOrders} רכישות דומיין נכשלו`, icon: AlertTriangle, severity: "danger" });
+  if (a?.paymentErrors)
+    alerts.push({ key: "paymentErrors", label: `${a.paymentErrors} שגיאות תשלום של סוחרים`, icon: XCircle, severity: "danger", onClickOverride: () => onNavigate("payments") });
+  if (a?.pendingCancellations)
+    alerts.push({ key: "cancellations", label: `${a.pendingCancellations} מנויים סימנו ביטול עתידי`, icon: XCircle, severity: "warning" });
+  if (a?.unpublishedAfter5Days)
+    alerts.push({ key: "unpublished", label: `${a.unpublishedAfter5Days} סוחרים נרשמו לפני 5+ ימים ועדיין לא פרסמו`, icon: AlertTriangle, severity: "warning", onClickOverride: () => onNavigate("merchants") });
 
   const modalTitles: Record<string, string> = {
     balance: "יתרת Openprovider",
     domains: "רכישות דומיין שנכשלו",
     cancellations: "ביטולים עתידיים",
+    paymentErrors: "שגיאות תשלום",
+    unpublished: "סוחרים שלא פרסמו",
   };
 
   return (
     <div className="space-y-6" dir="rtl">
       {/* Smart alerts */}
-      {alerts.length > 0 && (
-        <div className="space-y-2">
+      {alerts.length > 0 ? (
+        <div className="space-y-1.5">
           {alerts.map((al) => {
             const Icon = al.icon;
+            const isDanger = al.severity === "danger";
             return (
               <button
                 key={al.key}
-                onClick={() => setActiveModal(al.key)}
-                className="w-full flex items-center gap-2.5 rounded-xl border border-destructive/40 bg-destructive/5 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors cursor-pointer text-right"
+                onClick={() => al.onClickOverride ? al.onClickOverride() : setActiveModal(al.key as any)}
+                className={`w-full flex items-center gap-2.5 rounded-xl border px-4 py-2.5 text-sm transition-colors cursor-pointer text-right ${
+                  isDanger
+                    ? "border-destructive/40 bg-destructive/5 text-destructive hover:bg-destructive/10"
+                    : "border-amber-400/40 bg-amber-50/60 text-amber-700 hover:bg-amber-50 dark:bg-amber-950/20 dark:text-amber-400"
+                }`}
               >
                 <Icon className="h-4 w-4 shrink-0" />
                 <span className="flex-1">{al.label}</span>
@@ -293,6 +312,11 @@ const AdminCommandCenter = () => {
               </button>
             );
           })}
+        </div>
+      ) : (
+        <div className="flex items-center gap-2.5 rounded-xl border border-green-400/40 bg-green-50/60 dark:bg-green-950/20 px-4 py-2.5 text-sm text-green-700 dark:text-green-400">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span>הכל תקין — אין התראות פתוחות</span>
         </div>
       )}
 
@@ -319,22 +343,28 @@ const AdminCommandCenter = () => {
 
       {/* Today's pulse */}
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
-          <Activity className="h-4 w-4 text-primary" /> הדופק של היום
+        <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
+          <Activity className="h-4 w-4 text-primary" /> דופק היום
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {pulse.map((p, i) => {
-            const Icon = p.icon;
-            return (
-              <div key={i} className="rounded-xl border border-border bg-card p-4">
-                <div className={`w-9 h-9 rounded-lg ${p.bg} flex items-center justify-center mb-2`}>
-                  <Icon className={`h-4.5 w-4.5 ${p.color}`} />
-                </div>
-                <div className="text-2xl font-bold text-foreground">{isLoading || p.value === undefined ? "…" : p.value}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">{p.label}</div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+          {[
+            { label: "נרשמו", today: t?.signups, yest: data?.yesterday?.signups },
+            { label: "פורסמו", today: t?.published, yest: data?.yesterday?.published },
+            { label: "מנויים חדשים", today: t?.newSubscribers, yest: data?.yesterday?.newSubscribers },
+            { label: "הזמנות", today: t?.orders, yest: data?.yesterday?.orders },
+            { label: "מחזור חנויות", today: t ? ils(t.gmv) : undefined, yest: undefined },
+            { label: "דומיינים", today: t?.newDomains, yest: data?.yesterday?.newDomains },
+          ].map((p, i) => (
+            <div key={i} className="rounded-xl border border-border bg-card px-3 py-2.5">
+              <div className="text-xl font-bold text-foreground leading-none">
+                {isLoading || p.today === undefined ? "…" : p.today}
               </div>
-            );
-          })}
+              <div className="text-xs text-muted-foreground mt-1">{p.label}</div>
+              {p.yest !== undefined && !isLoading && p.today !== undefined && (
+                <div className="text-xs mt-1">{delta(p.today as number, p.yest)}</div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -357,6 +387,12 @@ const AdminCommandCenter = () => {
             );
           })}
         </div>
+      </div>
+
+      {/* Recent activity */}
+      <div>
+        <h3 className="text-sm font-semibold text-muted-foreground mb-2">פעילות אחרונה</h3>
+        <AdminActivityFeed />
       </div>
     </div>
   );

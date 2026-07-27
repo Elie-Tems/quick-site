@@ -36,15 +36,11 @@ import AdminUnsubscribes from "./AdminUnsubscribes";
 import AdminSystem from "./AdminSystem";
 
 // The overview landing (command center + activity + revenue + KPI cards).
-function OverviewPanel({ stats, statsLoading }: { stats: any; statsLoading: boolean }) {
+function OverviewPanel({ stats, statsLoading, onNavigate }: { stats: any; statsLoading: boolean; onNavigate: (area: string) => void }) {
   return (
     <div className="space-y-6">
-      <AdminCommandCenter />
+      <AdminCommandCenter onNavigate={onNavigate} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div>
-          <h3 className="text-sm font-semibold mb-3 text-muted-foreground">פעילות אחרונה</h3>
-          <AdminActivityFeed />
-        </div>
         <div>
           <h3 className="text-sm font-semibold mb-3 text-muted-foreground">הכנסה חודשית</h3>
           <AdminMRR />
@@ -58,13 +54,13 @@ function OverviewPanel({ stats, statsLoading }: { stats: any; statsLoading: bool
 // ── The 7 areas from the admin spec. Each area is ONE screen with internal tabs;
 // the tabs reuse the existing screens as panels. Nothing removed - just unified so
 // the merchant-management / revenue reports live together instead of scattered nav.
-interface Tab { key: string; label: string; render: (ctx: { stats: any; statsLoading: boolean }) => JSX.Element; }
+interface Tab { key: string; label: string; render: (ctx: { stats: any; statsLoading: boolean; onNavigate: (area: string) => void }) => JSX.Element; }
 interface Area { id: string; label: string; icon: React.ComponentType<{ className?: string }>; tabs: Tab[]; }
 
 const AREAS: Area[] = [
   {
     id: "control", label: "מרכז שליטה", icon: LayoutDashboard, tabs: [
-      { key: "overview", label: "סקירה", render: ({ stats, statsLoading }) => <OverviewPanel stats={stats} statsLoading={statsLoading} /> },
+      { key: "overview", label: "סקירה", render: ({ stats, statsLoading, onNavigate }) => <OverviewPanel stats={stats} statsLoading={statsLoading} onNavigate={onNavigate} /> },
       { key: "activity", label: "פעילות חיה", render: () => <AdminActivityFeed /> },
     ],
   },
@@ -219,7 +215,7 @@ const AdminDashboardContent = () => {
         )}
 
         <div className="p-6">
-          {tab.render({ stats, statsLoading })}
+          {tab.render({ stats, statsLoading, onNavigate: selectArea })}
         </div>
       </main>
     </div>
