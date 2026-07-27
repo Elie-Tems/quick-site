@@ -61,38 +61,48 @@ Deno.serve(async (req) => {
     return json({ error: "businessId, items and customer are required" }, 400);
   }
 
-  const { data: business } = await admin
-    .from("businesses")
-    .select("id, name, delivery_fee, email")
-    .eq("id", businessId)
-    .single();
+  // These four reads are independent of each other - run them in one round-trip
+  // batch instead of a sequential await chain. Checkout is the platform's most
+  // latency-sensitive action and the serial version paid 4 full DB round-trips
+  // of pure waiting before it could even validate the order.
+  const windowStart = new Date(Date.now() - 60_000).toISOString();
+  const [
+    { data: business },
+    { count: sameEmailCount },
+    { count: storeBurst },
+    { data: products },
+  ] = await Promise.all([
+    admin
+      .from("businesses")
+      .select("id, name, delivery_fee, email")
+      .eq("id", businessId)
+      .single(),
+    admin
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", businessId)
+      .eq("customer_email", customer.email)
+      .gte("created_at", windowStart),
+    admin
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", businessId)
+      .gte("created_at", windowStart),
+    admin
+      .from("products")
+      .select("id, name, price, sale_price, is_on_sale, active, cost_price")
+      .eq("business_id", businessId)
+      .in("id", items.map((i) => i.product_id)),
+  ]);
   if (!business) return json({ error: "Business not found" }, 404);
 
   // Order-spam guard (this endpoint is public). Cap rapid repeat orders from the
   // same email and overall burst per store in a short window. Best-effort, on top
   // of the server-authoritative pricing below.
-  const windowStart = new Date(Date.now() - 60_000).toISOString();
-  const { count: sameEmailCount } = await admin
-    .from("orders")
-    .select("id", { count: "exact", head: true })
-    .eq("business_id", businessId)
-    .eq("customer_email", customer.email)
-    .gte("created_at", windowStart);
   if ((sameEmailCount ?? 0) >= 3) return json({ error: "rate_limited" }, 429);
-
-  const { count: storeBurst } = await admin
-    .from("orders")
-    .select("id", { count: "exact", head: true })
-    .eq("business_id", businessId)
-    .gte("created_at", windowStart);
   if ((storeBurst ?? 0) >= 30) return json({ error: "rate_limited" }, 429);
 
-  // Re-fetch canonical prices from DB — never trust client-supplied prices
-  const { data: products } = await admin
-    .from("products")
-    .select("id, name, price, sale_price, is_on_sale, active, cost_price")
-    .eq("business_id", businessId)
-    .in("id", items.map((i) => i.product_id));
+  // Canonical prices come from the DB — never trust client-supplied prices.
   if (!products?.length) return json({ error: "Products not found" }, 400);
 
   // A client-supplied variant_id must actually belong to the product/business being

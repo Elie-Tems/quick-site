@@ -61,19 +61,32 @@ export interface Banner {
 export function useStorefront(slug: string | undefined) {
   // Check if we're in preview mode
   const isPreviewMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('preview') === 'true';
-  
-  // Fetch business by slug
-  const businessQuery = useQuery({
-    queryKey: ['storefront-business', slug, isPreviewMode],
+
+  // ONE request for the whole storefront via PostgREST FK embedding. The previous
+  // shape was a 3-hop waterfall (business by slug -> then products/banners/
+  // categories -> then product_custom_fields), each hop a full round-trip to the
+  // DB, which on mobile added 1-2s before anything could render. RLS semantics
+  // are unchanged - the same tables are read with the same role.
+  const storeQuery = useQuery({
+    queryKey: ['storefront', slug, isPreviewMode],
     queryFn: async () => {
       if (!slug) throw new Error('No slug provided');
-      
-      const { data, error } = await supabase
+
+      let q = supabase
         .from('businesses')
-        .select('*')
+        .select('*, products(*, product_custom_fields(*)), banners(*), product_categories(id, name, sort_order)')
         .eq('slug', slug)
-        .single();
-      
+        .eq('banners.active', true)
+        .order('sort_order', { ascending: true, referencedTable: 'products' })
+        .order('sort_order', { ascending: true, referencedTable: 'banners' })
+        .order('sort_order', { ascending: true, referencedTable: 'product_categories' });
+
+      // In preview mode the owner sees inactive products too.
+      if (!isPreviewMode) {
+        q = q.eq('products.active', true);
+      }
+
+      const { data, error } = await q.single();
       if (error) throw error;
 
       // Suspended sites are taken offline (data retained); show an "unavailable" page.
@@ -87,7 +100,7 @@ export function useStorefront(slug: string | undefined) {
         if (!isPreviewMode) {
           throw new Error('SITE_NOT_PUBLISHED');
         }
-        
+
         // In development mode, skip auth check for easier testing
         const isDevelopment = import.meta.env.DEV;
         if (isDevelopment) {
@@ -101,12 +114,27 @@ export function useStorefront(slug: string | undefined) {
           }
         }
       }
-      
+
       const raw = data as Record<string, unknown>;
-      return {
-        ...raw,
-        hero_benefits: Array.isArray(raw?.hero_benefits) ? (raw.hero_benefits as string[]) : null,
+      const embeddedProducts = (Array.isArray(raw.products) ? raw.products : []) as (Product & { product_custom_fields?: ProductCustomField[] })[];
+      const products: Product[] = embeddedProducts.map((p) => {
+        const { product_custom_fields, ...rest } = p as any;
+        const fields = (Array.isArray(product_custom_fields) ? product_custom_fields : [])
+          .slice()
+          .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+        return { ...rest, custom_fields: fields } as Product;
+      });
+      const banners = (Array.isArray(raw.banners) ? raw.banners : []) as Banner[];
+      const categories = (Array.isArray(raw.product_categories) ? raw.product_categories : []) as { id: string; name: string; sort_order: number | null }[];
+
+      // Strip the embedded arrays off the business object itself.
+      const { products: _p, banners: _b, product_categories: _c, ...bizRaw } = raw as any;
+      const business = {
+        ...bizRaw,
+        hero_benefits: Array.isArray(bizRaw?.hero_benefits) ? (bizRaw.hero_benefits as string[]) : null,
       } as Business;
+
+      return { business, products, banners, categories };
     },
     enabled: !!slug,
     retry: 1,
@@ -116,106 +144,13 @@ export function useStorefront(slug: string | undefined) {
     gcTime: 5 * 60_000,
   });
 
-  // Fetch products for this business with custom fields
-  const productsQuery = useQuery({
-    queryKey: ['storefront-products', businessQuery.data?.id, isPreviewMode],
-    queryFn: async () => {
-      if (!businessQuery.data?.id) return [];
-      
-      // Fetch products - in preview mode, show all products including inactive ones
-      let query = supabase
-        .from('products')
-        .select('*')
-        .eq('business_id', businessQuery.data.id);
-      
-      // Only filter by active status if NOT in preview mode
-      if (!isPreviewMode) {
-        query = query.eq('active', true);
-      }
-      
-      const { data: productsData, error: productsError } = await query
-        .order('sort_order', { ascending: true });
-      
-      if (productsError) throw productsError;
-      
-      // Fetch custom fields for all products (batch in chunks to avoid URL length limits)
-      const productIds = productsData.map(p => p.id);
-      let allCustomFields: any[] = [];
-      
-      // Process in batches of 100 to avoid query size limits
-      const batchSize = 100;
-      for (let i = 0; i < productIds.length; i += batchSize) {
-        const batch = productIds.slice(i, i + batchSize);
-        const { data: batchData, error: batchError } = await supabase
-          .from('product_custom_fields')
-          .select('*')
-          .in('product_id', batch)
-          .order('sort_order', { ascending: true });
-        
-        if (batchError) {
-          console.error('Error fetching custom fields batch:', batchError);
-          // Continue with other batches even if one fails
-          continue;
-        }
-        
-        if (batchData) {
-          allCustomFields = [...allCustomFields, ...batchData];
-        }
-      }
-      
-      // Map custom fields to products
-      const productsWithCustomFields = productsData.map(product => ({
-        ...product,
-        custom_fields: allCustomFields?.filter(cf => cf.product_id === product.id) || []
-      }));
-      
-      return productsWithCustomFields as Product[];
-    },
-    enabled: !!businessQuery.data?.id,
-  });
-
-  // Fetch banners for this business
-  const bannersQuery = useQuery({
-    queryKey: ['storefront-banners', businessQuery.data?.id],
-    queryFn: async () => {
-      if (!businessQuery.data?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('banners')
-        .select('*')
-        .eq('business_id', businessQuery.data.id)
-        .eq('active', true)
-        .order('sort_order', { ascending: true });
-      
-      if (error) throw error;
-      return data as Banner[];
-    },
-    enabled: !!businessQuery.data?.id,
-  });
-
-  // Fetch product categories for this business (for store filter)
-  const categoriesQuery = useQuery({
-    queryKey: ['storefront-categories', businessQuery.data?.id],
-    queryFn: async () => {
-      if (!businessQuery.data?.id) return [];
-      const { data, error } = await supabase
-        .from('product_categories')
-        .select('id, name, sort_order')
-        .eq('business_id', businessQuery.data.id)
-        .order('sort_order', { ascending: true });
-      if (error) throw error;
-      return (data || []) as { id: string; name: string; sort_order: number | null }[];
-    },
-    enabled: !!businessQuery.data?.id,
-  });
-
   return {
-    business: businessQuery.data,
-    products: productsQuery.data || [],
-    banners: bannersQuery.data || [],
-    categories: categoriesQuery.data || [],
-    isLoading: businessQuery.isLoading,
-    isError: businessQuery.isError,
-    error: businessQuery.error,
+    business: storeQuery.data?.business,
+    products: storeQuery.data?.products || [],
+    banners: storeQuery.data?.banners || [],
+    categories: storeQuery.data?.categories || [],
+    isLoading: storeQuery.isLoading,
+    isError: storeQuery.isError,
+    error: storeQuery.error,
   };
 }

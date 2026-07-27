@@ -256,12 +256,21 @@ const StoreFront = ({ slugOverride }: { slugOverride?: string } = {}) => {
     };
   }, [business, template]);
 
-  // Track page view when business loads
+  // Track page view when business loads. Deferred until the browser is idle so
+  // the analytics INSERT never competes with the storefront's own data/images
+  // during the critical first paint (it was observed taking multi-second slots
+  // in the initial network waterfall on mobile).
   const hasTrackedView = useRef(false);
   useEffect(() => {
     if (business?.id && !hasTrackedView.current) {
       hasTrackedView.current = true;
-      trackPageView(business.id, `/store/${slug}`);
+      const bizId = business.id;
+      const fire = () => trackPageView(bizId, `/store/${slug}`);
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(fire, { timeout: 10_000 });
+      } else {
+        setTimeout(fire, 3_000);
+      }
     }
   }, [business?.id, slug]);
 

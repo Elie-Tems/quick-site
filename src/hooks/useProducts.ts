@@ -25,19 +25,20 @@ export const useProducts = (businessId: string | undefined) => {
       if (error) throw error;
       if (!productsData || productsData.length === 0) return [];
       
-      // Fetch custom fields for all products
+      // Custom fields + category assignments are independent - fetch in parallel
+      // (was two sequential awaits = an extra full round-trip on every products load).
       const productIds = productsData.map(p => p.id);
-      const { data: customFieldsData } = await supabase
-        .from('product_custom_fields')
-        .select('*')
-        .in('product_id', productIds)
-        .order('sort_order', { ascending: true });
-      
-      // Fetch category assignments for all products
-      const { data: categoryAssignments } = await supabase
-        .from('product_category_assignments')
-        .select('product_id, category_id')
-        .in('product_id', productIds);
+      const [{ data: customFieldsData }, { data: categoryAssignments }] = await Promise.all([
+        supabase
+          .from('product_custom_fields')
+          .select('*')
+          .in('product_id', productIds)
+          .order('sort_order', { ascending: true }),
+        supabase
+          .from('product_category_assignments')
+          .select('product_id, category_id')
+          .in('product_id', productIds),
+      ]);
       
       // Map custom fields and categories to products
       const productsWithCustomFields = productsData.map(product => ({

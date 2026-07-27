@@ -69,61 +69,66 @@ export function usePlatformStats() {
   return useQuery({
     queryKey: ['admin-platform-stats'],
     queryFn: async () => {
-      // Fetch all businesses
-      const { data: businesses, error: bizError } = await supabase
-        .from('businesses')
-        .select('id');
-      
+      // Counts are server-side (head:true downloads ZERO rows) and all queries run
+      // in parallel. The previous version downloaded every row of businesses,
+      // orders, page_views, products and profiles - sequentially - just to read
+      // .length; page_views alone is an ever-growing event table, so the admin
+      // panel got slower every day and hammered the shared DB for everyone.
+      const [
+        { count: bizCount, error: bizError },
+        { count: orderCount, error: ordersError },
+        { count: pvCount, error: pvError },
+        { count: prodCount, error: prodError },
+        { count: profCount, error: profError },
+        { data: subs },
+        uniqueVisitorsRes,
+      ] = await Promise.all([
+        supabase.from('businesses').select('id', { count: 'exact', head: true }),
+        supabase.from('orders').select('id', { count: 'exact', head: true }),
+        supabase.from('page_views').select('id', { count: 'exact', head: true }),
+        supabase.from('products').select('id', { count: 'exact', head: true }),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        // Siango's OWN revenue = paying subscriptions × monthly fee — NOT the
+        // merchants' order GMV (that belongs to the stores, not to us).
+        supabase.from('subscriptions').select('paid_until, monthly_total, status'),
+        // Distinct count needs SQL - the RPC ships in migration 20260728100000.
+        // Falls back to a capped recent-window estimate until it's applied.
+        (supabase as any).rpc('admin_count_unique_visitors'),
+      ]);
+
       if (bizError) throw bizError;
-      
-      // Fetch all orders
-      const { data: orders, error: ordersError } = await supabase
-        .from('orders')
-        .select('total_price');
-      
       if (ordersError) throw ordersError;
-      
-      // Fetch all page views
-      const { data: pageViews, error: pvError } = await supabase
-        .from('page_views')
-        .select('visitor_id');
-      
       if (pvError) throw pvError;
-      
-      // Fetch all products
-      const { data: products, error: prodError } = await supabase
-        .from('products')
-        .select('id');
-      
       if (prodError) throw prodError;
-      
-      // Fetch all profiles
-      const { data: profiles, error: profError } = await supabase
-        .from('profiles')
-        .select('id');
-      
       if (profError) throw profError;
 
-      // Siango's OWN revenue = paying subscriptions × monthly fee — NOT the
-      // merchants' order GMV (that belongs to the stores, not to us).
-      const { data: subs } = await supabase
-        .from('subscriptions')
-        .select('paid_until, monthly_total, status');
+      let uniqueVisitors: number;
+      if (!uniqueVisitorsRes.error && typeof uniqueVisitorsRes.data === 'number') {
+        uniqueVisitors = uniqueVisitorsRes.data;
+      } else {
+        const { data: recentViews } = await supabase
+          .from('page_views')
+          .select('visitor_id')
+          .order('created_at', { ascending: false })
+          .limit(20000);
+        uniqueVisitors = new Set((recentViews || []).map(pv => pv.visitor_id).filter(Boolean)).size;
+      }
+
       const nowTs = new Date();
       const siangoRevenue = (subs || [])
         .filter((s: any) => isActivePaid(s, nowTs))
         .reduce((sum: number, s: any) => sum + subscriptionMonthly(s), 0);
 
       const stats: PlatformStats = {
-        total_businesses: businesses?.length || 0,
-        total_orders: orders?.length || 0,
+        total_businesses: bizCount || 0,
+        total_orders: orderCount || 0,
         total_revenue: siangoRevenue,
-        total_page_views: pageViews?.length || 0,
-        total_unique_visitors: new Set(pageViews?.map(pv => pv.visitor_id).filter(Boolean)).size,
-        total_products: products?.length || 0,
-        total_users: profiles?.length || 0,
+        total_page_views: pvCount || 0,
+        total_unique_visitors: uniqueVisitors,
+        total_products: prodCount || 0,
+        total_users: profCount || 0,
       };
-      
+
       return stats;
     },
   });
