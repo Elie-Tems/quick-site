@@ -5,13 +5,13 @@ describe("businessModules", () => {
   it("defaults legacy/unknown rows to products + commerce", () => {
     expect(getBusinessType(null)).toBe("products");
     expect(getBusinessType({ business_type: "bogus" })).toBe("products");
-    expect(getEnabledModules(null)).toEqual(["commerce"]);
+    expect(getEnabledModules(null)).toEqual(["commerce", "differentiation"]);
   });
 
   it("maps each vertical to its default modules", () => {
-    expect(getEnabledModules({ business_type: "products" })).toEqual(["commerce"]);
-    expect(getEnabledModules({ business_type: "services" })).toEqual(["booking", "commerce"]);
-    expect(getEnabledModules({ business_type: "realestate" })).toEqual(["listings"]);
+    expect(getEnabledModules({ business_type: "products" })).toEqual(["commerce", "differentiation"]);
+    expect(getEnabledModules({ business_type: "services" })).toEqual(["booking", "commerce", "gallery", "differentiation"]);
+    expect(getEnabledModules({ business_type: "realestate" })).toEqual(["listings", "gallery", "differentiation"]);
     expect(getEnabledModules({ business_type: "nonprofit" })).toEqual(["donations"]);
   });
 
@@ -25,7 +25,7 @@ describe("businessModules", () => {
     expect(getEnabledModules({ business_type: "products", enabled_modules: ["commerce", "booking"] }))
       .toEqual(["commerce", "booking"]);
     // junk values are filtered out
-    expect(getEnabledModules({ business_type: "products", enabled_modules: ["nope"] })).toEqual(["commerce"]);
+    expect(getEnabledModules({ business_type: "products", enabled_modules: ["nope"] })).toEqual(["commerce", "differentiation"]);
   });
 
   it("gives each vertical a default storefront layout", () => {

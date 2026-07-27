@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import SEOHead from "@/components/SEOHead";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -8,54 +8,62 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardNav, { type DashboardView } from "@/components/dashboard/DashboardNav";
 import SubscriptionAlert from "@/components/dashboard/SubscriptionAlert";
 import DashboardHome from "@/components/dashboard/DashboardHome";
-import DashboardProducts, { type Product } from "@/components/dashboard/DashboardProducts";
-import ListingsManager from "@/components/dashboard/listings/ListingsManager";
-import DashboardOrders, { type Order } from "@/components/dashboard/DashboardOrders";
-import DashboardCRM from "@/components/dashboard/DashboardCRM";
-import PremiumOverlay from "@/components/dashboard/PremiumOverlay";
+// Type-only imports from lazily-loaded view modules. Types are erased at build
+// time, so these do NOT pull the modules into the main chunk.
+import type { Product } from "@/components/dashboard/DashboardProducts";
+import type { Order } from "@/components/dashboard/DashboardOrders";
+import type { Banner } from "@/components/dashboard/DashboardBanners";
+import type { BusinessSettings } from "@/components/dashboard/DashboardSettings";
 import { useCrmEntitled } from "@/hooks/useCrmEntitled";
 import { useAnalyticsEntitled } from "@/hooks/useAnalyticsEntitled";
-import DashboardBanners, { type Banner } from "@/components/dashboard/DashboardBanners";
-import DashboardCoupons from "@/components/dashboard/DashboardCoupons";
-import DashboardSales from "@/components/dashboard/DashboardSales";
-import DashboardCampaigns from "@/components/dashboard/DashboardCampaigns";
-import DashboardSettings, { type BusinessSettings } from "@/components/dashboard/DashboardSettings";
-import DashboardContent from "@/components/dashboard/DashboardContent";
-import DashboardPreview from "@/components/dashboard/DashboardPreview";
-import DashboardCategories from "@/components/dashboard/DashboardCategories";
-import DashboardDesign from "@/components/dashboard/DashboardDesign";
-import DashboardStoreTexts from "@/components/dashboard/DashboardStoreTexts";
-import DashboardWhatsAppButton from "@/components/dashboard/DashboardWhatsAppButton";
-import DashboardTracking from "@/components/dashboard/DashboardTracking";
-import DashboardReviews from "@/components/dashboard/DashboardReviews";
-import DashboardLeadsPipeline from "@/components/dashboard/DashboardLeadsPipeline";
-import DashboardSubscription from "@/components/dashboard/DashboardSubscription";
-import DashboardAIImages from "@/components/dashboard/DashboardAIImages";
-import DashboardAIGeneratedImages from "@/components/dashboard/DashboardAIGeneratedImages";
-import DashboardVisualizationStudio from "@/components/dashboard/DashboardVisualizationStudio";
-import DashboardShipping from "@/components/dashboard/DashboardShipping";
-import DashboardPayments from "@/components/dashboard/DashboardPayments";
-import DashboardUsage from "@/components/dashboard/DashboardUsage";
-import DashboardAvailabilityCalendar from "@/components/dashboard/DashboardAvailabilityCalendar";
-import DashboardWeeklyEditor from "@/components/dashboard/DashboardWeeklyEditor";
-import DashboardWeeklyContent from "@/components/dashboard/DashboardWeeklyContent";
-import SynagogueScheduleManager from "@/components/dashboard/SynagogueScheduleManager";
-import DashboardTrafficSources from "@/components/dashboard/DashboardTrafficSources";
-import DashboardInsights from "@/components/dashboard/DashboardInsights";
-import DashboardDomains from "@/components/dashboard/DashboardDomains";
-import DashboardWhatsApp from "@/components/dashboard/DashboardWhatsApp";
-import DashboardEmail from "@/components/dashboard/DashboardEmail";
-import DashboardUpgrades from "@/components/dashboard/DashboardUpgrades";
-import DashboardLegal from "@/components/dashboard/DashboardLegal";
 import PostLaunchPopups, { type PopupState, type PopupId } from "@/components/dashboard/PostLaunchPopups";
-import DashboardAdBudget from "@/components/dashboard/DashboardAdBudget";
 import { useMyBusiness, useProfile } from "@/hooks/useBusiness";
 import { getBusinessType, getEnabledModules, hasModule } from "@/lib/businessModules";
 import { cleanImageUrl, cleanImageList } from "@/lib/imageUrl";
-import VerticalModules from "@/components/dashboard/VerticalModules";
-import LifecycleEmailsManager from "@/components/dashboard/LifecycleEmailsManager";
-import DashboardModules from "@/components/dashboard/DashboardModules";
 import UpgradeCheckoutModal, { type CheckoutItem } from "@/components/dashboard/upgrades/UpgradeCheckoutModal";
+// Lazy views: exactly ONE of these renders at a time (switch in renderContent),
+// so each becomes its own chunk instead of bloating the main Dashboard bundle.
+const DashboardProducts = lazy(() => import("@/components/dashboard/DashboardProducts"));
+const ListingsManager = lazy(() => import("@/components/dashboard/listings/ListingsManager"));
+const DashboardOrders = lazy(() => import("@/components/dashboard/DashboardOrders"));
+const DashboardCRM = lazy(() => import("@/components/dashboard/DashboardCRM"));
+const PremiumOverlay = lazy(() => import("@/components/dashboard/PremiumOverlay"));
+const DashboardBanners = lazy(() => import("@/components/dashboard/DashboardBanners"));
+const DashboardCoupons = lazy(() => import("@/components/dashboard/DashboardCoupons"));
+const DashboardSales = lazy(() => import("@/components/dashboard/DashboardSales"));
+const DashboardCampaigns = lazy(() => import("@/components/dashboard/DashboardCampaigns"));
+const DashboardSettings = lazy(() => import("@/components/dashboard/DashboardSettings"));
+const DashboardContent = lazy(() => import("@/components/dashboard/DashboardContent"));
+const DashboardPreview = lazy(() => import("@/components/dashboard/DashboardPreview"));
+const DashboardCategories = lazy(() => import("@/components/dashboard/DashboardCategories"));
+const DashboardDesign = lazy(() => import("@/components/dashboard/DashboardDesign"));
+const DashboardStoreTexts = lazy(() => import("@/components/dashboard/DashboardStoreTexts"));
+const DashboardWhatsAppButton = lazy(() => import("@/components/dashboard/DashboardWhatsAppButton"));
+const DashboardTracking = lazy(() => import("@/components/dashboard/DashboardTracking"));
+const DashboardReviews = lazy(() => import("@/components/dashboard/DashboardReviews"));
+const DashboardLeadsPipeline = lazy(() => import("@/components/dashboard/DashboardLeadsPipeline"));
+const DashboardSubscription = lazy(() => import("@/components/dashboard/DashboardSubscription"));
+const DashboardAIImages = lazy(() => import("@/components/dashboard/DashboardAIImages"));
+const DashboardAIGeneratedImages = lazy(() => import("@/components/dashboard/DashboardAIGeneratedImages"));
+const DashboardVisualizationStudio = lazy(() => import("@/components/dashboard/DashboardVisualizationStudio"));
+const DashboardShipping = lazy(() => import("@/components/dashboard/DashboardShipping"));
+const DashboardPayments = lazy(() => import("@/components/dashboard/DashboardPayments"));
+const DashboardUsage = lazy(() => import("@/components/dashboard/DashboardUsage"));
+const DashboardAvailabilityCalendar = lazy(() => import("@/components/dashboard/DashboardAvailabilityCalendar"));
+const DashboardWeeklyEditor = lazy(() => import("@/components/dashboard/DashboardWeeklyEditor"));
+const DashboardWeeklyContent = lazy(() => import("@/components/dashboard/DashboardWeeklyContent"));
+const SynagogueScheduleManager = lazy(() => import("@/components/dashboard/SynagogueScheduleManager"));
+const DashboardTrafficSources = lazy(() => import("@/components/dashboard/DashboardTrafficSources"));
+const DashboardInsights = lazy(() => import("@/components/dashboard/DashboardInsights"));
+const DashboardDomains = lazy(() => import("@/components/dashboard/DashboardDomains"));
+const DashboardWhatsApp = lazy(() => import("@/components/dashboard/DashboardWhatsApp"));
+const DashboardEmail = lazy(() => import("@/components/dashboard/DashboardEmail"));
+const DashboardUpgrades = lazy(() => import("@/components/dashboard/DashboardUpgrades"));
+const DashboardLegal = lazy(() => import("@/components/dashboard/DashboardLegal"));
+const DashboardAdBudget = lazy(() => import("@/components/dashboard/DashboardAdBudget"));
+const VerticalModules = lazy(() => import("@/components/dashboard/VerticalModules"));
+const LifecycleEmailsManager = lazy(() => import("@/components/dashboard/LifecycleEmailsManager"));
+const DashboardModules = lazy(() => import("@/components/dashboard/DashboardModules"));
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useOrders, useUpdateOrder } from "@/hooks/useOrders";
 import { useDonationStats } from "@/hooks/useDonations";
@@ -981,7 +989,9 @@ const Dashboard = () => {
                 </button>
               </div>
             )}
-            {renderContent()}
+            <Suspense fallback={<div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
+              {renderContent()}
+            </Suspense>
           </main>
         </div>
         <UpgradeCheckoutModal

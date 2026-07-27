@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   ShoppingBag, CalendarClock, Building2, Heart, Landmark,
   Hotel, ClipboardList, Images, Check, Loader2, Blocks, Sparkles, Bell,
-  FileText, HelpCircle, ArrowLeft, Award,
+  FileText, HelpCircle, ArrowLeft, Award, AlertTriangle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
