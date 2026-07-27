@@ -74,10 +74,12 @@ function MerchantCard({
   m,
   onResetOnboarding,
   onDeleteUser,
+  onSelectMerchant,
 }: {
   m: MerchantRow;
   onResetOnboarding: (profileId: string) => void;
   onDeleteUser: (userId: string, email: string | null) => void;
+  onSelectMerchant?: (businessId: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [note, setNote] = useState<string | null>(null);
@@ -211,7 +213,21 @@ function MerchantCard({
               <p className="text-xs text-muted-foreground">לא יצר חנות עדיין</p>
             ) : (
               <div className="space-y-2">
-                {m.businesses.map(b => <StoreBadge key={b.id} b={b} />)}
+                {m.businesses.map(b => (
+                  <div key={b.id} className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0">
+                      <StoreBadge b={b} />
+                    </div>
+                    {onSelectMerchant && (
+                      <button
+                        onClick={e => { e.stopPropagation(); onSelectMerchant(b.id); }}
+                        className="shrink-0 text-xs text-primary hover:underline flex items-center gap-1"
+                      >
+                        פרופיל ←
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -248,7 +264,7 @@ function MerchantCard({
   );
 }
 
-const AdminCustomers = () => {
+const AdminCustomers = ({ onSelectMerchant }: { onSelectMerchant?: (businessId: string) => void } = {}) => {
   const [search, setSearch] = useState("");
   const queryClient = useQueryClient();
 
@@ -396,6 +412,7 @@ const AdminCustomers = () => {
               m={m}
               onResetOnboarding={handleResetOnboarding}
               onDeleteUser={handleDeleteUser}
+              onSelectMerchant={onSelectMerchant}
             />
           ))}
         </div>

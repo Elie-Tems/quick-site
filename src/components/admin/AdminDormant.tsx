@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useDormantBusinesses } from "@/hooks/useAdmin";
 
-const AdminDormant = () => {
+const AdminDormant = ({ onSelectMerchant }: { onSelectMerchant?: (businessId: string) => void } = {}) => {
   const { data, isLoading } = useDormantBusinesses();
 
   return (
@@ -24,7 +24,7 @@ const AdminDormant = () => {
       ) : (data ?? []).length > 0 ? (
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {(data ?? []).map((biz) => (
-            <div key={biz.id} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/30">
+            <div key={biz.id} onClick={() => onSelectMerchant?.(biz.id)} className={`flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 ${onSelectMerchant ? "cursor-pointer hover:bg-muted/40" : ""}`}>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{biz.name}</p>
                 <p className="text-xs text-muted-foreground">
