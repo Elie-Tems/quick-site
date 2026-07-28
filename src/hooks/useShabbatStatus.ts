@@ -46,7 +46,10 @@ export function useShabbatStatus() {
       }
     },
     staleTime: 5 * 60 * 1000, // re-check at most every 5 minutes
-    refetchOnWindowFocus: true,
+    // ShabbatGate now latches its first decision for the whole page load and
+    // ignores subsequent refetches (see its comment) - refetch-on-focus only
+    // fired extra requests on every mobile focus/visibility blip for no benefit.
+    refetchOnWindowFocus: false,
     retry: false,
   });
 }

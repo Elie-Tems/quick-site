@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { hebrewToSlug } from "@/lib/utils";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate, Link } from "react-router-dom";
@@ -161,6 +161,63 @@ export interface OnboardingData {
   paymentConnected: boolean;
 }
 
+// Draft persistence: the onboarding wizard is long (6 steps, real content), and
+// its progress lived ONLY in React state. Any remount of this component - a
+// stray refetch flipping a parent gate's loading state, a double-mount, a
+// crash+auto-reload, or simply a mobile browser reclaiming the tab in the
+// background - wiped everything the merchant had entered, with no visible
+// error. Confirmed live: a real signup lost all progress on every focus
+// change on mobile. Persisting to localStorage (survives a full tab reload,
+// unlike sessionStorage under some mobile OOM scenarios) makes any such
+// remount a non-event - the draft rehydrates instantly.
+const ONBOARDING_DRAFT_KEY = "siango_onboarding_draft_v2";
+
+// File objects can't survive JSON (and shouldn't be persisted anyway - only
+// their eventual uploaded URL matters). Strip them before writing to storage;
+// the live React state keeps them untouched for the current session.
+const stripFilesForStorage = (d: OnboardingData): OnboardingData => ({
+  ...d,
+  logo: undefined,
+  products: d.products.map(p => ({ ...p, image: undefined })),
+});
+
+type Draft = { data: Partial<OnboardingData>; currentStep: number };
+
+// A module-level cache ALONGSIDE localStorage. Something in this app remounts
+// Onboarding shortly after a step change (confirmed live: two instances exist
+// briefly, not a clean unmount+mount), which races a pure localStorage
+// read-on-mount/write-on-change scheme - the second mount's initial read can
+// beat the first mount's write to storage. A plain module variable updates
+// synchronously (no effect-timing delay) the instant a step/data change
+// happens, so ANY mount within this page load sees the latest value
+// immediately, race-free. localStorage is still written (best-effort) so a
+// genuine full page reload can also resume.
+let liveDraft: Draft | null = null;
+
+const loadDraft = (): Draft | null => {
+  if (liveDraft) return liveDraft;
+  try {
+    const raw = localStorage.getItem(ONBOARDING_DRAFT_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
+
+const saveDraft = (draft: Draft) => {
+  liveDraft = draft;
+  try {
+    const forStorage = { ...draft, data: stripFilesForStorage(draft.data as OnboardingData) };
+    localStorage.setItem(ONBOARDING_DRAFT_KEY, JSON.stringify(forStorage));
+  } catch { /* ignore */ }
+};
+
+const clearDraft = () => {
+  liveDraft = null;
+  try { localStorage.removeItem(ONBOARDING_DRAFT_KEY); } catch { /* ignore */ }
+};
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -171,14 +228,18 @@ const Onboarding = () => {
   const { categories: existingCategories } = useProductCategories(existingBusiness?.id);
   
   const createBusiness = useCreateBusiness();
-  const [currentStep, setCurrentStep] = useState(1);
+  // Lazy-init both from any saved draft so a remount (see ONBOARDING_DRAFT_KEY
+  // comment above) resumes exactly where the merchant left off instead of
+  // silently wiping their progress back to step 1.
+  const initialDraft = useState(() => loadDraft())[0];
+  const [currentStep, setCurrentStep] = useState(initialDraft?.currentStep || 1);
   const [isComplete, setIsComplete] = useState(false);
   const [hasUpdatedStatus, setHasUpdatedStatus] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [publishProgress, setPublishProgress] = useState(0);
-  
+
   const [data, setData] = useState<OnboardingData>({
     businessType: null,
     brandSource: "upload",
@@ -200,7 +261,20 @@ const Onboarding = () => {
     productCategories: [],
     products: [],
     paymentConnected: false,
+    ...initialDraft?.data,
   });
+
+  // Single source of truth for what gets persisted, updated SYNCHRONOUSLY
+  // (not via a useEffect, which runs after commit and can race a near-
+  // simultaneous second mount - confirmed live). updateData/nextStep/prevStep
+  // all read-and-write this ref directly so each call sees the other's latest
+  // value regardless of React's render timing.
+  const draftRef = useRef<Draft>({ data, currentStep });
+  useEffect(() => {
+    if (isComplete || isCreating) return;
+    draftRef.current = { data, currentStep };
+    saveDraft(draftRef.current);
+  }, [data, currentStep, isComplete, isCreating]);
 
   // Flow: 1=BusinessType, 2=Identity, 3=Contact, 4=Products, 5=BannerUpload, 6=Template, 7=Finish
   const totalSteps = 7;
@@ -295,14 +369,23 @@ const Onboarding = () => {
   }, [user, hasUpdatedStatus, isPreviewMode]);
 
   const updateData = (updates: Partial<OnboardingData>) => {
+    const next = { ...draftRef.current.data, ...updates } as OnboardingData;
+    draftRef.current = { ...draftRef.current, data: next };
+    saveDraft(draftRef.current);
     setData(prev => ({ ...prev, ...updates }));
   };
 
   const nextStep = () => {
+    const next = (draftRef.current.currentStep || 1) + 1;
+    draftRef.current = { ...draftRef.current, currentStep: next };
+    saveDraft(draftRef.current);
     setCurrentStep(prev => prev + 1);
   };
 
   const prevStep = () => {
+    const next = Math.max(1, (draftRef.current.currentStep || 1) - 1);
+    draftRef.current = { ...draftRef.current, currentStep: next };
+    saveDraft(draftRef.current);
     setCurrentStep(prev => Math.max(1, prev - 1));
   };
 
@@ -374,6 +457,11 @@ const Onboarding = () => {
         })),
         kolelFeatures: latestData.kolelFeatures,
       } as any);
+
+      // The business now exists in the DB - the local draft has served its
+      // purpose and would only cause confusion (e.g. resurrecting stale data)
+      // if left around for a future "+ new site" attempt.
+      clearDraft();
 
       const skipPublishPayment = import.meta.env.VITE_PUBLISH_SKIP_PAYMENT === "true";
       if (skipPublishPayment) {
