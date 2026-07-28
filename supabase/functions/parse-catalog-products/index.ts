@@ -2,23 +2,26 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { safeFetch } from "../_shared/ssrfGuard.ts";
 import { consumeRateLimit } from "../_shared/rateLimit.ts";
+import { requireAuth } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const clientIp = (req: Request) =>
-  req.headers.get("cf-connecting-ip") ||
-  req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "ip";
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    // Cost-abuse guard (LLM call): cap parses per IP.
+    let userId: string;
+    try {
+      userId = await requireAuth(req);
+    } catch (res) {
+      return res as Response;
+    }
+
     const rl = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    if (!(await consumeRateLimit(rl, `parsecat:${clientIp(req)}`, 20, 3600))) {
+    if (!(await consumeRateLimit(rl, `parsecat:user:${userId}`, 20, 3600))) {
       return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 

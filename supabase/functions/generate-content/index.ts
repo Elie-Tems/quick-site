@@ -1,15 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { consumeRateLimit } from "../_shared/rateLimit.ts";
+import { requireAuth } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-const clientIp = (req: Request) =>
-  req.headers.get("cf-connecting-ip") ||
-  req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "ip";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -17,23 +14,15 @@ serve(async (req) => {
   }
 
   try {
-    const rl = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-
-    // Rate-limit by authenticated user_id (not IP) so VPN rotation can't bypass the limit.
-    // Fall back to IP only for truly anonymous callers.
-    let rateLimitKey = `gencontent:ip:${clientIp(req)}`;
+    let userId: string;
     try {
-      const tok = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
-      if (tok) {
-        const part = tok.split(".")[1]?.replace(/-/g, "+").replace(/_/g, "/");
-        if (part) {
-          const payload = JSON.parse(atob(part));
-          if (payload.sub) rateLimitKey = `gencontent:user:${payload.sub}`;
-        }
-      }
-    } catch { /* keep IP-based key */ }
+      userId = await requireAuth(req);
+    } catch (res) {
+      return res as Response;
+    }
 
-    if (!(await consumeRateLimit(rl, rateLimitKey, 20, 3600))) {
+    const rl = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    if (!(await consumeRateLimit(rl, `gencontent:user:${userId}`, 20, 3600))) {
       return new Response(JSON.stringify({ error: "rate_limited" }), {
         status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
