@@ -24,6 +24,11 @@ interface Env {
 
 const STATIC_ROUTES: Array<{ path: string; changefreq: string; priority: string }> = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
+  // Language homepages (localized meta+hero served by the edge middleware).
+  { path: "/en", changefreq: "weekly", priority: "0.9" },
+  { path: "/ar", changefreq: "weekly", priority: "0.9" },
+  { path: "/fr", changefreq: "weekly", priority: "0.9" },
+  { path: "/ru", changefreq: "weekly", priority: "0.9" },
   { path: "/templates", changefreq: "weekly", priority: "0.8" },
   { path: "/register", changefreq: "monthly", priority: "0.9" },
   { path: "/login", changefreq: "monthly", priority: "0.7" },

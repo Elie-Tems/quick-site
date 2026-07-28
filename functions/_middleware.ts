@@ -109,6 +109,84 @@ function ldJson(obj: unknown): string {
     .replace(/&/g, "\\u0026");
 }
 
+// ── Multilingual marketing homepage (SEO) ────────────────────────────────────
+// The SPA homepage (Index.tsx) is Hebrew. For the language routes /en /ar /fr /ru
+// we serve crawlers a localized <title>/description + a visible hero + hreflang,
+// so each language is addressable and indexable (the React chrome also localizes
+// for human visitors via LanguageContext). Apex "/" keeps its Hebrew meta and
+// only gains the hreflang set.
+// NOTE: ar/fr/ru copy is quality-drafted and flagged for native review before a
+// public multilingual launch.
+const HOME_L10N: Record<string, { title: string; description: string; heroH1: string; heroSub: string; dir: "rtl" | "ltr"; ogLocale: string }> = {
+  en: {
+    title: "Build a business website & online store in 5 minutes | Siango",
+    description: "Create a professional website for your business in 5 minutes - an online store, a sales site, a bookings site, or a nonprofit page. No developer, no design, from ₪69/month. Built for businesses in Israel.",
+    heroH1: "Your business website, live in 5 minutes",
+    heroSub: "An online store, a bookings site, or a nonprofit page - no developer, no design skills. From ₪69/month.",
+    dir: "ltr", ogLocale: "en_US",
+  },
+  ar: {
+    title: "أنشئ موقعًا لعملك ومتجرًا إلكترونيًا في 5 دقائق | سيانغو",
+    description: "أنشئ موقعًا احترافيًا لعملك في 5 دقائق - متجر إلكتروني، موقع مبيعات، موقع لحجز المواعيد أو صفحة لجمعية. بدون مبرمج وبدون تصميم، ابتداءً من 69 ₪ شهريًا. مصمم للأعمال في إسرائيل.",
+    heroH1: "موقع عملك جاهز خلال 5 دقائق",
+    heroSub: "متجر إلكتروني، موقع لحجز المواعيد أو صفحة لجمعية - بدون مبرمج وبدون تصميم. من 69 ₪ شهريًا.",
+    dir: "rtl", ogLocale: "ar_AR",
+  },
+  fr: {
+    title: "Créez le site et la boutique en ligne de votre entreprise en 5 minutes | Siango",
+    description: "Créez un site professionnel pour votre entreprise en 5 minutes : boutique en ligne, site de vente, prise de rendez-vous ou page d'association. Sans développeur ni design, à partir de 69 ₪/mois.",
+    heroH1: "Le site de votre entreprise, en ligne en 5 minutes",
+    heroSub: "Une boutique en ligne, un site de réservation ou une page d'association - sans développeur ni design. À partir de 69 ₪/mois.",
+    dir: "ltr", ogLocale: "fr_FR",
+  },
+  ru: {
+    title: "Создайте сайт и интернет-магазин для бизнеса за 5 минут | Siango",
+    description: "Создайте профессиональный сайт для вашего бизнеса за 5 минут - интернет-магазин, сайт продаж, запись на приём или страницу НКО. Без программиста и дизайна, от 69 ₪ в месяц.",
+    heroH1: "Сайт вашего бизнеса за 5 минут",
+    heroSub: "Интернет-магазин, сайт записи или страница НКО - без программиста и дизайна. От 69 ₪ в месяц.",
+    dir: "ltr", ogLocale: "ru_RU",
+  },
+};
+
+// path (no trailing slash) → language, for the apex marketing home only.
+function homeLangForPath(pathname: string): string | null {
+  const p = pathname.replace(/\/+$/, "") || "/";
+  if (p === "/") return "he";
+  const m = p.match(/^\/(en|ar|fr|ru)$/);
+  return m ? m[1] : null;
+}
+
+function hreflangLinks(siteUrl: string): string {
+  const langs: [string, string][] = [
+    ["he", `${siteUrl}/`], ["en", `${siteUrl}/en`], ["ar", `${siteUrl}/ar`],
+    ["fr", `${siteUrl}/fr`], ["ru", `${siteUrl}/ru`], ["x-default", `${siteUrl}/`],
+  ];
+  return langs.map(([l, href]) => `<link rel="alternate" hreflang="${l}" href="${esc(href)}" />`).join("");
+}
+
+function buildHomeHead(lang: string, canonical: string): string {
+  const l = HOME_L10N[lang];
+  return [
+    `<title>${esc(l.title)}</title>`,
+    `<meta name="description" content="${esc(l.description)}" />`,
+    `<link rel="canonical" href="${esc(canonical)}" />`,
+    `<meta property="og:type" content="website" />`,
+    `<meta property="og:url" content="${esc(canonical)}" />`,
+    `<meta property="og:title" content="${esc(l.title)}" />`,
+    `<meta property="og:description" content="${esc(l.description)}" />`,
+    `<meta property="og:locale" content="${l.ogLocale}" />`,
+    `<meta property="og:image" content="https://siango.app/og-image.png" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta name="twitter:title" content="${esc(l.title)}" />`,
+    `<meta name="twitter:description" content="${esc(l.description)}" />`,
+  ].join("");
+}
+
+function buildHomeBody(lang: string): string {
+  const l = HOME_L10N[lang];
+  return `<section data-ssr-hero dir="${l.dir}"><h1>${esc(l.heroH1)}</h1><p>${esc(l.heroSub)}</p></section>`;
+}
+
 // Matches /store/:slug and /store/:slug/about (V1 only - V2 is not a live route).
 function matchStoreRoute(pathname: string): { slug: string; isAbout: boolean } | null {
   const m = pathname.match(/^\/store\/([^/]+)(\/about)?\/?$/);
@@ -265,6 +343,40 @@ export const onRequest = async (context: {
     //   1. Tenant subdomain:  aurora.siango.app  (path "/" or "/about")
     //   2. Path form:         siango.app/store/aurora[/about]
     const hostSlug = tenantSlugFromHost(url.hostname, baseDomain);
+
+    // Marketing homepage language variants (apex host only): /en /ar /fr /ru get
+    // localized meta + a crawler-visible hero; apex "/" just gains hreflang.
+    if (!hostSlug) {
+      const homeLang = homeLangForPath(url.pathname);
+      if (homeLang) {
+        const ct0 = response.headers.get("content-type") || "";
+        if (!ct0.includes("text/html")) return response;
+        const isHe = homeLang === "he";
+        const canonicalHome = isHe ? `${siteUrl}/` : `${siteUrl}/${homeLang}`;
+        // deno-lint-ignore no-explicit-any
+        let hr = new (globalThis as any).HTMLRewriter();
+        if (isHe) {
+          hr = hr.on("head", { element: (el: any) => el.append(hreflangLinks(siteUrl), { html: true }) });
+        } else {
+          const l = HOME_L10N[homeLang];
+          hr = hr
+            .on("title", { element: (el: any) => el.remove() })
+            .on('meta[name="description"]', { element: (el: any) => el.remove() })
+            .on('meta[name="keywords"]', { element: (el: any) => el.remove() })
+            .on('meta[property^="og:"]', { element: (el: any) => el.remove() })
+            .on('meta[name^="twitter:"]', { element: (el: any) => el.remove() })
+            .on('link[rel="canonical"]', { element: (el: any) => el.remove() })
+            .on("html", { element: (el: any) => { el.setAttribute("lang", homeLang); el.setAttribute("dir", l.dir); } })
+            .on("head", { element: (el: any) => el.append(buildHomeHead(homeLang, canonicalHome) + hreflangLinks(siteUrl), { html: true }) })
+            .on('div[id="root"]', { element: (el: any) => el.append(buildHomeBody(homeLang), { html: true }) });
+        }
+        const out = hr.transform(response);
+        const h = new Headers(out.headers);
+        h.set("Cache-Control", "public, max-age=300, s-maxage=300");
+        return new Response(out.body, { status: out.status, statusText: out.statusText, headers: h });
+      }
+    }
+
     let route: { slug: string; isAbout: boolean } | null;
     let canonical: string;
     if (hostSlug) {
