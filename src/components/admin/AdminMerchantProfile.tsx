@@ -23,6 +23,7 @@ interface MerchantProfileData {
   businessPhone: string | null;
   businessEmail: string | null;
   businessCreatedAt: string;
+  aboutText: string;
   profileId: string | null;
   userId: string | null;
   ownerName: string | null;
@@ -50,7 +51,7 @@ function useMerchantProfile(businessId: string) {
           .from("businesses")
           .select(`
             id, name, slug, business_category, is_published,
-            enabled_modules, phone, email, created_at,
+            enabled_modules, phone, email, created_at, about_text,
             profiles ( id, user_id, full_name, email, phone, created_at, admin_notes )
           `)
           .eq("id", businessId)
@@ -109,6 +110,7 @@ function useMerchantProfile(businessId: string) {
         ownerPhone: profile?.phone ?? null,
         ownerRegisteredAt: profile?.created_at ?? null,
         adminNotes: (profile?.admin_notes as string) ?? "",
+        aboutText: biz.about_text ?? "",
         plan: sub?.plan ?? null,
         subscriptionStatus: sub?.status ?? null,
         paidUntil: sub?.paid_until ?? null,
@@ -197,6 +199,43 @@ function LogTab({ data }: { data: MerchantProfileData }) {
   );
 }
 
+function AboutTextEditor({ businessId, initialText, onRefresh }: {
+  businessId: string;
+  initialText: string;
+  onRefresh: () => void;
+}) {
+  const [text, setText] = useState(initialText);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await (supabase as any)
+      .from("businesses")
+      .update({ about_text: text })
+      .eq("id", businessId);
+    setSaving(false);
+    if (error) toast.error("שגיאה בשמירה: " + error.message);
+    else { toast.success("טקסט אודות עודכן"); onRefresh(); }
+  };
+
+  return (
+    <div className="p-4 space-y-3">
+      <textarea
+        value={text}
+        onChange={e => setText(e.target.value)}
+        rows={5}
+        dir="rtl"
+        placeholder="טקסט אודות העסק..."
+        className="w-full text-sm rounded-lg border border-border bg-background p-3 resize-y"
+      />
+      <Button size="sm" onClick={save} disabled={saving}>
+        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : null}
+        שמור
+      </Button>
+    </div>
+  );
+}
+
 function SiteTab({ data, businessId, onRefresh }: {
   data: MerchantProfileData;
   businessId: string;
@@ -224,6 +263,7 @@ function SiteTab({ data, businessId, onRefresh }: {
   };
 
   return (
+    <div className="space-y-4">
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="px-4 py-2.5 border-b border-border text-xs font-semibold text-muted-foreground">הגדרות אתר</div>
@@ -262,6 +302,11 @@ function SiteTab({ data, businessId, onRefresh }: {
           );
         })}
       </div>
+    </div>
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-2.5 border-b border-border text-xs font-semibold text-muted-foreground">טקסט אודות</div>
+      <AboutTextEditor businessId={businessId} initialText={data.aboutText} onRefresh={onRefresh} />
+    </div>
     </div>
   );
 }
