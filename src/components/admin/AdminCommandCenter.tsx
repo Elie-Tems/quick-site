@@ -53,7 +53,7 @@ function usePendingCancellations(enabled: boolean) {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("subscriptions")
-        .select("id, cancel_at, cancel_type, cancel_reason, business_id, plan, businesses(name)")
+        .select("id, cancel_at, cancel_type, cancel_reason, plan_name, user_id")
         .not("cancel_at", "is", null)
         .gt("cancel_at", new Date().toISOString())
         .order("cancel_at", { ascending: true })
@@ -63,9 +63,32 @@ function usePendingCancellations(enabled: boolean) {
         cancel_at: string;
         cancel_type: string | null;
         cancel_reason: string | null;
-        business_id: string;
-        plan: string | null;
-        businesses: { name: string } | null;
+        plan_name: string | null;
+        user_id: string | null;
+      }>;
+    },
+  });
+}
+
+function useUnpublishedMerchants(enabled: boolean) {
+  return useQuery({
+    queryKey: ["unpublished-merchants-detail"],
+    enabled,
+    queryFn: async () => {
+      const fiveDaysAgo = new Date(Date.now() - 5 * 86_400_000).toISOString();
+      const { data } = await (supabase as any)
+        .from("businesses")
+        .select("id, name, slug, business_category, created_at")
+        .eq("is_published", false)
+        .lt("created_at", fiveDaysAgo)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      return (data || []) as Array<{
+        id: string;
+        name: string;
+        slug: string | null;
+        business_category: string | null;
+        created_at: string;
       }>;
     },
   });
@@ -211,9 +234,9 @@ function CancellationsModal() {
           <div key={s.id} className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <div className="font-medium text-foreground">{s.businesses?.name || s.business_id}</div>
+                <div className="font-medium text-foreground">{s.plan_name ?? "מנוי"}</div>
                 <div className="text-muted-foreground text-xs mt-0.5">
-                  {s.plan ?? "ללא מסלול"} · {s.cancel_type === "immediate" ? "ביטול מיידי" : "סוף תקופה"}
+                  {s.cancel_type === "immediate" ? "ביטול מיידי" : "סוף תקופה"}
                 </div>
                 {s.cancel_reason && (
                   <div className="text-xs mt-1 text-amber-500">
@@ -224,6 +247,53 @@ function CancellationsModal() {
               <div className="text-left shrink-0">
                 <div className="text-xs font-semibold text-destructive">{daysLeft} ימים</div>
                 <div className="text-xs text-muted-foreground">{cancelDate.toLocaleDateString("he-IL")}</div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function UnpublishedModal({ onSelectMerchant, onClose }: {
+  onSelectMerchant?: (id: string) => void;
+  onClose: () => void;
+}) {
+  const { data, isLoading } = useUnpublishedMerchants(true);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return <p className="text-center text-muted-foreground py-6">אין סוחרים כאלה כרגע</p>;
+  }
+
+  return (
+    <div className="space-y-2" dir="rtl">
+      {data.map((b) => {
+        const daysSince = Math.floor((Date.now() - new Date(b.created_at).getTime()) / 86_400_000);
+        return (
+          <div
+            key={b.id}
+            onClick={onSelectMerchant ? () => { onSelectMerchant(b.id); onClose(); } : undefined}
+            className={`rounded-lg border border-border bg-card px-4 py-3 text-sm ${onSelectMerchant ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""}`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <div className="font-medium text-foreground">{b.name}</div>
+                <div className="text-muted-foreground text-xs mt-0.5">
+                  {b.business_category ?? "—"} {b.slug ? `· ${b.slug}` : ""}
+                </div>
+              </div>
+              <div className="text-left shrink-0">
+                <div className="text-xs font-semibold text-amber-600">{daysSince} ימים</div>
+                <div className="text-xs text-muted-foreground">לא פורסם</div>
               </div>
             </div>
           </div>
@@ -281,7 +351,7 @@ const AdminCommandCenter = ({ onNavigate, onSelectMerchant }: {
   if (a?.pendingCancellations)
     alerts.push({ key: "cancellations", label: `${a.pendingCancellations} מנויים סימנו ביטול עתידי`, icon: XCircle, severity: "warning" });
   if (a?.unpublishedAfter5Days)
-    alerts.push({ key: "unpublished", label: `${a.unpublishedAfter5Days} סוחרים נרשמו לפני 5+ ימים ועדיין לא פרסמו`, icon: AlertTriangle, severity: "warning", onClickOverride: () => onNavigate("merchants") });
+    alerts.push({ key: "unpublished", label: `${a.unpublishedAfter5Days} סוחרים נרשמו לפני 5+ ימים ועדיין לא פרסמו`, icon: AlertTriangle, severity: "warning" });
 
   const modalTitles: Record<string, string> = {
     balance: "יתרת Openprovider",
@@ -341,6 +411,12 @@ const AdminCommandCenter = ({ onNavigate, onSelectMerchant }: {
           )}
           {activeModal === "domains" && <FailedDomainsModal />}
           {activeModal === "cancellations" && <CancellationsModal />}
+          {activeModal === "unpublished" && (
+            <UnpublishedModal
+              onSelectMerchant={onSelectMerchant ? (id) => { onSelectMerchant(id); setActiveModal(null); } : undefined}
+              onClose={() => setActiveModal(null)}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
