@@ -322,11 +322,57 @@ function buildBodyContent(business: StoreBusiness, products: StoreProduct[], isA
   return `<div id="seo-content" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);"><h1>${heading}</h1>${sub}${about}${productList}</div>`;
 }
 
-export const onRequest = async (context: {
+interface PagesContext {
   request: Request;
   env: Env;
   next: () => Promise<Response>;
-}): Promise<Response> => {
+  waitUntil?: (p: Promise<unknown>) => void;
+}
+
+/**
+ * Edge cache wrapper. The SEO renderer below makes two blocking Supabase
+ * round-trips per store page request, which was measured adding ~1.3s of TTFB
+ * to EVERY storefront visit (the single largest chunk of the "site is slow"
+ * complaints). Cloudflare Pages does NOT edge-cache function responses from the
+ * Cache-Control header alone - it must go through the Cache API explicitly.
+ * Cached: store pages + marketing homepage language variants, GET only, 5 min
+ * (matching the s-maxage the renderer already declares). NOT cached: owner
+ * preview (?preview=true) so merchants always see their edits instantly, and
+ * any response the renderer left untouched (unknown store / plain SPA shell).
+ * Fails open like everything else here.
+ */
+export const onRequest = async (context: PagesContext): Promise<Response> => {
+  try {
+    const { request, env } = context;
+    if (request.method === "GET") {
+      const url = new URL(request.url);
+      const siteUrl0 = (env.SITE_URL || "https://siango.app").replace(/\/$/, "");
+      const baseDomain0 = env.BASE_DOMAIN || siteUrl0.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      const hostSlug0 = tenantSlugFromHost(url.hostname, baseDomain0);
+      const isSeoRoute = hostSlug0
+        ? (url.pathname === "/" || url.pathname.replace(/\/$/, "") === "/about")
+        : (!!matchStoreRoute(url.pathname) || homeLangForPath(url.pathname) !== null);
+      const cache = (globalThis as { caches?: { default?: Cache } }).caches?.default;
+      if (isSeoRoute && !url.searchParams.has("preview") && cache) {
+        const hit = await cache.match(request);
+        if (hit) return hit;
+        const resp = await renderSeo(context);
+        // Only cache responses the renderer actually rewrote (it sets s-maxage
+        // on those); pass everything else through uncached.
+        if (resp.status === 200 && (resp.headers.get("Cache-Control") || "").includes("s-maxage")) {
+          const put = cache.put(request, resp.clone()).catch(() => {});
+          if (context.waitUntil) context.waitUntil(put);
+        }
+        return resp;
+      }
+    }
+    return await renderSeo(context);
+  } catch {
+    return context.next();
+  }
+};
+
+const renderSeo = async (context: PagesContext): Promise<Response> => {
   const { request, env, next } = context;
 
   // Always let the static asset / SPA pipeline produce the base response first.
