@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       if (!ct.email || blocked.has(String(ct.email).toLowerCase())) continue;
       // BUG #47: store-scoped unsubscribe (StoreUnsubscribe), not the platform page.
       const unsubUrl = ownerBiz?.slug
-        ? `${siteUrl}/store/${ownerBiz.slug}/unsubscribe?email=${encodeURIComponent(ct.email)}`
+        ? `${siteUrl}/${ownerBiz.slug}/unsubscribe?email=${encodeURIComponent(ct.email)}`
         : `${siteUrl}/unsubscribe?email=${encodeURIComponent(ct.email)}`;
       const footer = `<tr><td style="background:#f6f7f8;padding:14px 16px;text-align:center"><div style="font-size:11px;color:#888"><b>פרסומת</b> · ${esc(c.from_name || "")} · ${esc(c.reply_to || "")}</div><div style="font-size:11px;margin-top:3px"><a href="${unsubUrl}" style="color:#0E9F6E">להסרה מרשימת התפוצה</a></div></td></tr>`;
       let html = renderEmail(c.blocks || [], { "שם": ct.name || "", "שם_העסק": c.from_name || "" }, footer);

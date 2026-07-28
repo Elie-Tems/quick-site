@@ -217,7 +217,7 @@ Deno.serve(async (req) => {
       await admin.from("booking_appointments").update({ order_id: order.id }).eq("id", appointmentId);
 
       const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
-      const storeUrl = `${siteUrl}/store/${business!.slug}`;
+      const storeUrl = `${siteUrl}/${business!.slug}`;
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const result = await provider.createPaymentPage(creds, {
         amount: deposit, currency: "ILS",

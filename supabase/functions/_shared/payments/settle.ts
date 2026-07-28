@@ -93,7 +93,7 @@ export async function settlePaidOrder(admin: any, orderId: string, transactionUi
       const res = await sendLifecycleEmail(admin, {
         businessId: order.business_id, key: "order_confirm", to: order.customer_email, name: order.customer_name,
         extraHtml: itemsHtml,
-        buttonUrl: (biz as { slug?: string } | null)?.slug ? `${siteUrl}/store/${(biz as { slug?: string }).slug}` : undefined,
+        buttonUrl: (biz as { slug?: string } | null)?.slug ? `${siteUrl}/${(biz as { slug?: string }).slug}` : undefined,
       }).catch((e) => ({ ok: false, error: String(e) }));
       if (!res.ok) console.error("settle: customer order-confirm email failed - order", order.id, "error", res.error);
     }

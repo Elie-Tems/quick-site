@@ -215,7 +215,7 @@ serve(async (req) => {
           storeEmail = (biz as any).email || undefined;
           brandColor = (biz as any).primary_color || undefined;
           logoUrl = (biz as any).logo_url || undefined;
-          if ((biz as any).slug) storeUrl = `https://siango.app/store/${(biz as any).slug}`;
+          if ((biz as any).slug) storeUrl = `https://siango.app/${(biz as any).slug}`;
         }
       } else {
         const m = merchant || {};
@@ -269,7 +269,7 @@ serve(async (req) => {
           storeEmail = (bizRow as any).email || undefined;
           brandColor = (bizRow as any).primary_color || undefined;
           logoUrl = (bizRow as any).logo_url || undefined;
-          if ((bizRow as any).slug) storeUrl = `https://siango.app/store/${(bizRow as any).slug}`;
+          if ((bizRow as any).slug) storeUrl = `https://siango.app/${(bizRow as any).slug}`;
         }
       }
       const rawTotal = resolvedOrder?.total_price;

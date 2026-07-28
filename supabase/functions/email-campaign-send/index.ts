@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
   let campaignId: string | null = campaign.id ?? null;
   const buildHtml = (contact: { id?: string; name?: string; email: string }) => {
     const unsubUrl = ownerBiz?.slug
-      ? `${siteUrl}/store/${ownerBiz.slug}/unsubscribe?email=${encodeURIComponent(contact.email)}`
+      ? `${siteUrl}/${ownerBiz.slug}/unsubscribe?email=${encodeURIComponent(contact.email)}`
       : `${siteUrl}/unsubscribe?email=${encodeURIComponent(contact.email)}`;
     const footer = complianceFooter(fromName, campaign.reply_to || "office@siango.app", unsubUrl);
     const base = renderEmail(campaign.blocks || [], { "שם": contact.name || "", "שם_העסק": fromName }, footer);

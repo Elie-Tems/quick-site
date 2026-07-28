@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
   });
 
   const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
-  const storeUrl = `${siteUrl}/store/${body.slug || business.slug}`;
+  const storeUrl = `${siteUrl}/${body.slug || business.slug}`;
   const result = await provider.createPaymentPage(creds, {
     amount, currency: "ILS",
     customer: { name: customer.fullName, email: customer.email, phone: customer.phone },

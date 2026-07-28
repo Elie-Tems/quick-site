@@ -236,7 +236,7 @@ Deno.serve(async (req) => {
   if (to) {
     const { data: bizRow } = await admin.from("businesses").select("name, slug").eq("id", businessId).maybeSingle();
     const businessName = (bizRow as { name?: string })?.name ?? undefined;
-    const siteUrl = (bizRow as { slug?: string })?.slug ? `https://siango.app/store/${(bizRow as { slug?: string }).slug}` : "https://siango.app";
+    const siteUrl = (bizRow as { slug?: string })?.slug ? `https://siango.app/${(bizRow as { slug?: string }).slug}` : "https://siango.app";
     const sendEmail = (type: string, ctx: Record<string, unknown>) =>
       fetch(`${url}/functions/v1/send-platform-email`, {
         method: "POST",

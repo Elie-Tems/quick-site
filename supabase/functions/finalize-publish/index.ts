@@ -276,7 +276,7 @@ Deno.serve(async (req) => {
           to: user.email,
           ctx: {
             businessName: business.name,
-            siteUrl: `${appUrl}/store/${business.slug}`,
+            siteUrl: `${appUrl}/${business.slug}`,
             dashboardUrl: `${appUrl}/dashboard`,
             recipientEmail: user.email,
             lang,
@@ -291,7 +291,7 @@ Deno.serve(async (req) => {
   // Send webhook after successful publish
   const webhookUrl = Deno.env.get("VITE_BUSINESS_WEBHOOK_URL");
   if (webhookUrl && business) {
-    const siteUrl = `${Deno.env.get("VITE_APP_URL") || "https://siango.app"}/store/${business.slug}`;
+    const siteUrl = `${Deno.env.get("VITE_APP_URL") || "https://siango.app"}/${business.slug}`;
     
     const payload = {
       type: "business_published",

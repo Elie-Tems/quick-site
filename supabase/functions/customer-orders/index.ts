@@ -79,7 +79,7 @@ serve(async (req) => {
     if (!orders || orders.length === 0) return json({ ok: true }); // no orders -> silently do nothing
 
     const token = await makeToken((biz as any).id, email, Date.now() + TTL_MS);
-    const link = `https://siango.app/store/${slug}/my-orders?t=${encodeURIComponent(token)}`;
+    const link = `https://siango.app/${slug}/my-orders?t=${encodeURIComponent(token)}`;
     const store = (biz as any).name || "החנות";
     const sendRes = await sendViaResend({
       to: email,

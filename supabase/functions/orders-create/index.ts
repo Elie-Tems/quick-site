@@ -264,7 +264,7 @@ Deno.serve(async (req) => {
     const res = await sendLifecycleEmail(admin, {
       businessId, key: "order_confirm", to: customer.email, name: customer.fullName,
       extraHtml: itemsHtml,
-      buttonUrl: body.slug ? `${siteUrl}/store/${body.slug}` : undefined,
+      buttonUrl: body.slug ? `${siteUrl}/${body.slug}` : undefined,
     });
     if (!res.ok) console.error("customer order confirmation email failed - order", order.id, "error", res.error);
   } catch (e) {

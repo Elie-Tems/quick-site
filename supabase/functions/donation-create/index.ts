@@ -160,7 +160,7 @@ Deno.serve(async (req) => {
   if (tErr || !txn) return json({ error: "Could not create donation", detail: tErr?.message }, 500);
 
   const siteUrl = (Deno.env.get("VITE_APP_URL") || "https://siango.app").replace(/\/$/, "");
-  const storeUrl = `${siteUrl}/store/${business.slug}`;
+  const storeUrl = `${siteUrl}/${business.slug}`;
   const label = `תרומה ל${business.name}${campaignId ? "" : ""}${recurring ? " (חודשי)" : ""}`;
   const result = await provider.createPaymentPage(creds, {
     amount, currency: "ILS",

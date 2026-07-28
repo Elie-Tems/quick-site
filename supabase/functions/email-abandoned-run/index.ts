@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
     if (unsub) continue;
 
     const { data: biz } = await admin.from("businesses").select("name, slug").eq("id", cart.business_id).single();
-    const storeUrl = `${siteUrl}/store/${biz?.slug || ""}`;
+    const storeUrl = `${siteUrl}/${biz?.slug || ""}`;
     const html = `<!DOCTYPE html><html dir="rtl" lang="he"><body style="margin:0;background:#eef0f2;font-family:Arial,sans-serif">
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#eef0f2;padding:18px 0"><tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:8px;overflow:hidden">
