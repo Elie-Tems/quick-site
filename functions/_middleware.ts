@@ -418,7 +418,11 @@ const renderSeo = async (context: PagesContext): Promise<Response> => {
         }
         const out = hr.transform(response);
         const h = new Headers(out.headers);
-        h.set("Cache-Control", "public, max-age=300, s-maxage=300");
+        // s-maxage only: the EDGE may cache for 5 min, but browsers must always
+        // revalidate index.html. max-age>0 here made browsers hold a stale index
+        // for 5 min after every deploy - its lazy chunks no longer existed, so
+        // real users crash-looped on "Failed to fetch dynamically imported module".
+        h.set("Cache-Control", "public, max-age=0, must-revalidate, s-maxage=300");
         return new Response(out.body, { status: out.status, statusText: out.statusText, headers: h });
       }
     }
@@ -463,8 +467,9 @@ const renderSeo = async (context: PagesContext): Promise<Response> => {
 
     const rewritten = rewriter.transform(response);
     const headers = new Headers(rewritten.headers);
-    // Let the edge cache the rendered store HTML briefly.
-    headers.set("Cache-Control", "public, max-age=300, s-maxage=300");
+    // Edge-only caching (s-maxage): browsers must revalidate index.html on every
+    // load, or a deploy strands them on dead chunk hashes (see homepage note).
+    headers.set("Cache-Control", "public, max-age=0, must-revalidate, s-maxage=300");
     return new Response(rewritten.body, {
       status: rewritten.status,
       statusText: rewritten.statusText,

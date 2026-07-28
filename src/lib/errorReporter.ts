@@ -75,18 +75,31 @@ export const reportError = (
 // A "stale chunk" error means a new version was deployed while this tab still
 // held the old index.html, so a lazily-imported JS chunk now 404s (the SPA
 // fallback returns index.html -> MIME "text/html" -> module load fails). This is
-// not a real bug - reloading once fetches the fresh index + chunks. We reload at
-// most ONCE per session (sessionStorage survives the reload) so a genuinely
-// broken deploy can't cause an infinite reload loop; it falls back to the error UI.
+// not a real bug - fetching a fresh index + chunks fixes it. Recovery is up to
+// 3 attempts per 5 minutes (sessionStorage survives reloads): the first is a
+// plain reload; if that comes back with the SAME stale index (a browser or edge
+// cache re-serving it - observed live), later attempts add a cache-busting query
+// param so every cache layer misses. A genuinely broken deploy stops after 3
+// attempts and falls back to the error UI instead of loop-reloading forever.
 const CHUNK_ERROR_RE =
   /Failed to fetch dynamically imported module|error loading dynamically imported module|Failed to load module script|Importing a module script failed|Loading chunk [\w-]+ failed|ChunkLoadError/i;
 export const maybeReloadOnStaleChunk = (msg: string): boolean => {
   if (!msg || !CHUNK_ERROR_RE.test(msg)) return false;
   try {
-    const KEY = "siango_chunk_reloaded";
-    if (!sessionStorage.getItem(KEY)) {
-      sessionStorage.setItem(KEY, "1");
-      window.location.reload();
+    const KEY = "siango_chunk_reloads";
+    const now = Date.now();
+    const attempts = (JSON.parse(sessionStorage.getItem(KEY) || "[]") as number[])
+      .filter((t) => now - t < 5 * 60 * 1000);
+    if (attempts.length < 3) {
+      attempts.push(now);
+      sessionStorage.setItem(KEY, JSON.stringify(attempts));
+      if (attempts.length === 1) {
+        window.location.reload();
+      } else {
+        const url = new URL(window.location.href);
+        url.searchParams.set("cb", String(now));
+        window.location.replace(url.toString());
+      }
     }
   } catch {
     /* ignore */
