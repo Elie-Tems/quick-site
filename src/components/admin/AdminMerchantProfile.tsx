@@ -9,6 +9,7 @@ import {
   ArrowRight, Mail, ExternalLink, StickyNote, Trash2,
   Globe, ToggleLeft, ToggleRight, Loader2, ChevronLeft,
   Pencil, Plus, X, Check, Upload, Image as ImageIcon,
+  Wand2, FileText, Package, Settings,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -42,18 +43,14 @@ interface MerchantProfileData {
   subscriptionStatus: string | null;
   paidUntil: string | null;
   cancelAt: string | null;
-  totalOrders: number;
-  totalRevenue: number;
-  totalCustomers: number;
   recentOrders: Array<{ id: string; created_at: string; total_price: number | null; status: string | null }>;
-  recentActivity: Array<{ text: string; time: string }>;
 }
 
 function useMerchantProfile(businessId: string) {
   return useQuery<MerchantProfileData>({
     queryKey: ["merchant-profile", businessId],
     queryFn: async () => {
-      const [bizRes, ordersRes, customersRes] = await Promise.all([
+      const [bizRes, ordersRes] = await Promise.all([
         (supabase as any)
           .from("businesses")
           .select(`
@@ -71,10 +68,6 @@ function useMerchantProfile(businessId: string) {
           .eq("business_id", businessId)
           .order("created_at", { ascending: false })
           .limit(20),
-        (supabase as any)
-          .from("customers")
-          .select("*", { count: "exact", head: true })
-          .eq("business_id", businessId),
       ]);
 
       const biz = bizRes.data;
@@ -94,13 +87,6 @@ function useMerchantProfile(businessId: string) {
           .maybeSingle();
         sub = data;
       }
-
-      const totalRevenue = orders.reduce((s, o) => s + (Number(o.total_price) || 0), 0);
-
-      const recentActivity = orders.slice(0, 5).map(o => ({
-        text: `הזמנה #${o.id.slice(0, 8)} — ₪${Math.round(Number(o.total_price) || 0)}`,
-        time: format(new Date(o.created_at), "dd/MM HH:mm", { locale: he }),
-      }));
 
       return {
         businessId: biz.id,
@@ -130,11 +116,7 @@ function useMerchantProfile(businessId: string) {
         subscriptionStatus: sub?.status ?? null,
         paidUntil: sub?.paid_until ?? null,
         cancelAt: sub?.cancel_at ?? null,
-        totalOrders: orders.length,
-        totalRevenue,
-        totalCustomers: customersRes.count || 0,
         recentOrders: orders,
-        recentActivity,
       };
     },
   });
@@ -151,53 +133,67 @@ async function uploadToStorage(businessId: string, folder: string, file: File): 
 
 type Tab = "overview" | "log" | "content" | "products" | "site" | "notes";
 
-function OverviewTab({ data }: { data: MerchantProfileData }) {
-  const ils = (n: number) => `₪${Math.round(n).toLocaleString("he-IL")}`;
+function OverviewTab({ data, onTabChange }: { data: MerchantProfileData; onTabChange: (t: Tab) => void }) {
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          { label: 'הזמנות סה"כ', value: data.totalOrders },
-          { label: "מחזור כולל", value: ils(data.totalRevenue) },
-          { label: "לקוחות", value: data.totalCustomers },
-          { label: "סטטוס מנוי", value: data.subscriptionStatus === "active" ? "פעיל" : data.subscriptionStatus || "—" },
-        ].map(s => (
-          <div key={s.label} className="bg-card border border-border rounded-xl p-4">
-            <div className="text-2xl font-bold">{s.value}</div>
-            <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
+    <div className="space-y-4">
+      {/* Site status + direct link */}
+      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+        <div className="flex items-center gap-3">
+          <span className={`text-sm px-3 py-1 rounded-full font-semibold ${data.isPublished ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+            {data.isPublished ? "האתר פעיל" : "האתר לא פורסם"}
+          </span>
+          {data.plan && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">{data.plan}</span>
+          )}
+        </div>
+        {data.slug && (
+          <a
+            href={`https://siango.app/${data.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+          >
+            <Globe className="h-4 w-4" />
+            siango.app/{data.slug}
+            <ExternalLink className="h-3 w-3 opacity-60" />
+          </a>
+        )}
+        <div className="border-t border-border pt-4 grid grid-cols-3 gap-4 text-sm">
+          <div>
+            <p className="text-xs text-muted-foreground mb-0.5">שם בעלים</p>
+            <p className="font-medium">{data.ownerName || "—"}</p>
           </div>
-        ))}
+          <div>
+            <p className="text-xs text-muted-foreground mb-0.5">מייל</p>
+            <p className="font-medium break-all">{data.ownerEmail || "—"}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-0.5">טלפון</p>
+            <p className="font-medium">{data.ownerPhone || "—"}</p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-border text-xs font-semibold text-muted-foreground">פעילות אחרונה</div>
-          {data.recentActivity.length === 0 ? (
-            <p className="px-4 py-4 text-sm text-muted-foreground">אין פעילות עדיין</p>
-          ) : data.recentActivity.map((a, i) => (
-            <div key={i} className="flex items-center gap-3 px-4 py-2.5 border-b border-border last:border-0 text-sm">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
-              <span className="flex-1 text-muted-foreground">{a.text}</span>
-              <span className="text-xs text-muted-foreground shrink-0">{a.time}</span>
+      {/* Quick-action tiles */}
+      <div className="grid grid-cols-2 gap-3">
+        {([
+          { tab: "content" as Tab, label: "תוכן האתר", desc: "כותרות, תמונות, אודות", Icon: FileText },
+          { tab: "products" as Tab, label: "מוצרים", desc: "הוסף, ערוך, שנה תמונות", Icon: Package },
+          { tab: "site" as Tab, label: "הגדרות אתר", desc: "מודולים וקטגוריות", Icon: Settings },
+          { tab: "notes" as Tab, label: "הערות פנימיות", desc: "סמן בעיות ומשימות", Icon: StickyNote },
+        ]).map(({ tab, label, desc, Icon }) => (
+          <button
+            key={tab}
+            onClick={() => onTabChange(tab)}
+            className="flex items-start gap-3 p-4 bg-card border border-border rounded-xl text-right hover:bg-muted/50 transition-colors"
+          >
+            <Icon className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium">{label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
             </div>
-          ))}
-        </div>
-
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-border text-xs font-semibold text-muted-foreground">פרטי חשבון</div>
-          {[
-            { label: "שם בעלים", value: data.ownerName || "—" },
-            { label: "מייל", value: data.ownerEmail || "—" },
-            { label: "טלפון", value: data.ownerPhone || "—" },
-            { label: "מסלול", value: data.plan || "ללא מנוי" },
-            { label: "חידוש הבא", value: data.paidUntil ? format(new Date(data.paidUntil), "dd.MM.yyyy", { locale: he }) : "—" },
-          ].map(f => (
-            <div key={f.label} className="flex items-center justify-between px-4 py-2.5 border-b border-border last:border-0 text-sm">
-              <span className="text-muted-foreground">{f.label}</span>
-              <span className="font-medium">{f.value}</span>
-            </div>
-          ))}
-        </div>
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -234,6 +230,9 @@ function ContentTab({ businessId, data, onRefresh }: {
   const [aboutText, setAboutText] = useState(data.aboutText);
   const [saving, setSaving] = useState(false);
 
+  const [generatingAIText, setGeneratingAIText] = useState(false);
+  const [generatingAIHero, setGeneratingAIHero] = useState(false);
+
   const [heroImageUrl, setHeroImageUrl] = useState(data.heroImageUrl);
   const [uploadingHero, setUploadingHero] = useState(false);
   const heroInputRef = useRef<HTMLInputElement>(null);
@@ -258,6 +257,48 @@ function ContentTab({ businessId, data, onRefresh }: {
     setSaving(false);
     if (error) toast.error("שגיאה בשמירה: " + error.message);
     else { toast.success("תוכן עודכן"); onRefresh(); }
+  };
+
+  const generateAIText = async () => {
+    setGeneratingAIText(true);
+    try {
+      const { data: res, error } = await (supabase as any).functions.invoke("generate-content", {
+        body: {
+          businessName: data.businessName,
+          businessCategory: data.businessCategory,
+          rawText: aboutText || data.businessName,
+        },
+      });
+      if (error) throw error;
+      if (res?.heroTitle) setHeroTitle(res.heroTitle);
+      if (res?.tagline) setTagline(res.tagline);
+      if (res?.promoText) setPromoText(res.promoText);
+      if (res?.aboutText) setAboutText(res.aboutText);
+      toast.success("תוכן נוצר — בדוק ושמור");
+    } catch {
+      toast.error("שגיאה ביצירת תוכן AI");
+    } finally {
+      setGeneratingAIText(false);
+    }
+  };
+
+  const generateAIHeroImage = async () => {
+    setGeneratingAIHero(true);
+    try {
+      const { data: res, error } = await (supabase as any).functions.invoke("generate-hero-image", {
+        body: { category: data.businessCategory, businessName: data.businessName },
+      });
+      if (error || !res?.imageUrl) throw new Error("לא התקבלה תמונה");
+      const { error: dbError } = await (supabase as any).from("businesses").update({ hero_image_url: res.imageUrl }).eq("id", businessId);
+      if (dbError) throw dbError;
+      setHeroImageUrl(res.imageUrl);
+      toast.success("תמונת ירו נוצרה");
+      onRefresh();
+    } catch (e: any) {
+      toast.error("שגיאה ביצירת תמונה: " + e.message);
+    } finally {
+      setGeneratingAIHero(false);
+    }
   };
 
   const uploadHeroImage = async (file: File) => {
@@ -322,6 +363,13 @@ function ContentTab({ businessId, data, onRefresh }: {
     <div className="space-y-4">
       {/* Text content */}
       <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-muted-foreground">טקסטים</p>
+          <Button size="sm" variant="outline" onClick={generateAIText} disabled={generatingAIText}>
+            {generatingAIText ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : <Wand2 className="h-3.5 w-3.5 ml-1" />}
+            צור עם AI
+          </Button>
+        </div>
         <div className="space-y-1">
           <label className="text-xs font-semibold text-muted-foreground">כותרת ראשית (hero)</label>
           <input
@@ -394,15 +442,26 @@ function ContentTab({ businessId, data, onRefresh }: {
           className="hidden"
           onChange={e => { if (e.target.files?.[0]) uploadHeroImage(e.target.files[0]); }}
         />
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={uploadingHero}
-          onClick={() => heroInputRef.current?.click()}
-        >
-          {uploadingHero ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : <Upload className="h-3.5 w-3.5 ml-1" />}
-          {heroImageUrl ? "החלף תמונה" : "העלה תמונה"}
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={uploadingHero}
+            onClick={() => heroInputRef.current?.click()}
+          >
+            {uploadingHero ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : <Upload className="h-3.5 w-3.5 ml-1" />}
+            {heroImageUrl ? "החלף תמונה" : "העלה תמונה"}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={generatingAIHero}
+            onClick={generateAIHeroImage}
+          >
+            {generatingAIHero ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : <Wand2 className="h-3.5 w-3.5 ml-1" />}
+            צור עם AI
+          </Button>
+        </div>
       </div>
 
       {/* Gallery images */}
@@ -460,7 +519,7 @@ interface AdminProduct {
   image_url: string | null;
 }
 
-function ProductsTab({ businessId }: { businessId: string }) {
+function ProductsTab({ businessId, businessCategory }: { businessId: string; businessCategory: string | null }) {
   const { data: products, isLoading, refetch } = useQuery<AdminProduct[]>({
     queryKey: ["admin-products", businessId],
     queryFn: async () => {
@@ -480,6 +539,7 @@ function ProductsTab({ businessId }: { businessId: string }) {
   const [editDesc, setEditDesc] = useState("");
   const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
   const [uploadingProductImg, setUploadingProductImg] = useState(false);
+  const [generatingProductAI, setGeneratingProductAI] = useState(false);
   const productImgRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [addingNew, setAddingNew] = useState(false);
@@ -505,6 +565,23 @@ function ProductsTab({ businessId }: { businessId: string }) {
       toast.error("שגיאה בהעלאה: " + e.message);
     } finally {
       setUploadingProductImg(false);
+    }
+  };
+
+  const generateAIProductImage = async () => {
+    if (!editName.trim()) { toast.error("הזן שם מוצר קודם"); return; }
+    setGeneratingProductAI(true);
+    try {
+      const { data: res, error } = await (supabase as any).functions.invoke("generate-product-image", {
+        body: { productName: editName, productDescription: editDesc, businessCategory },
+      });
+      if (error || !res?.imageUrl) throw new Error("לא התקבלה תמונה");
+      setEditImageUrl(res.imageUrl);
+      toast.success("תמונה נוצרה");
+    } catch {
+      toast.error("שגיאה ביצירת תמונה");
+    } finally {
+      setGeneratingProductAI(false);
     }
   };
 
@@ -618,10 +695,16 @@ function ProductsTab({ businessId }: { businessId: string }) {
                   className="hidden"
                   onChange={e => { if (e.target.files?.[0]) uploadProductImage(e.target.files[0]); }}
                 />
-                <Button size="sm" variant="outline" disabled={uploadingProductImg} onClick={() => productImgRef.current?.click()}>
-                  {uploadingProductImg ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : <Upload className="h-3.5 w-3.5 ml-1" />}
-                  {editImageUrl ? "החלף" : "העלה תמונה"}
-                </Button>
+                <div className="flex gap-2 flex-wrap">
+                  <Button size="sm" variant="outline" disabled={uploadingProductImg} onClick={() => productImgRef.current?.click()}>
+                    {uploadingProductImg ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : <Upload className="h-3.5 w-3.5 ml-1" />}
+                    {editImageUrl ? "החלף" : "העלה"}
+                  </Button>
+                  <Button size="sm" variant="outline" disabled={generatingProductAI || uploadingProductImg} onClick={generateAIProductImage}>
+                    {generatingProductAI ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : <Wand2 className="h-3.5 w-3.5 ml-1" />}
+                    AI
+                  </Button>
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button size="sm" onClick={saveEdit} disabled={saving || uploadingProductImg}>
@@ -890,7 +973,7 @@ const AdminMerchantProfile = ({
 
       {/* Tab content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {activeTab === "overview" && <OverviewTab data={data} />}
+        {activeTab === "overview" && <OverviewTab data={data} onTabChange={setActiveTab} />}
         {activeTab === "log" && <LogTab data={data} />}
         {activeTab === "content" && (
           <ContentTab
@@ -899,7 +982,7 @@ const AdminMerchantProfile = ({
             onRefresh={() => queryClient.invalidateQueries({ queryKey: ["merchant-profile", businessId] })}
           />
         )}
-        {activeTab === "products" && <ProductsTab businessId={businessId} />}
+        {activeTab === "products" && <ProductsTab businessId={businessId} businessCategory={data.businessCategory} />}
         {activeTab === "site" && (
           <SiteTab
             data={data}
