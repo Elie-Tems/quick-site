@@ -8,6 +8,7 @@ import { he } from "date-fns/locale";
 import {
   ArrowRight, Mail, ExternalLink, StickyNote, Trash2,
   Globe, ToggleLeft, ToggleRight, Loader2, ChevronLeft,
+  Pencil, Plus, X, Check,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -24,6 +25,10 @@ interface MerchantProfileData {
   businessEmail: string | null;
   businessCreatedAt: string;
   aboutText: string;
+  heroTitle: string;
+  tagline: string;
+  promoText: string;
+  heroBenefits: string[];
   profileId: string | null;
   userId: string | null;
   ownerName: string | null;
@@ -52,6 +57,7 @@ function useMerchantProfile(businessId: string) {
           .select(`
             id, name, slug, business_category, is_published,
             enabled_modules, phone, email, created_at, about_text,
+            hero_title, tagline, promo_text, hero_benefits,
             profiles ( id, user_id, full_name, email, phone, created_at, admin_notes )
           `)
           .eq("id", businessId)
@@ -111,6 +117,10 @@ function useMerchantProfile(businessId: string) {
         ownerRegisteredAt: profile?.created_at ?? null,
         adminNotes: (profile?.admin_notes as string) ?? "",
         aboutText: biz.about_text ?? "",
+        heroTitle: biz.hero_title ?? "",
+        tagline: biz.tagline ?? "",
+        promoText: biz.promo_text ?? "",
+        heroBenefits: Array.isArray(biz.hero_benefits) ? biz.hero_benefits : [],
         plan: sub?.plan ?? null,
         subscriptionStatus: sub?.status ?? null,
         paidUntil: sub?.paid_until ?? null,
@@ -125,7 +135,7 @@ function useMerchantProfile(businessId: string) {
   });
 }
 
-type Tab = "overview" | "log" | "site" | "notes";
+type Tab = "overview" | "log" | "content" | "products" | "site" | "notes";
 
 function OverviewTab({ data }: { data: MerchantProfileData }) {
   const ils = (n: number) => `₪${Math.round(n).toLocaleString("he-IL")}`;
@@ -199,39 +209,251 @@ function LogTab({ data }: { data: MerchantProfileData }) {
   );
 }
 
-function AboutTextEditor({ businessId, initialText, onRefresh }: {
+function ContentTab({ businessId, data, onRefresh }: {
   businessId: string;
-  initialText: string;
+  data: MerchantProfileData;
   onRefresh: () => void;
 }) {
-  const [text, setText] = useState(initialText);
+  const [heroTitle, setHeroTitle] = useState(data.heroTitle);
+  const [tagline, setTagline] = useState(data.tagline);
+  const [promoText, setPromoText] = useState(data.promoText);
+  const [aboutText, setAboutText] = useState(data.aboutText);
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
     setSaving(true);
     const { error } = await (supabase as any)
       .from("businesses")
-      .update({ about_text: text })
+      .update({
+        hero_title: heroTitle || null,
+        tagline: tagline || null,
+        promo_text: promoText || null,
+        about_text: aboutText || null,
+      })
       .eq("id", businessId);
     setSaving(false);
     if (error) toast.error("שגיאה בשמירה: " + error.message);
-    else { toast.success("טקסט אודות עודכן"); onRefresh(); }
+    else { toast.success("תוכן עודכן"); onRefresh(); }
   };
 
   return (
-    <div className="p-4 space-y-3">
-      <textarea
-        value={text}
-        onChange={e => setText(e.target.value)}
-        rows={5}
-        dir="rtl"
-        placeholder="טקסט אודות העסק..."
-        className="w-full text-sm rounded-lg border border-border bg-background p-3 resize-y"
-      />
-      <Button size="sm" onClick={save} disabled={saving}>
-        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : null}
-        שמור
-      </Button>
+    <div className="space-y-4">
+      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-muted-foreground">כותרת ראשית (hero)</label>
+          <input
+            value={heroTitle}
+            onChange={e => setHeroTitle(e.target.value)}
+            dir="rtl"
+            placeholder={data.businessName}
+            className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-muted-foreground">טאגליין</label>
+          <input
+            value={tagline}
+            onChange={e => setTagline(e.target.value)}
+            dir="rtl"
+            placeholder="משפט מייחד..."
+            className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-muted-foreground">טקסט פרומו (בנר עליון)</label>
+          <input
+            value={promoText}
+            onChange={e => setPromoText(e.target.value)}
+            dir="rtl"
+            placeholder="הצעה מיוחדת..."
+            className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-muted-foreground">טקסט אודות</label>
+          <textarea
+            value={aboutText}
+            onChange={e => setAboutText(e.target.value)}
+            rows={6}
+            dir="rtl"
+            placeholder="אודות העסק..."
+            className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2 resize-y"
+          />
+        </div>
+        <Button onClick={save} disabled={saving} size="sm">
+          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : null}
+          שמור תוכן
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+interface AdminProduct {
+  id: string;
+  name: string;
+  price: number | null;
+  description: string | null;
+  is_active: boolean | null;
+  image_url: string | null;
+}
+
+function ProductsTab({ businessId }: { businessId: string }) {
+  const { data: products, isLoading, refetch } = useQuery<AdminProduct[]>({
+    queryKey: ["admin-products", businessId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("products")
+        .select("id, name, price, description, is_active, image_url")
+        .eq("business_id", businessId)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data || []) as AdminProduct[];
+    },
+  });
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [addingNew, setAddingNew] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newPrice, setNewPrice] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+
+  const startEdit = (p: AdminProduct) => {
+    setEditingId(p.id);
+    setEditName(p.name);
+    setEditPrice(p.price?.toString() ?? "");
+    setEditDesc(p.description ?? "");
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    setSaving(true);
+    const { error } = await (supabase as any)
+      .from("products")
+      .update({
+        name: editName,
+        price: editPrice ? parseFloat(editPrice) : null,
+        description: editDesc || null,
+      })
+      .eq("id", editingId);
+    setSaving(false);
+    if (error) toast.error("שגיאה בשמירה");
+    else { toast.success("מוצר עודכן"); setEditingId(null); refetch(); }
+  };
+
+  const toggleActive = async (p: AdminProduct) => {
+    await (supabase as any).from("products").update({ is_active: !p.is_active }).eq("id", p.id);
+    refetch();
+  };
+
+  const deleteProduct = async (id: string) => {
+    if (!confirm("למחוק מוצר זה?")) return;
+    await (supabase as any).from("products").delete().eq("id", id);
+    refetch();
+  };
+
+  const addProduct = async () => {
+    if (!newName.trim()) { toast.error("שם המוצר חובה"); return; }
+    setSaving(true);
+    const { error } = await (supabase as any).from("products").insert({
+      business_id: businessId,
+      name: newName,
+      price: newPrice ? parseFloat(newPrice) : null,
+      description: newDesc || null,
+      is_active: true,
+    });
+    setSaving(false);
+    if (error) toast.error("שגיאה בהוספה: " + error.message);
+    else {
+      toast.success("מוצר נוסף");
+      setAddingNew(false);
+      setNewName(""); setNewPrice(""); setNewDesc("");
+      refetch();
+    }
+  };
+
+  if (isLoading) return (
+    <div className="flex items-center justify-center py-10">
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    </div>
+  );
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-semibold">{products?.length ?? 0} מוצרים</span>
+        <Button size="sm" variant="outline" onClick={() => setAddingNew(true)}>
+          <Plus className="h-3.5 w-3.5 ml-1" /> הוסף מוצר
+        </Button>
+      </div>
+
+      {addingNew && (
+        <div className="bg-card border border-primary/30 rounded-xl p-4 space-y-3">
+          <p className="text-xs font-semibold text-muted-foreground">מוצר חדש</p>
+          <input value={newName} onChange={e => setNewName(e.target.value)} dir="rtl" placeholder="שם המוצר *" className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2" />
+          <input value={newPrice} onChange={e => setNewPrice(e.target.value)} type="number" dir="ltr" placeholder="מחיר (₪)" className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2" />
+          <textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} dir="rtl" rows={3} placeholder="תיאור (אופציונלי)" className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2 resize-none" />
+          <div className="flex gap-2">
+            <Button size="sm" onClick={addProduct} disabled={saving}>
+              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : null} הוסף
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setAddingNew(false)}>ביטול</Button>
+          </div>
+        </div>
+      )}
+
+      {!products?.length && !addingNew && (
+        <p className="text-sm text-muted-foreground text-center py-6">אין מוצרים עדיין</p>
+      )}
+
+      {products?.map(p => (
+        <div key={p.id} className="bg-card border border-border rounded-xl overflow-hidden">
+          {editingId === p.id ? (
+            <div className="p-4 space-y-3">
+              <input value={editName} onChange={e => setEditName(e.target.value)} dir="rtl" className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2" />
+              <input value={editPrice} onChange={e => setEditPrice(e.target.value)} type="number" dir="ltr" placeholder="מחיר" className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2" />
+              <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} dir="rtl" rows={3} className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2 resize-none" />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={saveEdit} disabled={saving}>
+                  {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : <Check className="h-3.5 w-3.5 ml-1" />} שמור
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 px-4 py-3">
+              {p.image_url && (
+                <img src={p.image_url} alt={p.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium truncate">{p.name}</span>
+                  {!p.is_active && <span className="text-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">לא פעיל</span>}
+                </div>
+                {p.price != null && <div className="text-xs text-muted-foreground">₪{p.price}</div>}
+                {p.description && <div className="text-xs text-muted-foreground truncate">{p.description}</div>}
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <button onClick={() => toggleActive(p)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground" title={p.is_active ? "כבה מוצר" : "הפעל מוצר"}>
+                  {p.is_active ? <ToggleRight className="h-4 w-4 text-green-600" /> : <ToggleLeft className="h-4 w-4" />}
+                </button>
+                <button onClick={() => startEdit(p)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground">
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+                <button onClick={() => deleteProduct(p.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors text-destructive">
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -302,10 +524,6 @@ function SiteTab({ data, businessId, onRefresh }: {
           );
         })}
       </div>
-    </div>
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
-      <div className="px-4 py-2.5 border-b border-border text-xs font-semibold text-muted-foreground">טקסט אודות</div>
-      <AboutTextEditor businessId={businessId} initialText={data.aboutText} onRefresh={onRefresh} />
     </div>
     </div>
   );
@@ -442,14 +660,21 @@ const AdminMerchantProfile = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 px-6 py-0 border-b border-border bg-background">
-        {(["overview", "log", "site", "notes"] as Tab[]).map(t => {
-          const labels: Record<Tab, string> = { overview: "סקירה", log: "לוג פעילות", site: "הגדרות אתר", notes: "הערות פנימיות" };
+      <div className="flex gap-1 px-6 py-0 border-b border-border bg-background overflow-x-auto">
+        {(["overview", "log", "content", "products", "site", "notes"] as Tab[]).map(t => {
+          const labels: Record<Tab, string> = {
+            overview: "סקירה",
+            log: "לוג פעילות",
+            content: "תוכן האתר",
+            products: "מוצרים",
+            site: "הגדרות אתר",
+            notes: "הערות פנימיות",
+          };
           return (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
-              className={`px-4 py-3 text-sm border-b-2 -mb-px transition-colors ${activeTab === t ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              className={`px-4 py-3 text-sm border-b-2 -mb-px transition-colors whitespace-nowrap ${activeTab === t ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground hover:text-foreground"}`}
             >
               {labels[t]}
             </button>
@@ -461,6 +686,14 @@ const AdminMerchantProfile = ({
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {activeTab === "overview" && <OverviewTab data={data} />}
         {activeTab === "log" && <LogTab data={data} />}
+        {activeTab === "content" && (
+          <ContentTab
+            businessId={businessId}
+            data={data}
+            onRefresh={() => queryClient.invalidateQueries({ queryKey: ["merchant-profile", businessId] })}
+          />
+        )}
+        {activeTab === "products" && <ProductsTab businessId={businessId} />}
         {activeTab === "site" && (
           <SiteTab
             data={data}
