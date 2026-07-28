@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { he } from "date-fns/locale";
 import {
   ArrowRight, Mail, ExternalLink, StickyNote, Trash2,
   Globe, ToggleLeft, ToggleRight, Loader2, ChevronLeft,
-  Pencil, Plus, X, Check,
+  Pencil, Plus, X, Check, Upload, Image as ImageIcon,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -36,6 +36,8 @@ interface MerchantProfileData {
   ownerPhone: string | null;
   ownerRegisteredAt: string | null;
   adminNotes: string;
+  heroImageUrl: string | null;
+  galleryImages: { heading: string; images: { url: string; caption: string }[] } | null;
   plan: string | null;
   subscriptionStatus: string | null;
   paidUntil: string | null;
@@ -58,6 +60,7 @@ function useMerchantProfile(businessId: string) {
             id, name, slug, business_category, is_published,
             enabled_modules, phone, email, created_at, about_text,
             hero_title, tagline, promo_text, hero_benefits,
+            hero_image_url, gallery_images,
             profiles ( id, user_id, full_name, email, phone, created_at, admin_notes )
           `)
           .eq("id", businessId)
@@ -116,6 +119,8 @@ function useMerchantProfile(businessId: string) {
         ownerPhone: profile?.phone ?? null,
         ownerRegisteredAt: profile?.created_at ?? null,
         adminNotes: (profile?.admin_notes as string) ?? "",
+        heroImageUrl: biz.hero_image_url ?? null,
+        galleryImages: (biz.gallery_images as any) ?? null,
         aboutText: biz.about_text ?? "",
         heroTitle: biz.hero_title ?? "",
         tagline: biz.tagline ?? "",
@@ -133,6 +138,15 @@ function useMerchantProfile(businessId: string) {
       };
     },
   });
+}
+
+async function uploadToStorage(businessId: string, folder: string, file: File): Promise<string> {
+  const ext = file.name.split(".").pop() || "jpg";
+  const path = `${businessId}/${folder}/${Date.now()}.${ext}`;
+  const { error } = await (supabase as any).storage.from("business-assets").upload(path, file, { upsert: false });
+  if (error) throw new Error(error.message);
+  const { data } = (supabase as any).storage.from("business-assets").getPublicUrl(path);
+  return data.publicUrl as string;
 }
 
 type Tab = "overview" | "log" | "content" | "products" | "site" | "notes";
@@ -220,6 +234,16 @@ function ContentTab({ businessId, data, onRefresh }: {
   const [aboutText, setAboutText] = useState(data.aboutText);
   const [saving, setSaving] = useState(false);
 
+  const [heroImageUrl, setHeroImageUrl] = useState(data.heroImageUrl);
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const heroInputRef = useRef<HTMLInputElement>(null);
+
+  const [galleryImages, setGalleryImages] = useState<{ url: string; caption: string }[]>(
+    data.galleryImages?.images ?? []
+  );
+  const [uploadingGallery, setUploadingGallery] = useState(false);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
   const save = async () => {
     setSaving(true);
     const { error } = await (supabase as any)
@@ -236,8 +260,67 @@ function ContentTab({ businessId, data, onRefresh }: {
     else { toast.success("תוכן עודכן"); onRefresh(); }
   };
 
+  const uploadHeroImage = async (file: File) => {
+    setUploadingHero(true);
+    try {
+      const url = await uploadToStorage(businessId, "hero", file);
+      const { error } = await (supabase as any).from("businesses").update({ hero_image_url: url }).eq("id", businessId);
+      if (error) throw error;
+      setHeroImageUrl(url);
+      toast.success("תמונת הירו עודכנה");
+      onRefresh();
+    } catch (e: any) {
+      toast.error("שגיאה בהעלאה: " + e.message);
+    } finally {
+      setUploadingHero(false);
+    }
+  };
+
+  const removeHeroImage = async () => {
+    const { error } = await (supabase as any).from("businesses").update({ hero_image_url: null }).eq("id", businessId);
+    if (error) { toast.error("שגיאה"); return; }
+    setHeroImageUrl(null);
+    onRefresh();
+  };
+
+  const uploadGalleryImages = async (files: FileList) => {
+    setUploadingGallery(true);
+    try {
+      const urls: string[] = [];
+      for (const file of Array.from(files)) {
+        const url = await uploadToStorage(businessId, "gallery", file);
+        urls.push(url);
+      }
+      const newImages = [...galleryImages, ...urls.map(u => ({ url: u, caption: "" }))];
+      const current = data.galleryImages ?? { heading: "", images: [] };
+      const { error } = await (supabase as any).from("businesses").update({
+        gallery_images: { ...current, images: newImages },
+      }).eq("id", businessId);
+      if (error) throw error;
+      setGalleryImages(newImages);
+      toast.success(`${urls.length} תמונות נוספו`);
+      onRefresh();
+    } catch (e: any) {
+      toast.error("שגיאה בהעלאה: " + e.message);
+    } finally {
+      setUploadingGallery(false);
+    }
+  };
+
+  const removeGalleryImage = async (idx: number) => {
+    const newImages = galleryImages.filter((_, i) => i !== idx);
+    const current = data.galleryImages ?? { heading: "", images: [] };
+    const { error } = await (supabase as any).from("businesses").update({
+      gallery_images: { ...current, images: newImages },
+    }).eq("id", businessId);
+    if (error) { toast.error("שגיאה"); return; }
+    setGalleryImages(newImages);
+    onRefresh();
+  };
+
   return (
     <div className="space-y-4">
+      {/* Text content */}
       <div className="bg-card border border-border rounded-xl p-5 space-y-4">
         <div className="space-y-1">
           <label className="text-xs font-semibold text-muted-foreground">כותרת ראשית (hero)</label>
@@ -285,6 +368,85 @@ function ContentTab({ businessId, data, onRefresh }: {
           שמור תוכן
         </Button>
       </div>
+
+      {/* Hero image */}
+      <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+        <p className="text-xs font-semibold text-muted-foreground">תמונת ירו ראשית</p>
+        {heroImageUrl ? (
+          <div className="relative w-full">
+            <img src={heroImageUrl} alt="hero" className="w-full h-40 object-cover rounded-lg" />
+            <button
+              onClick={removeHeroImage}
+              className="absolute top-2 left-2 p-1 rounded-full bg-background/80 hover:bg-background text-destructive transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-28 rounded-lg border-2 border-dashed border-border text-muted-foreground">
+            <ImageIcon className="h-6 w-6" />
+          </div>
+        )}
+        <input
+          ref={heroInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={e => { if (e.target.files?.[0]) uploadHeroImage(e.target.files[0]); }}
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={uploadingHero}
+          onClick={() => heroInputRef.current?.click()}
+        >
+          {uploadingHero ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : <Upload className="h-3.5 w-3.5 ml-1" />}
+          {heroImageUrl ? "החלף תמונה" : "העלה תמונה"}
+        </Button>
+      </div>
+
+      {/* Gallery images */}
+      <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-muted-foreground">תמונות גלריה / אווירה ({galleryImages.length})</p>
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={e => { if (e.target.files?.length) uploadGalleryImages(e.target.files); }}
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={uploadingGallery}
+            onClick={() => galleryInputRef.current?.click()}
+          >
+            {uploadingGallery ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : <Upload className="h-3.5 w-3.5 ml-1" />}
+            הוסף תמונות
+          </Button>
+        </div>
+        {galleryImages.length === 0 ? (
+          <div className="flex items-center justify-center h-20 rounded-lg border-2 border-dashed border-border text-muted-foreground text-sm">
+            אין תמונות גלריה
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {galleryImages.map((img, idx) => (
+              <div key={idx} className="relative group">
+                <img src={img.url} alt="" className="w-full h-24 object-cover rounded-lg" />
+                <button
+                  onClick={() => removeGalleryImage(idx)}
+                  className="absolute top-1 left-1 p-1 rounded-full bg-background/80 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -316,6 +478,9 @@ function ProductsTab({ businessId }: { businessId: string }) {
   const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
   const [editDesc, setEditDesc] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
+  const [uploadingProductImg, setUploadingProductImg] = useState(false);
+  const productImgRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [addingNew, setAddingNew] = useState(false);
   const [newName, setNewName] = useState("");
@@ -327,6 +492,20 @@ function ProductsTab({ businessId }: { businessId: string }) {
     setEditName(p.name);
     setEditPrice(p.price?.toString() ?? "");
     setEditDesc(p.description ?? "");
+    setEditImageUrl(p.image_url ?? null);
+  };
+
+  const uploadProductImage = async (file: File) => {
+    if (!editingId) return;
+    setUploadingProductImg(true);
+    try {
+      const url = await uploadToStorage(businessId, "products", file);
+      setEditImageUrl(url);
+    } catch (e: any) {
+      toast.error("שגיאה בהעלאה: " + e.message);
+    } finally {
+      setUploadingProductImg(false);
+    }
   };
 
   const saveEdit = async () => {
@@ -338,6 +517,7 @@ function ProductsTab({ businessId }: { businessId: string }) {
         name: editName,
         price: editPrice ? parseFloat(editPrice) : null,
         description: editDesc || null,
+        image_url: editImageUrl || null,
       })
       .eq("id", editingId);
     setSaving(false);
@@ -417,8 +597,34 @@ function ProductsTab({ businessId }: { businessId: string }) {
               <input value={editName} onChange={e => setEditName(e.target.value)} dir="rtl" className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2" />
               <input value={editPrice} onChange={e => setEditPrice(e.target.value)} type="number" dir="ltr" placeholder="מחיר" className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2" />
               <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} dir="rtl" rows={3} className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2 resize-none" />
+              {/* Image upload */}
+              <div className="flex items-center gap-3">
+                {editImageUrl ? (
+                  <div className="relative">
+                    <img src={editImageUrl} alt="" className="w-14 h-14 rounded-lg object-cover" />
+                    <button onClick={() => setEditImageUrl(null)} className="absolute -top-1 -left-1 p-0.5 rounded-full bg-background border border-border text-destructive">
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-14 h-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground">
+                    <ImageIcon className="h-4 w-4" />
+                  </div>
+                )}
+                <input
+                  ref={productImgRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => { if (e.target.files?.[0]) uploadProductImage(e.target.files[0]); }}
+                />
+                <Button size="sm" variant="outline" disabled={uploadingProductImg} onClick={() => productImgRef.current?.click()}>
+                  {uploadingProductImg ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : <Upload className="h-3.5 w-3.5 ml-1" />}
+                  {editImageUrl ? "החלף" : "העלה תמונה"}
+                </Button>
+              </div>
               <div className="flex gap-2">
-                <Button size="sm" onClick={saveEdit} disabled={saving}>
+                <Button size="sm" onClick={saveEdit} disabled={saving || uploadingProductImg}>
                   {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" /> : <Check className="h-3.5 w-3.5 ml-1" />} שמור
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
