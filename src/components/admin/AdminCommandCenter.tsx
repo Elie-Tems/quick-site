@@ -235,7 +235,10 @@ function CancellationsModal() {
 
 // --- Main Component ---
 
-const AdminCommandCenter = ({ onNavigate }: { onNavigate: (area: string) => void }) => {
+const AdminCommandCenter = ({ onNavigate, onSelectMerchant }: {
+  onNavigate: (area: string) => void;
+  onSelectMerchant?: (businessId: string) => void;
+}) => {
   const { data, isLoading } = useCommandCenter();
   const t = data?.today;
   const k = data?.kpis;
@@ -392,7 +395,7 @@ const AdminCommandCenter = ({ onNavigate }: { onNavigate: (area: string) => void
       {/* Recent activity */}
       <div>
         <h3 className="text-sm font-semibold text-muted-foreground mb-2">פעילות אחרונה</h3>
-        <AdminActivityFeed />
+        <AdminActivityFeed onSelectMerchant={onSelectMerchant} />
       </div>
     </div>
   );

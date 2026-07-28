@@ -17,7 +17,7 @@ function timeAgo(iso: string) {
   return `לפני ${Math.floor(diff / 86400)} ימים`;
 }
 
-const AdminActivityFeed = () => {
+const AdminActivityFeed = ({ onSelectMerchant }: { onSelectMerchant?: (businessId: string) => void } = {}) => {
   const { data, isLoading } = useActivityFeed();
 
   return (
@@ -37,13 +37,19 @@ const AdminActivityFeed = () => {
           {(data ?? []).map((event: ActivityEvent) => {
             const cfg = eventConfig[event.type];
             const Icon = cfg.icon;
+            const clickable = !!(event.businessId && onSelectMerchant);
             return (
-              <div key={event.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30 transition-colors">
+              <div
+                key={event.id}
+                onClick={clickable ? () => onSelectMerchant!(event.businessId!) : undefined}
+                className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${clickable ? "cursor-pointer hover:bg-muted/50 active:bg-muted" : "hover:bg-muted/30"}`}
+              >
                 <div className={`w-8 h-8 rounded-full ${cfg.bg} flex items-center justify-center shrink-0`}>
                   <Icon className={`h-4 w-4 ${cfg.color}`} />
                 </div>
                 <p className="text-sm flex-1">{event.label}</p>
                 <span className="text-xs text-muted-foreground shrink-0">{timeAgo(event.time)}</span>
+                {clickable && <span className="text-xs text-primary opacity-60">←</span>}
               </div>
             );
           })}

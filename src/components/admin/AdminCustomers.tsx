@@ -56,7 +56,7 @@ function StoreBadge({ b }: { b: BusinessRow }) {
         )}
         {b.slug && (
           <a
-            href={`/store/${b.slug}`}
+            href={`https://siango.app/${b.slug}`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={e => e.stopPropagation()}
@@ -136,9 +136,9 @@ function MerchantCard({
           ) : (
             <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
               <Store className="h-3 w-3" />
-              {storeCount === 1 ? "חנות אחת" : `${storeCount} חנויות`}
+              {storeCount === 1 ? m.businesses[0].name : `${storeCount} חנויות`}
               {activeCount > 0 && (
-                <span className="text-green-700">· {activeCount} פעיל</span>
+                <span className="text-green-700">· {activeCount > 0 ? "פעיל" : ""}</span>
               )}
             </span>
           )}
@@ -148,6 +148,17 @@ function MerchantCard({
         <p className="hidden lg:block text-xs text-muted-foreground shrink-0">
           {format(new Date(m.registered_at), "dd/MM/yy", { locale: he })}
         </p>
+
+        {/* Direct profile button */}
+        {onSelectMerchant && storeCount > 0 && (
+          <button
+            onClick={e => { e.stopPropagation(); onSelectMerchant(m.businesses[0].id); }}
+            className="shrink-0 p-1.5 rounded-lg text-primary hover:bg-primary/10 transition-colors"
+            title="פתח פרופיל"
+          >
+            <Eye className="h-4 w-4" />
+          </button>
+        )}
 
         {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
       </div>

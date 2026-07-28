@@ -34,14 +34,15 @@ import AdminEmailSettings from "./AdminEmailSettings";
 import AdminUnsubscribes from "./AdminUnsubscribes";
 import AdminSystem from "./AdminSystem";
 
-function OverviewPanel({ stats, statsLoading, onNavigate }: {
+function OverviewPanel({ stats, statsLoading, onNavigate, onSelectMerchant }: {
   stats: any;
   statsLoading: boolean;
   onNavigate: (areaId: string) => void;
+  onSelectMerchant: (businessId: string) => void;
 }) {
   return (
     <div className="space-y-6">
-      <AdminCommandCenter onNavigate={onNavigate} />
+      <AdminCommandCenter onNavigate={onNavigate} onSelectMerchant={onSelectMerchant} />
       <AdminStatsCards stats={stats} isLoading={statsLoading} />
     </div>
   );
@@ -62,8 +63,8 @@ interface Area { id: string; label: string; icon: React.ComponentType<{ classNam
 const AREAS: Area[] = [
   {
     id: "home", label: "בוקר טוב", icon: LayoutDashboard, tabs: [
-      { key: "overview", label: "סקירה", render: ({ stats, statsLoading, onNavigate }) =>
-          <OverviewPanel stats={stats} statsLoading={statsLoading} onNavigate={onNavigate} /> },
+      { key: "overview", label: "סקירה", render: ({ stats, statsLoading, onNavigate, onSelectMerchant }) =>
+          <OverviewPanel stats={stats} statsLoading={statsLoading} onNavigate={onNavigate} onSelectMerchant={onSelectMerchant} /> },
     ],
   },
   {
@@ -200,7 +201,7 @@ const AdminDashboardContent = () => {
       )}
 
       <main className="flex-1 overflow-y-auto">
-        {selectedMerchantId && areaId === "merchants" ? (
+        {selectedMerchantId ? (
           <AdminMerchantProfile
             businessId={selectedMerchantId}
             onBack={() => setSelectedMerchantId(null)}

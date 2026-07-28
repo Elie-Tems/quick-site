@@ -557,6 +557,7 @@ export interface ActivityEvent {
   type: "order" | "signup" | "publish" | "cancel";
   label: string;
   time: string;
+  businessId?: string;
 }
 
 export function useActivityFeed() {
@@ -565,7 +566,7 @@ export function useActivityFeed() {
     queryFn: async (): Promise<ActivityEvent[]> => {
       const [{ data: orders }, { data: profiles }, { data: published }, { data: cancels }] =
         await Promise.all([
-          supabase.from("orders").select("id, customer_name, created_at").order("created_at", { ascending: false }).limit(20),
+          supabase.from("orders").select("id, customer_name, created_at, business_id").order("created_at", { ascending: false }).limit(20),
           supabase.from("profiles").select("id, full_name, created_at").order("created_at", { ascending: false }).limit(20),
           supabase.from("businesses").select("id, name, updated_at").eq("is_published", true).order("updated_at", { ascending: false }).limit(20),
           supabase.from("subscriptions").select("id, plan_name, cancel_at").not("cancel_at", "is", null).order("cancel_at", { ascending: false }).limit(20),
@@ -577,6 +578,7 @@ export function useActivityFeed() {
           type: "order" as const,
           label: `הזמנה חדשה מ-${o.customer_name || "לקוח"}`,
           time: o.created_at,
+          businessId: (o as any).business_id ?? undefined,
         })),
         ...(profiles || []).map((p) => ({
           id: `signup-${p.id}`,
@@ -589,6 +591,7 @@ export function useActivityFeed() {
           type: "publish" as const,
           label: `פרסם אתר: ${b.name}`,
           time: b.updated_at,
+          businessId: b.id,
         })),
         ...(cancels || []).map((s) => ({
           id: `cancel-${s.id}`,
