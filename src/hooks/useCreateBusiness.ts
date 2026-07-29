@@ -106,7 +106,7 @@ async function generateUniqueSlug(baseName: string): Promise<string> {
 
   if (!existing) return baseSlug;
 
-  return `${baseSlug}-${Math.random().toString(36)[2]}`;
+  return `${baseSlug}-${Math.floor(Math.random() * 9) + 1}`;
 }
 
 export function useCreateBusiness() {
