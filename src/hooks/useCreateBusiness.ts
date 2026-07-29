@@ -186,7 +186,8 @@ export function useCreateBusiness() {
       // existing same-slug row that this user can't see; the global constraint
       // (businesses_slug_key) still fires on insert, so we handle 23505 here.
       const slugify = (s: string) =>
-        s.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^֐-׿a-z0-9-]/g, "");
+        s.trim().split(/\s+/).slice(0, 2).join(" ")
+          .toLowerCase().replace(/\s+/g, "-").replace(/[^֐-׿a-z0-9-]/g, "");
       const baseSlug = slugify(data.slug || data.businessName) || "store";
 
       // Auto-layout by vertical: derive the storefront layout from the chosen
@@ -205,7 +206,7 @@ export function useCreateBusiness() {
         slug =
           attempt === 0
             ? await generateUniqueSlug(data.slug || data.businessName)
-            : `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
+            : `${baseSlug}-${attempt + 1}`;
         const res = await supabase
           .from('businesses')
           .insert({
