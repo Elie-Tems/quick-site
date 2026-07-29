@@ -89,25 +89,24 @@ async function uploadImage(
 }
 
 async function generateUniqueSlug(baseName: string): Promise<string> {
-  // Create base slug from business name
-  let baseSlug = baseName
+  const baseSlug = baseName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .join(" ")
     .toLowerCase()
     .replace(/\s+/g, "-")
     .replace(/[^\u0590-\u05ffa-z0-9-]/g, "");
-  
-  // Check if slug exists
+
   const { data: existing } = await supabase
     .from('businesses')
     .select('slug')
     .eq('slug', baseSlug)
     .maybeSingle();
-  
-  if (!existing) {
-    return baseSlug;
-  }
-  
-  // Add random suffix if slug exists
-  const randomSuffix = Math.random().toString(36).substring(2, 6);
+
+  if (!existing) return baseSlug;
+
+  const randomSuffix = Math.random().toString(36).substring(2, 4);
   return `${baseSlug}-${randomSuffix}`;
 }
 
