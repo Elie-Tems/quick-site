@@ -88,8 +88,8 @@ async function uploadImage(
   return data.publicUrl;
 }
 
-function generateUniqueSlug(baseName: string): string {
-  return baseName
+async function generateUniqueSlug(baseName: string): Promise<string> {
+  const baseSlug = baseName
     .trim()
     .split(/\s+/)
     .slice(0, 2)
@@ -97,6 +97,16 @@ function generateUniqueSlug(baseName: string): string {
     .toLowerCase()
     .replace(/\s+/g, "-")
     .replace(/[^\u0590-\u05ffa-z0-9-]/g, "");
+
+  const { data: existing } = await supabase
+    .from("businesses")
+    .select("slug")
+    .eq("slug", baseSlug)
+    .maybeSingle();
+
+  if (!existing) return baseSlug;
+
+  return `${baseSlug}-${Math.random().toString(36)[2]}`;
 }
 
 export function useCreateBusiness() {
