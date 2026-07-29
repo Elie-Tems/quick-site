@@ -101,12 +101,17 @@ async function generateUniqueSlug(baseName: string): Promise<string> {
   const { data: existing } = await supabase
     .from("businesses")
     .select("slug")
-    .eq("slug", baseSlug)
-    .maybeSingle();
+    .like("slug", `${baseSlug}%`);
 
-  if (!existing) return baseSlug;
+  const taken = new Set((existing || []).map((r) => r.slug));
+  if (!taken.has(baseSlug)) return baseSlug;
 
-  return `${baseSlug}-${Math.floor(Math.random() * 9) + 1}`;
+  for (let i = 2; i <= 99; i++) {
+    const candidate = `${baseSlug}-${i}`;
+    if (!taken.has(candidate)) return candidate;
+  }
+
+  return `${baseSlug}-${Date.now()}`;
 }
 
 export function useCreateBusiness() {
