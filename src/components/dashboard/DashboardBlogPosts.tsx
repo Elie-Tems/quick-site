@@ -6,13 +6,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
   Loader2, Wand2, Check, X, ChevronDown, ChevronUp,
-  Globe, EyeOff, Trash2, Plus, FileText,
+  Globe, EyeOff, Trash2, FileText, PenLine, ImagePlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { BusinessType } from "@/lib/businessModules";
 
 interface Topic { title: string; description: string; }
-interface BlogPost { id: string; title: string; content: string; status: "draft" | "published"; created_at: string; }
+interface BlogPost {
+  id: string; title: string; content: string;
+  status: "draft" | "published"; created_at: string;
+  image_url?: string | null;
+}
 
 interface Props {
   businessId: string;
@@ -47,6 +51,13 @@ const DashboardBlogPosts = ({ businessId, businessType, businessName, aboutText 
   const [isWriting, setIsWriting] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [generatingImageFor, setGeneratingImageFor] = useState<string | null>(null);
+
+  // Manual article form
+  const [showManualForm, setShowManualForm] = useState(false);
+  const [manualTitle, setManualTitle] = useState("");
+  const [manualContent, setManualContent] = useState("");
+  const [isSavingManual, setIsSavingManual] = useState(false);
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["blog-posts", businessId],
@@ -60,6 +71,11 @@ const DashboardBlogPosts = ({ businessId, businessType, businessName, aboutText 
       return (data || []) as BlogPost[];
     },
   });
+
+  const getToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || "";
+  };
 
   const toggleStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: "draft" | "published" }) => {
@@ -98,11 +114,6 @@ const DashboardBlogPosts = ({ businessId, businessType, businessName, aboutText 
       toast.success("נשמר");
     },
   });
-
-  const getToken = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token || "";
-  };
 
   const suggestTopics = async () => {
     setIsSuggestingTopics(true);
@@ -144,6 +155,50 @@ const DashboardBlogPosts = ({ businessId, businessType, businessName, aboutText 
     toast.success(`${written} מאמרים נכתבו ונשמרו כטיוטה`);
   };
 
+  const saveManual = async () => {
+    if (!manualTitle.trim() || !manualContent.trim()) {
+      toast.error("נא למלא כותרת ותוכן");
+      return;
+    }
+    setIsSavingManual(true);
+    const { error } = await supabase.from("blog_posts" as any).insert({
+      business_id: businessId,
+      title: manualTitle.trim(),
+      content: manualContent.trim(),
+      status: "draft",
+    });
+    setIsSavingManual(false);
+    if (error) { toast.error("שגיאה בשמירה"); return; }
+    await qc.invalidateQueries({ queryKey: ["blog-posts", businessId] });
+    setManualTitle("");
+    setManualContent("");
+    setShowManualForm(false);
+    toast.success("מאמר נשמר כטיוטה");
+  };
+
+  const generateImage = async (post: BlogPost) => {
+    setGeneratingImageFor(post.id);
+    try {
+      const token = await getToken();
+      const data = await callFn("generate-article-image", {
+        title: post.title,
+        businessName,
+        businessType,
+      }, token);
+      const { error } = await supabase
+        .from("blog_posts" as any)
+        .update({ image_url: data.imageUrl })
+        .eq("id", post.id);
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["blog-posts", businessId] });
+      toast.success("תמונה נוצרה");
+    } catch (e: any) {
+      toast.error(e.message?.includes("rate") ? "יותר מדי בקשות, נסו שוב בעוד שעה" : "שגיאה ביצירת תמונה");
+    } finally {
+      setGeneratingImageFor(null);
+    }
+  };
+
   const toggleSelect = (i: number) => {
     const next = new Set(selected);
     next.has(i) ? next.delete(i) : next.add(i);
@@ -158,36 +213,69 @@ const DashboardBlogPosts = ({ businessId, businessType, businessName, aboutText 
           <div>
             <h2 className="text-base font-semibold">מאמרים</h2>
             <p className="text-sm text-muted-foreground mt-0.5">
-              מאמרים מקצועיים שמחזקים אמינות ומושכים לקוחות לאתר
+              מאמרים מקצועיים שמחזקים אמינות ומביאים לקוחות
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={suggestTopics}
-            disabled={isSuggestingTopics || isWriting}
-            className="gap-1.5 shrink-0"
-          >
-            {isSuggestingTopics
-              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              : <Wand2 className="h-3.5 w-3.5" />}
-            {isSuggestingTopics ? "מחפש נושאים..." : "הצע נושאים"}
-          </Button>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              variant="outline" size="sm"
+              onClick={() => { setShowManualForm(v => !v); setTopics([]); }}
+              disabled={isWriting || isSuggestingTopics}
+              className="gap-1.5"
+            >
+              <PenLine className="h-3.5 w-3.5" /> כתוב בעצמי
+            </Button>
+            <Button
+              variant="outline" size="sm"
+              onClick={suggestTopics}
+              disabled={isSuggestingTopics || isWriting || showManualForm}
+              className="gap-1.5"
+            >
+              {isSuggestingTopics
+                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                : <Wand2 className="h-3.5 w-3.5" />}
+              {isSuggestingTopics ? "מחפש..." : "AI"}
+            </Button>
+          </div>
         </div>
 
-        {/* Topic suggestions */}
+        {/* Manual article form */}
+        {showManualForm && (
+          <div className="space-y-3 pt-2 border-t border-border">
+            <p className="text-sm font-medium">מאמר חדש</p>
+            <Input
+              value={manualTitle}
+              onChange={e => setManualTitle(e.target.value)}
+              placeholder="כותרת המאמר"
+            />
+            <Textarea
+              value={manualContent}
+              onChange={e => setManualContent(e.target.value)}
+              placeholder="תוכן המאמר..."
+              rows={8}
+              className="text-sm leading-relaxed"
+            />
+            <div className="flex gap-2">
+              <Button onClick={saveManual} disabled={isSavingManual} className="flex-1 gap-1.5">
+                {isSavingManual ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                שמור כטיוטה
+              </Button>
+              <Button variant="outline" onClick={() => { setShowManualForm(false); setManualTitle(""); setManualContent(""); }}>
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* AI topic suggestions */}
         {topics.length > 0 && (
           <div className="space-y-2 pt-2 border-t border-border">
             <p className="text-sm font-medium">בחרו נושאים לכתיבה:</p>
             {topics.map((t, i) => (
               <button
-                key={i}
-                type="button"
-                onClick={() => toggleSelect(i)}
+                key={i} type="button" onClick={() => toggleSelect(i)}
                 className={`w-full text-right rounded-xl border p-3 transition-all ${
-                  selected.has(i)
-                    ? "border-primary bg-primary/5"
-                    : "border-border bg-muted/20 hover:border-primary/40"
+                  selected.has(i) ? "border-primary bg-primary/5" : "border-border bg-muted/20 hover:border-primary/40"
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -204,11 +292,7 @@ const DashboardBlogPosts = ({ businessId, businessType, businessName, aboutText 
               </button>
             ))}
             <div className="flex gap-2 pt-1">
-              <Button
-                onClick={writeSelected}
-                disabled={selected.size === 0 || isWriting}
-                className="flex-1 gap-2"
-              >
+              <Button onClick={writeSelected} disabled={selected.size === 0 || isWriting} className="flex-1 gap-2">
                 {isWriting
                   ? <><Loader2 className="h-4 w-4 animate-spin" /> כותב {selected.size} מאמרים...</>
                   : <><FileText className="h-4 w-4" /> כתוב {selected.size} מאמרים</>}
@@ -226,18 +310,17 @@ const DashboardBlogPosts = ({ businessId, businessType, businessName, aboutText 
         <div className="flex justify-center py-8">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
-      ) : posts.length === 0 && topics.length === 0 ? (
+      ) : posts.length === 0 && !showManualForm && topics.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-border p-8 text-center space-y-2">
           <FileText className="h-8 w-8 text-muted-foreground/50 mx-auto" />
           <p className="text-sm font-medium">אין מאמרים עדיין</p>
-          <p className="text-xs text-muted-foreground">לחצו "הצע נושאים" והמערכת תכתוב עבורכם</p>
+          <p className="text-xs text-muted-foreground">לחצו "AI" להצעת נושאים, או "כתוב בעצמי" להעלאת מאמר קיים</p>
         </div>
       ) : (
         <div className="space-y-2">
           {posts.map(post => (
             <div key={post.id} className="bg-card rounded-2xl border border-border overflow-hidden">
               {editingPost?.id === post.id ? (
-                /* Edit mode */
                 <div className="p-4 space-y-3">
                   <Input
                     value={editingPost.title}
@@ -261,8 +344,15 @@ const DashboardBlogPosts = ({ businessId, businessType, businessName, aboutText 
                   </div>
                 </div>
               ) : (
-                /* View mode */
                 <>
+                  {/* Article image */}
+                  {post.image_url && (
+                    <img
+                      src={post.image_url}
+                      alt={post.title}
+                      className="w-full h-40 object-cover"
+                    />
+                  )}
                   <div className="flex items-center gap-3 p-4">
                     <button
                       type="button"
@@ -282,6 +372,19 @@ const DashboardBlogPosts = ({ businessId, businessType, businessName, aboutText 
                       }`}>
                         {post.status === "published" ? "פורסם" : "טיוטה"}
                       </span>
+                      {/* Generate image */}
+                      <button
+                        type="button"
+                        onClick={() => generateImage(post)}
+                        disabled={generatingImageFor === post.id}
+                        className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                        title={post.image_url ? "צור תמונה חדשה" : "צור תמונה"}
+                      >
+                        {generatingImageFor === post.id
+                          ? <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                          : <ImagePlus className="h-3.5 w-3.5 text-muted-foreground" />}
+                      </button>
+                      {/* Publish toggle */}
                       <button
                         type="button"
                         onClick={() => toggleStatus.mutate({ id: post.id, status: post.status === "published" ? "draft" : "published" })}

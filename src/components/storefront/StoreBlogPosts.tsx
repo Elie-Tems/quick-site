@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import StoreSectionHeading from "./StoreSectionHeading";
 import { X } from "lucide-react";
 
-interface BlogPost { id: string; title: string; content: string; published_at: string; }
+interface BlogPost { id: string; title: string; content: string; published_at: string; image_url?: string | null; }
 
 const StoreBlogPosts = ({ businessId, accent }: { businessId: string; accent: string }) => {
   const [open, setOpen] = useState<BlogPost | null>(null);
@@ -14,7 +14,7 @@ const StoreBlogPosts = ({ businessId, accent }: { businessId: string; accent: st
     queryFn: async () => {
       const { data, error } = await supabase
         .from("blog_posts" as any)
-        .select("id, title, content, published_at")
+        .select("id, title, content, published_at, image_url")
         .eq("business_id", businessId)
         .eq("status", "published")
         .order("published_at", { ascending: false })
@@ -39,14 +39,23 @@ const StoreBlogPosts = ({ businessId, accent }: { businessId: string; accent: st
               key={post.id}
               type="button"
               onClick={() => setOpen(post)}
-              className="text-right rounded-2xl border border-border bg-card p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 space-y-2"
+              className="text-right rounded-2xl border border-border bg-card overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             >
-              <p className="text-xs text-muted-foreground">
-                {new Date(post.published_at).toLocaleDateString("he-IL")}
-              </p>
-              <h3 className="font-semibold text-foreground leading-snug">{post.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{preview(post.content)}</p>
-              <p className="text-xs font-medium" style={{ color: accent }}>קרא עוד ←</p>
+              {post.image_url && (
+                <img
+                  src={post.image_url}
+                  alt={post.title}
+                  className="w-full h-40 object-cover"
+                />
+              )}
+              <div className="p-5 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  {new Date(post.published_at).toLocaleDateString("he-IL")}
+                </p>
+                <h3 className="font-semibold text-foreground leading-snug">{post.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{preview(post.content)}</p>
+                <p className="text-xs font-medium" style={{ color: accent }}>קרא עוד ←</p>
+              </div>
             </button>
           ))}
         </div>
