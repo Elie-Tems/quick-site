@@ -875,6 +875,8 @@ const ru: Record<string, string> = {
   'dash.nav.lifecycle_emails_short': 'Письма',
   'dash.nav.whatsapp_button': 'Кнопка WhatsApp',
   'dash.nav.whatsapp_button_short': 'WhatsApp',
+  'dash.nav.google_business': 'Google Бизнес',
+  'dash.nav.google_business_short': 'Google',
   'dash.nav.domains': 'Домены',
   'dash.nav.settings': 'Данные бизнеса',
   'dash.nav.settings_short': 'Настройки',

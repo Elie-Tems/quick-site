@@ -875,6 +875,8 @@ const ar: Record<string, string> = {
   'dash.nav.lifecycle_emails_short': 'رسائل',
   'dash.nav.whatsapp_button': 'زر واتساب',
   'dash.nav.whatsapp_button_short': 'واتساب',
+  'dash.nav.google_business': 'Google Business',
+  'dash.nav.google_business_short': 'Google',
   'dash.nav.domains': 'النطاقات',
   'dash.nav.settings': 'بيانات النشاط',
   'dash.nav.settings_short': 'الإعدادات',

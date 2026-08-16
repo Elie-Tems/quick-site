@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import type { BusinessType } from "@/lib/businessModules";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails' | 'modules' | 'availability' | 'weekly-editor' | 'weekly-content' | 'synagogue-schedule' | 'guests' | 'blog-posts';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails' | 'modules' | 'availability' | 'weekly-editor' | 'weekly-content' | 'synagogue-schedule' | 'guests' | 'blog-posts' | 'google-business';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -157,6 +157,7 @@ const navItems: {
   { id: "whatsapp-button", labelKey: "dash.nav.whatsapp_button", shortLabelKey: "dash.nav.whatsapp_button_short", icon: MessageCircle, group: "שיווק" },
 
   // הגדרות
+  { id: "google-business", labelKey: "dash.nav.google_business", shortLabelKey: "dash.nav.google_business_short", icon: Globe, group: "הגדרות" },
   { id: "domains", labelKey: "dash.nav.domains", icon: Globe, group: "הגדרות" },
   { id: "settings", labelKey: "dash.nav.settings", shortLabelKey: "dash.nav.settings_short", icon: Settings, group: "הגדרות" },
   { id: "legal", labelKey: "dash.nav.legal", shortLabelKey: "dash.nav.legal_short", icon: ScrollText, group: "הגדרות" },

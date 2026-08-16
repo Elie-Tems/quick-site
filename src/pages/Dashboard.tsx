@@ -65,6 +65,7 @@ const DashboardAdBudget = lazy(() => import("@/components/dashboard/DashboardAdB
 const VerticalModules = lazy(() => import("@/components/dashboard/VerticalModules"));
 const LifecycleEmailsManager = lazy(() => import("@/components/dashboard/LifecycleEmailsManager"));
 const DashboardModules = lazy(() => import("@/components/dashboard/DashboardModules"));
+const DashboardGoogleBusiness = lazy(() => import("@/components/dashboard/DashboardGoogleBusiness"));
 import { useProducts, useUpdateProduct, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useOrders, useUpdateOrder } from "@/hooks/useOrders";
 import { useDonationStats } from "@/hooks/useDonations";
@@ -850,6 +851,8 @@ const Dashboard = () => {
             </div>
           </PremiumOverlay>
         );
+      case 'google-business':
+        return <DashboardGoogleBusiness businessId={business?.id ?? ""} />;
       case 'domains':
         return <DashboardDomains businessId={business?.id} />;
       case 'whatsapp':

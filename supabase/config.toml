@@ -212,6 +212,15 @@ verify_jwt = false
 # signed state. calendar-sync runs from cron (CRON_SECRET) or a merchant JWT.
 [functions.calendar-oauth-callback]
 verify_jwt = false
+
+[functions.gbp-oauth-callback]
+verify_jwt = false
+
+[functions.gbp-oauth-start]
+verify_jwt = true
+
+[functions.gbp-sync]
+verify_jwt = true
 [functions.calendar-sync]
 verify_jwt = false
 
