@@ -773,6 +773,7 @@ const Dashboard = () => {
           return <DashboardLeadsPipeline businessId={business?.id} />;
         }
         return <DashboardOrders orders={orders} onOrdersChange={setOrders} onStatusChange={handleOrderStatusChange} businessType={getBusinessType(business)} isLoading={ordersLoading} />;
+      case 'guests':
       case 'customers':
       case 'profitability':
         return (
