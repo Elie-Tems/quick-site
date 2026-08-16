@@ -3411,7 +3411,7 @@ const he: Record<string, string> = {
   'store.servicelayout.default_products_title': 'השירותים שלנו',
   'store.servicelayout.services_coming_soon': 'השירותים יתעדכנו בקרוב',
   'store.servicelayout.more_details': 'לפרטים נוספים',
-  'store.servicelayout.default_cta_title': 'מוכנים להתחיל?',
+  'store.servicelayout.default_cta_title': 'דברו איתנו',
   'store.servicelayout.contact_us_subtitle': 'צרו קשר ונשמח לעזור',
   'store.propertylayout.default_cta': 'צפו בנכסים',
   'store.propertylayout.contact_heading': 'מעוניינים לשמוע עוד?',

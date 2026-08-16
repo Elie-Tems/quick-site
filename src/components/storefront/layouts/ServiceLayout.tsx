@@ -35,6 +35,7 @@ const ServiceLayout = ({
   const totalCartItems = cartItems.reduce((s, i) => s + i.quantity, 0);
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const pc = primaryColor || '#0077b6';
+  const heroHasSubtitle = !!(tagline || (heroBenefits && heroBenefits.length > 0) || aboutText);
 
   return (
     <>
@@ -62,11 +63,11 @@ const ServiceLayout = ({
       <main dir="rtl">
         {/* Split hero */}
         <section
-          className="grid grid-cols-1 md:grid-cols-2 min-h-[70vh]"
+          className={`grid grid-cols-1 md:grid-cols-2 ${heroHasSubtitle ? 'min-h-[70vh]' : 'min-h-[50vh]'}`}
           style={{ backgroundColor: `${pc}0d` }}
         >
           {/* Text side */}
-          <div className="flex flex-col justify-center px-8 md:px-16 py-16 order-2 md:order-1">
+          <div className="flex flex-col justify-center px-8 md:px-16 py-12 order-2 md:order-1">
             <p
               className="text-xs font-semibold uppercase tracking-widest mb-3"
               style={{ color: pc }}
@@ -77,7 +78,12 @@ const ServiceLayout = ({
               {heroTitle || tagline || businessName}
             </h1>
             {tagline && heroTitle && (
-              <p className="text-lg text-muted-foreground mb-8 max-w-md">{tagline}</p>
+              <p className="text-lg text-muted-foreground mb-6 max-w-md">{tagline}</p>
+            )}
+            {!tagline && !heroTitle && aboutText && (
+              <p className="text-lg text-muted-foreground mb-6 max-w-md leading-relaxed">
+                {aboutText.length > 130 ? `${aboutText.slice(0, 130)}...` : aboutText}
+              </p>
             )}
             {heroBenefits && heroBenefits.length > 0 && (
               <ul className="space-y-2 mb-8">
