@@ -6,6 +6,18 @@ import { Label } from "@/components/ui/label";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import StoreSectionHeading from "./StoreSectionHeading";
+
+function accentTextColor(hex: string): string {
+  try {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 140 ? "#1a1a1a" : "#ffffff";
+  } catch {
+    return "#ffffff";
+  }
+}
 
 const StoreLeadForm = ({
   businessId,
@@ -18,7 +30,7 @@ const StoreLeadForm = ({
   heading?: string;
   subheading?: string;
 }) => {
-  const { t } = useLanguage();
+  const { t, dir } = useLanguage();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -50,7 +62,7 @@ const StoreLeadForm = ({
 
   if (sent) {
     return (
-      <section className="py-8 px-4">
+      <section className="py-14 px-4">
         <div className="max-w-md mx-auto text-center space-y-3">
           <CheckCircle2 className="w-12 h-12 mx-auto" style={{ color: accent }} />
           <h2 className="text-xl font-bold">{t("store.leadform.success_title")}</h2>
@@ -60,16 +72,18 @@ const StoreLeadForm = ({
     );
   }
 
+  const btnTextColor = accentTextColor(accent);
+
   return (
-    <section className="py-8 px-4">
+    <section className="py-14 px-4">
       <div className="max-w-md mx-auto">
-        <div className="text-center mb-5">
-          <span className="inline-block h-1 w-12 rounded-full mb-3" style={{ background: accent }} />
-          <h2 className="text-2xl font-bold text-foreground">{heading || t("store.leadform.default_heading")}</h2>
-          {subheading && <p className="text-muted-foreground mt-1.5">{subheading}</p>}
-        </div>
-        <div className="rounded-2xl border-2 shadow-lg bg-card p-5 md:p-6" style={{ borderColor: `${accent}55` }}>
-          <form onSubmit={handleSubmit} className="space-y-4" dir="rtl">
+        <StoreSectionHeading
+          accent={accent}
+          title={heading || t("store.leadform.default_heading")}
+          subtitle={subheading}
+        />
+        <div className="rounded-2xl border shadow-lg bg-card p-5 md:p-6" style={{ borderColor: `${accent}40` }}>
+          <form onSubmit={handleSubmit} className="space-y-4" dir={dir}>
             <div className="space-y-1.5">
               <Label htmlFor="lead-name">{t("store.leadform.label_name")}</Label>
               <Input id="lead-name" value={name} onChange={e => setName(e.target.value)} placeholder={t("store.leadform.placeholder_name")} required />
@@ -86,12 +100,12 @@ const StoreLeadForm = ({
               <Label htmlFor="lead-message">{t("store.leadform.label_message")}</Label>
               <Textarea id="lead-message" value={message} onChange={e => setMessage(e.target.value)} placeholder={t("store.leadform.placeholder_message")} rows={3} />
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
             <Button
               type="submit"
-              className="w-full py-3 font-semibold text-white"
+              className="w-full py-3 font-semibold"
               disabled={loading}
-              style={{ background: accent }}
+              style={{ background: accent, color: btnTextColor }}
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("store.leadform.submit_button")}
             </Button>

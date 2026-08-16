@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { X, ChevronRight, ChevronLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import StoreSectionHeading from "./StoreSectionHeading";
 
 interface GalleryImage {
   url: string;
@@ -41,12 +42,10 @@ const StoreGallery = ({
   return (
     <section className="py-14 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <span className="inline-block h-1 w-12 rounded-full mb-4" style={{ background: accent }} />
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
-            {heading || t("store.gallery.heading")}
-          </h2>
-        </div>
+        <StoreSectionHeading
+          accent={accent}
+          title={heading || t("store.gallery.heading")}
+        />
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {images.map((img, i) => (
             <button

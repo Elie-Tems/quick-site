@@ -1,4 +1,5 @@
 import { useLanguage } from "@/contexts/LanguageContext";
+import StoreSectionHeading from "./StoreSectionHeading";
 
 interface DifferentiationItem {
   icon?: string;
@@ -24,15 +25,11 @@ const StoreDifferentiation = ({
   return (
     <section className="py-14 px-4">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-10">
-          <span className="inline-block h-1 w-12 rounded-full mb-4" style={{ background: accent }} />
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
-            {data.heading || t("store.differentiation.defaultHeading")}
-          </h2>
-          {data.subheading && (
-            <p className="text-muted-foreground mt-2 max-w-lg mx-auto">{data.subheading}</p>
-          )}
-        </div>
+        <StoreSectionHeading
+          accent={accent}
+          title={data.heading || t("store.differentiation.defaultHeading")}
+          subtitle={data.subheading}
+        />
         <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 items-stretch">
           {data.items.map((item, i) => (
             <div
