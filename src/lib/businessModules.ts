@@ -40,14 +40,14 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
  * sell products (creams, gift cards) alongside bookings.
  */
 export const DEFAULT_MODULES: Record<BusinessType, ModuleKey[]> = {
-  products: ["commerce", "differentiation"],
-  services: ["booking", "commerce", "gallery", "differentiation"],
-  realestate: ["listings", "gallery", "differentiation"],
-  nonprofit: ["donations"],
-  synagogue: ["donations", "synagogue"],
-  kolel: ["donations", "gallery"],
-  vacation: ["commerce", "booking", "gallery", "lodging"],
-  // video is opt-in for all types — not in any default set
+  products:   ["commerce", "differentiation", "faq"],
+  services:   ["booking", "commerce", "gallery", "differentiation", "faq"],
+  realestate: ["listings", "gallery", "differentiation", "faq"],
+  nonprofit:  ["donations", "faq"],
+  synagogue:  ["donations", "synagogue"],
+  kolel:      ["donations", "gallery", "faq"],
+  vacation:   ["commerce", "booking", "gallery", "lodging", "differentiation", "faq"],
+  // video and articles are opt-in for all types — not in any default set
 };
 
 /** Capabilities every business has regardless of type. */
