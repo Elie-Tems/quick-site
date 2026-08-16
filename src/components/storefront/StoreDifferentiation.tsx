@@ -22,33 +22,33 @@ const StoreDifferentiation = ({
   const { t } = useLanguage();
   if (!data?.items?.length) return null;
   return (
-    <section className="py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-5">
-          <span className="inline-block h-1 w-12 rounded-full mb-3" style={{ background: accent }} />
+    <section className="py-14 px-4">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-10">
+          <span className="inline-block h-1 w-12 rounded-full mb-4" style={{ background: accent }} />
           <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
             {data.heading || t("store.differentiation.defaultHeading")}
           </h2>
           {data.subheading && (
-            <p className="text-muted-foreground mt-1.5">{data.subheading}</p>
+            <p className="text-muted-foreground mt-2 max-w-lg mx-auto">{data.subheading}</p>
           )}
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 items-stretch">
           {data.items.map((item, i) => (
             <div
               key={i}
-              className="rounded-2xl border bg-card p-5 text-center space-y-2"
-              style={{ borderColor: `${accent}33` }}
+              className="rounded-2xl border bg-card p-6 text-center space-y-3 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+              style={{ borderColor: `${accent}28` }}
             >
               {item.icon && (
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center mx-auto text-xl"
-                  style={{ background: `${accent}18` }}
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto text-2xl"
+                  style={{ background: `${accent}15` }}
                 >
                   {item.icon}
                 </div>
               )}
-              <h3 className="font-bold text-foreground">{item.title}</h3>
+              <h3 className="font-bold text-foreground text-base">{item.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{item.body}</p>
             </div>
           ))}
