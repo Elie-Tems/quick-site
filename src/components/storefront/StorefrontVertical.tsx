@@ -10,6 +10,7 @@ import LodgingWidget, { type LodgingUnit } from "./LodgingWidget";
 import StoreDifferentiation from "./StoreDifferentiation";
 import StoreGallery from "./StoreGallery";
 import StoreLeadForm from "./StoreLeadForm";
+import StoreVideo from "./StoreVideo";
 
 /**
  * Storefront vertical renderer. Given the business, shows the module-specific
@@ -71,8 +72,20 @@ const StorefrontVertical = ({ business }: {
   const modules = getEnabledModules(business);
   const accent = business.primary_color || "#0b8f6a";
 
+  const b = business as any;
+  const videoEl = modules.includes("video") && b.video_url ? (
+    <StoreVideo
+      url={b.video_url}
+      style={b.video_style ?? "centered"}
+      title={b.video_title}
+      accent={accent}
+      businessName={(business as any).name}
+    />
+  ) : null;
+
   return (
     <>
+      {videoEl && (b.video_position ?? "top") === "top" && videoEl}
       {isVacation && modules.includes("lodging") && lodgingUnits.length > 0 && (
         <LodgingWidget businessId={business.id} units={lodgingUnits} />
       )}
@@ -121,6 +134,7 @@ const StorefrontVertical = ({ business }: {
           subheading={(business as any).custom_labels?.leadFormSubheading}
         />
       )}
+      {videoEl && (b.video_position ?? "top") === "bottom" && videoEl}
     </>
   );
 };

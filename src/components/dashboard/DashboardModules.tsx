@@ -3,10 +3,11 @@ import { motion } from "framer-motion";
 import {
   ShoppingBag, CalendarClock, Building2, Heart, Landmark,
   Hotel, ClipboardList, Images, Check, Loader2, Blocks, Sparkles, Bell,
-  FileText, HelpCircle, ArrowLeft, Award, AlertTriangle,
+  FileText, HelpCircle, ArrowLeft, Award, AlertTriangle, Video, Save,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,17 +44,18 @@ const buildLive = (t: (key: string) => string): Live[] => [
   { key: "synagogue", icon: Landmark,      color: "#c07d12", title: t("dash.modules.live_synagogue_title"), desc: t("dash.modules.live_synagogue_desc") },
   { key: "gallery",   icon: Images,        color: "#0891b2", title: t("dash.modules.live_gallery_title"),   desc: t("dash.modules.live_gallery_desc") },
   { key: "lodging",        icon: Hotel,  color: "#6d4bd0", title: "חדרים / יחידות אירוח", desc: "יחידות עם זמינות בלוח, מחיר ללילה והזמנה - לצימרים ואירוח." },
-  { key: "differentiation", icon: Award, color: "#0f766e", title: "בידול ויתרונות",         desc: "סקשן שמסביר למה לבחור בך - כותרת, תיאור ויתרונות עם צ'קמארקים." },
+  { key: "differentiation", icon: Award,  color: "#0f766e", title: "בידול ויתרונות", desc: "סקשן שמסביר למה לבחור בך - כותרת, תיאור ויתרונות עם צ'קמארקים." },
+  { key: "video",           icon: Video, color: "#dc2626", title: "וידאו",           desc: "הטמע סרטון YouTube או Vimeo עם בחירת סגנון ומיקום בדף." },
 ];
 
 /** Which LIVE module keys make sense to offer per business type. */
 const ALLOWED_LIVE: Record<BusinessType, ModuleKey[]> = {
-  products:   ["commerce", "gallery", "differentiation"],
-  services:   ["commerce", "booking", "gallery", "differentiation"],
-  realestate: ["listings", "booking", "gallery", "differentiation"],
-  nonprofit:  ["donations", "commerce", "gallery"],
-  synagogue:  ["donations", "synagogue", "gallery"],
-  vacation:   ["commerce", "booking", "gallery", "lodging"],
+  products:   ["commerce", "gallery", "differentiation", "video"],
+  services:   ["commerce", "booking", "gallery", "differentiation", "video"],
+  realestate: ["listings", "booking", "gallery", "differentiation", "video"],
+  nonprofit:  ["donations", "commerce", "gallery", "video"],
+  synagogue:  ["donations", "synagogue", "gallery", "video"],
+  vacation:   ["commerce", "booking", "gallery", "lodging", "video"],
 };
 
 type SoonItem = {
@@ -101,12 +103,69 @@ const buildPrimaryWarning = (t: (key: string) => string): Partial<Record<ModuleK
 
 const fade = (d = 0) => ({ initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: d } });
 
+const VIDEO_STYLES = [
+  { key: "centered", label: "מרכזי נקי",      desc: "iframe בדף הלבן עם כותרת" },
+  { key: "split",    label: "Split",           desc: "טקסט משמאל, וידאו מימין" },
+  { key: "tinted",   label: "רקע צבעוני",     desc: "iframe על רקע בצבע העסק" },
+] as const;
+
+const VIDEO_POSITIONS = [
+  { key: "top",    label: "אחרי ה-hero",      desc: "הסקשן הראשון שרואים" },
+  { key: "bottom", label: "לפני אודות",       desc: "בסוף התוכן, לפני הביקורות" },
+] as const;
+
 const DashboardModules = ({ business, onNavigate }: Props) => {
   const { t } = useLanguage();
   const qc = useQueryClient();
   const [pending, setPending] = useState<ModuleKey | null>(null);
   const [warnKey, setWarnKey] = useState<ModuleKey | null>(null);
   const [notified, setNotified] = useState<Set<string>>(new Set());
+
+  // Video config local state
+  const { data: videoCfg } = useQuery({
+    queryKey: ["video-cfg", business?.id],
+    queryFn: async () => {
+      if (!business?.id) return null;
+      const { data } = await (supabase.from("businesses") as any)
+        .select("video_url, video_style, video_position, video_title")
+        .eq("id", business.id).single();
+      return data;
+    },
+    enabled: !!business?.id,
+  });
+  const [videoUrl,   setVideoUrl]   = useState("");
+  const [videoStyle, setVideoStyle] = useState("centered");
+  const [videoPos,   setVideoPos]   = useState("top");
+  const [videoTitle, setVideoTitle] = useState("");
+  const [videoSaving, setVideoSaving] = useState(false);
+
+  // Sync local state when server data arrives
+  const [videoSynced, setVideoSynced] = useState(false);
+  if (videoCfg && !videoSynced) {
+    setVideoUrl(videoCfg.video_url ?? "");
+    setVideoStyle(videoCfg.video_style ?? "centered");
+    setVideoPos(videoCfg.video_position ?? "top");
+    setVideoTitle(videoCfg.video_title ?? "");
+    setVideoSynced(true);
+  }
+
+  const saveVideoConfig = async () => {
+    if (!business?.id) return;
+    setVideoSaving(true);
+    try {
+      const { error } = await (supabase.from("businesses") as any)
+        .update({ video_url: videoUrl.trim() || null, video_style: videoStyle, video_position: videoPos, video_title: videoTitle.trim() || null })
+        .eq("id", business.id);
+      if (error) throw error;
+      qc.invalidateQueries({ queryKey: ["my-business"] });
+      qc.invalidateQueries({ queryKey: ["business"] });
+      toast.success("הגדרות הוידאו נשמרו");
+    } catch {
+      toast.error("שגיאה בשמירה");
+    } finally {
+      setVideoSaving(false);
+    }
+  };
 
   const handleNotify = (title: string) => {
     setNotified(prev => new Set(prev).add(title));
@@ -189,7 +248,7 @@ const DashboardModules = ({ business, onNavigate }: Props) => {
                     {on && <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${m.color}1f`, color: m.color }}><Check className="w-3 h-3" /> {t("dash.modules.active_badge")}</span>}
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed mt-1">{m.desc}</p>
-                  {on && MODULE_NAV[m.key] && onNavigate && (
+                  {on && MODULE_NAV[m.key] && onNavigate && m.key !== "video" && (
                     <button
                       onClick={() => onNavigate(MODULE_NAV[m.key]!)}
                       className="mt-2 inline-flex items-center gap-1 text-xs font-medium hover:underline"
@@ -215,6 +274,81 @@ const DashboardModules = ({ business, onNavigate }: Props) => {
                   </span>
                 </button>
               </div>
+
+              {/* Video config panel — only for video module when active */}
+              {m.key === "video" && on && (
+                <div className="mt-4 pt-4 border-t border-border space-y-4" dir="rtl">
+                  {/* URL */}
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground block mb-1">קישור YouTube / Vimeo</label>
+                    <Input
+                      value={videoUrl}
+                      onChange={e => setVideoUrl(e.target.value)}
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      className="text-sm"
+                      dir="ltr"
+                    />
+                  </div>
+
+                  {/* Title */}
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground block mb-1">כותרת הסקשן (אופציונלי)</label>
+                    <Input
+                      value={videoTitle}
+                      onChange={e => setVideoTitle(e.target.value)}
+                      placeholder='למשל: "הכירו אותנו"'
+                      className="text-sm"
+                    />
+                  </div>
+
+                  {/* Style picker */}
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground block mb-2">סגנון תצוגה</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {VIDEO_STYLES.map(s => (
+                        <button
+                          key={s.key}
+                          onClick={() => setVideoStyle(s.key)}
+                          className={`rounded-xl border p-3 text-right transition-colors ${videoStyle === s.key ? "border-transparent" : "border-border bg-muted/40"}`}
+                          style={videoStyle === s.key ? { background: `${m.color}14`, borderColor: `${m.color}55` } : undefined}
+                        >
+                          <div className="text-xs font-bold text-foreground">{s.label}</div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{s.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Position picker */}
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground block mb-2">מיקום בדף</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {VIDEO_POSITIONS.map(p => (
+                        <button
+                          key={p.key}
+                          onClick={() => setVideoPos(p.key)}
+                          className={`rounded-xl border p-3 text-right transition-colors ${videoPos === p.key ? "border-transparent" : "border-border bg-muted/40"}`}
+                          style={videoPos === p.key ? { background: `${m.color}14`, borderColor: `${m.color}55` } : undefined}
+                        >
+                          <div className="text-xs font-bold text-foreground">{p.label}</div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">{p.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Save */}
+                  <button
+                    onClick={saveVideoConfig}
+                    disabled={videoSaving || !videoUrl.trim()}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                    style={{ background: m.color }}
+                  >
+                    {videoSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    שמור הגדרות וידאו
+                  </button>
+                </div>
+              )}
             </motion.div>
           );
         })}

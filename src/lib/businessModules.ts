@@ -10,7 +10,7 @@
 
 export type BusinessType = "products" | "services" | "realestate" | "nonprofit" | "synagogue" | "kolel" | "vacation";
 
-export type ModuleKey = "commerce" | "booking" | "listings" | "donations" | "synagogue" | "gallery" | "lodging" | "differentiation";
+export type ModuleKey = "commerce" | "booking" | "listings" | "donations" | "synagogue" | "gallery" | "lodging" | "differentiation" | "video";
 
 export interface ModuleDef {
   key: ModuleKey;
@@ -29,6 +29,7 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
   gallery: { key: "gallery", label: "גלריה ותיק עבודות", description: "תצוגת תמונות ועבודות בעמוד החנות", transaction: "order" },
   lodging: { key: "lodging", label: "חדרים / יחידות אירוח", description: "יחידות עם הזמנה ותמחור ללילה", transaction: "booking" },
   differentiation: { key: "differentiation", label: "בידול ויתרונות", description: "סקשן שמסביר למה לבחור בך - טקסט, יתרונות וצ'קמארקים", transaction: "order" },
+  video: { key: "video", label: "וידאו", description: "הטמעת סרטון YouTube/Vimeo עם בחירת סגנון ומיקום", transaction: "order" },
 };
 
 /**
@@ -44,6 +45,7 @@ export const DEFAULT_MODULES: Record<BusinessType, ModuleKey[]> = {
   synagogue: ["donations", "synagogue"],
   kolel: ["donations", "gallery"],
   vacation: ["commerce", "booking", "gallery", "lodging"],
+  // video is opt-in for all types — not in any default set
 };
 
 /** Capabilities every business has regardless of type. */
