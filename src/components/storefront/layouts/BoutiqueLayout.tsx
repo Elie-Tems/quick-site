@@ -14,7 +14,7 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
     logoUrl, phone, products, categories, banners, heroImageUrl,
     cartItems, onAddToCart, onUpdateQuantity, onRemoveFromCart,
     onCheckout, favoriteIds, onToggleFavorite,
-    selectedCategoryId, onSelectCategory, customLabels,
+    selectedCategoryId, onSelectCategory, customLabels, primaryColor,
   } = props;
   const { t } = useLanguage();
 
@@ -159,13 +159,27 @@ export default function BoutiqueLayout(props: StorefrontLayoutProps) {
                   >
                     <div className="rounded-2xl border border-border bg-card overflow-hidden group h-full flex flex-col hover:border-primary/40 transition-colors">
                       <div className="relative aspect-[3/4] overflow-hidden">
-                        <img
-                          src={p.imageUrl || FALLBACK_PRODUCT_IMG}
-                          alt={p.name}
-                          loading="lazy"
-                          decoding="async"
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
+                        {p.imageUrl ? (
+                          <img
+                            src={p.imageUrl}
+                            alt={p.name}
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div
+                            className="w-full h-full flex items-center justify-center"
+                            style={{ backgroundColor: `${primaryColor || '#0077b6'}15` }}
+                          >
+                            <span
+                              className="text-5xl font-bold select-none"
+                              style={{ color: `${primaryColor || '#0077b6'}40` }}
+                            >
+                              {p.name.trim()[0]}
+                            </span>
+                          </div>
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
                         {p.isHot && (
                           <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500 text-white text-xs font-bold shadow-lg">
