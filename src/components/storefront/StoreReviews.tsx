@@ -55,13 +55,13 @@ const StoreReviews = ({
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {reviews.slice(0, 6).map((r, i) => (
-            <div key={i} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div key={i} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-gray-900">{r.author || t("store.reviews.anonymousCustomer")}</span>
+                <span className="font-semibold text-foreground">{r.author || t("store.reviews.anonymousCustomer")}</span>
                 {r.rating != null && <Stars n={r.rating} />}
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed line-clamp-5">{r.text}</p>
-              {r.when && <p className="text-xs text-gray-400 mt-3">{r.when}</p>}
+              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5">{r.text}</p>
+              {r.when && <p className="text-xs text-muted-foreground/60 mt-3">{r.when}</p>}
             </div>
           ))}
         </div>
@@ -72,7 +72,7 @@ const StoreReviews = ({
               href={cache.mapsUri}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-gray-500 hover:text-gray-700 underline"
+              className="text-sm text-muted-foreground hover:text-foreground underline"
             >
               {t("store.reviews.viewAllOnGoogle")}
             </a>
