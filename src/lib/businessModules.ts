@@ -10,7 +10,7 @@
 
 export type BusinessType = "products" | "services" | "realestate" | "nonprofit" | "synagogue" | "kolel" | "vacation";
 
-export type ModuleKey = "commerce" | "booking" | "listings" | "donations" | "synagogue" | "gallery" | "lodging" | "differentiation" | "video" | "faq";
+export type ModuleKey = "commerce" | "booking" | "listings" | "donations" | "synagogue" | "gallery" | "lodging" | "differentiation" | "video" | "faq" | "articles";
 
 export interface ModuleDef {
   key: ModuleKey;
@@ -31,6 +31,7 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
   differentiation: { key: "differentiation", label: "בידול ויתרונות", description: "סקשן שמסביר למה לבחור בך - טקסט, יתרונות וצ'קמארקים", transaction: "order" },
   video: { key: "video", label: "וידאו", description: "הטמעת סרטון YouTube/Vimeo עם בחירת סגנון ומיקום", transaction: "order" },
   faq: { key: "faq", label: "שאלות נפוצות", description: "אקורדיון שאלות ותשובות נפוצות בעמוד החנות", transaction: "order" },
+  articles: { key: "articles", label: "מאמרים", description: "מאמרים מקצועיים שמחזקים אמינות ומושכים לקוחות", transaction: "order" },
 };
 
 /**

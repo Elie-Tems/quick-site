@@ -50,6 +50,7 @@ const DashboardShipping = lazy(() => import("@/components/dashboard/DashboardShi
 const DashboardPayments = lazy(() => import("@/components/dashboard/DashboardPayments"));
 const DashboardUsage = lazy(() => import("@/components/dashboard/DashboardUsage"));
 const DashboardAvailabilityCalendar = lazy(() => import("@/components/dashboard/DashboardAvailabilityCalendar"));
+const DashboardBlogPosts = lazy(() => import("@/components/dashboard/DashboardBlogPosts"));
 const DashboardWeeklyEditor = lazy(() => import("@/components/dashboard/DashboardWeeklyEditor"));
 const DashboardWeeklyContent = lazy(() => import("@/components/dashboard/DashboardWeeklyContent"));
 const SynagogueScheduleManager = lazy(() => import("@/components/dashboard/SynagogueScheduleManager"));
@@ -931,6 +932,13 @@ const Dashboard = () => {
         );
       case 'availability':
         return <DashboardAvailabilityCalendar businessId={business?.id} />;
+      case 'blog-posts':
+        return <DashboardBlogPosts
+          businessId={business?.id || ""}
+          businessType={business?.business_type as any}
+          businessName={business?.name}
+          aboutText={(business as any)?.about_text}
+        />;
       case 'weekly-editor':
         return <DashboardWeeklyEditor businessId={business?.id} />;
       case 'weekly-content':

@@ -12,6 +12,7 @@ import StoreGallery from "./StoreGallery";
 import StoreLeadForm from "./StoreLeadForm";
 import StoreVideo from "./StoreVideo";
 import StoreFAQ from "./StoreFAQ";
+import StoreBlogPosts from "./StoreBlogPosts";
 
 /**
  * Storefront vertical renderer. Given the business, shows the module-specific
@@ -134,6 +135,9 @@ const StorefrontVertical = ({ business }: {
           heading={(business as any).custom_labels?.leadFormHeading}
           subheading={(business as any).custom_labels?.leadFormSubheading}
         />
+      )}
+      {modules.includes("articles") && (
+        <StoreBlogPosts businessId={business.id} accent={accent} />
       )}
       {modules.includes("faq") && Array.isArray(b.faq_items) && b.faq_items.length > 0 && (
         <StoreFAQ items={b.faq_items} accent={accent} />

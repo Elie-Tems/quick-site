@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import type { BusinessType } from "@/lib/businessModules";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails' | 'modules' | 'availability' | 'weekly-editor' | 'weekly-content' | 'synagogue-schedule' | 'guests';
+export type DashboardView = 'home' | 'products' | 'categories' | 'sales' | 'orders' | 'customers' | 'profitability' | 'banners' | 'campaigns' | 'coupons' | 'ai-images' | 'ai-generated-images' | 'subscription' | 'about' | 'content' | 'design' | 'settings' | 'shipping' | 'payments' | 'legal' | 'preview' | 'ad-budget' | 'usage' | 'traffic' | 'insights' | 'domains' | 'whatsapp' | 'email' | 'upgrades' | 'tracking' | 'reviews' | 'discounts' | 'store-texts' | 'whatsapp-button' | 'verticals' | 'visualization-studio' | 'lifecycle-emails' | 'modules' | 'availability' | 'weekly-editor' | 'weekly-content' | 'synagogue-schedule' | 'guests' | 'blog-posts';
 
 interface DashboardNavProps {
   currentView: DashboardView;
@@ -141,6 +141,7 @@ const navItems: {
 
   // תוכן ועיצוב
   { id: "content", labelKey: "dash.nav.content", icon: PenLine, group: "תוכן ועיצוב" },
+  { id: "blog-posts", labelKey: "dash.nav.blog_posts", shortLabelKey: "dash.nav.blog_posts_short", icon: FileText, group: "תוכן ועיצוב" },
   { id: "design", labelKey: "dash.nav.design", icon: Palette, group: "תוכן ועיצוב" },
   { id: "ai-images", labelKey: "dash.nav.ai_images", shortLabelKey: "dash.nav.ai_images_short", icon: ImagePlus, group: "תוכן ועיצוב" },
   { id: "ai-generated-images", labelKey: "dash.nav.ai_gallery", shortLabelKey: "dash.nav.ai_gallery_short", icon: Image, group: "תוכן ועיצוב" },

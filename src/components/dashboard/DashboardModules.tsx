@@ -47,17 +47,18 @@ const buildLive = (t: (key: string) => string): Live[] => [
   { key: "differentiation", icon: Award,  color: "#0f766e", title: "בידול ויתרונות", desc: "סקשן שמסביר למה לבחור בך - כותרת, תיאור ויתרונות עם צ'קמארקים." },
   { key: "video",           icon: Video,       color: "#dc2626", title: "וידאו",           desc: "הטמע סרטון YouTube או Vimeo עם בחירת סגנון ומיקום בדף." },
   { key: "faq",             icon: HelpCircle,  color: "#7c3aed", title: "שאלות נפוצות",    desc: "אקורדיון שאלות ותשובות שמופיע בעמוד החנות." },
+  { key: "articles",        icon: FileText,    color: "#059669", title: "מאמרים",           desc: "מאמרים מקצועיים שמחזקים אמינות ומביאים לקוחות מגוגל." },
 ];
 
 /** Which LIVE module keys make sense to offer per business type. */
 const ALLOWED_LIVE: Record<BusinessType, ModuleKey[]> = {
-  products:   ["commerce", "gallery", "differentiation", "video", "faq"],
-  services:   ["commerce", "booking", "gallery", "differentiation", "video", "faq"],
-  realestate: ["listings", "booking", "gallery", "differentiation", "video", "faq"],
-  nonprofit:  ["donations", "commerce", "gallery", "video", "faq"],
-  synagogue:  ["donations", "synagogue", "gallery", "video", "faq"],
-  vacation:   ["commerce", "booking", "gallery", "lodging", "video", "faq", "differentiation"],
-  kolel:      ["donations", "gallery", "video", "faq"],
+  products:   ["commerce", "gallery", "differentiation", "video", "faq", "articles"],
+  services:   ["commerce", "booking", "gallery", "differentiation", "video", "faq", "articles"],
+  realestate: ["listings", "booking", "gallery", "differentiation", "video", "faq", "articles"],
+  nonprofit:  ["donations", "commerce", "gallery", "video", "faq", "articles"],
+  synagogue:  ["donations", "synagogue", "gallery", "video", "faq", "articles"],
+  vacation:   ["commerce", "booking", "gallery", "lodging", "video", "faq", "differentiation", "articles"],
+  kolel:      ["donations", "gallery", "video", "faq", "articles"],
 };
 
 type SoonItem = {
@@ -78,12 +79,12 @@ const MODULE_NAV: Partial<Record<ModuleKey, string>> = {
   lodging:         "products",
   differentiation: "content",
   faq:             "content",
+  articles:        "blog-posts",
 };
 
 // Phase-2 modules - shown as an invitation, not yet toggleable.
 const buildSoon = (t: (key: string) => string): SoonItem[] => [
   { icon: ClipboardList, color: "#c07d12", title: t("dash.modules.soon_leads_title"),    desc: t("dash.modules.soon_leads_desc"),    types: ["products", "nonprofit", "synagogue"] },
-  { icon: FileText,      color: "#059669", title: "מאמרים ותוכן",                         desc: "הוסף מאמרים, עדכונים ומדריכים שמחזקים את האמון של הלקוחות." },
 ];
 
 /** The module that is the core identity of each business type. Disabling it shows a warning. */

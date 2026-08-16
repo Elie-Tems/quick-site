@@ -865,6 +865,8 @@ const he: Record<string, string> = {
   'dash.nav.verticals': 'יומן ולידים',
   'dash.nav.shipping': 'משלוחים',
   'dash.nav.content': 'תוכן',
+  'dash.nav.blog_posts': 'מאמרים',
+  'dash.nav.blog_posts_short': 'מאמרים',
   'dash.nav.design': 'עיצוב',
   'dash.nav.ai_images': 'תמונות AI',
   'dash.nav.ai_images_short': 'תמונות AI',
