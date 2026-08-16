@@ -1038,7 +1038,12 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
 
       {/* FAQ tab */}
       {activeTab === "faq" && !isDonationBased && (
-        <FaqTabContent businessId={businessId} />
+        <FaqTabContent
+          businessId={businessId}
+          businessType={businessType}
+          businessName={business?.name}
+          aboutText={(business as any)?.about_text}
+        />
       )}
 
       {/* Labels tab */}
