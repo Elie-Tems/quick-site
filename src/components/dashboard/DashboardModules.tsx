@@ -45,17 +45,19 @@ const buildLive = (t: (key: string) => string): Live[] => [
   { key: "gallery",   icon: Images,        color: "#0891b2", title: t("dash.modules.live_gallery_title"),   desc: t("dash.modules.live_gallery_desc") },
   { key: "lodging",        icon: Hotel,  color: "#6d4bd0", title: "חדרים / יחידות אירוח", desc: "יחידות עם זמינות בלוח, מחיר ללילה והזמנה - לצימרים ואירוח." },
   { key: "differentiation", icon: Award,  color: "#0f766e", title: "בידול ויתרונות", desc: "סקשן שמסביר למה לבחור בך - כותרת, תיאור ויתרונות עם צ'קמארקים." },
-  { key: "video",           icon: Video, color: "#dc2626", title: "וידאו",           desc: "הטמע סרטון YouTube או Vimeo עם בחירת סגנון ומיקום בדף." },
+  { key: "video",           icon: Video,       color: "#dc2626", title: "וידאו",           desc: "הטמע סרטון YouTube או Vimeo עם בחירת סגנון ומיקום בדף." },
+  { key: "faq",             icon: HelpCircle,  color: "#7c3aed", title: "שאלות נפוצות",    desc: "אקורדיון שאלות ותשובות שמופיע בעמוד החנות." },
 ];
 
 /** Which LIVE module keys make sense to offer per business type. */
 const ALLOWED_LIVE: Record<BusinessType, ModuleKey[]> = {
-  products:   ["commerce", "gallery", "differentiation", "video"],
-  services:   ["commerce", "booking", "gallery", "differentiation", "video"],
-  realestate: ["listings", "booking", "gallery", "differentiation", "video"],
-  nonprofit:  ["donations", "commerce", "gallery", "video"],
-  synagogue:  ["donations", "synagogue", "gallery", "video"],
-  vacation:   ["commerce", "booking", "gallery", "lodging", "video"],
+  products:   ["commerce", "gallery", "differentiation", "video", "faq"],
+  services:   ["commerce", "booking", "gallery", "differentiation", "video", "faq"],
+  realestate: ["listings", "booking", "gallery", "differentiation", "video", "faq"],
+  nonprofit:  ["donations", "commerce", "gallery", "video", "faq"],
+  synagogue:  ["donations", "synagogue", "gallery", "video", "faq"],
+  vacation:   ["commerce", "booking", "gallery", "lodging", "video", "faq"],
+  kolel:      ["donations", "gallery", "video", "faq"],
 };
 
 type SoonItem = {
@@ -75,13 +77,13 @@ const MODULE_NAV: Partial<Record<ModuleKey, string>> = {
   donations: "content",
   lodging:         "products",
   differentiation: "content",
+  faq:             "content",
 };
 
 // Phase-2 modules - shown as an invitation, not yet toggleable.
 const buildSoon = (t: (key: string) => string): SoonItem[] => [
   { icon: ClipboardList, color: "#c07d12", title: t("dash.modules.soon_leads_title"),    desc: t("dash.modules.soon_leads_desc"),    types: ["products", "nonprofit", "synagogue"] },
   { icon: FileText,      color: "#059669", title: "מאמרים ותוכן",                         desc: "הוסף מאמרים, עדכונים ומדריכים שמחזקים את האמון של הלקוחות." },
-  { icon: HelpCircle,    color: "#7c3aed", title: "שאלות נפוצות",                         desc: "ענה מראש על השאלות הנפוצות של הלקוחות ישירות באתר." },
 ];
 
 /** The module that is the core identity of each business type. Disabling it shows a warning. */

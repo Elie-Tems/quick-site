@@ -4,10 +4,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useBusinessById, useUpdateBusiness } from "@/hooks/useBusiness";
-import { ExternalLink, Loader2, Plus, Trash2, Wand2, FileText, LayoutTemplate, Tags, BookOpen, Upload, X, Heart, Award, Images, ClipboardList, ToggleLeft, ToggleRight } from "lucide-react";
+import { ExternalLink, Loader2, Plus, Trash2, Wand2, FileText, LayoutTemplate, Tags, BookOpen, Upload, X, Heart, Award, Images, ClipboardList, ToggleLeft, ToggleRight, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import AboutEditor from "./AboutEditor";
+import FaqTabContent from "./FaqTabContent";
 import type { BusinessType } from "@/lib/businessModules";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -18,7 +19,7 @@ interface DashboardContentProps {
   onNavigate?: (view: string) => void;
 }
 
-type ContentTab = "hero" | "about" | "labels" | "rabbi" | "hosting" | "donations" | "differentiation" | "gallery" | "leadform";
+type ContentTab = "hero" | "about" | "labels" | "rabbi" | "hosting" | "donations" | "differentiation" | "gallery" | "leadform" | "faq";
 
 const DashboardContent = ({ businessId, businessType = "products", businessSubType, onNavigate }: DashboardContentProps) => {
   const { t } = useLanguage();
@@ -437,7 +438,8 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           ...(isDonationBased ? [{ id: "donations" as ContentTab, label: t("dash.content.tab.donations"), icon: Heart }] : []),
           ...(!isDonationBased && businessType !== "vacation" ? [{ id: "differentiation" as ContentTab, label: t("dash.content.tab.differentiation"), icon: Award }] : []),
           ...((businessType === "realestate" || businessType === "services" || businessType === "vacation" || (business as {enabled_modules?: string[] | null} | undefined)?.enabled_modules?.includes("gallery")) ? [{ id: "gallery" as ContentTab, label: t("dash.content.tab.gallery"), icon: Images }] : []),
-          ...((businessType === "realestate" || businessType === "services") ? [{ id: "leadform" as ContentTab, label: t("dash.content.tab.leadform"), icon: ClipboardList }] : []),
+          ...(!isDonationBased && businessType !== "vacation" ? [{ id: "leadform" as ContentTab, label: t("dash.content.tab.leadform"), icon: ClipboardList }] : []),
+          ...(!isDonationBased && businessType !== "vacation" ? [{ id: "faq" as ContentTab, label: "שאלות נפוצות", icon: HelpCircle }] : []),
         ]).map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -827,7 +829,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
       )}
 
       {/* Differentiation tab */}
-      {activeTab === "differentiation" && (businessType === "realestate" || businessType === "services") && (
+      {activeTab === "differentiation" && !isDonationBased && businessType !== "vacation" && (
         <div className="space-y-4 max-w-2xl">
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
             <div className="flex items-start justify-between gap-3">
@@ -958,7 +960,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
       )}
 
       {/* Lead form tab */}
-      {activeTab === "leadform" && (businessType === "realestate" || businessType === "services") && (
+      {activeTab === "leadform" && !isDonationBased && businessType !== "vacation" && (
         <div className="space-y-4 max-w-2xl">
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
             <div className="flex items-start justify-between gap-3">
@@ -1032,6 +1034,11 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
             {t("dash.content.leadform.save")}
           </Button>
         </div>
+      )}
+
+      {/* FAQ tab */}
+      {activeTab === "faq" && !isDonationBased && businessType !== "vacation" && (
+        <FaqTabContent businessId={businessId} />
       )}
 
       {/* Labels tab */}
