@@ -56,7 +56,7 @@ const ALLOWED_LIVE: Record<BusinessType, ModuleKey[]> = {
   realestate: ["listings", "booking", "gallery", "differentiation", "video", "faq"],
   nonprofit:  ["donations", "commerce", "gallery", "video", "faq"],
   synagogue:  ["donations", "synagogue", "gallery", "video", "faq"],
-  vacation:   ["commerce", "booking", "gallery", "lodging", "video", "faq"],
+  vacation:   ["commerce", "booking", "gallery", "lodging", "video", "faq", "differentiation"],
   kolel:      ["donations", "gallery", "video", "faq"],
 };
 

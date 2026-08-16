@@ -438,8 +438,8 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
           ...(isDonationBased ? [{ id: "donations" as ContentTab, label: t("dash.content.tab.donations"), icon: Heart }] : []),
           ...(!isDonationBased && businessType !== "vacation" ? [{ id: "differentiation" as ContentTab, label: t("dash.content.tab.differentiation"), icon: Award }] : []),
           ...((businessType === "realestate" || businessType === "services" || businessType === "vacation" || (business as {enabled_modules?: string[] | null} | undefined)?.enabled_modules?.includes("gallery")) ? [{ id: "gallery" as ContentTab, label: t("dash.content.tab.gallery"), icon: Images }] : []),
-          ...(!isDonationBased && businessType !== "vacation" ? [{ id: "leadform" as ContentTab, label: t("dash.content.tab.leadform"), icon: ClipboardList }] : []),
-          ...(!isDonationBased && businessType !== "vacation" ? [{ id: "faq" as ContentTab, label: "שאלות נפוצות", icon: HelpCircle }] : []),
+          ...(!isDonationBased ? [{ id: "leadform" as ContentTab, label: t("dash.content.tab.leadform"), icon: ClipboardList }] : []),
+          ...(!isDonationBased ? [{ id: "faq" as ContentTab, label: "שאלות נפוצות", icon: HelpCircle }] : []),
         ]).map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -960,7 +960,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
       )}
 
       {/* Lead form tab */}
-      {activeTab === "leadform" && !isDonationBased && businessType !== "vacation" && (
+      {activeTab === "leadform" && !isDonationBased && (
         <div className="space-y-4 max-w-2xl">
           <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
             <div className="flex items-start justify-between gap-3">
@@ -1037,7 +1037,7 @@ const DashboardContent = ({ businessId, businessType = "products", businessSubTy
       )}
 
       {/* FAQ tab */}
-      {activeTab === "faq" && !isDonationBased && businessType !== "vacation" && (
+      {activeTab === "faq" && !isDonationBased && (
         <FaqTabContent businessId={businessId} />
       )}
 
