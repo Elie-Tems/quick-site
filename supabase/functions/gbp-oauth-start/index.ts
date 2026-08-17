@@ -59,11 +59,13 @@ Deno.serve(async (req) => {
     : { data: null };
   if (prof?.user_id !== user.id) return json({ error: "forbidden" }, 403);
 
+  const stateSecret = Deno.env.get("GBP_STATE_SECRET");
+  if (!stateSecret) return json({ error: "gbp_state_secret_not_configured" }, 503);
+
   const nonce = crypto.randomUUID();
   const issuedAt = Date.now();
   const payload = `${businessId}.${nonce}.${issuedAt}`;
-  const secret = Deno.env.get("GBP_STATE_SECRET") || svc;
-  const state = `${btoa(payload)}.${await sign(secret, payload)}`;
+  const state = `${btoa(payload)}.${await sign(stateSecret, payload)}`;
 
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   authUrl.searchParams.set("client_id", clientId);

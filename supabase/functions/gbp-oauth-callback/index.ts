@@ -73,8 +73,9 @@ Deno.serve(async (req) => {
   try { payload = atob(payloadB64); } catch { return redirect("/dashboard?gbp=error"); }
 
   const svc = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const secret = Deno.env.get("GBP_STATE_SECRET") || svc;
-  if (!(await verify(secret, payload, sig))) return redirect("/dashboard?gbp=error");
+  const stateSecret = Deno.env.get("GBP_STATE_SECRET");
+  if (!stateSecret) return redirect("/dashboard?gbp=error");
+  if (!(await verify(stateSecret, payload, sig))) return redirect("/dashboard?gbp=error");
 
   const [businessId, , issuedAtStr] = payload.split(".");
   const issuedAt = Number(issuedAtStr);
