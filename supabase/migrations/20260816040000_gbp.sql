@@ -20,3 +20,7 @@ CREATE TABLE IF NOT EXISTS gbp_tokens (
 ALTER TABLE gbp_tokens ENABLE ROW LEVEL SECURITY;
 -- No RLS policies = no authenticated/anon access even through PostgREST.
 -- Edge functions use service_role key which bypasses RLS entirely.
+
+-- Belt-and-suspenders: revoke Supabase's default public grants.
+-- RLS alone would block access, but removing the privilege adds a second layer.
+REVOKE ALL ON gbp_tokens FROM anon, authenticated;
