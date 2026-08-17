@@ -84,16 +84,20 @@ Deno.serve(async (req) => {
 
   const admin = createClient(url, svc);
   const { data: biz } = await admin.from("businesses")
-    .select("id, slug, owner_id, gbp_refresh_token, gbp_location_id, gbp_location_name, gbp_website_pushed, gbp_hours, gbp_last_sync")
+    .select("id, slug, owner_id, gbp_location_id, gbp_location_name, gbp_website_pushed, gbp_hours, gbp_last_sync")
     .eq("id", businessId).maybeSingle();
   const { data: prof } = biz
     ? await admin.from("profiles").select("user_id").eq("id", (biz as any).owner_id).maybeSingle()
     : { data: null };
   if (prof?.user_id !== user.id) return json({ error: "forbidden" }, 403);
 
+  // Fetch token from isolated table (service_role only).
+  const { data: tokenRow } = await admin.from("gbp_tokens")
+    .select("refresh_token").eq("business_id", businessId).maybeSingle();
+
   if (action === "disconnect") {
+    await admin.from("gbp_tokens").delete().eq("business_id", businessId);
     await admin.from("businesses").update({
-      gbp_refresh_token: null,
       gbp_location_id: null,
       gbp_location_name: null,
       gbp_website_pushed: false,
@@ -104,7 +108,7 @@ Deno.serve(async (req) => {
 
   if (action === "status") {
     return json({
-      connected: !!biz?.gbp_refresh_token,
+      connected: !!tokenRow?.refresh_token,
       locationId: biz?.gbp_location_id ?? null,
       locationName: biz?.gbp_location_name ?? null,
       websitePushed: biz?.gbp_website_pushed ?? false,
@@ -113,12 +117,12 @@ Deno.serve(async (req) => {
     });
   }
 
-  if (!biz?.gbp_refresh_token) return json({ error: "not_connected" }, 400);
+  if (!tokenRow?.refresh_token) return json({ error: "not_connected" }, 400);
   if (!biz?.gbp_location_id) return json({ error: "no_location" }, 400);
 
   let accessToken: string;
   try {
-    const plain = await decryptToken(biz.gbp_refresh_token);
+    const plain = await decryptToken(tokenRow.refresh_token);
     accessToken = await refreshAccessToken(plain);
   } catch (e: any) {
     return json({ error: "token_refresh_failed", detail: e.message }, 502);

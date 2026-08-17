@@ -110,8 +110,15 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_URL")!,
     svc,
   );
+  // Store encrypted token in the isolated gbp_tokens table (no anon access).
+  await admin.from("gbp_tokens").upsert({
+    business_id: businessId,
+    refresh_token: encRefresh,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "business_id" });
+
+  // Metadata (non-secret) stays on businesses.
   await admin.from("businesses").update({
-    gbp_refresh_token: encRefresh,
     gbp_location_id: locationId,
     gbp_location_name: locationName,
     gbp_last_sync: new Date().toISOString(),
